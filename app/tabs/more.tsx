@@ -87,10 +87,10 @@ export default function MoreScreen() {
         />
 
         <StatusSurface
-          action={<StatusPill label="Comfort first" tone="success" />}
-          description="Display, access, and connected-feature controls are grouped into clear rows with large touch targets."
+          action={<StatusPill label="Compact" />}
+          description="Display, access, and connected-feature controls are grouped into dense, readable rows."
           icon="settings"
-          title="Warm, accessible controls"
+          title="Settings hub"
           tone="connected"
         />
 
@@ -126,13 +126,13 @@ export default function MoreScreen() {
 
         <WidgetCard
           accentColor={colors.status.success}
-          action={<StatusPill label="Placeholders" tone="success" />}
-          subtitle="Display and accessibility controls can connect to user preferences later."
+          action={<StatusPill label="Display" tone="success" />}
+          subtitle="Preference placeholders for readable, accessible screens."
           title="Accessibility"
         >
           <View style={styles.grid}>
             <AccessControlRow
-              description="Larger labels and cards for users who prefer more readable screens."
+              description="Larger labels and dashboard cards when enabled later."
               icon="settings"
               label="Text size"
               onPress={() => openRoute("/settings/appearance")}
@@ -140,19 +140,19 @@ export default function MoreScreen() {
               tone="success"
             />
             <AccessControlRow
-              description="Higher contrast surfaces for better readability in care workflows."
+              description="Higher contrast controls for care workflows."
               icon="shield"
               label="High contrast"
               onPress={() => openRoute("/settings/appearance")}
-              statusLabel="Available later"
+              statusLabel="Later"
               tone="private"
             />
             <AccessControlRow
-              description="Reduce motion and carousel movement where supported."
+              description="Reduce carousel and transition motion where supported."
               icon="activity"
               label="Motion comfort"
               onPress={() => openRoute("/settings/appearance")}
-              statusLabel="Available later"
+              statusLabel="Later"
               tone="system"
             />
           </View>
@@ -181,20 +181,20 @@ const styles = StyleSheet.create({
   },
   iconShell: {
     alignItems: "center",
-    borderRadius: 16,
-    height: 46,
+    borderRadius: 14,
+    height: 40,
     justifyContent: "center",
-    width: 46
+    width: 40
   },
   item: {
     alignItems: "center",
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
-    gap: spacing.md,
-    minHeight: 72,
+    gap: spacing.sm,
+    minHeight: 64,
     padding: spacing.md
   },
   itemLabel: {

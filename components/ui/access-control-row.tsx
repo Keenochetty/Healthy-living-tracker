@@ -49,7 +49,7 @@ export function AccessControlRow({
   const content = (
     <>
       <View style={[styles.iconShell, { backgroundColor: `${toneColor[tone]}1A` }]}>
-        <AppIcon color={toneColor[tone]} name={icon} size={22} />
+        <AppIcon color={toneColor[tone]} name={icon} size={20} />
       </View>
       <View style={styles.copy}>
         <Text style={styles.label}>{label}</Text>
@@ -78,19 +78,19 @@ const styles = StyleSheet.create({
   },
   description: {
     color: colors.text.muted,
-    fontSize: 13,
-    lineHeight: 18
+    fontSize: 12,
+    lineHeight: 16
   },
   iconShell: {
     alignItems: "center",
-    borderRadius: 16,
-    height: 46,
+    borderRadius: 14,
+    height: 40,
     justifyContent: "center",
-    width: 46
+    width: 40
   },
   label: {
     color: colors.text.primary,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "900"
   },
   pressed: {
@@ -104,8 +104,9 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     flexDirection: "row",
-    gap: spacing.md,
-    minHeight: 74,
-    padding: spacing.md
+    gap: spacing.sm,
+    minHeight: 62,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
   }
 });

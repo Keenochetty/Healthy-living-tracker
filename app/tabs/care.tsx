@@ -6,9 +6,9 @@ import {
   AppHeader,
   AppIcon,
   AppScreen,
+  AccessControlRow,
   HealthCard,
   QuickActionButton,
-  AccessControlRow,
   StatusSurface,
   StatusPill,
   WidgetCard,
@@ -39,11 +39,11 @@ const upcomingHealth = [
 ];
 
 const permissionImports: Array<{ icon: AppIconName; label: string; note: string; tone: "ai" | "private" | "success" | "system" }> = [
-  { icon: "camera", label: "Camera", note: "For profile photos and document capture.", tone: "private" },
-  { icon: "voice", label: "Microphone", note: "For Health AI voice capture.", tone: "ai" },
-  { icon: "calendar", label: "Device calendars", note: "For Apple/Google calendar import placeholders.", tone: "success" },
-  { icon: "documents", label: "Documents", note: "For file upload placeholders.", tone: "system" },
-  { icon: "sync", label: "Import info", note: "For birthdays and current info from another app.", tone: "success" }
+  { icon: "camera", label: "Camera", note: "Profile photos and document capture.", tone: "private" },
+  { icon: "voice", label: "Microphone", note: "Health AI voice capture placeholder.", tone: "ai" },
+  { icon: "calendar", label: "Device calendars", note: "Apple/Google calendar import placeholder.", tone: "success" },
+  { icon: "documents", label: "Documents", note: "File upload placeholder.", tone: "system" },
+  { icon: "sync", label: "Import info", note: "Birthdays and current info import placeholder.", tone: "success" }
 ];
 
 function openRoute(route: string) {
@@ -65,9 +65,9 @@ export default function HealthMonitorScreen() {
 
         <StatusSurface
           action={<StatusPill label="Protected" tone="success" />}
-          description="Urgent items stay visible, while medication, documents, and condition details remain protected until opened."
+          description="Reminder counts and safe shortcuts only. Private health details stay behind intentional taps."
           icon="activity"
-          title="Health status is calm"
+          title="Health status"
           tone="connected"
         />
 
@@ -152,7 +152,7 @@ export default function HealthMonitorScreen() {
                 key={item.label}
                 label={item.label}
                 onPress={() => setPlaceholderMessage(`${item.label} permission request will connect later. ${item.note}`)}
-                statusLabel="Connect later"
+                statusLabel="Later"
                 tone={item.tone}
               />
             ))}
@@ -204,10 +204,10 @@ const styles = StyleSheet.create({
   },
   iconShell: {
     alignItems: "center",
-    borderRadius: 16,
-    height: 44,
+    borderRadius: 14,
+    height: 40,
     justifyContent: "center",
-    width: 44
+    width: 40
   },
   list: {
     gap: spacing.md
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   metricsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.lg
+    gap: spacing.md
   },
   modalBackdrop: {
     alignItems: "center",
@@ -265,22 +265,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md,
+    gap: spacing.sm,
     padding: spacing.md
   },
   shortcutCard: {
     alignItems: "center",
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
-    gap: spacing.md,
-    minHeight: 76,
+    gap: spacing.sm,
+    minHeight: 66,
     padding: spacing.md
   },
   shortcutCopy: {

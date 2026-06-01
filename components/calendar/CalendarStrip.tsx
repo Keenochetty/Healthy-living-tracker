@@ -93,17 +93,17 @@ export function CalendarStrip({ eventCountByDay, eventsByDay = {}, mode, onModeC
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   dayButton: {
     alignItems: "center",
     backgroundColor: colors.card.background,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     gap: spacing.xs,
-    minHeight: 138,
-    minWidth: 92,
+    minHeight: 116,
+    minWidth: 82,
     padding: spacing.sm
   },
   dayButtonActive: {
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   dayNumber: {
     color: colors.text.primary,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "900"
   },
   days: {
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     color: colors.brand.primary
   },
   emptyDot: {
-    height: 24
+    height: 18
   },
   eventPill: {
     alignItems: "center",
@@ -164,13 +164,13 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 11,
     fontWeight: "800",
-    maxWidth: 74
+    maxWidth: 64
   },
   modeButton: {
     alignItems: "center",
     borderRadius: 999,
     flex: 1,
-    minHeight: 44,
+    minHeight: 38,
     justifyContent: "center"
   },
   modeButtonActive: {

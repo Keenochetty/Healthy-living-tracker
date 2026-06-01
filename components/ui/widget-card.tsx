@@ -45,16 +45,16 @@ export function WidgetCard({ accentColor = colors.brand.primary, action, childre
 const styles = StyleSheet.create({
   accent: {
     borderRadius: 999,
-    height: 4,
-    width: 44
+    height: 3,
+    width: 36
   },
   card: {
     backgroundColor: colors.card.background,
     borderColor: colors.card.border,
-    borderRadius: componentRadius.widget,
+    borderRadius: Math.min(componentRadius.widget, 20),
     borderWidth: 1,
-    gap: spacing.md,
-    padding: spacing.xl,
+    gap: spacing.sm,
+    padding: spacing.lg,
     ...shadows.card
   },
   header: {
@@ -69,13 +69,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: colors.text.muted,
-    fontSize: 14,
-    lineHeight: 20
+    fontSize: 13,
+    lineHeight: 18
   },
   title: {
     color: colors.text.primary,
-    fontSize: 18,
-    fontWeight: "700"
+    fontSize: 17,
+    fontWeight: "800"
   },
   titleGroup: {
     flex: 1,

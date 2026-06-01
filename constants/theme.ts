@@ -1,48 +1,48 @@
 export const colors = {
   background: {
-    app: "#F3F5F1",
-    mist: "#EFF4EE",
+    app: "#FAF8F4",
+    mist: "#F5F8FB",
     elevated: "#FFFFFF",
-    warm: "#FBFAF4"
+    warm: "#FFFDF8"
   },
   border: {
-    soft: "#DDE5DC",
-    strong: "#AAB8AA"
+    soft: "#E3E8EF",
+    strong: "#C8D2DC"
   },
   brand: {
-    primary: "#16461D",
-    primarySoft: "#DDEDDD",
-    secondary: "#77927A",
-    secondarySoft: "#E8EFE7"
+    primary: "#256D7B",
+    primarySoft: "#DDF4F2",
+    secondary: "#6D5BD0",
+    secondarySoft: "#EEE7FF"
   },
   accent: {
-    coral: "#C66A57",
-    peach: "#F6E8DB",
-    mint: "#DDEDDD",
-    sky: "#E4EEF3",
+    coral: "#F46F5D",
+    peach: "#FFE7DA",
+    mint: "#D9F4E8",
+    sky: "#DCEEFF",
     lavender: "#EEE7FF"
   },
   status: {
     emergency: "#B42318",
     emergencySoft: "#FFE4E6",
-    warning: "#9A6B22",
-    warningSoft: "#F6EAC8",
-    success: "#16461D",
-    successSoft: "#DDEDDD",
+    warning: "#B7791F",
+    warningSoft: "#FFF3D6",
+    success: "#2E7D5B",
+    successSoft: "#D9F4E8",
     ai: "#6D5BD0",
     aiSoft: "#EEE7FF",
-    system: "#66706A",
-    systemSoft: "#EEF1ED"
+    system: "#667085",
+    systemSoft: "#EEF2F6"
   },
   text: {
-    primary: "#0A1D0E",
-    secondary: "#3F4B42",
-    muted: "#66706A",
+    primary: "#17212B",
+    secondary: "#475467",
+    muted: "#667085",
     inverse: "#FFFFFF"
   },
   card: {
     background: "#FFFFFF",
-    border: "#DDE5DC"
+    border: "#E6EAF0"
   }
 } as const;
 
@@ -56,18 +56,18 @@ export const gradients = {
 
 export const shadows = {
   card: {
-    shadowColor: "#0A1D0E",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.07,
-    shadowRadius: 34,
-    elevation: 4
+    shadowColor: "#1D3B45",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 22,
+    elevation: 3
   },
   soft: {
     shadowColor: colors.brand.primary,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
-    elevation: 3
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 2
   }
 } as const;
 

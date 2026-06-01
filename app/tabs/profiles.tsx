@@ -166,10 +166,10 @@ export default function ProfilesScreen() {
 
         <StatusSurface
           action={<StatusPill label="Trusted circle" tone="success" />}
-          description="Members, dependents, care profiles, and caregiver work stay organized around the selected circle."
+          description="Members, care profiles, and assigned caregiver work stay tied to the selected circle."
           icon="family"
-          title="Circle access is selected"
-          tone="success"
+          title="Circle access"
+          tone="connected"
         />
 
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
@@ -321,7 +321,7 @@ export default function ProfilesScreen() {
               tone="success"
             />
             <AccessControlRow
-              description="Adult private health data is hidden unless the adult grants permission."
+              description="Adult private health details require explicit consent."
               icon="privacy"
               label="Adult consent"
               onPress={() => openRoute("/privacy/permissions")}
@@ -456,9 +456,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.accent.peach,
     borderRadius: 999,
-    height: 54,
+    height: 46,
     justifyContent: "center",
-    width: 54
+    width: 46
   },
   avatarText: {
     color: colors.accent.coral,
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
     flexWrap: "wrap",
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   },
   childName: {
     color: colors.text.primary,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "900"
   },
   careCopy: {
@@ -499,10 +499,10 @@ const styles = StyleSheet.create({
   },
   careIcon: {
     alignItems: "center",
-    borderRadius: 16,
-    height: 44,
+    borderRadius: 14,
+    height: 40,
     justifyContent: "center",
-    width: 44
+    width: 40
   },
   careSection: {
     gap: spacing.sm
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
     flexWrap: "wrap",
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
   circleStack: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   input: {
     backgroundColor: colors.card.background,
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
     lineHeight: 20
   },
   memberList: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   modalBackdrop: {
     alignItems: "center",
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
     flexWrap: "wrap",
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     minWidth: 180
   },
   profileGrid: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   quickLogGrid: {
     flexDirection: "row",

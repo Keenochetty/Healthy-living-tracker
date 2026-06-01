@@ -109,7 +109,7 @@ export default function CalendarScreen() {
 
         <StatusSurface
           action={<StatusPill label={`${dayEvents.length} selected`} tone={dayEvents.length > 0 ? "success" : "default"} />}
-          description="Tap a day pill or event card for safe details. Long press or the day menu opens quick add actions."
+          description="Tap event pills for safe details. Long press a day or use its menu to add an event."
           icon="calendar"
           title="Planning dashboard"
           tone="connected"
@@ -280,28 +280,28 @@ const styles = StyleSheet.create({
   compactFilters: {
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: spacing.md
+    padding: spacing.sm
   },
   dayMenuCard: {
     backgroundColor: colors.card.background,
     borderColor: colors.border.soft,
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
     gap: spacing.md,
     maxWidth: 320,
-    padding: spacing.xl,
+    padding: spacing.lg,
     width: "100%"
   },
   eventModalCard: {
     backgroundColor: colors.card.background,
     borderColor: colors.border.soft,
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
     maxHeight: "82%",
     maxWidth: 460,
-    padding: spacing.xl,
+    padding: spacing.lg,
     width: "100%"
   },
   eventModalContent: {
@@ -409,6 +409,6 @@ const styles = StyleSheet.create({
   twoColumnGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.lg
+    gap: spacing.md
   }
 });

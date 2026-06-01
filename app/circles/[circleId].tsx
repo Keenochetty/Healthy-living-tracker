@@ -9,16 +9,7 @@ import { InviteCard } from "@/components/invites/InviteCard";
 import { InviteMethodCard } from "@/components/invites/InviteMethodCard";
 import { PermissionToggleGroup } from "@/components/privacy/PermissionToggleGroup";
 import { PrivacySummaryCard } from "@/components/privacy/PrivacySummaryCard";
-import {
-  AccessControlRow,
-  AppHeader,
-  AppIcon,
-  AppScreen,
-  QuickActionButton,
-  StatusPill,
-  StatusSurface,
-  WidgetCard
-} from "@/components/ui";
+import { AccessControlRow, AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, StatusSurface, WidgetCard } from "@/components/ui";
 import {
   AGE_ACCESS_STAGES,
   CARE_PROFILE_TYPES,
@@ -146,10 +137,10 @@ export default function CircleDetailsScreen() {
 
         <StatusSurface
           action={<StatusPill label={activeCircle.currentUserRole} tone={canManageCircleMembers(activeCircle.currentUserRole) ? "success" : "default"} />}
-          description="This circle controls who belongs here, what role they hold, and which shared care surfaces they can manage."
+          description="Roles, relationships, invites, and care access are managed inside this trusted circle."
           icon={activeCircle.kind === "care_circle" ? "caregiver" : "family"}
-          title="Trusted circle management"
-          tone="success"
+          title="Trusted circle"
+          tone="connected"
         />
 
         <WidgetCard
@@ -181,21 +172,21 @@ export default function CircleDetailsScreen() {
           </Text>
           <View style={styles.accessList}>
             <AccessControlRow
-              description="Admins can manage circle structure, members, invites, and dependents."
+              description="Admins manage members, invites, and dependents."
               icon="settings"
               label="Circle management"
               statusLabel={canManageCircleMembers(activeCircle.currentUserRole) ? "Allowed" : "View only"}
               tone={canManageCircleMembers(activeCircle.currentUserRole) ? "success" : "system"}
             />
             <AccessControlRow
-              description="Adult private health details need explicit adult consent."
+              description="Adult private details require consent."
               icon="privacy"
               label="Adult private data"
               statusLabel="Consent first"
               tone="private"
             />
             <AccessControlRow
-              description="Caregivers only see assigned care profiles and granted fields."
+              description="Caregivers see assigned profiles only."
               icon="caregiver"
               label="Caregiver access"
               statusLabel="Assigned-only"
@@ -375,15 +366,15 @@ export default function CircleDetailsScreen() {
 
 const styles = StyleSheet.create({
   accessList: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   careProfileList: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   emptyPanel: {
     backgroundColor: colors.background.warm,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     gap: spacing.xs,
     padding: spacing.md
@@ -399,7 +390,7 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   inviteList: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   muted: {
     color: colors.text.muted,
@@ -410,7 +401,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   memberList: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   memberActions: {
     flexDirection: "row",

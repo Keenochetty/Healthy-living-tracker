@@ -321,11 +321,11 @@ export default function HomeScreen() {
         </View>
 
         <StatusSurface
-          action={<StatusPill label="Safe preview" tone="success" />}
-          description="No urgent alerts are showing. Home only displays shared updates, protected reminders, and circle-safe summaries."
+          action={<StatusPill label="Safe" tone="success" />}
+          description="No urgent alerts. Home only shows shared updates and protected summaries."
           icon="shield"
           title="Today is steady"
-          tone="success"
+          tone="connected"
         />
 
         <WidgetCard
@@ -601,18 +601,18 @@ const styles = StyleSheet.create({
   },
   carouselTitle: {
     color: colors.text.primary,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "900"
   },
   circleMiniCard: {
     backgroundColor: colors.card.background,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     gap: spacing.sm,
-    minHeight: 142,
+    minHeight: 118,
     padding: spacing.md,
-    width: 190
+    width: 172
   },
   circleMiniCardActive: {
     backgroundColor: colors.status.successSoft,
@@ -657,21 +657,21 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.lg
+    gap: spacing.md
   },
   gridItem: {
     minWidth: 0
   },
   headerShell: {
-    gap: spacing.lg
+    gap: spacing.md
   },
   familyAvatar: {
     alignItems: "center",
     backgroundColor: colors.status.successSoft,
-    borderRadius: 18,
-    height: 48,
+    borderRadius: 15,
+    height: 42,
     justifyContent: "center",
-    width: 48
+    width: 42
   },
   loadingScreen: {
     alignItems: "center",
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
   },
   metric: {
     color: colors.text.primary,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "900"
   },
   modalBackdrop: {
@@ -735,7 +735,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.97 }]
   },
   previewGrid: {
-    gap: spacing.lg
+    gap: spacing.md
   },
   previewText: {
     color: colors.text.secondary,
@@ -771,19 +771,19 @@ const styles = StyleSheet.create({
   profileMiniCard: {
     backgroundColor: colors.card.background,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     gap: spacing.sm,
-    minHeight: 150,
+    minHeight: 126,
     padding: spacing.md,
-    width: 200
+    width: 176
   },
   root: {
     backgroundColor: colors.background.app,
     flex: 1
   },
   section: {
-    gap: spacing.md
+    gap: spacing.sm
   },
   sectionHeader: {
     alignItems: "center",
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: colors.text.primary,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "900"
   },
   sheetContent: {
@@ -846,16 +846,16 @@ const styles = StyleSheet.create({
   updateCard: {
     backgroundColor: colors.card.background,
     borderColor: colors.border.soft,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     gap: spacing.sm,
-    minHeight: 150,
+    minHeight: 120,
     padding: spacing.md,
-    width: 230
+    width: 204
   },
   todayTitle: {
     color: colors.text.primary,
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: "900",
     marginTop: spacing.xs
   },
@@ -866,6 +866,6 @@ const styles = StyleSheet.create({
   },
   widgetBody: {
     alignItems: "flex-start",
-    gap: spacing.md
+    gap: spacing.sm
   }
 });
