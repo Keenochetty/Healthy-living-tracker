@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Family Health",
+    "slug": "family-health",
+    "scheme": "familyhealth",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-localization"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

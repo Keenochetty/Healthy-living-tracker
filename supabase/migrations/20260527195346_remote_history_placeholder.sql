@@ -1,0 +1,2 @@
+-- Placeholder for a migration already recorded in the linked remote project.
+-- Kept locally so Supabase CLI migration history can be reconciled.
