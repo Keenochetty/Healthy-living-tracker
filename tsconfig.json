@@ -21,29 +21,35 @@
     "baseUrl": ".",
     "paths": {
       "@/components/*": [
+        "src/components/*",
         "components/*"
       ],
       "@/constants/*": [
+        "src/constants/*",
         "constants/*"
       ],
       "@/lib/*": [
+        "src/lib/*",
         "lib/*"
       ],
       "@/types/*": [
+        "src/types/*",
         "types/*"
       ],
       "@/utils/*": [
+        "src/utils/*",
         "utils/*"
       ],
       "@/*": [
+        "src/*",
         "*"
       ]
     }
   },
   "include": [
     "expo-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".expo/types/**/*.ts",
     "nativewind-env.d.ts"
   ],
