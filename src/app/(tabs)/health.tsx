@@ -2,7 +2,6 @@ import { Href, router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-import { MedicationListCard } from "@/components/health/MedicationListCard";
 import { FitnessSummaryCard } from "@/components/fitness/FitnessSummaryCard";
 import { DailyNutritionSummaryCard } from "@/components/nutrition/DailyNutritionSummaryCard";
 import { ChildProfileCard } from "@/components/child/ChildProfileCard";
@@ -11,12 +10,25 @@ import { AppAlertCard, AppButton, AppCard, AppChip, AppIcon, AppSection, Premium
 import type { AppIconName } from "@/constants/appIcons";
 import {
   getAvailableHealthWidgets,
+  getBiometricWidgetRouteType,
   calculateWidgetValue,
   getPinnedHealthWidgets,
+  isBiometricWidget,
+  isMedicationWidget,
   isNutritionWidget,
+  isSupplementWidget,
   pinHealthWidget,
   unpinHealthWidget
 } from "@/lib/healthWidgets";
+import {
+  calculateTodayMedicationSchedule,
+  calculateTodaySupplementSchedule,
+  markDoseTaken
+} from "@/lib/medicationSupplementStorage";
+import {
+  getDeviceSyncWidgetRoute,
+  isDeviceSyncWidget
+} from "@/services/healthSync/healthSyncService";
 import { getTodayNutritionSummary } from "@/lib/nutritionStorage";
 import { getTodayFitnessSummary } from "@/lib/fitnessStorage";
 import { getAllChildSummaries } from "@/lib/childStorage";
@@ -37,6 +49,7 @@ import type { ElderSummary } from "@/types/elder";
 import type { AiJob } from "@/types/ai";
 import type { WidgetKey } from "@/types/app";
 import type { HealthQuickWidget } from "@/types/nutrition";
+import type { MedicationSupplementTodaySummary } from "@/types/medication";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 export default function HealthScreen() {
@@ -62,6 +75,8 @@ export default function HealthScreen() {
   const [pinnedHealthWidgets, setPinnedHealthWidgets] = useState<HealthQuickWidget[]>([]);
   const [availableHealthWidgets, setAvailableHealthWidgets] = useState<HealthQuickWidget[]>([]);
   const [healthWidgetValues, setHealthWidgetValues] = useState<Record<string, string>>({});
+  const [medicationSummary, setMedicationSummary] = useState<MedicationSupplementTodaySummary | null>(null);
+  const [supplementSummary, setSupplementSummary] = useState<MedicationSupplementTodaySummary | null>(null);
 
   const loadHealthAddOns = useCallback(async () => {
     const [
@@ -76,7 +91,9 @@ export default function HealthScreen() {
       nextPendingAiJobs,
       nextRecentAiJobs,
       nextPinnedHealthWidgets,
-      nextAvailableHealthWidgets
+      nextAvailableHealthWidgets,
+      nextMedicationSummary,
+      nextSupplementSummary
     ] = await Promise.all([
       getUserPreferences(),
       getTodayNutritionSummary(),
@@ -89,7 +106,9 @@ export default function HealthScreen() {
       getPendingReviewJobs(),
       getRecentAiJobs(),
       getPinnedHealthWidgets(),
-      getAvailableHealthWidgets()
+      getAvailableHealthWidgets(),
+      calculateTodayMedicationSchedule(),
+      calculateTodaySupplementSchedule()
     ]);
 
     setChildEnabled(preferences.enabledModules.includes("child_baby"));
@@ -110,6 +129,8 @@ export default function HealthScreen() {
     setFitnessSummary(nextFitnessSummary);
     setPinnedHealthWidgets(nextPinnedHealthWidgets);
     setAvailableHealthWidgets(nextAvailableHealthWidgets);
+    setMedicationSummary(nextMedicationSummary);
+    setSupplementSummary(nextSupplementSummary);
     setHealthWidgetValues(
       Object.fromEntries(
         await Promise.all(
@@ -176,15 +197,31 @@ export default function HealthScreen() {
             title="Food / Nutrition"
           />
           <HealthRealmCard
+            accentColor="#3b82f6"
+            description="Weight, sleep, energy, mood and vitals."
+            iconName="vitals"
+            onPress={() => router.push("/biometrics" as Href)}
+            title="Biometrics"
+          />
+          <HealthRealmCard
+            accentColor="#6366f1"
+            description="Prepare Apple Health, Health Connect and device data."
+            iconName="sync"
+            onPress={() => router.push("/device-sync" as Href)}
+            title="Device Sync"
+          />
+          <HealthRealmCard
             accentColor="#ef4444"
             description="Medication reminders and history."
             iconName="medication"
+            onPress={() => router.push("/medication" as Href)}
             title="Medication"
           />
           <HealthRealmCard
             accentColor="#14b8a6"
             description="Supplement logging foundation."
             iconName="health"
+            onPress={() => router.push("/supplements" as Href)}
             title="Supplements"
           />
           <HealthRealmCard
@@ -245,7 +282,26 @@ export default function HealthScreen() {
         </View>
       </AppSection>
 
-      <MedicationListCard />
+      <AppSection title="Medication & Supplements" subtitle="Private schedule tracking and reminder history.">
+        <View style={{ gap: 12 }}>
+          <MedicationSupplementOverviewCard
+            accentColor="#ef4444"
+            emptyText="No medication reminders due today."
+            onMarkTaken={loadHealthAddOns}
+            route="/medication"
+            summary={medicationSummary}
+            title="Medication"
+          />
+          <MedicationSupplementOverviewCard
+            accentColor="#14b8a6"
+            emptyText="No supplement reminders due today."
+            onMarkTaken={loadHealthAddOns}
+            route="/supplements"
+            summary={supplementSummary}
+            title="Supplements"
+          />
+        </View>
+      </AppSection>
 
       {aiEnabled ? (
         <View style={{ gap: 12 }}>
@@ -511,6 +567,87 @@ export default function HealthScreen() {
   );
 }
 
+function MedicationSupplementOverviewCard({
+  accentColor,
+  emptyText,
+  onMarkTaken,
+  route,
+  summary,
+  title
+}: {
+  accentColor: string;
+  emptyText: string;
+  onMarkTaken: () => void;
+  route: "/medication" | "/supplements";
+  summary: MedicationSupplementTodaySummary | null;
+  title: string;
+}) {
+  const nextReminder = summary?.nextItem;
+
+  return (
+    <AppCard>
+      <View style={{ gap: 10 }}>
+        <View style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>{title}</Text>
+            <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
+              {summary?.totalCount
+                ? title === "Medication"
+                  ? `You marked ${summary.takenCount} of ${summary.totalCount} medications as taken today.`
+                  : `You marked ${summary.takenCount} of ${summary.totalCount} supplements as taken today.`
+                : emptyText}
+            </Text>
+          </View>
+          <Text style={{ color: accentColor, fontSize: 18, fontWeight: "900" }}>
+            {summary?.dueCount ?? 0} due
+          </Text>
+        </View>
+
+        {summary?.missedCount ? (
+          <Text style={{ color: "#b45309", lineHeight: 20 }}>
+            {title === "Medication" ? "A medication reminder was missed." : "A supplement reminder was missed."}
+          </Text>
+        ) : null}
+
+        {nextReminder ? (
+          <View style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>{nextReminder.itemName}</Text>
+            <Text style={{ color: "#64748b", marginTop: 4 }}>
+              {nextReminder.scheduledAt ? `Next ${new Date(nextReminder.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "As needed"}
+            </Text>
+          </View>
+        ) : null}
+
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          {nextReminder ? (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() =>
+                markDoseTaken({
+                  itemId: nextReminder.itemId,
+                  itemType: nextReminder.itemType,
+                  scheduleId: nextReminder.scheduleId,
+                  scheduledAt: nextReminder.scheduledAt
+                }).then(onMarkTaken)
+              }
+              style={{ alignItems: "center", backgroundColor: accentColor, borderRadius: 16, flex: 1, justifyContent: "center", minHeight: 46 }}
+            >
+              <Text style={{ color: "#ffffff", fontWeight: "900" }}>Mark Taken</Text>
+            </TouchableOpacity>
+          ) : null}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push(route as Href)}
+            style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, flex: 1, justifyContent: "center", minHeight: 46 }}
+          >
+            <Text style={{ color: "#475569", fontWeight: "900" }}>Open</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </AppCard>
+  );
+}
+
 function HealthQuickViewBar({
   fitnessSummary,
   widgetValues,
@@ -550,8 +687,17 @@ function HealthQuickViewBar({
               router.push({ pathname: "/food", params: { tab: "water" } } as Href);
             } else if (isNutritionWidget(widget.widgetKey) || widget.widgetKey === "food_log") {
               router.push("/food" as Href);
+            } else if (isMedicationWidget(widget.widgetKey)) {
+              router.push("/medication" as Href);
+            } else if (isSupplementWidget(widget.widgetKey)) {
+              router.push("/supplements" as Href);
             } else if (widget.widgetKey === "workout" || widget.widgetKey === "steps") {
               router.push("/fitness" as Href);
+            } else if (isBiometricWidget(widget.widgetKey)) {
+              const type = getBiometricWidgetRouteType(widget.widgetKey);
+              router.push((type ? `/biometrics?type=${encodeURIComponent(type)}` : "/biometrics") as Href);
+            } else if (isDeviceSyncWidget(widget.widgetKey)) {
+              router.push(getDeviceSyncWidgetRoute(widget.widgetKey) as Href);
             }
           }}
           style={{
@@ -573,6 +719,14 @@ function HealthQuickViewBar({
           <Text style={{ color: "#94a3b8", fontSize: 12, marginTop: 6 }}>
             {isNutritionWidget(widget.widgetKey) || widget.widgetKey === "food_log"
               ? "Open nutrition"
+              : isMedicationWidget(widget.widgetKey)
+                ? "Open medication"
+                : isSupplementWidget(widget.widgetKey)
+                  ? "Open supplements"
+              : isBiometricWidget(widget.widgetKey)
+                ? "Open biometrics"
+                : isDeviceSyncWidget(widget.widgetKey)
+                  ? "Open sync"
               : "Quick view"}
           </Text>
         </TouchableOpacity>
@@ -693,8 +847,34 @@ function getWidgetValue(
     case "workout":
       return fitnessSummary?.latestWorkout?.title ?? "No workout";
     case "medication":
+    case "medication_due_today":
+    case "next_medication":
+    case "medication_taken_today":
+    case "missed_medication":
+    case "medication_schedule_status":
+      return "Open";
+    case "supplements_due_today":
+    case "next_supplement":
+    case "supplements_taken_today":
+    case "supplement_schedule_status":
       return "Open";
     case "sleep":
+    case "energy":
+    case "mood":
+    case "weight":
+    case "biometric_goal_weight":
+    case "resting_heart_rate":
+    case "blood_pressure":
+    case "blood_glucose":
+    case "digestion":
+    case "symptoms":
+    case "steps_today":
+    case "distance_today":
+    case "last_synced_workout":
+    case "sleep_last_night":
+    case "active_calories":
+    case "synced_weight":
+    case "sync_status":
       return "Not set";
     case "baby_feed":
       return "Ready";

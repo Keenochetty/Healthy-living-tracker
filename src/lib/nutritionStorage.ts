@@ -61,6 +61,7 @@ type CreateNutritionEntryInput = {
   brand?: string;
   calories?: number;
   carbsG?: number;
+  confirmationSource?: NutritionDiaryEntry["confirmationSource"];
   entrySource?: NutritionDiaryEntry["entrySource"];
   entryDate?: string;
   fatG?: number;
@@ -78,6 +79,7 @@ type CreateNutritionEntryInput = {
   sourceFoodId?: string;
   sourceItemId?: string;
   sourceRefId?: string;
+  smartLogSessionId?: string;
   unit?: string;
   userId?: string;
 };
@@ -205,7 +207,7 @@ function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-async function getNutritionEntries() {
+export async function getNutritionEntries() {
   const [entries, legacyLogs] = await Promise.all([
     readJsonArray<NutritionDiaryEntry>(NUTRITION_ENTRIES_STORAGE_KEY),
     readJsonArray<FoodLog>(LEGACY_FOOD_LOGS_STORAGE_KEY)
@@ -271,6 +273,7 @@ export async function createNutritionEntry(input: CreateNutritionEntryInput) {
     brand: input.brand,
     calories: Math.max(0, numberOrZero(input.calories)),
     carbsG: Math.max(0, numberOrZero(input.carbsG)),
+    confirmationSource: input.confirmationSource,
     createdAt: now,
     entrySource: input.entrySource,
     entryDate: input.entryDate ?? getTodayDateKey(),
@@ -290,6 +293,7 @@ export async function createNutritionEntry(input: CreateNutritionEntryInput) {
     sourceFoodId: input.sourceFoodId,
     sourceItemId: input.sourceItemId,
     sourceRefId: input.sourceRefId,
+    smartLogSessionId: input.smartLogSessionId,
     unit: input.unit?.trim() || "serving",
     updatedAt: now,
     userId: input.userId ?? LOCAL_USER_ID

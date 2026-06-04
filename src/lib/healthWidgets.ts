@@ -1,10 +1,26 @@
 import { APP_WIDGETS } from "@/constants/widgets";
 import {
+  calculateBiometricWidgetValue,
+  getWidgetRouteType,
+  isBiometricWidget
+} from "@/lib/biometricsStorage";
+import {
+  calculateDeviceSyncWidgetValue,
+  DEVICE_SYNC_WIDGET_KEYS,
+  isDeviceSyncWidget
+} from "@/services/healthSync/healthSyncService";
+import {
   calculateDailyNutritionProgress,
   formatMacroProgress,
   getActiveNutritionTarget,
   getTodayNutritionSummary
 } from "@/lib/nutritionStorage";
+import {
+  calculateMedicationWidgetValue,
+  calculateSupplementWidgetValue,
+  getAvailableMedicationWidgets,
+  getAvailableSupplementWidgets
+} from "@/lib/medicationSupplementStorage";
 import { getUserPreferences, updateUserPreferences } from "@/lib/userPreferences";
 import type { WidgetKey } from "@/types/app";
 import type { HealthQuickWidget } from "@/types/nutrition";
@@ -25,12 +41,32 @@ export const NUTRITION_WIDGET_KEYS = [
   "food_diary_status"
 ] as const satisfies WidgetKey[];
 
+export const MEDICATION_WIDGET_KEYS = [
+  ...getAvailableMedicationWidgets(),
+  "medication"
+] as const satisfies WidgetKey[];
+
+export const SUPPLEMENT_WIDGET_KEYS = [
+  ...getAvailableSupplementWidgets()
+] as const satisfies WidgetKey[];
+
 const HEALTH_WIDGET_KEYS = [
   ...NUTRITION_WIDGET_KEYS,
-  "workout",
-  "medication",
-  "water",
+  ...MEDICATION_WIDGET_KEYS,
+  ...SUPPLEMENT_WIDGET_KEYS,
+  "weight",
+  "biometric_goal_weight",
   "sleep",
+  "energy",
+  "mood",
+  "resting_heart_rate",
+  "blood_pressure",
+  "blood_glucose",
+  "digestion",
+  "symptoms",
+  ...DEVICE_SYNC_WIDGET_KEYS,
+  "workout",
+  "water",
   "baby_feed",
   "cycle",
   "elder_checkin",
@@ -41,12 +77,28 @@ export function isNutritionWidget(widgetKey: WidgetKey) {
   return NUTRITION_WIDGET_KEYS.includes(widgetKey as (typeof NUTRITION_WIDGET_KEYS)[number]);
 }
 
+export function isMedicationWidget(widgetKey: WidgetKey) {
+  return MEDICATION_WIDGET_KEYS.includes(widgetKey as (typeof MEDICATION_WIDGET_KEYS)[number]);
+}
+
+export function isSupplementWidget(widgetKey: WidgetKey) {
+  return SUPPLEMENT_WIDGET_KEYS.includes(widgetKey as (typeof SUPPLEMENT_WIDGET_KEYS)[number]);
+}
+
 function toHealthWidget(widgetKey: WidgetKey, orderIndex: number, isPinned = true): HealthQuickWidget {
   const widget = APP_WIDGETS.find((item) => item.key === widgetKey);
 
   return {
-    category: isNutritionWidget(widgetKey)
+    category: isDeviceSyncWidget(widgetKey)
+      ? "device_sync"
+      : isBiometricWidget(widgetKey)
+      ? "biometrics"
+      : isNutritionWidget(widgetKey)
       ? "nutrition"
+      : isMedicationWidget(widgetKey)
+        ? "medication"
+        : isSupplementWidget(widgetKey)
+          ? "wellness"
       : widget?.moduleKey === "fitness"
         ? "fitness"
         : widget?.moduleKey === "personal_health"
@@ -126,6 +178,22 @@ export async function getAvailableNutritionWidgets() {
 }
 
 export async function calculateWidgetValue(widgetKey: WidgetKey) {
+  if (isDeviceSyncWidget(widgetKey)) {
+    return calculateDeviceSyncWidgetValue(widgetKey);
+  }
+
+  if (isBiometricWidget(widgetKey)) {
+    return calculateBiometricWidgetValue(widgetKey);
+  }
+
+  if (isMedicationWidget(widgetKey)) {
+    return calculateMedicationWidgetValue(widgetKey);
+  }
+
+  if (isSupplementWidget(widgetKey)) {
+    return calculateSupplementWidgetValue(widgetKey);
+  }
+
   const [summary, progress, target] = await Promise.all([
     getTodayNutritionSummary(),
     calculateDailyNutritionProgress(new Date()),
@@ -170,6 +238,8 @@ export async function calculateWidgetValue(widgetKey: WidgetKey) {
       return "Ready";
   }
 }
+
+export { getWidgetRouteType as getBiometricWidgetRouteType, isBiometricWidget };
 
 function formatWaterValue(amountMl: number) {
   return amountMl >= 1000 ? `${(amountMl / 1000).toFixed(1)} L` : `${Math.round(amountMl)} ml`;

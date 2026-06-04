@@ -23,8 +23,128 @@ export const APP_WIDGETS: AppWidget[] = [
     moduleKey: "personal_health",
   },
   {
+    key: "weight",
+    title: "Weight",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "biometric_goal_weight",
+    title: "Goal Weight",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "energy",
+    title: "Energy",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "resting_heart_rate",
+    title: "Resting Heart Rate",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "blood_pressure",
+    title: "Blood Pressure",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "blood_glucose",
+    title: "Blood Glucose",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "digestion",
+    title: "Digestion",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "symptoms",
+    title: "Symptoms",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "steps_today",
+    title: "Steps Today",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "distance_today",
+    title: "Distance Today",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "last_synced_workout",
+    title: "Last Synced Workout",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "sleep_last_night",
+    title: "Sleep Last Night",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "active_calories",
+    title: "Active Calories",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "synced_weight",
+    title: "Synced Weight",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "sync_status",
+    title: "Sync Status",
+    moduleKey: "personal_health",
+  },
+  {
     key: "medication",
     title: "Medication",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "medication_due_today",
+    title: "Medication Due Today",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "next_medication",
+    title: "Next Medication",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "medication_taken_today",
+    title: "Medication Taken Today",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "missed_medication",
+    title: "Missed Medication",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "medication_schedule_status",
+    title: "Medication Schedule Status",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "supplements_due_today",
+    title: "Supplements Due Today",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "next_supplement",
+    title: "Next Supplement",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "supplements_taken_today",
+    title: "Supplements Taken Today",
+    moduleKey: "personal_health",
+  },
+  {
+    key: "supplement_schedule_status",
+    title: "Supplement Schedule Status",
     moduleKey: "personal_health",
   },
   {

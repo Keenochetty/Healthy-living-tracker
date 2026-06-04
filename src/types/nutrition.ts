@@ -99,7 +99,8 @@ export type NutritionDiaryEntry = {
   calories: number;
   carbsG: number;
   createdAt: string;
-  entrySource?: "manual" | "food_details" | "custom_food" | "saved_meal" | "recipe" | "barcode_scan";
+  confirmationSource?: "manual_review" | "edited_suggestion" | "accepted_suggestion";
+  entrySource?: "manual" | "food_details" | "custom_food" | "saved_meal" | "recipe" | "barcode_scan" | "smart_log";
   entryDate: string;
   fatG: number;
   fiberG?: number;
@@ -117,6 +118,7 @@ export type NutritionDiaryEntry = {
   sourceFoodId?: string;
   sourceItemId?: string;
   sourceRefId?: string;
+  smartLogSessionId?: string;
   unit: string;
   updatedAt?: string;
   userId: string;
@@ -142,7 +144,7 @@ export type NutritionDailyNote = {
 };
 
 export type HealthQuickWidget = {
-  category: "nutrition" | "fitness" | "medication" | "wellness" | "custom";
+  category: "nutrition" | "fitness" | "medication" | "biometrics" | "device_sync" | "wellness" | "custom";
   id: string;
   isPinned: boolean;
   orderIndex: number;
@@ -450,4 +452,114 @@ export type WaterGoal = {
   currentMl: number;
   date: string;
   targetMl: number;
+};
+
+export type ReportRange = "today" | "7_days" | "30_days";
+
+export type NutritionReportSummary = {
+  bestProteinDay?: string;
+  caloriesAverage: number;
+  caloriesTargetAverage?: number;
+  carbsAverageG: number;
+  endDate: string;
+  fatAverageG: number;
+  fiberAverageG: number;
+  foodLoggingConsistencyPercent: number;
+  lowLoggingDay?: string;
+  mealsLogged: number;
+  notesLogged: number;
+  proteinAverageG: number;
+  proteinTargetAverageG?: number;
+  range: ReportRange;
+  startDate: string;
+  targetHitRatePercent?: number;
+  totalDays: number;
+  waterAverageMl: number;
+  waterTargetAverageMl?: number;
+  daysLogged: number;
+  workoutDays: number;
+  workoutDaysWithFoodLogs: number;
+};
+
+export type DailyMacroTrend = {
+  calories: number;
+  caloriesTarget?: number;
+  carbsG: number;
+  date: string;
+  fatG: number;
+  fiberG: number;
+  proteinG: number;
+  proteinTargetG?: number;
+  waterMl: number;
+  waterTargetMl?: number;
+};
+
+export type WaterTrendReport = {
+  averageMl: number;
+  bestHydrationDay?: string;
+  daysUnderTarget: number;
+  targetAverageMl?: number;
+  trends: DailyMacroTrend[];
+};
+
+export type GoalProgressReport = {
+  caloriesConsistencyPercent?: number;
+  carbsConsistencyPercent?: number;
+  currentWeightKg?: number;
+  fiberConsistencyPercent?: number;
+  goalMessage: string;
+  goalType?: NutritionGoalType;
+  goalWeightKg?: number;
+  hasTarget: boolean;
+  proteinConsistencyPercent?: number;
+  waterConsistencyPercent?: number;
+  workoutFoodConsistencyPercent?: number;
+};
+
+export type DiaryConsistencyReport = {
+  currentLoggingStreakDays: number;
+  daysLogged: number;
+  missedMealGroups: NutritionMealGroup[];
+  mostConsistentMealGroup?: NutritionMealGroup;
+  totalDays: number;
+  totalMealsLogged: number;
+};
+
+export type WorkoutFoodConnectionReport = {
+  averageCaloriesOnWorkoutDays?: number;
+  averageProteinGOnWorkoutDays?: number;
+  averageWaterMlOnWorkoutDays?: number;
+  hasWorkoutData: boolean;
+  message: string;
+  proteinTargetHitPercent?: number;
+  waterTargetHitPercent?: number;
+  workoutDays: number;
+  workoutDaysWithFoodLogs: number;
+};
+
+export type NutritionInsight = {
+  createdAt: string;
+  dateRange: ReportRange;
+  id: string;
+  message: string;
+  severity: "info" | "positive" | "gentle_warning";
+  title: string;
+  type: "protein" | "water" | "calories" | "fiber" | "logging" | "workout_food" | "goal" | "general";
+};
+
+export type MostLoggedFood = {
+  averageQuantity?: number;
+  averageUnit?: string;
+  brand?: string;
+  foodName: string;
+  lastLoggedAt?: string;
+  source?: FoodSource;
+  timesLogged: number;
+};
+
+export type MostUsedMealItem = {
+  id?: string;
+  itemType: "saved_meal" | "recipe";
+  name: string;
+  timesUsed: number;
 };

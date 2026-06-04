@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Sparkles,
   Stethoscope,
+  RefreshCw,
   Syringe,
   UserRoundCheck,
   UsersRound,
@@ -56,6 +57,7 @@ export type AppIconName =
   | "doctor"
   | "scan"
   | "wearable"
+  | "sync"
   | "weight";
 
 type IconComponent = ComponentType<{
@@ -92,5 +94,6 @@ export const appIcons: Record<AppIconName, IconComponent> = {
   doctor: Stethoscope,
   scan: Camera,
   wearable: Watch,
+  sync: RefreshCw,
   weight: Scale
 };

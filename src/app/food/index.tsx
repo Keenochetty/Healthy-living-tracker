@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
+import { NutritionReportsTab } from "@/components/nutrition/NutritionReportsTab";
 import { NutritionTargetsTab } from "@/components/nutrition/NutritionTargetsTab";
 import { AppCard } from "@/components/ui/AppCard";
 import { NUTRITION_MEAL_GROUP_OPTIONS, QUICK_WATER_AMOUNTS } from "@/constants/nutritionOptions";
@@ -31,6 +32,11 @@ import {
 } from "@/lib/nutritionStorage";
 import { searchFoods } from "@/services/nutrition/foodSearchService";
 import { getRecentlyScannedProducts } from "@/services/nutrition/barcodeLookupService";
+import { getSmartFoodSuggestionsForToday } from "@/services/nutrition/smartLoggingService";
+import { getNutritionBiometricInsights } from "@/lib/biometricsStorage";
+import { getMedicationSupplementFoodTimingSummary } from "@/lib/medicationSupplementStorage";
+import type { BiometricsInsight } from "@/types/biometrics";
+import type { SmartFoodSuggestion } from "@/types/smartLogging";
 import type {
   DailyNutritionSummary,
   DailyNutritionProgress,
@@ -49,7 +55,7 @@ import type {
   WaterGoal
 } from "@/types/nutrition";
 
-type NutritionTab = "today" | "diary" | "add" | "library" | "targets" | "water" | "notes";
+type NutritionTab = "today" | "diary" | "add" | "library" | "targets" | "reports" | "water" | "notes";
 
 const TABS: Array<{ key: NutritionTab; label: string }> = [
   { key: "today", label: "Today" },
@@ -57,6 +63,7 @@ const TABS: Array<{ key: NutritionTab; label: string }> = [
   { key: "add", label: "Add" },
   { key: "library", label: "Library" },
   { key: "targets", label: "Targets" },
+  { key: "reports", label: "Reports" },
   { key: "water", label: "Water" },
   { key: "notes", label: "Notes" }
 ];
@@ -80,18 +87,24 @@ export default function FoodScreen() {
   const [dailyNote, setDailyNote] = useState<NutritionDailyNote | null>(null);
   const [activeTarget, setActiveTarget] = useState<NutritionTarget | null>(null);
   const [dailyProgress, setDailyProgress] = useState<DailyNutritionProgress | null>(null);
+  const [biometricInsights, setBiometricInsights] = useState<BiometricsInsight[]>([]);
+  const [smartSuggestions, setSmartSuggestions] = useState<SmartFoodSuggestion[]>([]);
+  const [foodTimingMessage, setFoodTimingMessage] = useState<string | null>(null);
   const [selectedMealGroup, setSelectedMealGroup] = useState<NutritionMealGroup>("breakfast");
 
   const todayKey = useMemo(() => toNutritionDateKey(new Date()), []);
 
   const loadNutrition = useCallback(async () => {
-    const [nextEntries, nextSummary, nextWaterGoal, nextDailyNote, nextTarget, nextProgress] = await Promise.all([
+    const [nextEntries, nextSummary, nextWaterGoal, nextDailyNote, nextTarget, nextProgress, nextBiometricInsights, nextSmartSuggestions, nextFoodTimingSummary] = await Promise.all([
       getNutritionEntriesByDate(todayKey),
       getTodayNutritionSummary(),
       getWaterGoal(new Date()),
       getNutritionDailyNote(todayKey),
       getActiveNutritionTarget(),
-      calculateDailyNutritionProgress(todayKey)
+      calculateDailyNutritionProgress(todayKey),
+      getNutritionBiometricInsights(),
+      getSmartFoodSuggestionsForToday(),
+      getMedicationSupplementFoodTimingSummary()
     ]);
 
     setEntries(nextEntries);
@@ -100,6 +113,9 @@ export default function FoodScreen() {
     setDailyNote(nextDailyNote);
     setActiveTarget(nextTarget);
     setDailyProgress(nextProgress);
+    setBiometricInsights(nextBiometricInsights);
+    setSmartSuggestions(nextSmartSuggestions);
+    setFoodTimingMessage(nextFoodTimingSummary.hasFoodTimingNotes ? nextFoodTimingSummary.message : null);
   }, [todayKey]);
 
   useEffect(() => {
@@ -158,11 +174,14 @@ export default function FoodScreen() {
       {activeTab === "today" ? (
         <TodayTab
           dailyNote={dailyNote}
+          biometricInsights={biometricInsights}
           entries={entries}
           onAddFood={() => setActiveTab("add")}
           onSetTargets={() => setActiveTab("targets")}
           onAddWater={() => setActiveTab("water")}
           progress={dailyProgress}
+          foodTimingMessage={foodTimingMessage}
+          smartSuggestions={smartSuggestions}
           summary={summary}
           target={activeTarget}
           waterGoal={waterGoal}
@@ -206,6 +225,10 @@ export default function FoodScreen() {
         />
       ) : null}
 
+      {activeTab === "reports" ? (
+        <NutritionReportsTab />
+      ) : null}
+
       {activeTab === "water" ? (
         <WaterTab
           key={waterGoal?.targetMl ?? "water"}
@@ -228,21 +251,27 @@ export default function FoodScreen() {
 
 function TodayTab({
   dailyNote,
+  biometricInsights,
   entries,
+  foodTimingMessage,
   onAddFood,
   onSetTargets,
   onAddWater,
   progress,
+  smartSuggestions,
   summary,
   target,
   waterGoal
 }: {
   dailyNote: NutritionDailyNote | null;
+  biometricInsights: BiometricsInsight[];
   entries: NutritionDiaryEntry[];
+  foodTimingMessage: string | null;
   onAddFood: () => void;
   onSetTargets: () => void;
   onAddWater: () => void;
   progress: DailyNutritionProgress | null;
+  smartSuggestions: SmartFoodSuggestion[];
   summary: DailyNutritionSummary | null;
   target: NutritionTarget | null;
   waterGoal: WaterGoal | null;
@@ -292,6 +321,63 @@ function TodayTab({
         <Text style={{ color: "#92400e", lineHeight: 21, marginTop: 6 }}>
           {getNutritionGoalMessage(target, progress)}
         </Text>
+      </AppCard>
+
+      <AppCard>
+        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+          Smart Suggestions
+        </Text>
+        {smartSuggestions.length ? (
+          <View style={{ gap: 10, marginTop: 10 }}>
+            {smartSuggestions.slice(0, 3).map((suggestion) => (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                key={suggestion.id}
+                onPress={() => router.push(suggestion.route as Href)}
+                style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}
+              >
+                <Text style={{ color: "#0f172a", fontWeight: "900" }}>{suggestion.title}</Text>
+                <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>{suggestion.message}</Text>
+                <Text style={{ color: "#92400e", fontWeight: "900", marginTop: 8 }}>{suggestion.actionLabel}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : (
+          <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
+            Add meals and water to unlock gentle smart logging suggestions.
+          </Text>
+        )}
+      </AppCard>
+
+      {foodTimingMessage ? (
+        <AppCard backgroundColor="#fff7ed">
+          <Text style={{ color: "#9a3412", fontSize: 20, fontWeight: "900" }}>
+            Food timing notes
+          </Text>
+          <Text style={{ color: "#9a3412", lineHeight: 21, marginTop: 6 }}>
+            {foodTimingMessage}
+          </Text>
+        </AppCard>
+      ) : null}
+
+      <AppCard>
+        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+          Biometrics connection
+        </Text>
+        {biometricInsights.length ? (
+          <View style={{ gap: 10, marginTop: 10 }}>
+            {biometricInsights.map((insight) => (
+              <View key={`${insight.type}-${insight.title}`} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
+                <Text style={{ color: "#0f172a", fontWeight: "900" }}>{insight.title}</Text>
+                <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>{insight.message}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
+            Weight, sleep, energy and digestion logs can add context to your food notes over time.
+          </Text>
+        )}
       </AppCard>
 
       <AppCard>
@@ -493,6 +579,11 @@ function AddTab({
           description="Find seed, custom, recent, and favourite foods."
           label="Search Food"
           onPress={() => undefined}
+        />
+        <ActionCard
+          description="Create editable drafts from photo, label, typed voice fallback, repeat meals, or quick builder."
+          label="Smart Log"
+          onPress={() => router.push(`/food/smart-log?mealGroup=${encodeURIComponent(defaultMealGroup)}` as Href)}
         />
         <ActionCard
           description="Scan supermarket products, supplements, shakes, snacks, and drinks."
