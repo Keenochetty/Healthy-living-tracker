@@ -112,6 +112,14 @@ export default function ProfileScreen() {
             variant="secondary"
           />
 
+          <AppButton
+            fullWidth
+            iconLeft={<Settings2 color={theme.primary} size={18} />}
+            onPress={() => router.push("/settings/privacy-center" as Href)}
+            title="Privacy Center"
+            variant="secondary"
+          />
+
           <AppSection title="Unit preferences">
             <UnitPreviewCard units={preferences.units} />
           </AppSection>

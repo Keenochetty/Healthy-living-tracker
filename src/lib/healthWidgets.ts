@@ -21,6 +21,45 @@ import {
   getAvailableMedicationWidgets,
   getAvailableSupplementWidgets
 } from "@/lib/medicationSupplementStorage";
+import {
+  calculateRecordWidgetValue,
+  getAvailableRecordWidgets,
+  isRecordWidget
+} from "@/lib/healthRecordsStorage";
+import {
+  calculateWomensHealthWidgetValue,
+  getAvailableWomensHealthWidgets,
+  isWomensHealthWidget
+} from "@/lib/womensHealthStorage";
+import {
+  calculatePregnancyWidgetValue,
+  getAvailablePregnancyWidgets,
+  isPregnancyWidget
+} from "@/lib/pregnancyStorage";
+import {
+  calculateMensHealthWidgetValue,
+  getAvailableMensHealthWidgets,
+  isMensHealthWidget
+} from "@/lib/mensHealthStorage";
+import {
+  calculateBabyWidgetValue,
+  getAvailableBabyWidgets,
+  isBabyWidget
+} from "@/lib/babyChildStorage";
+import {
+  calculateWidgetValueWithPermissions,
+  getActiveProfile,
+  getPermissionCategoryForWidget,
+  getPinnedHealthWidgetsForProfile as getProfileWidgetKeys,
+  pinHealthWidgetForProfile as pinProfileWidgetKey,
+  reorderHealthWidgetsForProfile as reorderProfileWidgetKeys,
+  unpinHealthWidgetForProfile as unpinProfileWidgetKey
+} from "@/lib/familyPermissionsStorage";
+import {
+  calculateHealthCalendarWidgetValue,
+  getAvailableHealthCalendarWidgets,
+  isHealthCalendarWidget
+} from "@/services/reminders/reminderEngine";
 import { getUserPreferences, updateUserPreferences } from "@/lib/userPreferences";
 import type { WidgetKey } from "@/types/app";
 import type { HealthQuickWidget } from "@/types/nutrition";
@@ -50,10 +89,40 @@ export const SUPPLEMENT_WIDGET_KEYS = [
   ...getAvailableSupplementWidgets()
 ] as const satisfies WidgetKey[];
 
+export const RECORD_WIDGET_KEYS = [
+  ...getAvailableRecordWidgets()
+] as const satisfies WidgetKey[];
+
+export const HEALTH_CALENDAR_WIDGET_KEYS = [
+  ...getAvailableHealthCalendarWidgets()
+] as const satisfies WidgetKey[];
+
+export const WOMENS_HEALTH_WIDGET_KEYS = [
+  ...getAvailableWomensHealthWidgets()
+] as const satisfies WidgetKey[];
+
+export const PREGNANCY_WIDGET_KEYS = [
+  ...getAvailablePregnancyWidgets()
+] as const satisfies WidgetKey[];
+
+export const MENS_HEALTH_WIDGET_KEYS = [
+  ...getAvailableMensHealthWidgets()
+] as const satisfies WidgetKey[];
+
+export const BABY_WIDGET_KEYS = [
+  ...getAvailableBabyWidgets()
+] as const satisfies WidgetKey[];
+
 const HEALTH_WIDGET_KEYS = [
   ...NUTRITION_WIDGET_KEYS,
   ...MEDICATION_WIDGET_KEYS,
   ...SUPPLEMENT_WIDGET_KEYS,
+  ...RECORD_WIDGET_KEYS,
+  ...HEALTH_CALENDAR_WIDGET_KEYS,
+  ...WOMENS_HEALTH_WIDGET_KEYS,
+  ...PREGNANCY_WIDGET_KEYS,
+  ...MENS_HEALTH_WIDGET_KEYS,
+  ...BABY_WIDGET_KEYS,
   "weight",
   "biometric_goal_weight",
   "sleep",
@@ -67,11 +136,12 @@ const HEALTH_WIDGET_KEYS = [
   ...DEVICE_SYNC_WIDGET_KEYS,
   "workout",
   "water",
-  "baby_feed",
   "cycle",
   "elder_checkin",
   "food_log"
 ] as const satisfies WidgetKey[];
+
+const UNIQUE_HEALTH_WIDGET_KEYS = Array.from(new Set(HEALTH_WIDGET_KEYS)) as WidgetKey[];
 
 export function isNutritionWidget(widgetKey: WidgetKey) {
   return NUTRITION_WIDGET_KEYS.includes(widgetKey as (typeof NUTRITION_WIDGET_KEYS)[number]);
@@ -85,7 +155,7 @@ export function isSupplementWidget(widgetKey: WidgetKey) {
   return SUPPLEMENT_WIDGET_KEYS.includes(widgetKey as (typeof SUPPLEMENT_WIDGET_KEYS)[number]);
 }
 
-function toHealthWidget(widgetKey: WidgetKey, orderIndex: number, isPinned = true): HealthQuickWidget {
+function toHealthWidget(widgetKey: WidgetKey, orderIndex: number, isPinned = true, profileId = LOCAL_PROFILE_ID): HealthQuickWidget {
   const widget = APP_WIDGETS.find((item) => item.key === widgetKey);
 
   return {
@@ -95,10 +165,22 @@ function toHealthWidget(widgetKey: WidgetKey, orderIndex: number, isPinned = tru
       ? "biometrics"
       : isNutritionWidget(widgetKey)
       ? "nutrition"
+      : isBabyWidget(widgetKey)
+      ? "wellness"
       : isMedicationWidget(widgetKey)
         ? "medication"
         : isSupplementWidget(widgetKey)
           ? "wellness"
+          : isRecordWidget(widgetKey)
+            ? "wellness"
+            : isHealthCalendarWidget(widgetKey)
+              ? "wellness"
+              : isWomensHealthWidget(widgetKey)
+                ? "wellness"
+                : isPregnancyWidget(widgetKey)
+                  ? "wellness"
+                  : isMensHealthWidget(widgetKey)
+                    ? "wellness"
       : widget?.moduleKey === "fitness"
         ? "fitness"
         : widget?.moduleKey === "personal_health"
@@ -107,7 +189,7 @@ function toHealthWidget(widgetKey: WidgetKey, orderIndex: number, isPinned = tru
     id: `health-widget-${widgetKey}`,
     isPinned,
     orderIndex,
-    profileId: LOCAL_PROFILE_ID,
+    profileId,
     title: widget?.title ?? widgetKey,
     userId: LOCAL_USER_ID,
     widgetKey
@@ -115,23 +197,42 @@ function toHealthWidget(widgetKey: WidgetKey, orderIndex: number, isPinned = tru
 }
 
 export async function getPinnedHealthWidgets() {
+  const activeProfile = await getActiveProfile();
+
+  if (activeProfile) {
+    return getPinnedHealthWidgetsForProfile(activeProfile.id);
+  }
+
   const preferences = await getUserPreferences();
 
   return preferences.enabledWidgets
-    .filter((widgetKey) => HEALTH_WIDGET_KEYS.includes(widgetKey as (typeof HEALTH_WIDGET_KEYS)[number]))
+    .filter((widgetKey) => UNIQUE_HEALTH_WIDGET_KEYS.includes(widgetKey))
+    .filter((widgetKey, index, widgets) => widgets.indexOf(widgetKey) === index)
     .map((widgetKey, orderIndex) => toHealthWidget(widgetKey, orderIndex));
 }
 
 export async function getAvailableHealthWidgets() {
+  const activeProfile = await getActiveProfile();
+
+  if (activeProfile) {
+    return getAvailableHealthWidgetsForProfile(activeProfile.id);
+  }
+
   const preferences = await getUserPreferences();
   const pinnedWidgets = new Set(preferences.enabledWidgets);
 
-  return HEALTH_WIDGET_KEYS.map((widgetKey, orderIndex) =>
+  return UNIQUE_HEALTH_WIDGET_KEYS.map((widgetKey, orderIndex) =>
     toHealthWidget(widgetKey, orderIndex, pinnedWidgets.has(widgetKey))
   );
 }
 
 export async function pinHealthWidget(widgetKey: WidgetKey) {
+  const activeProfile = await getActiveProfile();
+
+  if (activeProfile) {
+    return pinHealthWidgetForProfile(activeProfile.id, widgetKey);
+  }
+
   const preferences = await getUserPreferences();
 
   if (preferences.enabledWidgets.includes(widgetKey)) {
@@ -146,6 +247,12 @@ export async function pinHealthWidget(widgetKey: WidgetKey) {
 }
 
 export async function unpinHealthWidget(widgetKey: WidgetKey) {
+  const activeProfile = await getActiveProfile();
+
+  if (activeProfile) {
+    return unpinHealthWidgetForProfile(activeProfile.id, widgetKey);
+  }
+
   const preferences = await getUserPreferences();
 
   await updateUserPreferences({
@@ -156,6 +263,12 @@ export async function unpinHealthWidget(widgetKey: WidgetKey) {
 }
 
 export async function reorderHealthWidgets(widgetKeys: WidgetKey[]) {
+  const activeProfile = await getActiveProfile();
+
+  if (activeProfile) {
+    return reorderHealthWidgetsForProfile(activeProfile.id, widgetKeys);
+  }
+
   const preferences = await getUserPreferences();
   const requestedWidgets = widgetKeys.filter((widgetKey) =>
     HEALTH_WIDGET_KEYS.includes(widgetKey as (typeof HEALTH_WIDGET_KEYS)[number])
@@ -177,7 +290,72 @@ export async function getAvailableNutritionWidgets() {
   return availableWidgets.filter((widget) => isNutritionWidget(widget.widgetKey));
 }
 
+export async function getPinnedHealthWidgetsForProfile(profileId: string) {
+  const preferences = await getUserPreferences();
+  const widgetKeys = await getProfileWidgetKeys(profileId, preferences.enabledWidgets);
+
+  return widgetKeys
+    .filter((widgetKey) => HEALTH_WIDGET_KEYS.includes(widgetKey as (typeof HEALTH_WIDGET_KEYS)[number]))
+    .map((widgetKey, orderIndex) => toHealthWidget(widgetKey, orderIndex, true, profileId));
+}
+
+export async function getAvailableHealthWidgetsForProfile(profileId: string) {
+  const preferences = await getUserPreferences();
+  const widgetKeys = await getProfileWidgetKeys(profileId, preferences.enabledWidgets);
+  const pinnedWidgets = new Set(widgetKeys);
+
+  return HEALTH_WIDGET_KEYS.map((widgetKey, orderIndex) =>
+    toHealthWidget(widgetKey, orderIndex, pinnedWidgets.has(widgetKey), profileId)
+  );
+}
+
+export async function pinHealthWidgetForProfile(profileId: string, widgetKey: WidgetKey) {
+  const preferences = await getUserPreferences();
+
+  await pinProfileWidgetKey(profileId, widgetKey, preferences.enabledWidgets);
+
+  return getPinnedHealthWidgetsForProfile(profileId);
+}
+
+export async function unpinHealthWidgetForProfile(profileId: string, widgetKey: WidgetKey) {
+  const preferences = await getUserPreferences();
+
+  await unpinProfileWidgetKey(profileId, widgetKey, preferences.enabledWidgets);
+
+  return getPinnedHealthWidgetsForProfile(profileId);
+}
+
+export async function reorderHealthWidgetsForProfile(profileId: string, widgetKeys: WidgetKey[]) {
+  await reorderProfileWidgetKeys(
+    profileId,
+    widgetKeys.filter((widgetKey) =>
+      HEALTH_WIDGET_KEYS.includes(widgetKey as (typeof HEALTH_WIDGET_KEYS)[number])
+    )
+  );
+
+  return getPinnedHealthWidgetsForProfile(profileId);
+}
+
 export async function calculateWidgetValue(widgetKey: WidgetKey) {
+  const activeProfile = await getActiveProfile();
+
+  if (activeProfile) {
+    return calculateWidgetValueForProfile(activeProfile.id, widgetKey);
+  }
+
+  return calculateWidgetValueDirect(widgetKey);
+}
+
+export async function calculateWidgetValueForProfile(profileId: string, widgetKey: WidgetKey) {
+  return calculateWidgetValueWithPermissions({
+    calculate: calculateWidgetValueDirect,
+    category: getPermissionCategoryForWidget(widgetKey),
+    profileId,
+    widgetKey
+  });
+}
+
+async function calculateWidgetValueDirect(widgetKey: WidgetKey) {
   if (isDeviceSyncWidget(widgetKey)) {
     return calculateDeviceSyncWidgetValue(widgetKey);
   }
@@ -192,6 +370,30 @@ export async function calculateWidgetValue(widgetKey: WidgetKey) {
 
   if (isSupplementWidget(widgetKey)) {
     return calculateSupplementWidgetValue(widgetKey);
+  }
+
+  if (isRecordWidget(widgetKey)) {
+    return calculateRecordWidgetValue(widgetKey);
+  }
+
+  if (isHealthCalendarWidget(widgetKey)) {
+    return calculateHealthCalendarWidgetValue(widgetKey);
+  }
+
+  if (isWomensHealthWidget(widgetKey) || widgetKey === "cycle" || widgetKey === "cycle_private") {
+    return calculateWomensHealthWidgetValue(widgetKey);
+  }
+
+  if (isPregnancyWidget(widgetKey)) {
+    return calculatePregnancyWidgetValue(widgetKey);
+  }
+
+  if (isMensHealthWidget(widgetKey)) {
+    return calculateMensHealthWidgetValue(widgetKey);
+  }
+
+  if (isBabyWidget(widgetKey)) {
+    return calculateBabyWidgetValue(widgetKey);
   }
 
   const [summary, progress, target] = await Promise.all([
@@ -239,7 +441,7 @@ export async function calculateWidgetValue(widgetKey: WidgetKey) {
   }
 }
 
-export { getWidgetRouteType as getBiometricWidgetRouteType, isBiometricWidget };
+export { getWidgetRouteType as getBiometricWidgetRouteType, isBabyWidget, isBiometricWidget, isHealthCalendarWidget, isMensHealthWidget, isPregnancyWidget, isRecordWidget, isWomensHealthWidget };
 
 function formatWaterValue(amountMl: number) {
   return amountMl >= 1000 ? `${(amountMl / 1000).toFixed(1)} L` : `${Math.round(amountMl)} ml`;

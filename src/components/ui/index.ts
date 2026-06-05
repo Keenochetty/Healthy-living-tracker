@@ -20,3 +20,6 @@ export { AppStatusPill } from "./AppStatusPill";
 export { AppToggleRow } from "./AppToggleRow";
 export { AppWidgetCard } from "./AppWidgetCard";
 export { AppText } from "./AppText";
+export { EmptyStateCard } from "./EmptyStateCard";
+export { ProfileAvatar } from "./ProfileAvatar";
+export { QuickActionButton } from "./QuickActionButton";

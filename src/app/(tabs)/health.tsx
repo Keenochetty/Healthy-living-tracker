@@ -5,6 +5,7 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { FitnessSummaryCard } from "@/components/fitness/FitnessSummaryCard";
 import { DailyNutritionSummaryCard } from "@/components/nutrition/DailyNutritionSummaryCard";
 import { ChildProfileCard } from "@/components/child/ChildProfileCard";
+import { RealmCard as PolishedRealmCard } from "@/components/health";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import { AppAlertCard, AppButton, AppCard, AppChip, AppIcon, AppSection, PremiumStatCard } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
@@ -13,10 +14,15 @@ import {
   getBiometricWidgetRouteType,
   calculateWidgetValue,
   getPinnedHealthWidgets,
+  isBabyWidget,
   isBiometricWidget,
+  isHealthCalendarWidget,
+  isMensHealthWidget,
   isMedicationWidget,
   isNutritionWidget,
+  isRecordWidget,
   isSupplementWidget,
+  isWomensHealthWidget,
   pinHealthWidget,
   unpinHealthWidget
 } from "@/lib/healthWidgets";
@@ -30,6 +36,14 @@ import {
   isDeviceSyncWidget
 } from "@/services/healthSync/healthSyncService";
 import { getTodayNutritionSummary } from "@/lib/nutritionStorage";
+import { getRecordsOverviewSummary } from "@/lib/healthRecordsStorage";
+import {
+  getActiveProfile,
+  getProfilesVisibleToUser,
+  setActiveProfile
+} from "@/lib/familyPermissionsStorage";
+import { getNextHealthReminder, getOverdueReminders, getRemindersForDate } from "@/services/reminders/reminderEngine";
+import { getTodayTimelineSummary } from "@/services/timeline/healthTimelineService";
 import { getTodayFitnessSummary } from "@/lib/fitnessStorage";
 import { getAllChildSummaries } from "@/lib/childStorage";
 import {
@@ -38,6 +52,7 @@ import {
 } from "@/lib/cycleStorage";
 import { getAllCaregiverSummaries } from "@/lib/caregiverStorage";
 import { getAllElderSummaries } from "@/lib/elderStorage";
+import { getMensHealthSettings } from "@/lib/mensHealthStorage";
 import { getPendingReviewJobs, getRecentAiJobs } from "@/lib/aiStorage";
 import { getUserPreferences } from "@/lib/userPreferences";
 import type { FitnessSummary } from "@/types/fitness";
@@ -50,6 +65,9 @@ import type { AiJob } from "@/types/ai";
 import type { WidgetKey } from "@/types/app";
 import type { HealthQuickWidget } from "@/types/nutrition";
 import type { MedicationSupplementTodaySummary } from "@/types/medication";
+import type { RecordsOverviewSummary } from "@/types/healthRecords";
+import type { HealthReminder, TodayTimelineSummary } from "@/types/healthTimeline";
+import type { HealthProfile } from "@/types/familyPermissions";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 export default function HealthScreen() {
@@ -66,6 +84,7 @@ export default function HealthScreen() {
   const [elderCareEnabled, setElderCareEnabled] = useState(false);
   const [elderSummaries, setElderSummaries] = useState<ElderSummary[]>([]);
   const [pregnancyCycleEnabled, setPregnancyCycleEnabled] = useState(false);
+  const [mensHealthEnabled, setMensHealthEnabled] = useState(false);
   const [cyclePrediction, setCyclePrediction] = useState<CyclePrediction | null>(null);
   const [pregnancySummary, setPregnancySummary] =
     useState<PregnancySummary | null>(null);
@@ -77,6 +96,13 @@ export default function HealthScreen() {
   const [healthWidgetValues, setHealthWidgetValues] = useState<Record<string, string>>({});
   const [medicationSummary, setMedicationSummary] = useState<MedicationSupplementTodaySummary | null>(null);
   const [supplementSummary, setSupplementSummary] = useState<MedicationSupplementTodaySummary | null>(null);
+  const [recordsSummary, setRecordsSummary] = useState<RecordsOverviewSummary | null>(null);
+  const [calendarTodayCount, setCalendarTodayCount] = useState(0);
+  const [calendarOverdueCount, setCalendarOverdueCount] = useState(0);
+  const [nextHealthReminder, setNextHealthReminder] = useState<HealthReminder | null>(null);
+  const [todayTimelineSummary, setTodayTimelineSummary] = useState<TodayTimelineSummary | null>(null);
+  const [visibleProfiles, setVisibleProfiles] = useState<HealthProfile[]>([]);
+  const [activeHealthProfile, setActiveHealthProfile] = useState<HealthProfile | null>(null);
 
   const loadHealthAddOns = useCallback(async () => {
     const [
@@ -86,6 +112,7 @@ export default function HealthScreen() {
       nextChildSummaries,
       nextCyclePrediction,
       nextPregnancySummary,
+      nextMensHealthSettings,
       nextCaregiverSummaries,
       nextElderSummaries,
       nextPendingAiJobs,
@@ -93,7 +120,14 @@ export default function HealthScreen() {
       nextPinnedHealthWidgets,
       nextAvailableHealthWidgets,
       nextMedicationSummary,
-      nextSupplementSummary
+      nextSupplementSummary,
+      nextRecordsSummary,
+      nextCalendarTodayReminders,
+      nextCalendarOverdueReminders,
+      nextHealthReminderValue,
+      nextTodayTimelineSummary,
+      nextVisibleProfiles,
+      nextActiveHealthProfile
     ] = await Promise.all([
       getUserPreferences(),
       getTodayNutritionSummary(),
@@ -101,6 +135,7 @@ export default function HealthScreen() {
       getAllChildSummaries(),
       calculateCyclePrediction(),
       getPregnancySummary(),
+      getMensHealthSettings(),
       getAllCaregiverSummaries(),
       getAllElderSummaries(),
       getPendingReviewJobs(),
@@ -108,7 +143,14 @@ export default function HealthScreen() {
       getPinnedHealthWidgets(),
       getAvailableHealthWidgets(),
       calculateTodayMedicationSchedule(),
-      calculateTodaySupplementSchedule()
+      calculateTodaySupplementSchedule(),
+      getRecordsOverviewSummary(),
+      getRemindersForDate(new Date()),
+      getOverdueReminders(),
+      getNextHealthReminder(),
+      getTodayTimelineSummary(),
+      getProfilesVisibleToUser(),
+      getActiveProfile()
     ]);
 
     setChildEnabled(preferences.enabledModules.includes("child_baby"));
@@ -123,6 +165,7 @@ export default function HealthScreen() {
     setElderCareEnabled(preferences.enabledModules.includes("elder_care"));
     setElderSummaries(nextElderSummaries);
     setPregnancyCycleEnabled(preferences.enabledModules.includes("pregnancy_cycle"));
+    setMensHealthEnabled(preferences.enabledModules.includes("mens_health") || nextMensHealthSettings.status !== "disabled");
     setCyclePrediction(nextCyclePrediction);
     setPregnancySummary(nextPregnancySummary);
     setNutritionSummary(summary);
@@ -131,6 +174,13 @@ export default function HealthScreen() {
     setAvailableHealthWidgets(nextAvailableHealthWidgets);
     setMedicationSummary(nextMedicationSummary);
     setSupplementSummary(nextSupplementSummary);
+    setRecordsSummary(nextRecordsSummary);
+    setCalendarTodayCount(nextCalendarTodayReminders.length);
+    setCalendarOverdueCount(nextCalendarOverdueReminders.length);
+    setNextHealthReminder(nextHealthReminderValue);
+    setTodayTimelineSummary(nextTodayTimelineSummary);
+    setVisibleProfiles(nextVisibleProfiles);
+    setActiveHealthProfile(nextActiveHealthProfile);
     setHealthWidgetValues(
       Object.fromEntries(
         await Promise.all(
@@ -159,6 +209,11 @@ export default function HealthScreen() {
     await loadHealthAddOns();
   }
 
+  async function chooseHealthProfile(profileId: string) {
+    await setActiveProfile(profileId);
+    await loadHealthAddOns();
+  }
+
   return (
     <AppMainLayout subtitle="Personal health" title="Health">
       <AppAlertCard
@@ -166,6 +221,14 @@ export default function HealthScreen() {
         title="Medication safety"
         variant="medical"
       />
+
+      <AppSection title="Active Profile" subtitle="Caregivers are shown in Family cards, not as health profiles.">
+        <HealthProfileSwitcher
+          activeProfile={activeHealthProfile}
+          onSelect={chooseHealthProfile}
+          profiles={visibleProfiles}
+        />
+      </AppSection>
 
       <AppSection title="Quick View" subtitle="Pinned health widgets at a glance.">
         <HealthQuickViewBar
@@ -196,6 +259,42 @@ export default function HealthScreen() {
             onPress={() => router.push("/food" as Href)}
             title="Food / Nutrition"
           />
+          {childEnabled || childSummaries.length ? (
+            <HealthRealmCard
+              accentColor="#0d9488"
+              description="Feeding, sleep, diapers, growth, milestones, vaccines and records."
+              iconName="child_baby"
+              onPress={() => router.push("/baby-child" as Href)}
+              title="Baby / Child"
+            />
+          ) : null}
+          {pregnancyCycleEnabled ? (
+            <HealthRealmCard
+              accentColor="#db2777"
+              description="Private cycle, symptoms, contraception and wellness notes."
+              iconName="pregnancy_cycle"
+              onPress={() => router.push("/cycle" as Href)}
+              title="Women’s Health"
+            />
+          ) : null}
+          {pregnancyCycleEnabled ? (
+            <HealthRealmCard
+              accentColor="#a21caf"
+              description="Pregnancy weeks, appointments, questions and trusted education."
+              iconName="child_baby"
+              onPress={() => router.push("/pregnancy" as Href)}
+              title="Pregnancy Mode"
+            />
+          ) : null}
+          {mensHealthEnabled ? (
+            <HealthRealmCard
+              accentColor="#1d4ed8"
+              description="Private check-ins, symptoms, reminders and trusted education."
+              iconName="mens_health"
+              onPress={() => router.push("/mens-health" as Href)}
+              title="Men's Health"
+            />
+          ) : null}
           <HealthRealmCard
             accentColor="#3b82f6"
             description="Weight, sleep, energy, mood and vitals."
@@ -209,6 +308,13 @@ export default function HealthScreen() {
             iconName="sync"
             onPress={() => router.push("/device-sync" as Href)}
             title="Device Sync"
+          />
+          <HealthRealmCard
+            accentColor="#8b5cf6"
+            description="Reminders, agenda and health timeline."
+            iconName="calendar"
+            onPress={() => router.push("/health-calendar" as Href)}
+            title="Calendar / Timeline"
           />
           <HealthRealmCard
             accentColor="#ef4444"
@@ -228,6 +334,7 @@ export default function HealthScreen() {
             accentColor="#3b82f6"
             description="Health records and documents."
             iconName="documents"
+            onPress={() => router.push("/records" as Href)}
             title="Records"
           />
         </View>
@@ -238,7 +345,7 @@ export default function HealthScreen() {
           <AppChip label="Overview" selected variant="primary" />
           <AppChip label="Eating" variant="muted" />
           <AppChip label="Exercise" variant="muted" />
-          {pregnancyCycleEnabled ? <AppChip label="Women" variant="private" /> : null}
+          {pregnancyCycleEnabled ? <AppChip label="Women’s Health" variant="private" /> : null}
           <AppChip label="Medication" variant="muted" />
           <AppChip label="Vitals" variant="muted" />
         </View>
@@ -251,7 +358,7 @@ export default function HealthScreen() {
             helper={`${Math.round(nutritionSummary?.proteinGrams ?? 0)}g protein`}
             iconName="food"
             title="Nutrition"
-            value={nutritionSummary?.foodLogCount ? `${Math.round(nutritionSummary.calories)} kcal` : "No logs"}
+            value={nutritionSummary?.foodLogCount ? `${Math.round(nutritionSummary.calories)} kcal` : "Start today"}
           />
           <PremiumStatCard
             accentColor={theme.accentBlue}
@@ -303,6 +410,90 @@ export default function HealthScreen() {
         </View>
       </AppSection>
 
+      <AppSection title="Calendar / Timeline" subtitle="Your health schedule and recent logged activity.">
+        <AppCard>
+          <View style={{ gap: 10 }}>
+            <View style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>
+                  Today health agenda
+                </Text>
+                <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
+                  {nextHealthReminder
+                    ? `Next: ${nextHealthReminder.title}.`
+                    : "No health reminders due right now."}
+                </Text>
+              </View>
+              <Text style={{ color: "#8b5cf6", fontSize: 18, fontWeight: "900" }}>
+                {calendarTodayCount} today
+              </Text>
+            </View>
+            <Text style={{ color: "#64748b", lineHeight: 20 }}>
+              {calendarOverdueCount
+                ? `${calendarOverdueCount} item${calendarOverdueCount === 1 ? "" : "s"} due for review.`
+                : todayTimelineSummary?.latestEvent
+                  ? `Latest timeline item: ${todayTimelineSummary.latestEvent.title}.`
+                  : "Your timeline will fill as you log meals, water, workouts, records and reminders."}
+            </Text>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => router.push("/health-calendar" as Href)}
+                style={{ alignItems: "center", backgroundColor: "#8b5cf6", borderRadius: 16, flex: 1, justifyContent: "center", minHeight: 46 }}
+              >
+                <Text style={{ color: "#ffffff", fontWeight: "900" }}>View Timeline</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => router.push("/health-calendar?tab=add" as Href)}
+                style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, flex: 1, justifyContent: "center", minHeight: 46 }}
+              >
+                <Text style={{ color: "#475569", fontWeight: "900" }}>Add Reminder</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </AppCard>
+      </AppSection>
+
+      <AppSection title="Records" subtitle="Private documents, visits and follow-up reminders.">
+        <AppCard>
+          <View style={{ gap: 10 }}>
+            <View style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>Document vault</Text>
+                <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
+                  {recordsSummary?.upcomingReminders[0]
+                    ? `You have a follow-up reminder ${recordsSummary.upcomingReminders[0].reminderDate}.`
+                    : recordsSummary?.recentRecords[0]
+                      ? `${recordsSummary.recentRecords[0].title} was recently added.`
+                      : "No records added yet."}
+                </Text>
+              </View>
+              <Text style={{ color: "#3b82f6", fontSize: 18, fontWeight: "900" }}>
+                {recordsSummary?.pinnedRecords.length ?? 0} pinned
+              </Text>
+            </View>
+            {recordsSummary?.prescriptionRefills[0] ? (
+              <Text style={{ color: "#64748b", lineHeight: 20 }}>
+                A prescription refill reminder is coming up.
+              </Text>
+            ) : null}
+            {recordsSummary?.nextVaccine ? (
+              <Text style={{ color: "#64748b", lineHeight: 20 }}>
+                Next vaccine reminder: {recordsSummary.nextVaccine.nextDoseDate}.
+              </Text>
+            ) : null}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.push("/records" as Href)}
+              style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, justifyContent: "center", minHeight: 46 }}
+            >
+              <Text style={{ color: "#475569", fontWeight: "900" }}>Open Records</Text>
+            </TouchableOpacity>
+          </View>
+        </AppCard>
+      </AppSection>
+
       {aiEnabled ? (
         <View style={{ gap: 12 }}>
           <AppSection
@@ -322,7 +513,7 @@ export default function HealthScreen() {
 
           <AppButton
             onPress={() => router.push("/ai" as Href)}
-            title="Open AI Assistant"
+            title="Ask AI Assistant"
           />
         </View>
       ) : null}
@@ -363,7 +554,7 @@ export default function HealthScreen() {
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-              Open Caregiver
+              Set Up Care Help
             </Text>
           </TouchableOpacity>
         </View>
@@ -405,7 +596,7 @@ export default function HealthScreen() {
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-              Open Elder Care
+              Support a Loved One
             </Text>
           </TouchableOpacity>
         </View>
@@ -415,10 +606,10 @@ export default function HealthScreen() {
         <View style={{ gap: 12 }}>
           <View>
             <Text style={{ color: "#0f172a", fontSize: 22, fontWeight: "900" }}>
-              Pregnancy & Cycle
+              Women’s Health
             </Text>
             <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-              Private tracker. Circle members and caregivers cannot see this data.
+              Private cycle, symptom and contraception tracking. Shared access is off unless you enable selected sharing.
             </Text>
           </View>
 
@@ -451,7 +642,7 @@ export default function HealthScreen() {
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-              Open Pregnancy & Cycle
+              View Women’s Health
             </Text>
           </TouchableOpacity>
         </View>
@@ -472,7 +663,7 @@ export default function HealthScreen() {
             childSummaries.slice(0, 2).map((summary) => (
               <ChildProfileCard
                 key={summary.child.id}
-                onOpen={() => router.push(`/child/${summary.child.id}` as Href)}
+                onOpen={() => router.push({ pathname: "/baby-child", params: { childId: summary.child.id } } as unknown as Href)}
                 summary={summary}
               />
             ))
@@ -490,7 +681,7 @@ export default function HealthScreen() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.push("/child" as Href)}
+            onPress={() => router.push("/baby-child" as Href)}
             style={{
               alignItems: "center",
               backgroundColor: "#a855f7",
@@ -500,7 +691,7 @@ export default function HealthScreen() {
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-              Open Child & Baby
+              Add Feed
             </Text>
           </TouchableOpacity>
         </View>
@@ -529,7 +720,7 @@ export default function HealthScreen() {
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-              Open Food & Water
+              Log Food
             </Text>
           </TouchableOpacity>
         </View>
@@ -558,7 +749,7 @@ export default function HealthScreen() {
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-              Open Fitness
+              Start Workout
             </Text>
           </TouchableOpacity>
         </View>
@@ -640,7 +831,7 @@ function MedicationSupplementOverviewCard({
             onPress={() => router.push(route as Href)}
             style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, flex: 1, justifyContent: "center", minHeight: 46 }}
           >
-            <Text style={{ color: "#475569", fontWeight: "900" }}>Open</Text>
+            <Text style={{ color: "#475569", fontWeight: "900" }}>View Schedule</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -676,10 +867,10 @@ function HealthQuickViewBar({
       style={{ marginHorizontal: -4 }}
       contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
     >
-      {widgets.map((widget) => (
+      {widgets.map((widget, index) => (
         <TouchableOpacity
           activeOpacity={0.85}
-          key={widget.widgetKey}
+          key={`${widget.profileId}-${widget.widgetKey}-${index}`}
           onPress={() => {
             if (widget.widgetKey === "goal_weight" || widget.widgetKey === "nutrition_goal") {
               router.push({ pathname: "/food", params: { tab: "targets" } } as Href);
@@ -691,8 +882,34 @@ function HealthQuickViewBar({
               router.push("/medication" as Href);
             } else if (isSupplementWidget(widget.widgetKey)) {
               router.push("/supplements" as Href);
+            } else if (isRecordWidget(widget.widgetKey)) {
+              router.push("/records" as Href);
+            } else if (isHealthCalendarWidget(widget.widgetKey)) {
+              if (widget.widgetKey === "medication_schedule") {
+                router.push("/medication" as Href);
+              } else if (widget.widgetKey === "supplement_schedule") {
+                router.push("/supplements" as Href);
+              } else if (widget.widgetKey === "workout_plan") {
+                router.push("/fitness" as Href);
+              } else if (widget.widgetKey === "water_check") {
+                router.push({ pathname: "/food", params: { tab: "water" } } as Href);
+              } else {
+                router.push("/health-calendar" as Href);
+              }
             } else if (widget.widgetKey === "workout" || widget.widgetKey === "steps") {
               router.push("/fitness" as Href);
+            } else if (isWomensHealthWidget(widget.widgetKey) || widget.widgetKey === "cycle" || widget.widgetKey === "cycle_private") {
+              if (widget.widgetKey === "contraception_reminder" || widget.widgetKey === "contraception_status" || widget.widgetKey === "contraception_caution") {
+                router.push({ pathname: "/cycle", params: { tab: "contraception" } } as Href);
+              } else {
+                router.push("/cycle" as Href);
+              }
+            } else if (widget.widgetKey.startsWith("pregnancy_")) {
+              router.push("/pregnancy" as Href);
+            } else if (isMensHealthWidget(widget.widgetKey)) {
+              router.push("/mens-health" as Href);
+            } else if (isBabyWidget(widget.widgetKey)) {
+              router.push("/baby-child" as Href);
             } else if (isBiometricWidget(widget.widgetKey)) {
               const type = getBiometricWidgetRouteType(widget.widgetKey);
               router.push((type ? `/biometrics?type=${encodeURIComponent(type)}` : "/biometrics") as Href);
@@ -723,6 +940,16 @@ function HealthQuickViewBar({
                 ? "Open medication"
                 : isSupplementWidget(widget.widgetKey)
                   ? "Open supplements"
+                  : isRecordWidget(widget.widgetKey)
+                    ? "Open records"
+                    : isHealthCalendarWidget(widget.widgetKey)
+                      ? "Open calendar"
+                    : isWomensHealthWidget(widget.widgetKey) || widget.widgetKey === "cycle" || widget.widgetKey === "cycle_private"
+                      ? "Open Women’s Health"
+                    : widget.widgetKey.startsWith("pregnancy_")
+                      ? "Open pregnancy"
+                    : isMensHealthWidget(widget.widgetKey)
+                      ? "Open Men's Health"
               : isBiometricWidget(widget.widgetKey)
                 ? "Open biometrics"
                 : isDeviceSyncWidget(widget.widgetKey)
@@ -744,10 +971,10 @@ function HealthWidgetPicker({
 }) {
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-      {widgets.map((widget) => (
+      {widgets.map((widget, index) => (
         <TouchableOpacity
           activeOpacity={0.85}
-          key={widget.widgetKey}
+          key={`${widget.profileId}-${widget.widgetKey}-${index}`}
           onPress={() => onToggle(widget)}
           style={{
             backgroundColor: widget.isPinned ? "#ede9fe" : "#f8fafc",
@@ -768,6 +995,61 @@ function HealthWidgetPicker({
   );
 }
 
+function HealthProfileSwitcher({
+  activeProfile,
+  onSelect,
+  profiles
+}: {
+  activeProfile: HealthProfile | null;
+  onSelect: (profileId: string) => void;
+  profiles: HealthProfile[];
+}) {
+  if (!profiles.length) {
+    return (
+      <AppCard>
+        <Text style={{ color: "#64748b", lineHeight: 21 }}>
+          Start with your personal health profile, or create a family circle when you are ready.
+        </Text>
+      </AppCard>
+    );
+  }
+
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ marginHorizontal: -4 }}
+      contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
+    >
+      {profiles.map((profile) => (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          key={profile.id}
+          onPress={() => onSelect(profile.id)}
+          style={{
+            backgroundColor: activeProfile?.id === profile.id ? "#0f172a" : "#ffffff",
+            borderColor: "#e2e8f0",
+            borderRadius: 18,
+            borderWidth: 1,
+            minWidth: 132,
+            padding: 12
+          }}
+        >
+          <Text
+            numberOfLines={1}
+            style={{ color: activeProfile?.id === profile.id ? "#ffffff" : "#0f172a", fontWeight: "900" }}
+          >
+            {profile.displayName}
+          </Text>
+          <Text style={{ color: activeProfile?.id === profile.id ? "#cbd5e1" : "#64748b", marginTop: 4 }}>
+            {profile.profileType.replace(/_/g, " ")}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+}
+
 function HealthRealmCard({
   accentColor,
   description,
@@ -782,30 +1064,24 @@ function HealthRealmCard({
   title: string;
 }) {
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      disabled={!onPress}
+    <PolishedRealmCard
+      accentColor={accentColor}
+      description={description}
+      iconName={iconName}
       onPress={onPress}
-      style={{
-        backgroundColor: "#ffffff",
-        borderColor: "#e2e8f0",
-        borderRadius: 22,
-        borderWidth: 1,
-        flexGrow: 1,
-        minHeight: 138,
-        minWidth: "45%",
-        opacity: onPress ? 1 : 0.7,
-        padding: 14
-      }}
-    >
-      <AppIcon color={accentColor} container containerVariant="white" name={iconName} size={22} />
-      <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900", marginTop: 12 }}>
-        {title}
-      </Text>
-      <Text style={{ color: "#64748b", lineHeight: 19, marginTop: 5 }}>
-        {description}
-      </Text>
-    </TouchableOpacity>
+      privacyBadge={
+        title.includes("Medication") ||
+        title.includes("Supplements") ||
+        title.includes("Records") ||
+        title.includes("Women") ||
+        title.includes("Pregnancy") ||
+        title.includes("Baby") ||
+        title.includes("Men")
+          ? "private"
+          : undefined
+      }
+      title={title}
+    />
   );
 }
 
@@ -818,7 +1094,7 @@ function getWidgetValue(
     case "calories_today":
       return nutritionSummary?.foodLogCount
         ? `${Math.round(nutritionSummary.calories)}`
-        : "No logs";
+        : "Start today";
     case "protein_today":
       return `${Math.round(nutritionSummary?.proteinGrams ?? 0)}g`;
     case "water_today":
@@ -841,7 +1117,7 @@ function getWidgetValue(
     case "food_log":
       return nutritionSummary?.foodLogCount
         ? `${nutritionSummary.foodLogCount} entries`
-        : "No logs";
+        : "Log first meal";
     case "steps":
       return `${fitnessSummary?.stepsToday ?? 0}`;
     case "workout":
@@ -852,12 +1128,30 @@ function getWidgetValue(
     case "medication_taken_today":
     case "missed_medication":
     case "medication_schedule_status":
-      return "Open";
+      return "View meds";
     case "supplements_due_today":
     case "next_supplement":
     case "supplements_taken_today":
     case "supplement_schedule_status":
-      return "Open";
+      return "View supplements";
+    case "recent_record":
+    case "upcoming_follow_up":
+    case "prescription_refill":
+    case "next_vaccine":
+    case "lab_follow_up":
+    case "pinned_health_record":
+    case "records_needing_attention":
+      return "View records";
+    case "today_reminders":
+    case "next_reminder":
+    case "overdue_items":
+    case "upcoming_appointment":
+    case "medication_schedule":
+    case "supplement_schedule":
+    case "workout_plan":
+    case "water_check":
+    case "timeline_today":
+      return "View timeline";
     case "sleep":
     case "energy":
     case "mood":
@@ -877,13 +1171,32 @@ function getWidgetValue(
     case "sync_status":
       return "Not set";
     case "baby_feed":
-      return "Ready";
+      return "Add feed";
     case "cycle":
     case "cycle_private":
+    case "cycle_day":
+    case "period_expected":
+    case "period_active":
+    case "fertile_window_estimate":
+    case "estimated_ovulation":
+    case "symptoms_today":
+    case "mood_today":
+    case "contraception_reminder":
+    case "contraception_status":
+    case "contraception_caution":
+    case "womens_health_privacy_status":
+    case "pregnancy_week":
+    case "pregnancy_due_date":
+    case "pregnancy_next_appointment":
+    case "pregnancy_symptom_log":
+    case "pregnancy_medication_review":
+    case "pregnancy_question":
+    case "pregnancy_record":
+    case "pregnancy_privacy_status":
       return "Private";
     case "elder_checkin":
-      return "Ready";
+      return "Check in";
     default:
-      return "Ready";
+      return "View";
   }
 }

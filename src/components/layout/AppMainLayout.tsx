@@ -20,7 +20,7 @@ type AppMainLayoutProps = {
 export function AppMainLayout({
   children,
   scroll = true,
-  showAi = true,
+  showAi = false,
   showHeader = true,
   subtitle,
   title

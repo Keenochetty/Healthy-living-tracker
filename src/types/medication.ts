@@ -48,6 +48,28 @@ export type DoseLogStatus =
   | "missed"
   | "snoozed";
 
+export type SafetyStatus =
+  | "not_checked"
+  | "name_matched"
+  | "needs_review"
+  | "professional_confirmation_recommended"
+  | "user_confirmed_label";
+
+export type SafetyNoticeType =
+  | "info"
+  | "review"
+  | "confirm"
+  | "urgent_professional_help";
+
+export type SafetyNoticeCategory =
+  | "name_match"
+  | "duplicate_ingredient"
+  | "food_timing"
+  | "allergy"
+  | "profile_caution"
+  | "data_source"
+  | "general";
+
 export type Medication = {
   brandName?: string;
   createdAt: string;
@@ -67,10 +89,12 @@ export type Medication = {
   prescribedBy?: string;
   profileId: string;
   reason?: string;
+  safetyStatus?: SafetyStatus;
   sharedWithCaregiver: boolean;
   sharedWithFamily: boolean;
   sharedWithPartner: boolean;
   startDate?: string;
+  standardMatchId?: string;
   strength?: string;
   updatedAt: string;
   userId: string;
@@ -82,6 +106,7 @@ export type Supplement = {
   endDate?: string;
   form: SupplementForm;
   id: string;
+  ingredientMatchId?: string;
   instructions?: string;
   isActive: boolean;
   isPrivate: boolean;
@@ -91,6 +116,7 @@ export type Supplement = {
   notes?: string;
   profileId: string;
   reason?: string;
+  safetyStatus?: SafetyStatus;
   servingAmount?: number;
   servingUnit?: string;
   sharedWithCaregiver: boolean;
@@ -100,6 +126,81 @@ export type Supplement = {
   strength?: string;
   updatedAt: string;
   userId: string;
+};
+
+export type MedicationStandardMatch = {
+  confidence?: number;
+  confirmedByUser: boolean;
+  displayName: string;
+  form?: string;
+  id: string;
+  ingredientName?: string;
+  matchedAt: string;
+  medicationId: string;
+  source: "rxnorm" | "manual" | "unknown";
+  sourceConceptId?: string;
+  strength?: string;
+};
+
+export type SupplementIngredientMatch = {
+  confidence?: number;
+  confirmedByUser: boolean;
+  displayName: string;
+  id: string;
+  ingredientName: string;
+  matchedAt: string;
+  source: "ods" | "dsld" | "manual" | "unknown";
+  sourceId?: string;
+  supplementId: string;
+};
+
+export type SafetyNotice = {
+  actionLabel?: string;
+  actionTarget?: string;
+  category: SafetyNoticeCategory;
+  createdAt: string;
+  id: string;
+  isDismissed: boolean;
+  message: string;
+  profileId: string;
+  relatedId?: string;
+  relatedType: "medication" | "supplement" | "food" | "profile" | "general";
+  title: string;
+  type: SafetyNoticeType;
+  updatedAt: string;
+  userId: string;
+};
+
+export type SafetyChecklistItem = {
+  checklistKey: string;
+  completedAt?: string;
+  createdAt: string;
+  id: string;
+  isCompleted: boolean;
+  label: string;
+  profileId: string;
+  relatedId: string;
+  relatedType: "medication" | "supplement";
+  updatedAt: string;
+  userId: string;
+};
+
+export type AllergySensitivityNote = {
+  allergyName: string;
+  allergyType: "medication" | "food" | "supplement" | "environmental" | "unknown";
+  confirmedByProfessional?: boolean;
+  createdAt: string;
+  id: string;
+  lockedPrivate: boolean;
+  notes?: string;
+  profileId: string;
+  severity?: "mild" | "moderate" | "severe" | "unknown";
+  sharedWithCaregiver: boolean;
+  sharedWithFamily: boolean;
+  sharedWithPartner: boolean;
+  updatedAt: string;
+  userId: string;
+  visibility: "private" | "shared";
 };
 
 export type HealthSchedule = {

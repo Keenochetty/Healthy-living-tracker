@@ -108,7 +108,7 @@ export function TodayWidgetGrid({
           value={
             nutritionSummary?.foodLogCount
               ? `${Math.round(nutritionSummary.calories)} kcal`
-              : "No logs"
+              : "Start today"
           }
           helper={
             nutritionSummary?.foodLogCount
@@ -127,8 +127,8 @@ export function TodayWidgetGrid({
             childSummary?.latestFeed
               ? `${childSummary.latestFeed.finishedAmountMl ?? childSummary.latestFeed.offeredAmountMl ?? 0} ml`
               : childSummary
-                ? "No feeds"
-                : "Optional"
+                ? "Add feed"
+                : "Set up care"
           }
           helper={
             childSummary
@@ -163,8 +163,8 @@ export function TodayWidgetGrid({
                 ? "Checked in"
                 : "Attention"
               : elderSummary
-                ? "No check-in"
-                : "Optional"
+                ? "Check in"
+                : "Support a loved one"
           }
           helper={
             elderSummary
@@ -179,7 +179,7 @@ export function TodayWidgetGrid({
       {hasModule("caregiver") ? (
         <WidgetCard
           title="Caregiver"
-          value={caregiverSummary?.latestCheckIn?.status ?? (caregiverSummary ? "Ready" : "Optional")}
+          value={caregiverSummary?.latestCheckIn?.status ?? (caregiverSummary ? "Check in" : "Set up care help")}
           helper={
             caregiverSummary
               ? `${caregiverSummary.caregiver.displayName} - ${caregiverSummary.latestBooking?.status ?? "no booking"}`
@@ -193,7 +193,7 @@ export function TodayWidgetGrid({
       {hasModule("ai_assistant") ? (
         <WidgetCard
           title="AI Helper"
-          value={pendingAiJobs.length ? `${pendingAiJobs.length} drafts` : "Ready"}
+          value={pendingAiJobs.length ? `${pendingAiJobs.length} drafts` : "No drafts"}
           helper="review drafts before saving"
           variant="purple"
           iconName="ai_assistant"

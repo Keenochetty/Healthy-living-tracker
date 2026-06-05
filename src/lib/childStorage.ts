@@ -25,10 +25,19 @@ const childListeners = new Set<() => void>();
 type CreateChildProfileInput = {
   allergies?: string[];
   avatarEmoji?: string;
+  birthHeadCircumferenceCm?: number;
+  birthLengthCm?: number;
+  birthWeightKg?: number;
+  clinicName?: string;
   dateOfBirth?: string;
+  dueDate?: string;
   displayName: string;
+  feedingType?: ChildProfile["feedingType"];
   gender?: ChildProfile["gender"];
   medicalNotes?: string;
+  parentGuardianUserId?: string;
+  pediatricianName?: string;
+  privacy?: ChildProfile["privacy"];
   profileType: ChildProfileType;
 };
 
@@ -93,17 +102,28 @@ export async function createChildProfile(input: CreateChildProfileInput) {
     adultHandoverAtAge18: true,
     allergies: input.allergies?.filter(Boolean),
     avatarEmoji: input.avatarEmoji,
+    birthHeadCircumferenceCm: input.birthHeadCircumferenceCm,
+    birthLengthCm: input.birthLengthCm,
+    birthWeightKg: input.birthWeightKg,
     childAccessPaused: true,
+    clinicName: input.clinicName?.trim() || undefined,
     createdAt: now,
     dateOfBirth: input.dateOfBirth || undefined,
     displayName: input.displayName.trim(),
+    dueDate: input.dueDate || undefined,
+    feedingType: input.feedingType,
     gender: input.gender,
     id: id("child"),
     medicalNotes: input.medicalNotes?.trim() || undefined,
     parentControlled: true,
+    parentGuardianUserId: input.parentGuardianUserId ?? "local-user",
+    pediatricianName: input.pediatricianName?.trim() || undefined,
+    privacy: input.privacy ?? "private",
     profileType: input.profileType,
+    profileId: "local-profile",
     transitionAtAge13: true,
-    updatedAt: now
+    updatedAt: now,
+    userId: "local-user"
   };
   const children = await getChildProfiles();
 

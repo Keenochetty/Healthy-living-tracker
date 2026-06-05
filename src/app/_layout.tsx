@@ -22,6 +22,7 @@ export default function RootLayout() {
               <Stack.Screen name="auth/sign-in" />
               <Stack.Screen name="auth/sign-up" />
               <Stack.Screen name="auth/signup" />
+              <Stack.Screen name="baby-child/index" />
               <Stack.Screen name="caregiver/index" />
               <Stack.Screen name="caregiver/[caregiverId]" />
               <Stack.Screen name="caregiver/join/[token]" />
@@ -35,6 +36,8 @@ export default function RootLayout() {
               <Stack.Screen name="biometrics/index" />
               <Stack.Screen name="device-sync/index" />
               <Stack.Screen name="fitness/index" />
+              <Stack.Screen name="fitness/exercise/[exerciseId]" />
+              <Stack.Screen name="health-calendar/index" />
               <Stack.Screen name="food/index" />
               <Stack.Screen name="food/barcode-scanner" />
               <Stack.Screen name="food/barcode-product" />
@@ -47,9 +50,13 @@ export default function RootLayout() {
               <Stack.Screen name="medication/index" />
               <Stack.Screen name="medication/add" />
               <Stack.Screen name="medication/[medicationId]" />
+              <Stack.Screen name="mens-health/index" />
+              <Stack.Screen name="pregnancy/index" />
+              <Stack.Screen name="records/index" />
               <Stack.Screen name="supplements/index" />
               <Stack.Screen name="supplements/add" />
               <Stack.Screen name="supplements/[supplementId]" />
+              <Stack.Screen name="trusted-content/index" />
               <Stack.Screen name="join/[token]" />
               <Stack.Screen name="onboarding/index" />
               <Stack.Screen name="onboarding/profile" />
@@ -58,6 +65,8 @@ export default function RootLayout() {
               <Stack.Screen name="onboarding/units" />
               <Stack.Screen name="reminders/[reminderId]" />
               <Stack.Screen name="scan-invite" />
+              <Stack.Screen name="settings/notifications" />
+              <Stack.Screen name="settings/privacy-center" />
             </Stack>
           </AppThemeProvider>
         </ProfileSettingsProvider>

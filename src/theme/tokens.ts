@@ -54,7 +54,7 @@ export type AppTheme = {
   warning: string;
 };
 
-export const defaultThemeKey: UserThemeKey = "soft_lavender";
+export const defaultThemeKey: UserThemeKey = "premium_dark_health";
 
 export const themes: Record<UserThemeKey, AppTheme> = {
   soft_lavender: {
@@ -133,25 +133,25 @@ export const themes: Record<UserThemeKey, AppTheme> = {
     info: "#3b82f6"
   },
   premium_dark_health: {
-    background: "#171b22",
-    surface: "#222832",
-    surfaceSoft: "#2b323d",
-    card: "#252b35",
-    primary: "#ffd029",
-    primarySoft: "#3b341e",
-    secondary: "#8b5cf6",
-    accent: "#ffd029",
-    accentOrange: "#ff9f43",
+    background: "#08111a",
+    surface: "rgba(25, 34, 46, 0.88)",
+    surfaceSoft: "rgba(35, 46, 61, 0.82)",
+    card: "rgba(25, 34, 46, 0.78)",
+    primary: "#6ee7c8",
+    primarySoft: "rgba(110, 231, 200, 0.16)",
+    secondary: "#a78bfa",
+    accent: "#6ee7c8",
+    accentOrange: "#f8b84e",
     accentBlue: "#38bdf8",
-    accentGreen: "#86efac",
-    accentPink: "#f472b6",
+    accentGreen: "#6ee7c8",
+    accentPink: "#fb7f9f",
     text: "#f8fafc",
-    mutedText: "#a8b0bd",
-    subtleText: "#747d8c",
-    border: "#313946",
-    nav: "#10141b",
-    success: "#22c55e",
-    warning: "#f59e0b",
+    mutedText: "#c9d2de",
+    subtleText: "#8b96a6",
+    border: "rgba(255, 255, 255, 0.12)",
+    nav: "rgba(12, 18, 25, 0.92)",
+    success: "#6ee7c8",
+    warning: "#f8b84e",
     danger: "#ef4444",
     info: "#38bdf8"
   }

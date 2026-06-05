@@ -65,6 +65,13 @@ export const APP_MODULES: AppModule[] = [
     core: false,
   },
   {
+    key: "mens_health",
+    name: "Men's Health",
+    description: "Private check-ins, symptoms, reminders and trusted education.",
+    emoji: "MH",
+    core: false,
+  },
+  {
     key: "ai_assistant",
     name: "AI Assistant",
     description: "Scan reports, organise reminders and help explain records.",

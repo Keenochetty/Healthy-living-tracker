@@ -81,3 +81,93 @@ export type FitnessSummary = {
   weeklyGoalProgress: number;
   workoutsThisWeek: number;
 };
+
+export type WorkoutDifficulty = "beginner" | "intermediate" | "advanced";
+
+export type WorkoutLocation = "home" | "gym" | "both" | "machine" | "bodyweight";
+
+export type WorkoutGoalTag =
+  | "strength"
+  | "muscle_gain"
+  | "weight_loss"
+  | "endurance"
+  | "mobility"
+  | "general_health";
+
+export type MuscleGroup =
+  | "chest"
+  | "back"
+  | "shoulders"
+  | "arms"
+  | "core"
+  | "legs"
+  | "glutes"
+  | "full_body"
+  | "cardio"
+  | "mobility";
+
+export type ExerciseEquipment =
+  | "bodyweight"
+  | "dumbbell"
+  | "barbell"
+  | "machine"
+  | "cable"
+  | "resistance_band"
+  | "kettlebell"
+  | "treadmill"
+  | "bike"
+  | "none";
+
+export type ExerciseLibraryItem = {
+  commonMistakes: string[];
+  description: string;
+  difficulty: WorkoutDifficulty;
+  equipment: ExerciseEquipment[];
+  goalTags: WorkoutGoalTag[];
+  id: string;
+  imageUrl?: string;
+  instructions: string[];
+  location: WorkoutLocation[];
+  muscleDiagramUrl?: string;
+  name: string;
+  primaryMuscle: MuscleGroup;
+  secondaryMuscles: MuscleGroup[];
+  videoUrl?: string;
+};
+
+export type WorkoutRoutine = {
+  accentColor: string;
+  coverImageUrl?: string;
+  description: string;
+  difficulty: WorkoutDifficulty;
+  durationMinutes: number;
+  equipment: ExerciseEquipment[];
+  exerciseIds: string[];
+  goal: WorkoutGoalTag;
+  id: string;
+  location: Extract<WorkoutLocation, "home" | "gym" | "both">;
+  name: string;
+  targetMuscles: MuscleGroup[];
+  videoUrl?: string;
+};
+
+export type GuidedWorkoutSet = {
+  completed: boolean;
+  id: string;
+  reps: number;
+  setNumber: number;
+  weightKg?: number;
+};
+
+export type GuidedWorkoutExercise = {
+  exerciseId: string;
+  sets: GuidedWorkoutSet[];
+};
+
+export type RunningLogDraft = {
+  distanceKm: number;
+  durationMinutes: number;
+  effort?: WorkoutIntensity;
+  notes?: string;
+  routeNote?: string;
+};

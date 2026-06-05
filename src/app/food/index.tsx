@@ -1,488 +1,315 @@
-import { Href, router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Href, router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import { NutritionReportsTab } from "@/components/nutrition/NutritionReportsTab";
-import { NutritionTargetsTab } from "@/components/nutrition/NutritionTargetsTab";
-import { AppCard } from "@/components/ui/AppCard";
-import { NUTRITION_MEAL_GROUP_OPTIONS, QUICK_WATER_AMOUNTS } from "@/constants/nutritionOptions";
 import {
+  ManualEntryToggle,
+  NumberWheelPicker,
+  PresetChipGroup,
+  QuickLogBottomSheet,
+  QuickNoteField,
+  QuickSaveButton
+} from "@/components/fitness/QuickWorkoutInputs";
+import { AppMainLayout } from "@/components/layout/AppMainLayout";
+import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
+import {
+  addRecipeServingToDiary,
+  addSavedMealToDiary,
   addWaterLog,
   createNutritionEntry,
   deleteNutritionEntry,
+  getActiveNutritionTarget,
+  getDailyNutritionSummary,
   getNutritionDailyNote,
   getNutritionEntriesByDate,
-  getCommonFoodResults,
-  getFavouriteFoods,
-  calculateDailyNutritionProgress,
-  calculateTargetProgressPercent,
-  formatMacroProgress,
-  getActiveNutritionTarget,
-  getNutritionGoalMessage,
-  getCustomFoods,
   getRecipes,
-  getRecentFoods,
   getSavedMeals,
   getTodayNutritionSummary,
   getWaterGoal,
   saveNutritionDailyNote,
-  setWaterGoal,
   toNutritionDateKey
 } from "@/lib/nutritionStorage";
-import { searchFoods } from "@/services/nutrition/foodSearchService";
-import { getRecentlyScannedProducts } from "@/services/nutrition/barcodeLookupService";
-import { getSmartFoodSuggestionsForToday } from "@/services/nutrition/smartLoggingService";
-import { getNutritionBiometricInsights } from "@/lib/biometricsStorage";
-import { getMedicationSupplementFoodTimingSummary } from "@/lib/medicationSupplementStorage";
-import type { BiometricsInsight } from "@/types/biometrics";
-import type { SmartFoodSuggestion } from "@/types/smartLogging";
+import { getTodayFitnessSummary } from "@/lib/fitnessStorage";
+import type { FitnessSummary } from "@/types/fitness";
 import type {
   DailyNutritionSummary,
-  DailyNutritionProgress,
-  FavouriteFood,
-  CustomFood,
-  FoodSearchResult,
-  FoodSource,
   NutritionDailyNote,
   NutritionDiaryEntry,
   NutritionMealGroup,
   NutritionTarget,
   Recipe,
-  RecentFood,
-  RecentlyScannedProduct,
   SavedMeal,
   WaterGoal
 } from "@/types/nutrition";
 
-type NutritionTab = "today" | "diary" | "add" | "library" | "targets" | "reports" | "water" | "notes";
+type NutritionTab = "today" | "diary" | "add" | "saved_meals" | "recipes" | "water" | "reports" | "guides" | "settings";
+type MealKey = "breakfast" | "lunch" | "dinner" | "snacks" | "drinks";
+type SheetMode = "meal" | "water" | "barcode" | "smart_log" | null;
 
 const TABS: Array<{ key: NutritionTab; label: string }> = [
   { key: "today", label: "Today" },
   { key: "diary", label: "Diary" },
   { key: "add", label: "Add" },
-  { key: "library", label: "Library" },
-  { key: "targets", label: "Targets" },
-  { key: "reports", label: "Reports" },
+  { key: "saved_meals", label: "Saved Meals" },
+  { key: "recipes", label: "Recipes" },
   { key: "water", label: "Water" },
-  { key: "notes", label: "Notes" }
+  { key: "reports", label: "Reports" },
+  { key: "guides", label: "Learn / Guides" },
+  { key: "settings", label: "Settings" }
 ];
 
-const INPUT_STYLE = {
-  backgroundColor: "#ffffff",
-  borderColor: "#fde68a",
-  borderRadius: 16,
-  borderWidth: 1,
-  color: "#0f172a",
-  minHeight: 50,
-  paddingHorizontal: 14
-};
+const MEALS: Array<{ key: MealKey; label: string; storageGroup: NutritionMealGroup }> = [
+  { key: "breakfast", label: "Breakfast", storageGroup: "breakfast" },
+  { key: "lunch", label: "Lunch", storageGroup: "lunch" },
+  { key: "dinner", label: "Dinner", storageGroup: "dinner" },
+  { key: "snacks", label: "Snacks", storageGroup: "snacks" },
+  { key: "drinks", label: "Drinks", storageGroup: "notes" }
+];
+
+const MOCK_SAVED_MEALS = [
+  { calories: 420, mealType: "Breakfast", name: "Greek yogurt bowl", protein: 32 },
+  { calories: 610, mealType: "Lunch", name: "Chicken rice plate", protein: 44 },
+  { calories: 520, mealType: "Dinner", name: "Tuna potato salad", protein: 36 }
+];
+
+const MOCK_RECIPES = [
+  { calories: 480, name: "Oats protein bake", protein: 28, servings: 4, tags: ["Breakfast", "Prep"] },
+  { calories: 560, name: "Turkey pasta bowl", protein: 38, servings: 3, tags: ["Dinner", "Protein"] },
+  { calories: 390, name: "Avocado egg toast", protein: 22, servings: 2, tags: ["Quick", "Lunch"] }
+];
+
+const SAFETY_COPY =
+  "Nutrition tracking is for general wellness only and is not medical advice. For medical conditions, pregnancy, children, medication concerns, or eating concerns, speak to a healthcare professional.";
 
 export default function FoodScreen() {
   const params = useLocalSearchParams<{ tab?: NutritionTab }>();
-  const [activeTab, setActiveTab] = useState<NutritionTab>(params.tab ?? "today");
+  const [activeTab, setActiveTab] = useState<NutritionTab>(toTab(params.tab));
   const [entries, setEntries] = useState<NutritionDiaryEntry[]>([]);
   const [summary, setSummary] = useState<DailyNutritionSummary | null>(null);
-  const [waterGoal, setWaterGoalState] = useState<WaterGoal | null>(null);
+  const [target, setTarget] = useState<NutritionTarget | null>(null);
+  const [waterGoal, setWaterGoal] = useState<WaterGoal | null>(null);
   const [dailyNote, setDailyNote] = useState<NutritionDailyNote | null>(null);
-  const [activeTarget, setActiveTarget] = useState<NutritionTarget | null>(null);
-  const [dailyProgress, setDailyProgress] = useState<DailyNutritionProgress | null>(null);
-  const [biometricInsights, setBiometricInsights] = useState<BiometricsInsight[]>([]);
-  const [smartSuggestions, setSmartSuggestions] = useState<SmartFoodSuggestion[]>([]);
-  const [foodTimingMessage, setFoodTimingMessage] = useState<string | null>(null);
-  const [selectedMealGroup, setSelectedMealGroup] = useState<NutritionMealGroup>("breakfast");
+  const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [fitnessSummary, setFitnessSummary] = useState<FitnessSummary | null>(null);
+  const [sheetMode, setSheetMode] = useState<SheetMode>(null);
+  const [selectedMeal, setSelectedMeal] = useState<MealKey>("breakfast");
+  const [toast, setToast] = useState("");
 
   const todayKey = useMemo(() => toNutritionDateKey(new Date()), []);
-
   const loadNutrition = useCallback(async () => {
-    const [nextEntries, nextSummary, nextWaterGoal, nextDailyNote, nextTarget, nextProgress, nextBiometricInsights, nextSmartSuggestions, nextFoodTimingSummary] = await Promise.all([
-      getNutritionEntriesByDate(todayKey),
-      getTodayNutritionSummary(),
-      getWaterGoal(new Date()),
-      getNutritionDailyNote(todayKey),
-      getActiveNutritionTarget(),
-      calculateDailyNutritionProgress(todayKey),
-      getNutritionBiometricInsights(),
-      getSmartFoodSuggestionsForToday(),
-      getMedicationSupplementFoodTimingSummary()
-    ]);
-
+    const [nextEntries, nextSummary, nextTarget, nextWaterGoal, nextNote, nextSavedMeals, nextRecipes, nextFitness] =
+      await Promise.all([
+        getNutritionEntriesByDate(todayKey),
+        getTodayNutritionSummary(),
+        getActiveNutritionTarget(),
+        getWaterGoal(new Date()),
+        getNutritionDailyNote(todayKey),
+        getSavedMeals(),
+        getRecipes(),
+        getTodayFitnessSummary()
+      ]);
     setEntries(nextEntries);
     setSummary(nextSummary);
-    setWaterGoalState(nextWaterGoal);
-    setDailyNote(nextDailyNote);
-    setActiveTarget(nextTarget);
-    setDailyProgress(nextProgress);
-    setBiometricInsights(nextBiometricInsights);
-    setSmartSuggestions(nextSmartSuggestions);
-    setFoodTimingMessage(nextFoodTimingSummary.hasFoodTimingNotes ? nextFoodTimingSummary.message : null);
+    setTarget(nextTarget);
+    setWaterGoal(nextWaterGoal);
+    setDailyNote(nextNote);
+    setSavedMeals(nextSavedMeals);
+    setRecipes(nextRecipes);
+    setFitnessSummary(nextFitness);
   }, [todayKey]);
 
-  useEffect(() => {
-    Promise.resolve()
-      .then(loadNutrition)
-      .catch(() => undefined);
-  }, [loadNutrition]);
+  useFocusEffect(
+    useCallback(() => {
+      Promise.resolve().then(loadNutrition).catch(() => undefined);
+    }, [loadNutrition])
+  );
 
-  useEffect(() => {
-    if (params.tab && TABS.some((tab) => tab.key === params.tab)) {
-      Promise.resolve().then(() => setActiveTab(params.tab as NutritionTab));
-    }
-  }, [params.tab]);
+  function openMealSheet(meal: MealKey = "breakfast") {
+    setSelectedMeal(meal);
+    setSheetMode("meal");
+  }
 
-  function openAddForMeal(mealGroup: NutritionMealGroup) {
-    setSelectedMealGroup(mealGroup);
-    setActiveTab("add");
+  async function afterSaved(message: string) {
+    setToast(message);
+    setSheetMode(null);
+    await loadNutrition();
   }
 
   return (
-    <ScreenWrapper backgroundColor="#fffaf0">
-      <View style={{ gap: 4 }}>
-        <Text style={{ color: "#b45309", fontSize: 14, fontWeight: "800" }}>
-          Health realm
-        </Text>
-        <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
-          Food / Nutrition
-        </Text>
-        <Text style={{ color: "#64748b", lineHeight: 20 }}>
-          Today&apos;s balance for meals, water and daily food notes.
-        </Text>
-      </View>
-
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+    <AppMainLayout subtitle="Meals, water, goals and reports" title="Food / Nutrition">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
         {TABS.map((tab) => (
-          <TouchableOpacity
-            activeOpacity={0.85}
-            key={tab.key}
-            onPress={() => setActiveTab(tab.key)}
-            style={{
-              backgroundColor: activeTab === tab.key ? "#f59e0b" : "#ffffff",
-              borderColor: "#fde68a",
-              borderRadius: 999,
-              borderWidth: 1,
-              paddingHorizontal: 14,
-              paddingVertical: 10
-            }}
-          >
-            <Text style={{ color: activeTab === tab.key ? "#ffffff" : "#92400e", fontWeight: "900" }}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
+          <Chip key={tab.key} label={tab.label} onPress={() => setActiveTab(tab.key)} selected={activeTab === tab.key} />
         ))}
-      </View>
+      </ScrollView>
+
+      {toast ? <SuccessToast message={toast} onDismiss={() => setToast("")} /> : null}
 
       {activeTab === "today" ? (
         <TodayTab
           dailyNote={dailyNote}
-          biometricInsights={biometricInsights}
           entries={entries}
-          onAddFood={() => setActiveTab("add")}
-          onSetTargets={() => setActiveTab("targets")}
-          onAddWater={() => setActiveTab("water")}
-          progress={dailyProgress}
-          foodTimingMessage={foodTimingMessage}
-          smartSuggestions={smartSuggestions}
+          fitnessSummary={fitnessSummary}
+          onOpenMeal={openMealSheet}
+          onSheet={setSheetMode}
+          onTab={setActiveTab}
           summary={summary}
-          target={activeTarget}
+          target={target}
           waterGoal={waterGoal}
         />
       ) : null}
+      {activeTab === "diary" ? <DiaryTab entries={entries} onDelete={async (id) => { await deleteNutritionEntry(id); await loadNutrition(); }} onOpenMeal={openMealSheet} /> : null}
+      {activeTab === "add" ? <AddTab onOpenMeal={openMealSheet} onSheet={setSheetMode} onTab={setActiveTab} /> : null}
+      {activeTab === "saved_meals" ? <SavedMealsTab meals={savedMeals} onAdded={(message) => afterSaved(message)} onOpenMeal={openMealSheet} /> : null}
+      {activeTab === "recipes" ? <RecipesTab onAdded={(message) => afterSaved(message)} recipes={recipes} /> : null}
+      {activeTab === "water" ? <WaterTab onSaved={(message) => afterSaved(message)} waterGoal={waterGoal} /> : null}
+      {activeTab === "reports" ? <ReportsTab entries={entries} summary={summary} target={target} waterGoal={waterGoal} /> : null}
+      {activeTab === "guides" ? <GuidesTab /> : null}
+      {activeTab === "settings" ? <SettingsTab dailyNote={dailyNote} onSaved={loadNutrition} todayKey={todayKey} /> : null}
 
-      {activeTab === "diary" ? (
-        <DiaryTab
-          entries={entries}
-          onAdd={openAddForMeal}
-          onDelete={async (entryId) => {
-            await deleteNutritionEntry(entryId);
-            await loadNutrition();
-          }}
-        />
-      ) : null}
+      <SafetyCard />
 
-      {activeTab === "add" ? (
-        <AddTab
-          defaultMealGroup={selectedMealGroup}
-          onMealGroupChange={setSelectedMealGroup}
-          onSaved={async () => {
-            await loadNutrition();
-            setActiveTab("diary");
-          }}
-          todayKey={todayKey}
-        />
-      ) : null}
-
-      {activeTab === "library" ? (
-        <LibraryTab />
-      ) : null}
-
-      {activeTab === "targets" ? (
-        <NutritionTargetsTab
-          onSaved={async () => {
-            await loadNutrition();
-            setActiveTab("today");
-          }}
-          todayKey={todayKey}
-        />
-      ) : null}
-
-      {activeTab === "reports" ? (
-        <NutritionReportsTab />
-      ) : null}
-
-      {activeTab === "water" ? (
-        <WaterTab
-          key={waterGoal?.targetMl ?? "water"}
-          onChange={loadNutrition}
-          waterGoal={waterGoal}
-        />
-      ) : null}
-
-      {activeTab === "notes" ? (
-        <NotesTab
-          key={dailyNote?.updatedAt ?? "note"}
-          dailyNote={dailyNote}
-          onSaved={loadNutrition}
-          todayKey={todayKey}
-        />
-      ) : null}
-    </ScreenWrapper>
+      <AddMealSheet
+        meal={selectedMeal}
+        onClose={() => setSheetMode(null)}
+        onMealChange={setSelectedMeal}
+        onSaved={(message) => afterSaved(message)}
+        todayKey={todayKey}
+        visible={sheetMode === "meal"}
+      />
+      <AddWaterSheet onClose={() => setSheetMode(null)} onSaved={(message) => afterSaved(message)} visible={sheetMode === "water"} />
+      <PlaceholderSheet
+        body="Barcode lookup is coming soon. You can add this manually for now."
+        onClose={() => setSheetMode(null)}
+        onManual={() => {
+          setSheetMode("meal");
+        }}
+        title="Barcode lookup"
+        visible={sheetMode === "barcode"}
+      />
+      <PlaceholderSheet
+        body="Estimated draft. Review before saving. AI meal drafts stay editable and are not saved automatically."
+        onClose={() => setSheetMode(null)}
+        onManual={() => router.push("/ai?mode=quick_logger&prompt=Log%20this%20meal" as Href)}
+        title="Smart Log"
+        visible={sheetMode === "smart_log"}
+      />
+    </AppMainLayout>
   );
 }
 
 function TodayTab({
   dailyNote,
-  biometricInsights,
   entries,
-  foodTimingMessage,
-  onAddFood,
-  onSetTargets,
-  onAddWater,
-  progress,
-  smartSuggestions,
+  fitnessSummary,
+  onOpenMeal,
+  onSheet,
+  onTab,
   summary,
   target,
   waterGoal
 }: {
   dailyNote: NutritionDailyNote | null;
-  biometricInsights: BiometricsInsight[];
   entries: NutritionDiaryEntry[];
-  foodTimingMessage: string | null;
-  onAddFood: () => void;
-  onSetTargets: () => void;
-  onAddWater: () => void;
-  progress: DailyNutritionProgress | null;
-  smartSuggestions: SmartFoodSuggestion[];
+  fitnessSummary: FitnessSummary | null;
+  onOpenMeal: (meal: MealKey) => void;
+  onSheet: (mode: SheetMode) => void;
+  onTab: (tab: NutritionTab) => void;
   summary: DailyNutritionSummary | null;
   target: NutritionTarget | null;
   waterGoal: WaterGoal | null;
 }) {
-  const completedMealGroups = new Set(entries.map((entry) => entry.mealGroup));
-  const mealCompletion = Math.round((completedMealGroups.size / NUTRITION_MEAL_GROUP_OPTIONS.length) * 100);
-  const waterProgress = waterGoal?.targetMl
-    ? Math.min(100, Math.round((waterGoal.currentMl / waterGoal.targetMl) * 100))
-    : 0;
+  const caloriesTarget = target?.caloriesTarget ?? 2000;
+  const proteinTarget = target?.proteinTargetG ?? 140;
+  const waterTarget = waterGoal?.targetMl ?? target?.waterTargetMl ?? 2500;
+  const calories = summary?.calories ?? 0;
+  const protein = summary?.proteinGrams ?? 0;
+  const water = waterGoal?.currentMl ?? summary?.waterMl ?? 0;
 
   return (
-    <View style={{ gap: 12 }}>
-      {target && progress ? (
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          <ProgressMetricCard label="Calories" progress={calculateTargetProgressPercent(progress.caloriesConsumed, progress.caloriesTarget)} value={formatMacroProgress(progress.caloriesConsumed, progress.caloriesTarget, "kcal")} />
-          <ProgressMetricCard label="Protein" progress={calculateTargetProgressPercent(progress.proteinConsumedG, progress.proteinTargetG)} value={formatMacroProgress(progress.proteinConsumedG, progress.proteinTargetG, "g")} />
-          <ProgressMetricCard label="Carbs" progress={calculateTargetProgressPercent(progress.carbsConsumedG, progress.carbsTargetG)} value={formatMacroProgress(progress.carbsConsumedG, progress.carbsTargetG, "g")} />
-          <ProgressMetricCard label="Fat" progress={calculateTargetProgressPercent(progress.fatConsumedG, progress.fatTargetG)} value={formatMacroProgress(progress.fatConsumedG, progress.fatTargetG, "g")} />
-          <ProgressMetricCard label="Fiber" progress={calculateTargetProgressPercent(progress.fiberConsumedG, progress.fiberTargetG)} value={formatMacroProgress(progress.fiberConsumedG ?? 0, progress.fiberTargetG ?? 0, "g")} />
-          <ProgressMetricCard label="Water" progress={calculateTargetProgressPercent(progress.waterConsumedMl, progress.waterTargetMl)} value={`${formatWaterValue(progress.waterConsumedMl)} / ${formatWaterValue(progress.waterTargetMl)}`} />
+    <View style={styles.stack}>
+      <AppCard style={styles.darkHero}>
+        <View style={styles.heroIcon}><AppIcon color="#6ee7c8" decorative name="nutrition" size={28} /></View>
+        <Text style={styles.heroTitle}>Today nutrition</Text>
+        <Text style={styles.heroSubtitle}>Track meals, water, and goals.</Text>
+        <View style={styles.heroMetrics}>
+          <HeroMetric label="Calories" progress={calories / caloriesTarget} value={`${Math.round(calories).toLocaleString()} / ${caloriesTarget.toLocaleString()} cal`} />
+          <HeroMetric label="Protein" progress={protein / proteinTarget} value={`${Math.round(protein)} / ${proteinTarget}g`} />
+          <HeroMetric label="Water" progress={water / waterTarget} value={`${formatWater(water)} / ${formatWater(waterTarget)}`} water />
         </View>
-      ) : (
-        <View style={{ gap: 12 }}>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-            <MetricCard label="Calories" value={`${Math.round(summary?.calories ?? 0)}`} />
-            <MetricCard label="Protein" value={`${Math.round(summary?.proteinGrams ?? 0)}g`} />
-            <MetricCard label="Carbs" value={`${Math.round(summary?.carbsGrams ?? 0)}g`} />
-            <MetricCard label="Fat" value={`${Math.round(summary?.fatGrams ?? 0)}g`} />
-            <MetricCard label="Water" value={`${Math.round(summary?.waterMl ?? 0)}ml`} />
-            <MetricCard label="Meals" value={`${mealCompletion}%`} />
-          </View>
-          <AppCard>
-            <View style={{ gap: 10 }}>
-              <Text style={{ color: "#64748b", lineHeight: 21 }}>
-                Set your nutrition targets to see your daily progress.
-              </Text>
-              <PrimaryButton label="Set Targets" onPress={onSetTargets} />
-            </View>
-          </AppCard>
-        </View>
-      )}
-
-      <AppCard backgroundColor="#fffbeb">
-        <Text style={{ color: "#92400e", fontSize: 20, fontWeight: "900" }}>
-          Food + Goal Balance
-        </Text>
-        <Text style={{ color: "#92400e", lineHeight: 21, marginTop: 6 }}>
-          {getNutritionGoalMessage(target, progress)}
-        </Text>
       </AppCard>
 
-      <AppCard>
-        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
-          Smart Suggestions
-        </Text>
-        {smartSuggestions.length ? (
-          <View style={{ gap: 10, marginTop: 10 }}>
-            {smartSuggestions.slice(0, 3).map((suggestion) => (
-              <TouchableOpacity
-                activeOpacity={0.85}
-                key={suggestion.id}
-                onPress={() => router.push(suggestion.route as Href)}
-                style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}
-              >
-                <Text style={{ color: "#0f172a", fontWeight: "900" }}>{suggestion.title}</Text>
-                <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>{suggestion.message}</Text>
-                <Text style={{ color: "#92400e", fontWeight: "900", marginTop: 8 }}>{suggestion.actionLabel}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : (
-          <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-            Add meals and water to unlock gentle smart logging suggestions.
-          </Text>
-        )}
-      </AppCard>
-
-      {foodTimingMessage ? (
-        <AppCard backgroundColor="#fff7ed">
-          <Text style={{ color: "#9a3412", fontSize: 20, fontWeight: "900" }}>
-            Food timing notes
-          </Text>
-          <Text style={{ color: "#9a3412", lineHeight: 21, marginTop: 6 }}>
-            {foodTimingMessage}
-          </Text>
-        </AppCard>
-      ) : null}
-
-      <AppCard>
-        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
-          Biometrics connection
-        </Text>
-        {biometricInsights.length ? (
-          <View style={{ gap: 10, marginTop: 10 }}>
-            {biometricInsights.map((insight) => (
-              <View key={`${insight.type}-${insight.title}`} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-                <Text style={{ color: "#0f172a", fontWeight: "900" }}>{insight.title}</Text>
-                <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>{insight.message}</Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-            Weight, sleep, energy and digestion logs can add context to your food notes over time.
-          </Text>
-        )}
-      </AppCard>
-
-      <AppCard>
-        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
-          Today&apos;s note
-        </Text>
-        <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-          {dailyNote?.note || "No food note added yet."}
-        </Text>
-      </AppCard>
-
-      <AppCard backgroundColor="#eff6ff">
-        <Text style={{ color: "#1d4ed8", fontSize: 20, fontWeight: "900" }}>
-          Water progress
-        </Text>
-        <Text style={{ color: "#1d4ed8", marginTop: 4 }}>
-          {waterGoal?.currentMl ?? 0}ml of {waterGoal?.targetMl ?? 2000}ml
-        </Text>
-        <ProgressBar color="#3b82f6" progress={waterProgress} trackColor="#dbeafe" />
-      </AppCard>
-
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        <PrimaryButton label="Add Food" onPress={onAddFood} />
-        <PrimaryButton label="Log Water" onPress={onAddWater} />
+      <View style={styles.macroGrid}>
+        <MacroCard helper="Based on your goal" label="Calories" target={`${caloriesTarget} cal`} value={`${Math.round(calories)} cal`} valueRatio={calories / caloriesTarget} />
+        <MacroCard helper={protein ? "Logged" : "Start today"} label="Protein" target={`${proteinTarget}g`} value={`${Math.round(protein)}g`} valueRatio={protein / proteinTarget} />
+        <MacroCard helper="Logged" label="Carbs" target={`${target?.carbsTargetG ?? 250}g`} value={`${Math.round(summary?.carbsGrams ?? 0)}g`} valueRatio={(summary?.carbsGrams ?? 0) / (target?.carbsTargetG ?? 250)} />
+        <MacroCard helper="Logged" label="Fat" target={`${target?.fatTargetG ?? 70}g`} value={`${Math.round(summary?.fatGrams ?? 0)}g`} valueRatio={(summary?.fatGrams ?? 0) / (target?.fatTargetG ?? 70)} />
+        <MacroCard helper="Show when logged" label="Fiber" target={`${target?.fiberTargetG ?? 30}g`} value={`${Math.round(entries.reduce((total, entry) => total + (entry.fiberG ?? 0), 0))}g`} valueRatio={entries.reduce((total, entry) => total + (entry.fiberG ?? 0), 0) / (target?.fiberTargetG ?? 30)} />
+        <MacroCard helper="Hydration" label="Water" target={formatWater(waterTarget)} value={formatWater(water)} valueRatio={water / waterTarget} water />
       </View>
 
-      <Text style={{ color: "#64748b", fontSize: 12, lineHeight: 18 }}>
-        Nutrition insights are for general wellness tracking only and are not medical advice.
-        For medical conditions, pregnancy, children, or medication concerns, speak to a
-        healthcare professional.
-      </Text>
+      <AppSection title="Meal timeline" subtitle="What you logged today." />
+      <MealTimeline entries={entries} onOpenMeal={onOpenMeal} />
+
+      <AppSection title="Quick add" />
+      <View style={styles.quickGrid}>
+        <QuickAction icon="add" label="Add Meal" onPress={() => onOpenMeal("breakfast")} />
+        <QuickAction icon="scan_barcode" label="Scan Barcode" onPress={() => onSheet("barcode")} />
+        <QuickAction icon="ai_draft" label="Smart Log" onPress={() => onSheet("smart_log")} />
+        <QuickAction icon="water" label="Add Water" onPress={() => onSheet("water")} />
+        <QuickAction icon="save" label="Saved Meal" onPress={() => onTab("saved_meals")} />
+        <QuickAction icon="source" label="Create Recipe" onPress={() => router.push("/food/recipe" as Href)} />
+      </View>
+
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Suggested next action</Text>
+        <Text style={styles.darkMuted}>{entries.length ? "Review your water or save a frequent meal for faster logging." : "Log breakfast, lunch, dinner, or a snack when you are ready."}</Text>
+        <View style={styles.actionRow}>
+          <GhostButton label={entries.length ? "Add water" : "Add meal"} onPress={() => entries.length ? onSheet("water") : onOpenMeal("breakfast")} />
+          <GhostButton label="Reports preview" onPress={() => onTab("reports")} />
+        </View>
+      </AppCard>
+
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Workout connection</Text>
+        <Text style={styles.darkMuted}>
+          {fitnessSummary?.latestWorkout ? "Use your food and workout logs together to review patterns." : "Training today? Protein and water logs can help you review your workout day."}
+        </Text>
+      </AppCard>
+
+      <ReportsPreview entries={entries} summary={summary} waterGoal={waterGoal} />
+
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Today note</Text>
+        <Text style={styles.darkMuted}>{dailyNote?.note || "Add a note about energy, timing, appetite, or anything useful to remember."}</Text>
+      </AppCard>
     </View>
   );
 }
 
-function DiaryTab({
-  entries,
-  onAdd,
-  onDelete
-}: {
-  entries: NutritionDiaryEntry[];
-  onAdd: (mealGroup: NutritionMealGroup) => void;
-  onDelete: (entryId: string) => void;
-}) {
+function DiaryTab({ entries, onDelete, onOpenMeal }: { entries: NutritionDiaryEntry[]; onDelete: (id: string) => void; onOpenMeal: (meal: MealKey) => void }) {
   return (
-    <View style={{ gap: 12 }}>
-      {entries.length ? null : (
-        <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Start by adding your first meal for today.
-          </Text>
-        </AppCard>
-      )}
-
-      {NUTRITION_MEAL_GROUP_OPTIONS.map((mealGroup) => {
-        const mealEntries = entries.filter((entry) => entry.mealGroup === mealGroup.key);
+    <View style={styles.stack}>
+      <AppSection title="Food diary" subtitle="Clean meal sections for today." />
+      {!entries.length ? <PremiumEmptyState button="Add meal" message="Log breakfast, lunch, dinner, or a snack when you are ready." onPress={() => onOpenMeal("breakfast")} title="Start your first meal" /> : null}
+      {MEALS.map((meal) => {
+        const mealEntries = entries.filter((entry) => entry.mealGroup === meal.storageGroup);
         const calories = mealEntries.reduce((total, entry) => total + entry.calories, 0);
-
+        const protein = mealEntries.reduce((total, entry) => total + entry.proteinG, 0);
         return (
-          <AppCard key={mealGroup.key}>
-            <View style={{ gap: 12 }}>
-              <View style={{ alignItems: "center", flexDirection: "row", justifyContent: "space-between" }}>
-                <View>
-                  <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
-                    {mealGroup.label}
-                  </Text>
-                  <Text style={{ color: "#64748b", marginTop: 3 }}>
-                    {Math.round(calories)} calories - {mealEntries.length} entr{mealEntries.length === 1 ? "y" : "ies"}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => onAdd(mealGroup.key)}
-                  style={{ backgroundColor: "#fef3c7", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 9 }}
-                >
-                  <Text style={{ color: "#92400e", fontWeight: "900" }}>Add</Text>
-                </TouchableOpacity>
+          <AppCard key={meal.key} style={styles.mealCard}>
+            <View style={styles.mealHeader}>
+              <View>
+                <Text style={styles.mealTitle}>{meal.label}</Text>
+                <Text style={styles.muted}>{Math.round(calories)} cal - {Math.round(protein)}g protein - {mealEntries.length} entries</Text>
               </View>
-
-              {mealEntries.map((entry) => (
-                <View
-                  key={entry.id}
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    borderRadius: 16,
-                    gap: 8,
-                    padding: 12
-                  }}
-                >
-                  <View style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: "#0f172a", fontWeight: "900" }}>{entry.foodName}</Text>
-                      <Text style={{ color: "#64748b", marginTop: 3 }}>
-                        {entry.quantity} {entry.unit} - {Math.round(entry.calories)} kcal
-                      </Text>
-                    </View>
-                    <TouchableOpacity activeOpacity={0.85} onPress={() => onDelete(entry.id)}>
-                      <Text style={{ color: "#dc2626", fontWeight: "900" }}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {entry.notes ? (
-                    <Text style={{ color: "#64748b", lineHeight: 20 }}>{entry.notes}</Text>
-                  ) : null}
-                </View>
-              ))}
+              <GhostButton label="Add" onPress={() => onOpenMeal(meal.key)} />
+            </View>
+            {mealEntries.map((entry) => <FoodRow entry={entry} key={entry.id} onDelete={() => onDelete(entry.id)} />)}
+            <View style={styles.actionRow}>
+              <SmallAction label="Copy meal" />
+              <SmallAction label="Save as meal" />
             </View>
           </AppCard>
         );
@@ -491,938 +318,574 @@ function DiaryTab({
   );
 }
 
-function AddTab({
-  defaultMealGroup,
-  onMealGroupChange,
-  onSaved,
-  todayKey
-}: {
-  defaultMealGroup: NutritionMealGroup;
-  onMealGroupChange: (mealGroup: NutritionMealGroup) => void;
-  onSaved: () => void;
-  todayKey: string;
-}) {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<FoodSearchResult[]>([]);
-  const [recentFoods, setRecentFoods] = useState<RecentFood[]>([]);
-  const [recentlyScannedProducts, setRecentlyScannedProducts] = useState<RecentlyScannedProduct[]>([]);
-  const [favouriteFoods, setFavouriteFoods] = useState<FavouriteFood[]>([]);
-  const [commonFoods, setCommonFoods] = useState<FoodSearchResult[]>(() =>
-    getCommonFoodResults().slice(0, 10)
-  );
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showManualForm, setShowManualForm] = useState(false);
-
-  useEffect(() => {
-    Promise.resolve()
-      .then(async () => {
-        const [nextRecentFoods, nextRecentlyScannedProducts, nextFavouriteFoods] = await Promise.all([
-          getRecentFoods(),
-          getRecentlyScannedProducts(),
-          getFavouriteFoods()
-        ]);
-
-        setRecentFoods(nextRecentFoods);
-        setRecentlyScannedProducts(nextRecentlyScannedProducts);
-        setFavouriteFoods(nextFavouriteFoods);
-        setCommonFoods(getCommonFoodResults().slice(0, 10));
-      })
-      .catch(() => undefined);
-  }, []);
-
-  useEffect(() => {
-    const searchTimer = setTimeout(() => {
-      Promise.resolve()
-        .then(async () => {
-          const trimmedQuery = query.trim();
-
-          setErrorMessage(null);
-
-          if (trimmedQuery.length < 2) {
-            setResults([]);
-            setLoading(false);
-            return;
-          }
-
-          setLoading(true);
-          setResults(await searchFoods(trimmedQuery));
-        })
-        .catch(() => {
-          setResults([]);
-          setErrorMessage("Food search is unavailable right now. You can still add food manually.");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }, 300);
-
-    return () => clearTimeout(searchTimer);
-  }, [query]);
-
-  function openFoodDetails(food: {
-    defaultMealGroup?: NutritionMealGroup;
-    source: FoodSource;
-    sourceFoodId: string;
-  }) {
-    const detailPath = `/food/details?source=${encodeURIComponent(food.source)}&sourceFoodId=${encodeURIComponent(food.sourceFoodId)}&mealGroup=${encodeURIComponent(food.defaultMealGroup ?? defaultMealGroup)}`;
-
-    router.push(detailPath as Href);
-  }
-
-  const hasQuery = query.trim().length >= 2;
-
+function AddTab({ onOpenMeal, onSheet, onTab }: { onOpenMeal: (meal: MealKey) => void; onSheet: (mode: SheetMode) => void; onTab: (tab: NutritionTab) => void }) {
   return (
-    <View style={{ gap: 12 }}>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-        <ActionCard
-          description="Find seed, custom, recent, and favourite foods."
-          label="Search Food"
-          onPress={() => undefined}
-        />
-        <ActionCard
-          description="Create editable drafts from photo, label, typed voice fallback, repeat meals, or quick builder."
-          label="Smart Log"
-          onPress={() => router.push(`/food/smart-log?mealGroup=${encodeURIComponent(defaultMealGroup)}` as Href)}
-        />
-        <ActionCard
-          description="Scan supermarket products, supplements, shakes, snacks, and drinks."
-          label="Scan Barcode"
-          onPress={() => router.push("/food/barcode-scanner" as Href)}
-        />
-        <ActionCard
-          description="Save your own foods and South African products."
-          label="Create Custom Food"
-          onPress={() => router.push("/food/custom-food" as Href)}
-        />
-        <ActionCard
-          description="Save foods you eat together often."
-          label="Create Saved Meal"
-          onPress={() => router.push("/food/saved-meal" as Href)}
-        />
-        <ActionCard
-          description="Build recipes with ingredients and servings."
-          label="Create Recipe"
-          onPress={() => router.push("/food/recipe" as Href)}
-        />
+    <View style={styles.stack}>
+      <AppCard style={styles.darkHero}>
+        <Text style={styles.heroTitle}>Fast food logging</Text>
+        <Text style={styles.heroSubtitle}>Choose a quick action and save common logs in a few taps.</Text>
+      </AppCard>
+      <View style={styles.quickGrid}>
+        <QuickAction icon="add" label="Add Meal" onPress={() => onOpenMeal("breakfast")} />
+        <QuickAction icon="scan_barcode" label="Scan Barcode" onPress={() => onSheet("barcode")} />
+        <QuickAction icon="ai_draft" label="Smart Log" onPress={() => onSheet("smart_log")} />
+        <QuickAction icon="water" label="Add Water" onPress={() => onSheet("water")} />
+        <QuickAction icon="save" label="Saved Meal" onPress={() => onTab("saved_meals")} />
+        <QuickAction icon="source" label="Create Recipe" onPress={() => router.push("/food/recipe" as Href)} />
       </View>
+      <PremiumEmptyState button="Add meal" message="Search or enter a food, choose quantity, then save." onPress={() => onOpenMeal("breakfast")} title="Log your first meal" />
+      <BarcodePlaceholder />
+      <SmartLogPlaceholder />
+    </View>
+  );
+}
 
-      <AppCard>
-        <View style={{ gap: 12 }}>
-          <View>
-            <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
-              Search food
-            </Text>
-            <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-              Nutrition values may vary by brand, preparation, and serving size.
-            </Text>
-          </View>
+function SavedMealsTab({ meals, onAdded, onOpenMeal }: { meals: SavedMeal[]; onAdded: (message: string) => void; onOpenMeal: (meal: MealKey) => void }) {
+  return (
+    <View style={styles.stack}>
+      <AppSection title="Saved Meals" subtitle="Meals you eat often for faster logging." />
+      {!meals.length ? <PremiumEmptyState button="Create saved meal" message="Create quick meals for breakfast, lunch, dinner, or snacks." onPress={() => router.push("/food/saved-meal" as Href)} title="Save meals you eat often" /> : null}
+      {meals.map((meal) => (
+        <LibraryMealCard
+          key={meal.id}
+          meta={meal.defaultMealGroup}
+          name={meal.name}
+          onAdd={async () => {
+            await addSavedMealToDiary(meal.id);
+            onAdded("Saved meal added");
+          }}
+        />
+      ))}
+      {!meals.length ? MOCK_SAVED_MEALS.map((meal) => <MockMealCard key={meal.name} meal={meal} onAdd={() => onOpenMeal(meal.mealType.toLowerCase() as MealKey)} />) : null}
+    </View>
+  );
+}
 
-          <TextInput
-            onChangeText={setQuery}
-            placeholder="Search food, meal, or brand"
-            placeholderTextColor="#94a3b8"
-            style={INPUT_STYLE}
-            value={query}
+function RecipesTab({ onAdded, recipes }: { onAdded: (message: string) => void; recipes: Recipe[] }) {
+  return (
+    <View style={styles.stack}>
+      <AppSection title="Recipes" subtitle="Ingredients, servings, notes and nutrition per serving." />
+      {!recipes.length ? <PremiumEmptyState button="Create recipe" message="Save meals with ingredients and serving sizes." onPress={() => router.push("/food/recipe" as Href)} title="Build your recipe library" /> : null}
+      {recipes.map((recipe) => (
+        <RecipeCard
+          key={recipe.id}
+          name={recipe.name}
+          onAdd={async () => {
+            await addRecipeServingToDiary({ mealGroup: "dinner", recipeId: recipe.id, servings: 1 });
+            onAdded("Recipe serving added");
+          }}
+          servings={recipe.servings}
+        />
+      ))}
+      {!recipes.length ? MOCK_RECIPES.map((recipe) => <RecipeCard key={recipe.name} name={recipe.name} servings={recipe.servings} mock={recipe} />) : null}
+    </View>
+  );
+}
+
+function WaterTab({ onSaved, waterGoal }: { onSaved: (message: string) => void; waterGoal: WaterGoal | null }) {
+  return (
+    <View style={styles.stack}>
+      <AppCard style={styles.waterCard}>
+        <Text style={styles.waterTitle}>Water</Text>
+        <Text style={styles.waterValue}>{formatWater(waterGoal?.currentMl ?? 0)} / {formatWater(waterGoal?.targetMl ?? 2000)}</Text>
+        <ProgressBar color="#38bdf8" value={(waterGoal?.currentMl ?? 0) / (waterGoal?.targetMl ?? 2000)} />
+      </AppCard>
+      {(waterGoal?.currentMl ?? 0) === 0 ? <PremiumEmptyState button="Add water" message="Add your first glass or bottle." onPress={() => undefined} title="Start hydration tracking" /> : null}
+      <View style={styles.quickGrid}>
+        {[250, 500, 750].map((amount) => (
+          <QuickAction
+            icon="water"
+            key={amount}
+            label={`+${amount} ml`}
+            onPress={async () => {
+              await addWaterLog(amount);
+              onSaved("Water added");
+            }}
           />
+        ))}
+      </View>
+    </View>
+  );
+}
 
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {NUTRITION_MEAL_GROUP_OPTIONS.filter((option) => option.key !== "notes").map((option) => (
-              <TouchableOpacity
-                activeOpacity={0.85}
-                key={option.key}
-                onPress={() => onMealGroupChange(option.key)}
-                style={{
-                  backgroundColor: defaultMealGroup === option.key ? "#f59e0b" : "#fffbeb",
-                  borderRadius: 999,
-                  paddingHorizontal: 12,
-                  paddingVertical: 9
-                }}
-              >
-                <Text style={{ color: defaultMealGroup === option.key ? "#ffffff" : "#92400e", fontWeight: "900" }}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+function ReportsTab({ entries, summary, target, waterGoal }: { entries: NutritionDiaryEntry[]; summary: DailyNutritionSummary | null; target: NutritionTarget | null; waterGoal: WaterGoal | null }) {
+  return (
+    <View style={styles.stack}>
+      <AppSection title="Reports" subtitle="Compact trends based on your logs." />
+      {!entries.length ? <PremiumEmptyState button="Add meal" message="Log a few meals to see calories, protein, water, and macro trends." onPress={() => undefined} title="Nutrition trends will appear here" /> : null}
+      <ReportsPreview entries={entries} summary={summary} waterGoal={waterGoal} />
+      <ChartCard title="Calories over 7 days" values={[0.2, 0.35, 0.6, 0.45, 0.7, 0.5, Math.min(1, (summary?.calories ?? 0) / (target?.caloriesTarget ?? 2000))]} />
+      <ChartCard title="Protein over 7 days" values={[0.25, 0.4, 0.55, 0.45, 0.65, 0.52, Math.min(1, (summary?.proteinGrams ?? 0) / (target?.proteinTargetG ?? 140))]} />
+      <ChartCard title="Water over 7 days" values={[0.3, 0.45, 0.4, 0.55, 0.7, 0.5, Math.min(1, (waterGoal?.currentMl ?? 0) / (waterGoal?.targetMl ?? 2000))]} water />
+      <View style={styles.macroGrid}>
+        <MacroCard helper="Based on your logs" label="Meal consistency" target="5 sections" value={`${new Set(entries.map((entry) => entry.mealGroup)).size}/5`} valueRatio={new Set(entries.map((entry) => entry.mealGroup)).size / 5} />
+        <MacroCard helper="Most logged foods" label="Foods" target="More data later" value={entries[0]?.foodName ?? "Start today"} valueRatio={entries.length ? 0.7 : 0} />
+      </View>
+    </View>
+  );
+}
 
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => setShowManualForm((current) => !current)}
-            style={{ backgroundColor: "#fffbeb", borderRadius: 16, padding: 12 }}
-          >
-            <Text style={{ color: "#92400e", fontWeight: "900" }}>
-              {showManualForm ? "Hide manual entry" : "Add food manually"}
-            </Text>
-          </TouchableOpacity>
+function GuidesTab() {
+  const prompts = ["Log this meal", "Estimate this plate", "Create a meal draft", "Build a grocery idea from my protein target", "Summarize today food", "Save this as a meal"];
+  return (
+    <View style={styles.stack}>
+      <AppSection title="Learn / Guides" subtitle="Nutrition organization, source placeholders and draft-first AI." />
+      <SmartLogPlaceholder />
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Nutrition assistant prompts</Text>
+        <Text style={styles.darkMuted}>AI must create drafts only. Review before saving.</Text>
+        <View style={styles.chipRow}>
+          {prompts.map((prompt) => <Pill key={prompt} label={prompt} onPress={() => router.push(`/ai?mode=quick_logger&prompt=${encodeURIComponent(prompt)}` as Href)} />)}
         </View>
       </AppCard>
-
-      {showManualForm ? (
-        <ManualFoodForm
-          defaultMealGroup={defaultMealGroup}
-          onMealGroupChange={onMealGroupChange}
-          onSaved={onSaved}
-          todayKey={todayKey}
-        />
-      ) : null}
-
-      {hasQuery ? (
-        <FoodSearchSection
-          emptyText="No food found. Add it manually or create a custom food."
-          errorText={errorMessage}
-          foods={results}
-          loading={loading}
-          onPress={openFoodDetails}
-          title="Search Results"
-        />
-      ) : (
-        <View style={{ gap: 12 }}>
-          <RecentFoodSection foods={recentFoods} onPress={openFoodDetails} />
-          <RecentlyScannedSection foods={recentlyScannedProducts} />
-          <FavouriteFoodSection foods={favouriteFoods} onPress={openFoodDetails} />
-          <FoodSearchSection
-            foods={commonFoods}
-            onPress={openFoodDetails}
-            title="Common Foods"
-          />
-        </View>
-      )}
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Medication / supplement timing</Text>
+        <Text style={styles.darkMuted}>Some medicines or supplements may have food timing instructions. Always follow your label or healthcare professional advice.</Text>
+      </AppCard>
+      <SkeletonCard label="Meal section skeleton" />
+      <SkeletonCard label="Recipe card skeleton" />
+      <SkeletonCard label="Report chart skeleton" />
     </View>
   );
 }
 
-function ActionCard({
-  description,
-  label,
-  onPress
-}: {
-  description: string;
-  label: string;
-  onPress: () => void;
-}) {
+function SettingsTab({ dailyNote, onSaved, todayKey }: { dailyNote: NutritionDailyNote | null; onSaved: () => void; todayKey: string }) {
+  const [note, setNote] = useState(dailyNote?.note ?? "");
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      style={{
-        backgroundColor: "#ffffff",
-        borderColor: "#fde68a",
-        borderRadius: 20,
-        borderWidth: 1,
-        flexGrow: 1,
-        minHeight: 116,
-        minWidth: "45%",
-        padding: 14
-      }}
-    >
-      <Text style={{ color: "#0f172a", fontSize: 17, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#64748b", lineHeight: 19, marginTop: 6 }}>{description}</Text>
-    </TouchableOpacity>
+    <View style={styles.stack}>
+      <AppSection title="Settings" subtitle="Private local-first nutrition preferences." />
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Daily note</Text>
+        <QuickNoteField onChangeText={setNote} value={note} />
+        <QuickSaveButton
+          onPress={async () => {
+            await saveNutritionDailyNote(note, todayKey);
+            await onSaved();
+          }}
+          title="Save note"
+        />
+      </AppCard>
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Sensitive contexts</Text>
+        <Text style={styles.darkMuted}>Pregnancy nutrition needs vary. Speak to your healthcare professional or dietitian if unsure.</Text>
+        <Text style={styles.darkMuted}>Baby feeding and solids guidance should be discussed with a pediatrician, clinic, nurse, or healthcare professional if unsure.</Text>
+      </AppCard>
+    </View>
   );
 }
 
-function ManualFoodForm({
-  defaultMealGroup,
-  onMealGroupChange,
-  onSaved,
-  todayKey
-}: {
-  defaultMealGroup: NutritionMealGroup;
-  onMealGroupChange: (mealGroup: NutritionMealGroup) => void;
-  onSaved: () => void;
-  todayKey: string;
-}) {
+function AddMealSheet({ meal, onClose, onMealChange, onSaved, todayKey, visible }: { meal: MealKey; onClose: () => void; onMealChange: (meal: MealKey) => void; onSaved: (message: string) => void; todayKey: string; visible: boolean }) {
   const [foodName, setFoodName] = useState("");
-  const [quantity, setQuantity] = useState("1");
+  const [quantity, setQuantity] = useState(1);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualQuantity, setManualQuantity] = useState("1");
   const [unit, setUnit] = useState("serving");
-  const [calories, setCalories] = useState("");
-  const [proteinG, setProteinG] = useState("");
-  const [carbsG, setCarbsG] = useState("");
-  const [fatG, setFatG] = useState("");
+  const [calories, setCalories] = useState("250");
+  const [protein, setProtein] = useState("20");
+  const [carbs, setCarbs] = useState("25");
+  const [fat, setFat] = useState("8");
   const [notes, setNotes] = useState("");
 
-  async function saveEntry() {
-    if (!foodName.trim()) {
-      return;
-    }
-
+  async function save() {
+    const mealConfig = MEALS.find((item) => item.key === meal) ?? MEALS[0];
     await createNutritionEntry({
       calories: Number(calories) || 0,
-      carbsG: Number(carbsG) || 0,
+      carbsG: Number(carbs) || 0,
       entryDate: todayKey,
-      fatG: Number(fatG) || 0,
-      foodName,
-      mealGroup: defaultMealGroup,
+      entrySource: "manual",
+      fatG: Number(fat) || 0,
+      foodName: foodName.trim() || "Quick meal",
+      mealGroup: mealConfig.storageGroup,
       notes,
-      proteinG: Number(proteinG) || 0,
-      quantity: Number(quantity) || 1,
+      proteinG: Number(protein) || 0,
+      quantity: manualMode ? Number(manualQuantity) || 1 : quantity,
       unit
     });
-
     setFoodName("");
-    setQuantity("1");
-    setUnit("serving");
-    setCalories("");
-    setProteinG("");
-    setCarbsG("");
-    setFatG("");
     setNotes("");
-    onSaved();
+    onSaved("Meal saved");
   }
 
   return (
-    <AppCard>
-      <View style={{ gap: 12 }}>
-        <View>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
-            Manual food entry
-          </Text>
-          <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Use this when search is unavailable or the food is not listed.
-          </Text>
-        </View>
-
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {NUTRITION_MEAL_GROUP_OPTIONS.filter((option) => option.key !== "notes").map((option) => (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              key={option.key}
-              onPress={() => onMealGroupChange(option.key)}
-              style={{
-                backgroundColor: defaultMealGroup === option.key ? "#f59e0b" : "#fffbeb",
-                borderRadius: 999,
-                paddingHorizontal: 12,
-                paddingVertical: 9
-              }}
-            >
-              <Text style={{ color: defaultMealGroup === option.key ? "#ffffff" : "#92400e", fontWeight: "900" }}>
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <TextInput onChangeText={setFoodName} placeholder="Food name" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={foodName} />
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <TextInput keyboardType="numeric" onChangeText={setQuantity} placeholder="Quantity" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={quantity} />
-          <TextInput onChangeText={setUnit} placeholder="Unit" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={unit} />
-        </View>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          <TextInput keyboardType="numeric" onChangeText={setCalories} placeholder="Calories" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flexGrow: 1, minWidth: "46%" }} value={calories} />
-          <TextInput keyboardType="numeric" onChangeText={setProteinG} placeholder="Protein grams" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flexGrow: 1, minWidth: "46%" }} value={proteinG} />
-          <TextInput keyboardType="numeric" onChangeText={setCarbsG} placeholder="Carbs grams" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flexGrow: 1, minWidth: "46%" }} value={carbsG} />
-          <TextInput keyboardType="numeric" onChangeText={setFatG} placeholder="Fat grams" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flexGrow: 1, minWidth: "46%" }} value={fatG} />
-        </View>
-        <TextInput multiline onChangeText={setNotes} placeholder="Notes" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, minHeight: 82, paddingTop: 13 }} value={notes} />
-        <PrimaryButton disabled={!foodName.trim()} label="Save food" onPress={saveEntry} />
-      </View>
-    </AppCard>
-  );
-}
-
-function FoodSearchSection({
-  emptyText,
-  errorText,
-  foods,
-  loading = false,
-  onPress,
-  title
-}: {
-  emptyText?: string;
-  errorText?: string | null;
-  foods: FoodSearchResult[];
-  loading?: boolean;
-  onPress: (food: FoodSearchResult) => void;
-  title: string;
-}) {
-  return (
-    <View style={{ gap: 10 }}>
-      <Text style={{ color: "#0f172a", fontSize: 21, fontWeight: "900" }}>{title}</Text>
-      {loading ? (
-        <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>Searching foods...</Text>
-        </AppCard>
-      ) : null}
-      {errorText ? (
-        <AppCard backgroundColor="#fff7ed">
-          <Text style={{ color: "#9a3412", lineHeight: 21 }}>{errorText}</Text>
-        </AppCard>
-      ) : null}
-      {!loading && !errorText && foods.length === 0 && emptyText ? (
-        <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>{emptyText}</Text>
-        </AppCard>
-      ) : null}
-      {foods.map((food) => (
-        <FoodResultCard key={`${food.source}-${food.sourceFoodId}`} food={food} onPress={() => onPress(food)} />
-      ))}
-    </View>
-  );
-}
-
-function RecentFoodSection({
-  foods,
-  onPress
-}: {
-  foods: RecentFood[];
-  onPress: (food: RecentFood) => void;
-}) {
-  return (
-    <View style={{ gap: 10 }}>
-      <Text style={{ color: "#0f172a", fontSize: 21, fontWeight: "900" }}>Recent Foods</Text>
-      {foods.length ? (
-        foods.slice(0, 5).map((food) => (
-          <FoodMemoryCard
-            key={food.id}
-            meta={`${food.timesUsed} use${food.timesUsed === 1 ? "" : "s"}`}
-            name={food.foodName}
-            onPress={() => onPress(food)}
-            source={food.source}
-          />
-        ))
+    <QuickLogBottomSheet onClose={onClose} title="Add meal" visible={visible}>
+      <Text style={styles.sheetLabel}>Meal type</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+        {MEALS.map((item) => <Chip key={item.key} label={item.label} onPress={() => onMealChange(item.key)} selected={meal === item.key} />)}
+      </ScrollView>
+      <TextInput onChangeText={setFoodName} placeholder="Search or enter food" placeholderTextColor="#94a3b8" style={styles.darkInput} value={foodName} />
+      <ManualEntryToggle enabled={manualMode} onToggle={() => setManualMode((current) => !current)} />
+      {manualMode ? (
+        <TextInput keyboardType="decimal-pad" onChangeText={setManualQuantity} placeholder="Custom quantity" placeholderTextColor="#94a3b8" style={styles.darkInput} value={manualQuantity} />
       ) : (
-        <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Foods you add will appear here.
-          </Text>
-        </AppCard>
+        <>
+          <PresetChipGroup onSelect={setQuantity} presets={[0.5, 1, 2, 3]} selectedValue={quantity} suffix=" serving" />
+          <NumberWheelPicker max={5} min={0.5} onChange={setQuantity} step={0.5} value={quantity} />
+        </>
       )}
-    </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+        {["serving", "100g", "cup", "piece", "bottle"].map((option) => <Chip key={option} label={option} onPress={() => setUnit(option)} selected={unit === option} />)}
+      </ScrollView>
+      <View style={styles.inputGrid}>
+        <TextInput keyboardType="numeric" onChangeText={setCalories} placeholder="Calories" placeholderTextColor="#94a3b8" style={styles.darkInput} value={calories} />
+        <TextInput keyboardType="numeric" onChangeText={setProtein} placeholder="Protein g" placeholderTextColor="#94a3b8" style={styles.darkInput} value={protein} />
+        <TextInput keyboardType="numeric" onChangeText={setCarbs} placeholder="Carbs g" placeholderTextColor="#94a3b8" style={styles.darkInput} value={carbs} />
+        <TextInput keyboardType="numeric" onChangeText={setFat} placeholder="Fat g" placeholderTextColor="#94a3b8" style={styles.darkInput} value={fat} />
+      </View>
+      <QuickNoteField onChangeText={setNotes} value={notes} />
+      <QuickSaveButton onPress={save} title="Save meal" />
+    </QuickLogBottomSheet>
   );
 }
 
-function RecentlyScannedSection({ foods }: { foods: RecentlyScannedProduct[] }) {
+function AddWaterSheet({ onClose, onSaved, visible }: { onClose: () => void; onSaved: (message: string) => void; visible: boolean }) {
+  const [amount, setAmount] = useState(250);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualAmount, setManualAmount] = useState("250");
+  async function save() {
+    await addWaterLog(manualMode ? Number(manualAmount) || 0 : amount);
+    onSaved("Water added");
+  }
   return (
-    <View style={{ gap: 10 }}>
-      <Text style={{ color: "#0f172a", fontSize: 21, fontWeight: "900" }}>Recently Scanned</Text>
-      {foods.length ? (
-        foods.slice(0, 5).map((food) => (
-          <TouchableOpacity
-            activeOpacity={0.85}
-            key={food.id}
-            onPress={() => {
-              const path = `/food/barcode-product?barcode=${encodeURIComponent(food.barcode)}`;
-              router.push(path as Href);
-            }}
-            style={{
-              alignItems: "center",
-              backgroundColor: "#ffffff",
-              borderColor: "#fde68a",
-              borderRadius: 18,
-              borderWidth: 1,
-              flexDirection: "row",
-              gap: 12,
-              padding: 14
-            }}
-          >
-            {food.imageUrl ? (
-              <Image
-                alt={`${food.productName} product image`}
-                source={{ uri: food.imageUrl }}
-                style={{ backgroundColor: "#f8fafc", borderRadius: 12, height: 54, width: 54 }}
-              />
-            ) : (
-              <View style={{ backgroundColor: "#fffbeb", borderRadius: 12, height: 54, width: 54 }} />
-            )}
+    <QuickLogBottomSheet onClose={onClose} title="Add water" visible={visible}>
+      <ManualEntryToggle enabled={manualMode} onToggle={() => setManualMode((current) => !current)} />
+      {manualMode ? (
+        <TextInput keyboardType="numeric" onChangeText={setManualAmount} placeholder="Amount ml" placeholderTextColor="#94a3b8" style={styles.darkInput} value={manualAmount} />
+      ) : (
+        <>
+          <PresetChipGroup onSelect={setAmount} presets={[250, 500, 750]} selectedValue={amount} suffix="ml" />
+          <NumberWheelPicker max={2000} min={100} onChange={setAmount} step={50} suffix="ml" value={amount} />
+        </>
+      )}
+      <QuickSaveButton onPress={save} title="Save water" />
+    </QuickLogBottomSheet>
+  );
+}
+
+function PlaceholderSheet({ body, onClose, onManual, title, visible }: { body: string; onClose: () => void; onManual: () => void; title: string; visible: boolean }) {
+  return (
+    <QuickLogBottomSheet onClose={onClose} title={title} visible={visible}>
+      <Text style={styles.sheetText}>{body}</Text>
+      <QuickSaveButton onPress={onManual} title="Add manually" />
+    </QuickLogBottomSheet>
+  );
+}
+
+function MealTimeline({ entries, onOpenMeal }: { entries: NutritionDiaryEntry[]; onOpenMeal: (meal: MealKey) => void }) {
+  return (
+    <View style={styles.stack}>
+      {MEALS.map((meal) => {
+        const mealEntries = entries.filter((entry) => entry.mealGroup === meal.storageGroup);
+        return (
+          <Pressable accessibilityRole="button" key={meal.key} onPress={() => onOpenMeal(meal.key)} style={styles.timelineRow}>
+            <View style={styles.timelineDot} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900" }}>{food.productName}</Text>
-              <Text style={{ color: "#64748b", marginTop: 3 }}>
-                {food.brand || "Packaged product"} - {Math.round(food.calories ?? 0)} kcal
-              </Text>
-              <Text style={{ color: "#94a3b8", fontSize: 12, marginTop: 3 }}>
-                Last scanned {new Date(food.lastScannedAt).toLocaleDateString()}
-              </Text>
+              <Text style={styles.timelineTitle}>{meal.label}</Text>
+              <Text style={styles.muted}>{mealEntries.length ? `${mealEntries.length} entries - ${Math.round(mealEntries.reduce((total, entry) => total + entry.calories, 0))} cal` : "Log your first meal"}</Text>
             </View>
-          </TouchableOpacity>
-        ))
-      ) : (
-        <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Scanned products will appear here.
-          </Text>
-        </AppCard>
-      )}
+            <Text style={styles.timelineAction}>Add</Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
-function FavouriteFoodSection({
-  foods,
-  onPress
-}: {
-  foods: FavouriteFood[];
-  onPress: (food: FavouriteFood) => void;
-}) {
+function FoodRow({ entry, onDelete }: { entry: NutritionDiaryEntry; onDelete: () => void }) {
   return (
-    <View style={{ gap: 10 }}>
-      <Text style={{ color: "#0f172a", fontSize: 21, fontWeight: "900" }}>Favourite Foods</Text>
-      {foods.length ? (
-        foods.slice(0, 5).map((food) => (
-          <FoodMemoryCard
-            key={food.id}
-            meta="Saved favourite"
-            name={food.foodName}
-            onPress={() => onPress(food)}
-            source={food.source}
-          />
-        ))
-      ) : (
-        <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Save favourites from a food detail screen.
-          </Text>
-        </AppCard>
-      )}
-    </View>
-  );
-}
-
-function FoodResultCard({ food, onPress }: { food: FoodSearchResult; onPress: () => void }) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      style={{
-        backgroundColor: "#ffffff",
-        borderColor: "#fde68a",
-        borderRadius: 20,
-        borderWidth: 1,
-        gap: 8,
-        padding: 14
-      }}
-    >
-      <View style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: "#0f172a", fontSize: 17, fontWeight: "900" }}>{food.name}</Text>
-          <Text style={{ color: "#64748b", marginTop: 3 }}>
-            {food.brand || food.servingLabel || "Local seed data"}
-          </Text>
-        </View>
-        <SourceBadge source={food.source} />
-      </View>
-      <Text style={{ color: "#64748b", lineHeight: 20 }}>
-        {food.caloriesPerServing !== undefined ? `${Math.round(food.caloriesPerServing)} kcal` : "Calories unavailable"}
-        {food.proteinGPerServing !== undefined ? ` - ${Math.round(food.proteinGPerServing)}g protein` : ""}
-      </Text>
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
-        {food.verified ? "Verified" : "Estimated"}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-function FoodMemoryCard({
-  meta,
-  name,
-  onPress,
-  source
-}: {
-  meta: string;
-  name: string;
-  onPress: () => void;
-  source: FoodSource;
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      style={{
-        alignItems: "center",
-        backgroundColor: "#ffffff",
-        borderColor: "#fde68a",
-        borderRadius: 18,
-        borderWidth: 1,
-        flexDirection: "row",
-        gap: 12,
-        justifyContent: "space-between",
-        padding: 14
-      }}
-    >
+    <View style={styles.foodRow}>
+      <View style={styles.foodThumb}><AppIcon color="#6ee7c8" decorative name="nutrition" size={18} /></View>
       <View style={{ flex: 1 }}>
-        <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900" }}>{name}</Text>
-        <Text style={{ color: "#64748b", marginTop: 3 }}>{meta}</Text>
+        <Text style={styles.foodName}>{entry.foodName}</Text>
+        <Text style={styles.muted}>{entry.quantity} {entry.unit} - {Math.round(entry.calories)} cal</Text>
+        <Text style={styles.foodMacro}>{Math.round(entry.proteinG)}g protein - {Math.round(entry.carbsG)}g carbs - {Math.round(entry.fatG)}g fat</Text>
       </View>
-      <SourceBadge source={source} />
-    </TouchableOpacity>
-  );
-}
-
-function SourceBadge({ source }: { source: FoodSource }) {
-  return (
-    <View style={{ backgroundColor: "#fffbeb", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }}>
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
-        {getSourceLabel(source)}
-      </Text>
+      <View style={styles.rowActions}>
+        <SmallAction label="Copy" />
+        <Pressable accessibilityRole="button" onPress={onDelete}><Text style={styles.deleteText}>Delete</Text></Pressable>
+      </View>
     </View>
   );
 }
 
-function getSourceLabel(source: FoodSource) {
-  switch (source) {
-    case "open_food_facts":
-      return "Open Food Facts";
-    case "usda":
-      return "USDA";
-    case "custom":
-      return "Custom";
-    default:
-      return "Local";
-  }
+function ReportsPreview({ entries, summary, waterGoal }: { entries: NutritionDiaryEntry[]; summary: DailyNutritionSummary | null; waterGoal: WaterGoal | null }) {
+  return (
+    <AppCard style={styles.darkCard}>
+      <Text style={styles.darkTitle}>Reports preview</Text>
+      <Text style={styles.darkMuted}>Based on your logs: {entries.length} food entries, {Math.round(summary?.proteinGrams ?? 0)}g protein, {formatWater(waterGoal?.currentMl ?? 0)} water.</Text>
+      <ChartCard title="Macro split" values={[summary?.proteinGrams ?? 0, summary?.carbsGrams ?? 0, summary?.fatGrams ?? 0].map((value) => Math.min(1, value / 120))} />
+    </AppCard>
+  );
 }
 
-function LibraryTab() {
-  const [customFoods, setCustomFoods] = useState<CustomFood[]>([]);
-  const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [favouriteFoods, setFavouriteFoods] = useState<FavouriteFood[]>([]);
-
-  useEffect(() => {
-    Promise.resolve()
-      .then(async () => {
-        const [nextCustomFoods, nextSavedMeals, nextRecipes, nextFavouriteFoods] =
-          await Promise.all([
-            getCustomFoods(),
-            getSavedMeals(),
-            getRecipes(),
-            getFavouriteFoods()
-          ]);
-
-        setCustomFoods(nextCustomFoods);
-        setSavedMeals(nextSavedMeals);
-        setRecipes(nextRecipes);
-        setFavouriteFoods(nextFavouriteFoods);
-      })
-      .catch(() => undefined);
-  }, []);
-
+function MacroCard({ helper, label, target, value, valueRatio, water = false }: { helper: string; label: string; target: string; value: string; valueRatio: number; water?: boolean }) {
   return (
-    <View style={{ gap: 14 }}>
-      <LibrarySection
-        actionLabel="Create custom food"
-        emptyText="No custom foods yet. Create your first one."
-        items={customFoods.map((food) => ({
-          id: food.id,
-          meta: `${food.servingSize} ${food.servingUnit} - ${Math.round(food.calories)} kcal`,
-          title: food.name,
-          type: "custom_food" as const
-        }))}
-        onAction={() => router.push("/food/custom-food" as Href)}
-        title="Custom Foods"
-      />
-
-      <LibrarySection
-        actionLabel="Create saved meal"
-        emptyText="No saved meals yet. Save meals you eat often."
-        items={savedMeals.map((meal) => ({
-          id: meal.id,
-          meta: meal.description ?? meal.defaultMealGroup,
-          title: meal.name,
-          type: "saved_meal" as const
-        }))}
-        onAction={() => router.push("/food/saved-meal" as Href)}
-        title="Saved Meals"
-      />
-
-      <LibrarySection
-        actionLabel="Create recipe"
-        emptyText="No recipes yet. Add family recipes and track nutrition per serving."
-        items={recipes.map((recipe) => ({
-          id: recipe.id,
-          meta: `${recipe.servings} serving${recipe.servings === 1 ? "" : "s"}`,
-          title: recipe.name,
-          type: "recipe" as const
-        }))}
-        onAction={() => router.push("/food/recipe" as Href)}
-        title="Recipes"
-      />
-
-      <View style={{ gap: 10 }}>
-        <Text style={{ color: "#0f172a", fontSize: 21, fontWeight: "900" }}>Favourites</Text>
-        {favouriteFoods.length ? (
-          favouriteFoods.map((food) => (
-            <FoodMemoryCard
-              key={food.id}
-              meta={`${food.defaultQuantity} ${food.defaultUnit}`}
-              name={food.foodName}
-              onPress={() => {
-                const path = `/food/details?source=${encodeURIComponent(food.source)}&sourceFoodId=${encodeURIComponent(food.sourceFoodId)}`;
-                router.push(path as Href);
-              }}
-              source={food.source}
-            />
-          ))
-        ) : (
-          <AppCard>
-            <Text style={{ color: "#64748b", lineHeight: 21 }}>
-              Favourite foods you save from detail screens will appear here.
-            </Text>
-          </AppCard>
-        )}
+    <AppCard style={styles.macroCard}>
+      <View style={styles.cardTop}>
+        <Text style={styles.macroLabel}>{label}</Text>
+        <AppIcon color={water ? "#38bdf8" : "#6ee7c8"} decorative name={water ? "water" : "nutrition"} size={18} />
       </View>
+      <Text style={styles.macroValue}>{value}</Text>
+      <Text style={styles.muted}>Target: {target}</Text>
+      <ProgressBar color={water ? "#38bdf8" : "#6ee7c8"} value={valueRatio} />
+      <Text style={styles.helper}>{helper}</Text>
+    </AppCard>
+  );
+}
 
-      <Text style={{ color: "#64748b", fontSize: 12, lineHeight: 18 }}>
-        Nutrition insights are for general wellness tracking only and are not medical advice.
-        For medical conditions, pregnancy, children, or medication concerns, speak to a
-        healthcare professional.
-      </Text>
+function HeroMetric({ label, progress, value, water = false }: { label: string; progress: number; value: string; water?: boolean }) {
+  return (
+    <View style={styles.heroMetric}>
+      <Text style={styles.heroMetricLabel}>{label}</Text>
+      <Text style={styles.heroMetricValue}>{value}</Text>
+      <ProgressBar color={water ? "#38bdf8" : "#6ee7c8"} value={progress} />
     </View>
   );
 }
 
-function LibrarySection({
-  actionLabel,
-  emptyText,
-  items,
-  onAction,
-  title
-}: {
-  actionLabel: string;
-  emptyText: string;
-  items: Array<{ id: string; meta: string; title: string; type: "custom_food" | "saved_meal" | "recipe" }>;
-  onAction: () => void;
-  title: string;
-}) {
+function ChartCard({ title, values, water = false }: { title: string; values: number[]; water?: boolean }) {
   return (
-    <View style={{ gap: 10 }}>
-      <View style={{ alignItems: "center", flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
-        <Text style={{ color: "#0f172a", flex: 1, fontSize: 21, fontWeight: "900" }}>{title}</Text>
-        <TouchableOpacity activeOpacity={0.85} onPress={onAction} style={{ backgroundColor: "#fffbeb", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9 }}>
-          <Text style={{ color: "#92400e", fontWeight: "900" }}>{actionLabel}</Text>
-        </TouchableOpacity>
+    <View style={styles.chartBlock}>
+      <Text style={styles.chartTitle}>{title}</Text>
+      <View style={styles.barRow}>
+        {values.map((value, index) => (
+          <View key={`${title}-${index}`} style={styles.barTrack}>
+            <View style={[styles.barFill, { backgroundColor: water ? "#38bdf8" : "#6ee7c8", height: `${Math.max(10, Math.min(100, value * 100))}%` }]} />
+          </View>
+        ))}
       </View>
-
-      {items.length ? (
-        items.map((item) => (
-          <TouchableOpacity
-            activeOpacity={0.85}
-            key={`${item.type}-${item.id}`}
-            onPress={() => {
-              const path = `/food/library-item?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
-              router.push(path as Href);
-            }}
-            style={{
-              backgroundColor: "#ffffff",
-              borderColor: "#fde68a",
-              borderRadius: 18,
-              borderWidth: 1,
-              padding: 14
-            }}
-          >
-            <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900" }}>{item.title}</Text>
-            <Text style={{ color: "#64748b", marginTop: 3 }}>{item.meta}</Text>
-          </TouchableOpacity>
-        ))
-      ) : (
-        <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>{emptyText}</Text>
-        </AppCard>
-      )}
     </View>
   );
 }
 
-function WaterTab({ onChange, waterGoal }: { onChange: () => void; waterGoal: WaterGoal | null }) {
-  const [customAmount, setCustomAmount] = useState("");
-  const [targetMl, setTargetMl] = useState(String(waterGoal?.targetMl ?? 2000));
-  const progress = waterGoal?.targetMl
-    ? Math.min(100, Math.round((waterGoal.currentMl / waterGoal.targetMl) * 100))
-    : 0;
-
-  async function addWater(amountMl: number) {
-    await addWaterLog(amountMl);
-    await onChange();
-  }
-
-  async function saveTarget() {
-    await setWaterGoal(Number(targetMl) || 0);
-    await onChange();
-  }
-
+function LibraryMealCard({ meta, name, onAdd }: { meta: string; name: string; onAdd: () => void }) {
   return (
-    <AppCard backgroundColor="#eff6ff">
-      <View style={{ gap: 12 }}>
-        <Text style={{ color: "#1d4ed8", fontSize: 20, fontWeight: "900" }}>
-          Water
-        </Text>
-        <Text style={{ color: "#1d4ed8" }}>
-          {waterGoal?.currentMl ?? 0}ml of {waterGoal?.targetMl ?? 2000}ml
-        </Text>
-        <ProgressBar color="#3b82f6" progress={progress} trackColor="#dbeafe" />
-
-        {(waterGoal?.currentMl ?? 0) === 0 ? (
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Add your first glass of water.
-          </Text>
-        ) : null}
-
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {QUICK_WATER_AMOUNTS.map((amount) => (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              key={amount}
-              onPress={() => addWater(amount)}
-              style={{ backgroundColor: "#ffffff", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 10 }}
-            >
-              <Text style={{ color: "#2563eb", fontWeight: "900" }}>+{amount} ml</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <TextInput keyboardType="numeric" onChangeText={setCustomAmount} placeholder="Custom amount ml" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, borderColor: "#bfdbfe", flex: 1 }} value={customAmount} />
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => {
-              addWater(Number(customAmount) || 0);
-              setCustomAmount("");
-            }}
-            style={{ alignItems: "center", backgroundColor: "#3b82f6", borderRadius: 16, justifyContent: "center", paddingHorizontal: 14 }}
-          >
-            <Text style={{ color: "#ffffff", fontWeight: "900" }}>Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <TextInput keyboardType="numeric" onChangeText={setTargetMl} placeholder="Daily target ml" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, borderColor: "#bfdbfe", flex: 1 }} value={targetMl} />
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={saveTarget}
-            style={{ alignItems: "center", backgroundColor: "#1d4ed8", borderRadius: 16, justifyContent: "center", paddingHorizontal: 14 }}
-          >
-            <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save</Text>
-          </TouchableOpacity>
-        </View>
+    <AppCard style={styles.darkCard}>
+      <FoodMedia label="Saved meal" />
+      <Text style={styles.darkTitle}>{name}</Text>
+      <Text style={styles.darkMuted}>{meta}</Text>
+      <View style={styles.actionRow}>
+        <GhostButton label="Add to today" onPress={onAdd} />
+        <SmallAction label="Edit" />
+        <SmallAction label="Duplicate" />
       </View>
     </AppCard>
   );
 }
 
-function NotesTab({
-  dailyNote,
-  onSaved,
-  todayKey
-}: {
-  dailyNote: NutritionDailyNote | null;
-  onSaved: () => void;
-  todayKey: string;
-}) {
-  const [note, setNote] = useState(dailyNote?.note ?? "");
-
-  async function saveNote() {
-    await saveNutritionDailyNote(note, todayKey);
-    await onSaved();
-  }
-
+function MockMealCard({ meal, onAdd }: { meal: { calories: number; mealType: string; name: string; protein: number }; onAdd: () => void }) {
   return (
-    <AppCard>
-      <View style={{ gap: 12 }}>
-        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
-          Daily nutrition note
-        </Text>
-        <TextInput
-          multiline
-          onChangeText={setNote}
-          placeholder="Felt low energy today, ate late, heavy workout, stomach felt uncomfortable..."
-          placeholderTextColor="#94a3b8"
-          style={{ ...INPUT_STYLE, minHeight: 130, paddingTop: 13 }}
-          value={note}
-        />
-        <PrimaryButton label="Save note" onPress={saveNote} />
+    <AppCard style={styles.darkCard}>
+      <FoodMedia label="Meal thumbnail" />
+      <Text style={styles.darkTitle}>{meal.name}</Text>
+      <Text style={styles.darkMuted}>{meal.mealType} - {meal.calories} cal - {meal.protein}g protein</Text>
+      <GhostButton label="Quick add" onPress={onAdd} />
+    </AppCard>
+  );
+}
+
+function RecipeCard({ mock, name, onAdd, servings }: { mock?: { calories: number; protein: number; tags: string[] }; name: string; onAdd?: () => void; servings: number }) {
+  return (
+    <AppCard style={styles.darkCard}>
+      <FoodMedia label="Recipe image" />
+      <Text style={styles.darkTitle}>{name}</Text>
+      <Text style={styles.darkMuted}>{servings} servings{mock ? ` - ${mock.calories} cal - ${mock.protein}g protein per serving` : ""}</Text>
+      {mock ? <View style={styles.chipRow}>{mock.tags.map((tag) => <Pill key={tag} label={tag} />)}</View> : null}
+      <View style={styles.actionRow}>
+        <GhostButton label="Add serving" onPress={onAdd ?? (() => undefined)} />
+        <SmallAction label="Recipe detail" />
       </View>
     </AppCard>
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function FoodMedia({ label }: { label: string }) {
   return (
-    <View
-      style={{
-        backgroundColor: "#ffffff",
-        borderColor: "#fde68a",
-        borderRadius: 18,
-        borderWidth: 1,
-        flexGrow: 1,
-        minWidth: "30%",
-        padding: 14
-      }}
-    >
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900", marginTop: 4 }}>
-        {value}
-      </Text>
+    <View style={styles.foodMedia}>
+      <AppIcon color="#6ee7c8" decorative name="source" size={22} />
+      <Text style={styles.mediaText}>{label}</Text>
     </View>
   );
 }
 
-function ProgressMetricCard({ label, progress, value }: { label: string; progress: number; value: string }) {
+function BarcodePlaceholder() {
   return (
-    <View
-      style={{
-        backgroundColor: "#ffffff",
-        borderColor: "#fde68a",
-        borderRadius: 18,
-        borderWidth: 1,
-        flexGrow: 1,
-        minWidth: "46%",
-        padding: 14
-      }}
-    >
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 17, fontWeight: "900", marginTop: 4 }}>
-        {value}
-      </Text>
-      <ProgressBar color="#f59e0b" progress={progress} trackColor="#fde68a" />
+    <AppCard style={styles.darkCard}>
+      <Text style={styles.darkTitle}>Barcode scan</Text>
+      <Text style={styles.darkMuted}>Ready to scan, searching product, product found, product not found, and manual fallback states are prepared. Barcode lookup is coming soon. You can add this manually for now.</Text>
+    </AppCard>
+  );
+}
+
+function SmartLogPlaceholder() {
+  return (
+    <AppCard style={styles.darkCard}>
+      <Text style={styles.darkTitle}>Smart Log drafts</Text>
+      <Text style={styles.darkMuted}>Estimated draft. Review before saving. AI estimates are placeholders until a trusted backend is connected.</Text>
+    </AppCard>
+  );
+}
+
+function PremiumEmptyState({ button, message, onPress, title }: { button: string; message: string; onPress: () => void; title: string }) {
+  return (
+    <AppCard style={styles.darkCard}>
+      <Text style={styles.darkTitle}>{title}</Text>
+      <Text style={styles.darkMuted}>{message}</Text>
+      <View style={{ marginTop: 12 }}><AppButton onPress={onPress} title={button} /></View>
+    </AppCard>
+  );
+}
+
+function SkeletonCard({ label }: { label: string }) {
+  return (
+    <AppCard style={styles.darkCard}>
+      <Text style={styles.darkMuted}>{label}</Text>
+      <View style={styles.skeletonLine} />
+      <View style={[styles.skeletonLine, { width: "70%" }]} />
+    </AppCard>
+  );
+}
+
+function QuickAction({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityLabel={label} accessibilityRole="button" onPress={onPress} style={styles.quickAction}>
+      <AppIcon color="#6ee7c8" decorative name={icon as never} size={22} />
+      <Text style={styles.quickActionText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Chip({ label, onPress, selected }: { label: string; onPress: () => void; selected: boolean }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityState={{ selected }} onPress={onPress} style={[styles.chip, selected ? styles.chipSelected : null]}>
+      <Text style={[styles.chipText, selected ? styles.chipTextSelected : null]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Pill({ label, onPress }: { label: string; onPress?: () => void }) {
+  return (
+    <Pressable accessibilityRole={onPress ? "button" : undefined} onPress={onPress} style={styles.pill}>
+      <Text style={styles.pillText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function GhostButton({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress} style={styles.ghostButton}>
+      <Text style={styles.ghostText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function SmallAction({ label }: { label: string }) {
+  return (
+    <Pressable accessibilityRole="button" style={styles.smallAction}>
+      <Text style={styles.smallActionText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function SuccessToast({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onDismiss} style={styles.successToast}>
+      <AppIcon color="#10201d" decorative name="success" size={20} />
+      <Text style={styles.successText}>{message}</Text>
+    </Pressable>
+  );
+}
+
+function SafetyCard() {
+  return (
+    <AppCard backgroundColor="#fff7ed">
+      <Text style={styles.safetyText}>{SAFETY_COPY}</Text>
+    </AppCard>
+  );
+}
+
+function ProgressBar({ color, value }: { color: string; value: number }) {
+  return (
+    <View accessibilityLabel={`Progress ${Math.round(Math.max(0, Math.min(1, value)) * 100)} percent`} style={styles.progressTrack}>
+      <View style={[styles.progressFill, { backgroundColor: color, width: `${Math.max(4, Math.min(100, value * 100))}%` }]} />
     </View>
   );
 }
 
-function formatWaterValue(amountMl: number) {
-  return amountMl >= 1000 ? `${(amountMl / 1000).toFixed(1)} L` : `${Math.round(amountMl)} ml`;
+function formatWater(amountMl: number) {
+  return amountMl >= 1000 ? `${(amountMl / 1000).toFixed(1)}L` : `${Math.round(amountMl)}ml`;
 }
 
-function ProgressBar({ color, progress, trackColor }: { color: string; progress: number; trackColor: string }) {
-  return (
-    <View style={{ backgroundColor: trackColor, borderRadius: 999, height: 12, marginTop: 12, overflow: "hidden" }}>
-      <View
-        style={{
-          backgroundColor: color,
-          borderRadius: 999,
-          height: "100%",
-          width: `${Math.max(0, Math.min(100, progress))}%` as `${number}%`
-        }}
-      />
-    </View>
-  );
+function toTab(tab?: string): NutritionTab {
+  return TABS.some((item) => item.key === tab) ? tab as NutritionTab : "today";
 }
 
-function PrimaryButton({
-  disabled = false,
-  label,
-  onPress
-}: {
-  disabled?: boolean;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      disabled={disabled}
-      onPress={onPress}
-      style={{
-        alignItems: "center",
-        backgroundColor: "#f59e0b",
-        borderRadius: 18,
-        flex: 1,
-        justifyContent: "center",
-        minHeight: 52,
-        opacity: disabled ? 0.55 : 1
-      }}
-    >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
+const styles = StyleSheet.create({
+  actionRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  barFill: { borderRadius: 999, bottom: 0, position: "absolute", width: "100%" },
+  barRow: { alignItems: "flex-end", flexDirection: "row", gap: 8, height: 98, marginTop: 12 },
+  barTrack: { backgroundColor: "rgba(255,255,255,0.10)", borderRadius: 999, flex: 1, height: "100%", overflow: "hidden" },
+  cardTop: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  chartBlock: { marginTop: 12 },
+  chartTitle: { color: "#f8fafc", fontWeight: "900" },
+  chip: { backgroundColor: "rgba(15,23,42,0.08)", borderColor: "rgba(15,23,42,0.12)", borderRadius: 999, borderWidth: 1, minHeight: 42, paddingHorizontal: 14, paddingVertical: 10 },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chipSelected: { backgroundColor: "#111827", borderColor: "#6ee7c8" },
+  chipText: { color: "#475569", fontWeight: "900" },
+  chipTextSelected: { color: "#f8fafc" },
+  darkCard: { backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.12)", borderWidth: 1 },
+  darkHero: { backgroundColor: "#0f172a", borderColor: "#6ee7c8", borderWidth: 1 },
+  darkInput: { backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.14)", borderRadius: 16, borderWidth: 1, color: "#f8fafc", flex: 1, minHeight: 48, paddingHorizontal: 14, paddingVertical: 10 },
+  darkMuted: { color: "#cbd5e1", lineHeight: 21, marginTop: 6 },
+  darkTitle: { color: "#f8fafc", fontSize: 20, fontWeight: "900" },
+  deleteText: { color: "#fca5a5", fontSize: 12, fontWeight: "900" },
+  foodMacro: { color: "#94a3b8", fontSize: 12, marginTop: 4 },
+  foodMedia: { alignItems: "center", backgroundColor: "rgba(255,255,255,0.08)", borderColor: "#6ee7c8", borderRadius: 22, borderWidth: 1, gap: 8, height: 130, justifyContent: "center", marginBottom: 12 },
+  foodName: { color: "#f8fafc", fontSize: 16, fontWeight: "900" },
+  foodRow: { alignItems: "center", backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 18, flexDirection: "row", gap: 10, padding: 10 },
+  foodThumb: { alignItems: "center", backgroundColor: "rgba(110,231,200,0.12)", borderRadius: 14, height: 44, justifyContent: "center", width: 44 },
+  ghostButton: { alignItems: "center", borderColor: "rgba(255,255,255,0.18)", borderRadius: 999, borderWidth: 1, minHeight: 42, paddingHorizontal: 14, paddingVertical: 10 },
+  ghostText: { color: "#f8fafc", fontWeight: "900" },
+  helper: { color: "#94a3b8", fontSize: 12, marginTop: 8 },
+  heroIcon: { alignItems: "center", backgroundColor: "rgba(110,231,200,0.12)", borderRadius: 20, height: 52, justifyContent: "center", width: 52 },
+  heroMetric: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 18, flex: 1, minWidth: "31%", padding: 12 },
+  heroMetricLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "900" },
+  heroMetricValue: { color: "#f8fafc", fontSize: 14, fontWeight: "900", marginTop: 4 },
+  heroMetrics: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 16 },
+  heroSubtitle: { color: "#cbd5e1", lineHeight: 21, marginTop: 6 },
+  heroTitle: { color: "#f8fafc", fontSize: 30, fontWeight: "900", marginTop: 14 },
+  inputGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  macroCard: { backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.12)", borderWidth: 1, flexBasis: "47%", flexGrow: 1 },
+  macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  macroLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "900" },
+  macroValue: { color: "#f8fafc", fontSize: 18, fontWeight: "900", marginTop: 8 },
+  mealCard: { backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.12)", borderWidth: 1 },
+  mealHeader: { alignItems: "center", flexDirection: "row", gap: 10, justifyContent: "space-between", marginBottom: 12 },
+  mealTitle: { color: "#f8fafc", fontSize: 20, fontWeight: "900" },
+  mediaText: { color: "#cbd5e1", fontSize: 12, fontWeight: "900" },
+  muted: { color: "#94a3b8", lineHeight: 20, marginTop: 4 },
+  pill: { backgroundColor: "rgba(255,255,255,0.10)", borderRadius: 999, minHeight: 34, paddingHorizontal: 11, paddingVertical: 8 },
+  pillText: { color: "#e2e8f0", fontSize: 12, fontWeight: "900" },
+  progressFill: { borderRadius: 999, height: "100%" },
+  progressTrack: { backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999, height: 9, marginTop: 10, overflow: "hidden" },
+  quickAction: { alignItems: "center", backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.12)", borderRadius: 22, borderWidth: 1, flexBasis: "30%", flexGrow: 1, gap: 8, justifyContent: "center", minHeight: 92, padding: 12 },
+  quickActionText: { color: "#f8fafc", fontSize: 12, fontWeight: "900", textAlign: "center" },
+  quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  rowActions: { alignItems: "flex-end", gap: 8 },
+  safetyText: { color: "#9a3412", lineHeight: 20 },
+  sheetLabel: { color: "#cbd5e1", fontWeight: "900" },
+  sheetText: { color: "#cbd5e1", lineHeight: 21 },
+  skeletonLine: { backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 999, height: 14, marginTop: 12, width: "90%" },
+  smallAction: { backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 999, minHeight: 34, paddingHorizontal: 11, paddingVertical: 8 },
+  smallActionText: { color: "#e2e8f0", fontSize: 12, fontWeight: "900" },
+  stack: { gap: 14 },
+  successText: { color: "#10201d", fontWeight: "900" },
+  successToast: { alignItems: "center", alignSelf: "flex-start", backgroundColor: "#6ee7c8", borderRadius: 999, flexDirection: "row", gap: 8, minHeight: 44, paddingHorizontal: 14 },
+  tabRow: { gap: 8, paddingRight: 16 },
+  timelineAction: { color: "#6ee7c8", fontWeight: "900" },
+  timelineDot: { backgroundColor: "#6ee7c8", borderRadius: 999, height: 12, width: 12 },
+  timelineRow: { alignItems: "center", backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.12)", borderRadius: 20, borderWidth: 1, flexDirection: "row", gap: 12, padding: 14 },
+  timelineTitle: { color: "#f8fafc", fontSize: 16, fontWeight: "900" },
+  waterCard: { backgroundColor: "#082f49", borderColor: "#38bdf8", borderWidth: 1 },
+  waterTitle: { color: "#bae6fd", fontSize: 20, fontWeight: "900" },
+  waterValue: { color: "#f0f9ff", fontSize: 28, fontWeight: "900", marginTop: 6 }
+});

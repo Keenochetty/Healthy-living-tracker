@@ -1,95 +1,79 @@
-import { Tabs } from "expo-router";
+import { Tabs, useFocusEffect, usePathname } from "expo-router";
+import { useCallback, useState } from "react";
 
-import { AppIcon } from "@/components/ui";
-import type { AppIconName } from "@/constants/appIcons";
-import { useAppTheme } from "@/theme/ThemeProvider";
+import { FloatingAssistantButton, FloatingBottomNav } from "@/components/navigation";
+import { getChildProfiles } from "@/lib/childStorage";
 
 export default function TabsLayout() {
-  const { theme } = useAppTheme();
-  const isDark = theme.background === "#0f172a";
-  const isPremiumDark = theme.nav !== undefined;
+  const pathname = usePathname();
+  const [showBabyButton, setShowBabyButton] = useState(false);
+  const [multipleBabyProfiles, setMultipleBabyProfiles] = useState(false);
 
-  return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: theme.nav ?? theme.surface,
-          borderRadius: 999,
-          borderTopWidth: 0,
-          elevation: 12,
-          height: 72,
-          marginBottom: 16,
-          marginHorizontal: 16,
-          position: "absolute",
-          shadowColor: "#000",
-          shadowOpacity: isDark || isPremiumDark ? 0.28 : 0.12,
-          shadowRadius: 20,
-          shadowOffset: { width: 0, height: 8 }
-        },
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.mutedText,
-        tabBarItemStyle: {
-          borderRadius: 999,
-          marginVertical: 8
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "800"
-        }
-      }}
-    >
-      <Tabs.Screen
-        name="today"
-        options={{
-          title: "Today",
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="today" />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: "Calendar",
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="calendar" />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="health"
-        options={{
-          title: "Health",
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="health" />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="circle"
-        options={{
-          title: "Circle",
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="circle" />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="profile" />,
-        }}
-      />
-    </Tabs>
+  useFocusEffect(
+    useCallback(() => {
+      getChildProfiles()
+        .then((profiles) => {
+          setShowBabyButton(profiles.length > 0);
+          setMultipleBabyProfiles(profiles.length > 1);
+        })
+        .catch(() => {
+          setShowBabyButton(false);
+          setMultipleBabyProfiles(false);
+        });
+    }, [])
   );
-}
 
-function TabIcon({ focused, name }: { focused: boolean; name: AppIconName }) {
   return (
-    <AppIcon
-      container={focused}
-      containerVariant={focused ? "soft" : "transparent"}
-      name={name}
-      size={21}
-      variant={focused ? "primary" : "muted"}
-    />
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false
+        }}
+        tabBar={(props) => (
+          <FloatingBottomNav
+            {...props}
+            activeBabyPortal={pathname.startsWith("/baby-child")}
+            multipleBabyProfiles={multipleBabyProfiles}
+            showBabyPortal={showBabyButton}
+          />
+        )}
+      >
+        <Tabs.Screen
+          name="today"
+          options={{
+            title: "Home",
+          }}
+        />
+
+        <Tabs.Screen
+          name="calendar"
+          options={{
+            title: "Calendar",
+          }}
+        />
+
+        <Tabs.Screen
+          name="health"
+          options={{
+            title: "Health",
+          }}
+        />
+
+        <Tabs.Screen
+          name="circle"
+          options={{
+            title: "Family",
+          }}
+        />
+
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Settings",
+          }}
+        />
+      </Tabs>
+      <FloatingAssistantButton avoidBabyPortal={showBabyButton} />
+    </>
   );
 }

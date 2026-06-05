@@ -28,7 +28,7 @@ export function AppScreen({
   const { theme } = useAppTheme();
   const contentStyle: ViewStyle = {
     gap: spacing.xl,
-    paddingBottom: (safeBottom ? insets.bottom : 0) + 120,
+    paddingBottom: (safeBottom ? insets.bottom : 0) + 180,
     paddingHorizontal: padded ? spacing.xl : 0,
     paddingTop: (safeTop ? insets.top : 0) + spacing.lg,
     ...style

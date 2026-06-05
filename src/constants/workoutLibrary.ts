@@ -1,0 +1,149 @@
+import type {
+  ExerciseEquipment,
+  ExerciseLibraryItem,
+  MuscleGroup,
+  WorkoutDifficulty,
+  WorkoutGoalTag,
+  WorkoutLocation,
+  WorkoutRoutine
+} from "@/types/fitness";
+
+const PLACEHOLDER_IMAGE = "local-placeholder://workout-image";
+const PLACEHOLDER_VIDEO = "local-placeholder://workout-video";
+const PLACEHOLDER_DIAGRAM = "local-placeholder://muscle-diagram";
+
+type ExerciseSeed = {
+  equipment: ExerciseEquipment[];
+  goals: WorkoutGoalTag[];
+  id: string;
+  location: WorkoutLocation[];
+  muscle: MuscleGroup;
+  name: string;
+  secondary?: MuscleGroup[];
+  difficulty?: WorkoutDifficulty;
+};
+
+const EXERCISE_SEEDS: ExerciseSeed[] = [
+  { equipment: ["bodyweight"], goals: ["strength", "general_health"], id: "push-up", location: ["home", "gym", "bodyweight"], muscle: "chest", name: "Push-up", secondary: ["arms", "core"] },
+  { equipment: ["bodyweight"], goals: ["strength", "general_health"], id: "incline-push-up", location: ["home", "gym", "bodyweight"], muscle: "chest", name: "Incline push-up", secondary: ["arms"], difficulty: "beginner" },
+  { equipment: ["barbell", "dumbbell"], goals: ["strength", "muscle_gain"], id: "squat", location: ["gym"], muscle: "legs", name: "Squat", secondary: ["glutes", "core"], difficulty: "intermediate" },
+  { equipment: ["bodyweight"], goals: ["strength", "general_health"], id: "bodyweight-squat", location: ["home", "gym", "bodyweight"], muscle: "legs", name: "Bodyweight squat", secondary: ["glutes"], difficulty: "beginner" },
+  { equipment: ["bodyweight", "dumbbell"], goals: ["strength", "general_health"], id: "lunges", location: ["home", "gym"], muscle: "legs", name: "Lunges", secondary: ["glutes", "core"] },
+  { equipment: ["bodyweight"], goals: ["strength", "general_health"], id: "plank", location: ["home", "gym", "bodyweight"], muscle: "core", name: "Plank", secondary: ["shoulders"], difficulty: "beginner" },
+  { equipment: ["bodyweight"], goals: ["strength", "general_health"], id: "sit-up", location: ["home", "gym", "bodyweight"], muscle: "core", name: "Sit-up", secondary: ["full_body"] },
+  { equipment: ["bodyweight"], goals: ["strength", "general_health"], id: "crunch", location: ["home", "gym", "bodyweight"], muscle: "core", name: "Crunch", secondary: [] },
+  { equipment: ["bodyweight"], goals: ["strength", "muscle_gain"], id: "pull-up", location: ["gym", "bodyweight"], muscle: "back", name: "Pull-up", secondary: ["arms"], difficulty: "advanced" },
+  { equipment: ["machine", "resistance_band"], goals: ["strength", "general_health"], id: "assisted-pull-up", location: ["gym", "machine"], muscle: "back", name: "Assisted pull-up", secondary: ["arms"], difficulty: "beginner" },
+  { equipment: ["dumbbell"], goals: ["strength", "muscle_gain"], id: "dumbbell-row", location: ["home", "gym"], muscle: "back", name: "Dumbbell row", secondary: ["arms"] },
+  { equipment: ["machine", "cable"], goals: ["strength", "muscle_gain"], id: "lat-pulldown", location: ["gym", "machine"], muscle: "back", name: "Lat pulldown", secondary: ["arms"], difficulty: "beginner" },
+  { equipment: ["barbell"], goals: ["strength", "muscle_gain"], id: "bench-press", location: ["gym"], muscle: "chest", name: "Bench press", secondary: ["arms", "shoulders"], difficulty: "intermediate" },
+  { equipment: ["dumbbell"], goals: ["strength", "muscle_gain"], id: "dumbbell-press", location: ["home", "gym"], muscle: "chest", name: "Dumbbell press", secondary: ["arms", "shoulders"] },
+  { equipment: ["dumbbell", "barbell", "machine"], goals: ["strength", "muscle_gain"], id: "shoulder-press", location: ["home", "gym"], muscle: "shoulders", name: "Shoulder press", secondary: ["arms"] },
+  { equipment: ["dumbbell", "cable", "resistance_band"], goals: ["strength", "muscle_gain"], id: "bicep-curl", location: ["home", "gym"], muscle: "arms", name: "Bicep curl", secondary: [] },
+  { equipment: ["cable", "resistance_band"], goals: ["strength", "muscle_gain"], id: "tricep-pushdown", location: ["gym", "machine"], muscle: "arms", name: "Tricep pushdown", secondary: [] },
+  { equipment: ["machine"], goals: ["strength", "muscle_gain"], id: "leg-press", location: ["gym", "machine"], muscle: "legs", name: "Leg press", secondary: ["glutes"], difficulty: "beginner" },
+  { equipment: ["machine"], goals: ["strength", "muscle_gain"], id: "leg-curl", location: ["gym", "machine"], muscle: "legs", name: "Leg curl", secondary: [] },
+  { equipment: ["machine", "dumbbell", "bodyweight"], goals: ["strength", "general_health"], id: "calf-raise", location: ["home", "gym"], muscle: "legs", name: "Calf raise", secondary: [] },
+  { equipment: ["barbell", "dumbbell"], goals: ["strength", "muscle_gain"], id: "hip-thrust", location: ["home", "gym"], muscle: "glutes", name: "Hip thrust", secondary: ["legs"] },
+  { equipment: ["bodyweight"], goals: ["strength", "general_health"], id: "glute-bridge", location: ["home", "gym", "bodyweight"], muscle: "glutes", name: "Glute bridge", secondary: ["core"], difficulty: "beginner" },
+  { equipment: ["barbell", "dumbbell"], goals: ["strength", "muscle_gain"], id: "deadlift", location: ["gym"], muscle: "full_body", name: "Deadlift", secondary: ["back", "legs", "glutes"], difficulty: "advanced" },
+  { equipment: ["barbell", "dumbbell"], goals: ["strength", "muscle_gain"], id: "romanian-deadlift", location: ["home", "gym"], muscle: "glutes", name: "Romanian deadlift", secondary: ["legs", "back"], difficulty: "intermediate" },
+  { equipment: ["treadmill"], goals: ["endurance", "weight_loss", "general_health"], id: "treadmill-run", location: ["home", "gym"], muscle: "cardio", name: "Treadmill run", secondary: ["legs"], difficulty: "beginner" },
+  { equipment: ["bike"], goals: ["endurance", "weight_loss", "general_health"], id: "bike-ride", location: ["home", "gym"], muscle: "cardio", name: "Bike ride", secondary: ["legs"], difficulty: "beginner" },
+  { equipment: ["bodyweight"], goals: ["endurance", "weight_loss"], id: "jumping-jacks", location: ["home", "gym", "bodyweight"], muscle: "cardio", name: "Jumping jacks", secondary: ["full_body"], difficulty: "beginner" },
+  { equipment: ["bodyweight"], goals: ["endurance", "weight_loss", "strength"], id: "mountain-climbers", location: ["home", "gym", "bodyweight"], muscle: "core", name: "Mountain climbers", secondary: ["cardio", "shoulders"] },
+  { equipment: ["bodyweight"], goals: ["endurance", "weight_loss"], id: "burpees", location: ["home", "gym", "bodyweight"], muscle: "full_body", name: "Burpees", secondary: ["cardio"], difficulty: "advanced" },
+  { equipment: ["none"], goals: ["mobility", "general_health"], id: "stretch-mobility-flow", location: ["home", "gym"], muscle: "mobility", name: "Stretch / mobility flow", secondary: ["full_body"], difficulty: "beginner" },
+  { equipment: ["kettlebell"], goals: ["strength", "weight_loss"], id: "kettlebell-swing", location: ["home", "gym"], muscle: "full_body", name: "Kettlebell swing", secondary: ["glutes", "cardio"], difficulty: "intermediate" },
+  { equipment: ["resistance_band"], goals: ["strength", "mobility"], id: "band-pull-apart", location: ["home", "gym"], muscle: "shoulders", name: "Band pull-apart", secondary: ["back"], difficulty: "beginner" }
+];
+
+export const EXERCISE_LIBRARY: ExerciseLibraryItem[] = EXERCISE_SEEDS.map((exercise) => ({
+  commonMistakes: [
+    "Moving too fast to control the position.",
+    "Using a range of motion that feels uncomfortable.",
+    "Forgetting to rest enough between hard sets."
+  ],
+  description: `${exercise.name} supports ${formatLabel(exercise.muscle)} training with a simple log-friendly setup.`,
+  difficulty: exercise.difficulty ?? "intermediate",
+  equipment: exercise.equipment,
+  goalTags: exercise.goals,
+  id: exercise.id,
+  imageUrl: `${PLACEHOLDER_IMAGE}/${exercise.id}`,
+  instructions: [
+    "Set up in a stable position.",
+    "Move with control and keep the effort comfortable enough to track.",
+    "Record reps, weight, time, or notes after each set."
+  ],
+  location: exercise.location,
+  muscleDiagramUrl: `${PLACEHOLDER_DIAGRAM}/${exercise.muscle}`,
+  name: exercise.name,
+  primaryMuscle: exercise.muscle,
+  secondaryMuscles: exercise.secondary ?? [],
+  videoUrl: `${PLACEHOLDER_VIDEO}/${exercise.id}`
+}));
+
+export const PREBUILT_ROUTINES: WorkoutRoutine[] = [
+  routine("routine-home-full-body", "Beginner Home Full Body", "A simple home session for getting moving without machines.", "general_health", "beginner", "home", 28, ["bodyweight", "none"], ["full_body", "core", "legs"], ["bodyweight-squat", "incline-push-up", "glute-bridge", "plank"], "#6ee7c8"),
+  routine("routine-gym-full-body", "Beginner Gym Full Body", "Machine and dumbbell basics for a steady gym start.", "strength", "beginner", "gym", 42, ["machine", "dumbbell"], ["full_body", "legs", "back"], ["leg-press", "lat-pulldown", "dumbbell-press", "calf-raise"], "#60a5fa"),
+  routine("routine-push-day", "Push Day", "Chest, shoulders, and triceps with gym or dumbbell options.", "muscle_gain", "intermediate", "both", 45, ["dumbbell", "barbell", "cable"], ["chest", "shoulders", "arms"], ["bench-press", "dumbbell-press", "shoulder-press", "tricep-pushdown"], "#fb7185"),
+  routine("routine-pull-day", "Pull Day", "Back and biceps with rows, pulldowns, and assisted pull options.", "muscle_gain", "intermediate", "gym", 45, ["dumbbell", "machine", "cable"], ["back", "arms"], ["assisted-pull-up", "lat-pulldown", "dumbbell-row", "bicep-curl"], "#818cf8"),
+  routine("routine-leg-day", "Leg Day", "Legs and glutes with strength-focused set tracking.", "strength", "intermediate", "gym", 50, ["barbell", "machine", "dumbbell"], ["legs", "glutes"], ["squat", "leg-press", "romanian-deadlift", "calf-raise"], "#f59e0b"),
+  routine("routine-core-builder", "Core Builder", "A quick core session that works well at home or after lifting.", "strength", "beginner", "home", 20, ["bodyweight", "none"], ["core"], ["plank", "crunch", "sit-up", "mountain-climbers"], "#22d3ee"),
+  routine("routine-weight-loss-circuit", "Weight Loss Circuit", "A short circuit-style session for movement and consistency.", "weight_loss", "beginner", "both", 30, ["bodyweight", "kettlebell"], ["full_body", "cardio"], ["jumping-jacks", "mountain-climbers", "kettlebell-swing", "bodyweight-squat"], "#fb923c"),
+  routine("routine-muscle-gain-3-day", "Muscle Gain 3-Day Split", "A starter split using push, pull, and leg-day staples.", "muscle_gain", "intermediate", "gym", 55, ["barbell", "dumbbell", "machine", "cable"], ["chest", "back", "legs"], ["bench-press", "lat-pulldown", "squat", "romanian-deadlift"], "#a78bfa"),
+  routine("routine-running-starter", "Running Starter Plan", "A beginner-friendly run/walk base for weekly consistency.", "endurance", "beginner", "both", 25, ["treadmill", "none"], ["cardio", "legs"], ["treadmill-run", "jumping-jacks", "stretch-mobility-flow"], "#38bdf8"),
+  routine("routine-mobility-recovery", "Mobility Recovery Day", "A low-pressure session for moving gently and logging recovery.", "mobility", "beginner", "home", 22, ["none", "resistance_band"], ["mobility", "full_body"], ["stretch-mobility-flow", "band-pull-apart", "glute-bridge"], "#86efac")
+];
+
+export const MUSCLE_GROUPS: MuscleGroup[] = ["chest", "back", "shoulders", "arms", "core", "legs", "glutes", "full_body", "cardio", "mobility"];
+export const EXERCISE_EQUIPMENT: ExerciseEquipment[] = ["bodyweight", "dumbbell", "barbell", "machine", "cable", "resistance_band", "kettlebell", "treadmill", "bike", "none"];
+export const WORKOUT_GOALS: WorkoutGoalTag[] = ["strength", "muscle_gain", "weight_loss", "endurance", "mobility", "general_health"];
+export const WORKOUT_DIFFICULTIES: WorkoutDifficulty[] = ["beginner", "intermediate", "advanced"];
+export const WORKOUT_LOCATIONS: WorkoutLocation[] = ["home", "gym", "machine", "bodyweight"];
+
+export function getExerciseById(id: string) {
+  return EXERCISE_LIBRARY.find((exercise) => exercise.id === id);
+}
+
+export function getRoutineById(id: string) {
+  return PREBUILT_ROUTINES.find((routineItem) => routineItem.id === id);
+}
+
+export function formatWorkoutLabel(value: string) {
+  return formatLabel(value);
+}
+
+function routine(
+  id: string,
+  name: string,
+  description: string,
+  goal: WorkoutGoalTag,
+  difficulty: WorkoutDifficulty,
+  location: "home" | "gym" | "both",
+  durationMinutes: number,
+  equipment: ExerciseEquipment[],
+  targetMuscles: MuscleGroup[],
+  exerciseIds: string[],
+  accentColor: string
+): WorkoutRoutine {
+  return {
+    accentColor,
+    coverImageUrl: `${PLACEHOLDER_IMAGE}/${id}`,
+    description,
+    difficulty,
+    durationMinutes,
+    equipment,
+    exerciseIds,
+    goal,
+    id,
+    location,
+    name,
+    targetMuscles,
+    videoUrl: `${PLACEHOLDER_VIDEO}/${id}`
+  };
+}
+
+function formatLabel(value: string) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}

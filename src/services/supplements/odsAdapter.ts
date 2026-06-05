@@ -5,3 +5,7 @@ export async function searchOdsSupplementFacts(_query: string) {
 export async function getOdsSupplementFactSheet(_id: string) {
   return null;
 }
+
+export async function getOdsIngredientMatch(_ingredientName: string) {
+  return null;
+}

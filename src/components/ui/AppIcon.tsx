@@ -5,9 +5,11 @@ import { radius } from "@/theme/tokens";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppIconProps = {
+  accessibilityLabel?: string;
   color?: string;
   container?: boolean;
   containerVariant?: "soft" | "primary" | "white" | "transparent";
+  decorative?: boolean;
   name: AppIconName;
   size?: number;
   strokeWidth?: number;
@@ -15,9 +17,11 @@ type AppIconProps = {
 };
 
 export function AppIcon({
+  accessibilityLabel,
   color,
   container = false,
   containerVariant = "soft",
+  decorative,
   name,
   size = 22,
   strokeWidth = 2.2,
@@ -26,13 +30,21 @@ export function AppIcon({
   const { theme } = useAppTheme();
   const Icon = appIcons[name];
   const iconColor = color ?? getIconColor(variant, theme);
+  const accessibilityProps = accessibilityLabel && !decorative
+    ? { accessibilityLabel, accessibilityRole: "image" as const }
+    : { accessible: false };
 
   if (!container) {
-    return <Icon color={iconColor} size={size} strokeWidth={strokeWidth} />;
+    return (
+      <View {...accessibilityProps}>
+        <Icon color={iconColor} size={size} strokeWidth={strokeWidth} />
+      </View>
+    );
   }
 
   return (
     <View
+      {...accessibilityProps}
       style={{
         alignItems: "center",
         backgroundColor: getContainerColor(containerVariant, theme),

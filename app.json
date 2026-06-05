@@ -18,8 +18,14 @@
       ],
       "expo-secure-store",
       "@react-native-community/datetimepicker",
-      "expo-audio"
+      "expo-audio",
+      "expo-notifications"
     ],
+    "android": {
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ]
+    },
     "experiments": {
       "typedRoutes": true
     }

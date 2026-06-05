@@ -5,6 +5,11 @@ import { Image, Switch, Text, TextInput, TouchableOpacity, View } from "react-na
 
 import { AppCard } from "@/components/ui/AppCard";
 import {
+  getSafetyStatusLabel,
+  saveMedicationStandardMatch,
+  saveSupplementIngredientMatch
+} from "@/lib/medicationSafetyStorage";
+import {
   createHealthDocument,
   createHealthSchedule,
   createMedication,
@@ -44,6 +49,7 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
+  const [safetyMatchText, setSafetyMatchText] = useState("");
   const [isPrivate, setIsPrivate] = useState(true);
   const [timing, setTiming] = useState<ScheduleTiming>("once_daily");
   const [timesText, setTimesText] = useState("08:00");
@@ -116,6 +122,22 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
       });
     }
 
+    if (safetyMatchText.trim()) {
+      if (itemType === "medication") {
+        await saveMedicationStandardMatch(savedItem.id, {
+          displayName: safetyMatchText,
+          ingredientName: safetyMatchText,
+          source: "manual"
+        });
+      } else {
+        await saveSupplementIngredientMatch(savedItem.id, {
+          displayName: safetyMatchText,
+          ingredientName: safetyMatchText,
+          source: "manual"
+        });
+      }
+    }
+
     router.replace(`/${itemType === "medication" ? "medication" : "supplements"}/${savedItem.id}` as Href);
   }
 
@@ -139,6 +161,10 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
       <AppCard>
         <View style={{ gap: 12 }}>
           <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>{itemType === "medication" ? "Medication details" : "Supplement details"}</Text>
+          <View style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
+            <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "900" }}>Safety status</Text>
+            <Text style={{ color: "#0f172a", fontWeight: "900", marginTop: 4 }}>{getSafetyStatusLabel("not_checked")}</Text>
+          </View>
           <TextInput onChangeText={setName} placeholder={itemType === "medication" ? "Medication name" : "Supplement name"} placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={name} />
           {itemType === "medication" ? (
             <TextInput onChangeText={setGenericName} placeholder="Generic name optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={genericName} />
@@ -169,6 +195,16 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
           </View>
           <TextInput onChangeText={setReason} placeholder={itemType === "medication" ? "Reason / purpose optional" : "Reason / goal optional"} placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={reason} />
           <TextInput multiline onChangeText={setNotes} placeholder="Notes" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }} value={notes} />
+          <TextInput
+            onChangeText={setSafetyMatchText}
+            placeholder={itemType === "medication" ? "Name match to confirm optional" : "Main ingredient match to confirm optional"}
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={safetyMatchText}
+          />
+          <Text style={{ color: "#64748b", lineHeight: 21 }}>
+            Matches are saved for review only. Confirm they match your label or professional guidance.
+          </Text>
           <View style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, flexDirection: "row", justifyContent: "space-between", padding: 12 }}>
             <Text style={{ color: "#0f172a", fontWeight: "900" }}>Private</Text>
             <Switch onValueChange={setIsPrivate} value={isPrivate} />
@@ -192,7 +228,7 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
           </View>
           {foodTiming !== "none" ? (
             <Text style={{ color: "#64748b", lineHeight: 21 }}>
-              Food timing notes should follow your label, pharmacist, doctor, or healthcare professional's instructions.
+              Food timing notes should follow your label, pharmacist, doctor, or professional guidance.
             </Text>
           ) : null}
           <TextInput multiline onChangeText={setScheduleInstructions} placeholder="Schedule instructions optional" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }} value={scheduleInstructions} />

@@ -186,10 +186,10 @@ export default function TodayScreen() {
           {enabledModules.includes("food") ? (
             <PremiumStatCard
               accentColor={theme.accentGreen}
-              helper={nutritionSummary?.foodLogCount ? `${nutritionSummary.foodLogCount} meals logged` : "estimate when logged"}
+              helper={nutritionSummary?.foodLogCount ? `${nutritionSummary.foodLogCount} meals logged` : "Log your first meal"}
               iconName="food"
               title="Food"
-              value={nutritionSummary?.foodLogCount ? `${Math.round(nutritionSummary.calories)} kcal` : "No logs"}
+              value={nutritionSummary?.foodLogCount ? `${Math.round(nutritionSummary.calories)} kcal` : "Start today"}
             />
           ) : null}
         </View>
@@ -201,28 +201,28 @@ export default function TodayScreen() {
             {enabledModules.includes("child_baby") ? (
               <PremiumStatCard
                 accentColor={theme.accentPink}
-                helper={childSummaries[0]?.child.displayName ?? "optional module"}
+                helper={childSummaries[0] ? "Feeds, sleep, diapers" : "Set up when ready"}
                 iconName="child_baby"
                 title="Child & Baby"
-                value={childSummaries[0]?.latestFeed ? "Feed logged" : "Ready"}
+                value={childSummaries[0] ? `${childSummaries[0].child.displayName}'s care` : "Set up care"}
               />
             ) : null}
             {enabledModules.includes("caregiver") ? (
               <PremiumStatCard
                 accentColor={theme.accentOrange}
-                helper={caregiverSummaries[0]?.caregiver.displayName ?? "optional module"}
+                helper={caregiverSummaries[0]?.caregiver.displayName ?? "Add trusted helpers"}
                 iconName="caregiver"
                 title="Caregiver"
-                value={caregiverSummaries[0]?.latestCheckIn?.status ?? "Ready"}
+                value={caregiverSummaries[0]?.latestCheckIn?.status ?? "Set up care help"}
               />
             ) : null}
             {enabledModules.includes("elder_care") ? (
               <PremiumStatCard
                 accentColor={theme.accentGreen}
-                helper={elderSummaries[0]?.elder.displayName ?? "optional module"}
+                helper={elderSummaries[0]?.elder.displayName ?? "Track care tasks"}
                 iconName="elder_care"
                 title="Elder Care"
-                value={elderSummaries[0]?.latestCheckIn?.status ?? "Ready"}
+                value={elderSummaries[0]?.latestCheckIn?.status ?? "Support a loved one"}
               />
             ) : null}
           </View>

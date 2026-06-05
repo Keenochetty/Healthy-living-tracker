@@ -39,13 +39,24 @@ export function PremiumStatCard({
       onPress={onPress}
       padding="md"
       radius="xl"
-      style={{ minHeight: 138, width: "48%" }}
+      style={{
+        borderColor: "rgba(255,255,255,0.10)",
+        borderWidth: 1,
+        minHeight: 138,
+        shadowColor: "#000",
+        shadowOffset: { height: 10, width: 0 },
+        shadowOpacity: 0.16,
+        shadowRadius: 18,
+        width: "48%"
+      }}
     >
       <View style={{ gap: spacing.md }}>
         <View
           style={{
             alignItems: "center",
             backgroundColor: `${accent}22`,
+            borderColor: `${accent}44`,
+            borderWidth: 1,
             borderRadius: radius.full,
             height: 42,
             justifyContent: "center",

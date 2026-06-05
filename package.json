@@ -8,6 +8,7 @@
     "build": "expo export",
     "start": "expo start",
     "lint": "eslint .",
+    "test": "node tests/qa-runner.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
