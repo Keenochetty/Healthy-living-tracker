@@ -16,27 +16,27 @@ import { appColors, appMotion, appRadius, touchTargets } from "@/theme/designSys
 
 type FloatingBottomNavItemProps = {
   accessibilityLabel: string;
+  compact?: boolean;
   focused: boolean;
   iconName: AppIconName;
   label: string;
-  offsetY?: number;
   onLongPress?: () => void;
   onPress: () => void;
 };
 
 export function FloatingBottomNavItem({
   accessibilityLabel,
+  compact = false,
   focused,
   iconName,
   label,
-  offsetY = 0,
   onLongPress,
   onPress
 }: FloatingBottomNavItemProps) {
   const [isPressed, setIsPressed] = useState(false);
-  const labelWidth = Math.min(58, Math.max(34, label.length * 7.6));
-  const activeWidth = labelWidth + 52;
-  const inactiveWidth = 48;
+  const labelWidth = Math.min(compact ? 66 : 72, Math.max(44, label.length * (compact ? 8 : 8.5) + 4));
+  const activeWidth = labelWidth + (compact ? 52 : 58);
+  const inactiveWidth = compact ? 42 : 48;
   const progress = useDerivedValue(() =>
     withTiming(focused ? 1 : 0, { duration: appMotion.navTransition })
   );
@@ -57,39 +57,40 @@ export function FloatingBottomNavItem({
     transform: [{ translateX: interpolate(progress.value, [0, 1], [-6, 0]) }],
     width: interpolate(progress.value, [0, 1], [0, labelWidth])
   }));
+  const itemStyle = useAnimatedStyle(() => ({
+    width: interpolate(progress.value, [0, 1], [inactiveWidth, activeWidth])
+  }));
 
   const iconColor = focused ? appColors.navActiveText : appColors.navInactive;
 
   return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="tab"
-      accessibilityState={{ selected: focused }}
-      hitSlop={8}
-      onLongPress={onLongPress}
-      onPress={() => {
-        lightImpact();
-        onPress();
-      }}
-      onPressIn={() => {
-        setIsPressed(true);
-      }}
-      onPressOut={() => {
-        setIsPressed(false);
-      }}
-      style={[
-        styles.pressable,
-        { width: focused ? activeWidth : inactiveWidth },
-        offsetY ? { transform: [{ translateY: offsetY }] } : null
-      ]}
-    >
-      <Animated.View style={[styles.capsule, capsuleStyle]}>
-        <AppIcon color={iconColor} decorative name={iconName} size={22} strokeWidth={2.35} />
-        <Animated.Text numberOfLines={1} style={[styles.label, labelStyle]}>
-          {label}
-        </Animated.Text>
-      </Animated.View>
-    </Pressable>
+    <Animated.View style={[styles.item, itemStyle]}>
+      <Pressable
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: focused }}
+        hitSlop={6}
+        onLongPress={onLongPress}
+        onPress={() => {
+          lightImpact();
+          onPress();
+        }}
+        onPressIn={() => {
+          setIsPressed(true);
+        }}
+        onPressOut={() => {
+          setIsPressed(false);
+        }}
+        style={styles.pressable}
+      >
+        <Animated.View style={[styles.capsule, capsuleStyle]}>
+          <AppIcon color={iconColor} decorative name={iconName} size={22} strokeWidth={2.35} />
+          <Animated.Text numberOfLines={1} style={[styles.label, labelStyle]}>
+            {label}
+          </Animated.Text>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -109,12 +110,17 @@ const styles = StyleSheet.create({
     color: appColors.navActiveText,
     fontSize: 13,
     fontWeight: "800",
-    includeFontPadding: false
+    includeFontPadding: false,
+    flexShrink: 0
+  },
+  item: {
+    height: 52
   },
   pressable: {
     alignItems: "center",
     height: 52,
     justifyContent: "center",
-    minHeight: touchTargets.minimum
+    minHeight: touchTargets.minimum,
+    width: "100%"
   }
 });

@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { GeneralHealthActivityProvider } from "@/components/health/GeneralHealthActivityProvider";
 import { ProfileSettingsProvider } from "@/lib/profile-settings-context";
 import { AppThemeProvider } from "@/theme/ThemeProvider";
 
@@ -12,8 +13,9 @@ export default function RootLayout() {
       <AuthProvider>
         <ProfileSettingsProvider>
           <AppThemeProvider>
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false }}>
+            <GeneralHealthActivityProvider>
+              <StatusBar style="dark" />
+              <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="ai/index" />
               <Stack.Screen name="ai/review/[jobId]" />
@@ -38,6 +40,14 @@ export default function RootLayout() {
               <Stack.Screen name="fitness/index" />
               <Stack.Screen name="fitness/exercise/[exerciseId]" />
               <Stack.Screen name="health-calendar/index" />
+              <Stack.Screen name="health/[realm]" options={{ animation: "slide_from_right" }} />
+              <Stack.Screen name="health/general/history" options={{ animation: "slide_from_right" }} />
+              <Stack.Screen name="health/general/notes" options={{ animation: "slide_from_right" }} />
+              <Stack.Screen name="health/general/heart-rate" options={{ animation: "slide_from_right" }} />
+              <Stack.Screen name="health/general/blood-pressure" options={{ animation: "slide_from_right" }} />
+              <Stack.Screen name="health/general/temperature" options={{ animation: "slide_from_right" }} />
+              <Stack.Screen name="health/general/oxygen-saturation" options={{ animation: "slide_from_right" }} />
+              <Stack.Screen name="health/general/weight" options={{ animation: "slide_from_right" }} />
               <Stack.Screen name="food/index" />
               <Stack.Screen name="food/barcode-scanner" />
               <Stack.Screen name="food/barcode-product" />
@@ -67,7 +77,8 @@ export default function RootLayout() {
               <Stack.Screen name="scan-invite" />
               <Stack.Screen name="settings/notifications" />
               <Stack.Screen name="settings/privacy-center" />
-            </Stack>
+              </Stack>
+            </GeneralHealthActivityProvider>
           </AppThemeProvider>
         </ProfileSettingsProvider>
       </AuthProvider>

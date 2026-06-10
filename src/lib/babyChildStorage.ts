@@ -374,8 +374,8 @@ export async function calculateGrowthTrend(childProfileId: string) {
 export async function prepareWhoGrowthChartData(childProfileId: string) {
   return {
     logs: await getGrowthMeasurements(childProfileId),
-    status: "prepared" as const,
-    message: "WHO growth chart support is prepared. Percentiles are not shown until reference data is implemented correctly."
+    status: "source_pending" as const,
+    message: "Reference curves are not shown until verified source data is implemented correctly."
   };
 }
 
@@ -595,6 +595,10 @@ export async function getBabyEventsForDate(date: string) {
   return (await generateBabyCalendarEvents(new Date(`${date.slice(0, 10)}T00:00:00`), new Date(`${date.slice(0, 10)}T23:59:59`)));
 }
 
+export async function getBabyEventsForChildByDate(childProfileId: string, date: string) {
+  return (await getBabyEventsForDate(date)).filter((event) => event.childProfileId === childProfileId);
+}
+
 export async function linkBabyEventsToMainCalendar() {
   return generateBabyCalendarEvents(addDays(new Date(), -30), addDays(new Date(), 30));
 }
@@ -729,6 +733,16 @@ export async function getTrustedBabyLearnCards(): Promise<BabyLearnCard[]> {
       sourceUrl: "https://www.cdc.gov/vaccines/parents/index.html",
       summary: "Trusted vaccine information should be reviewed with your clinic or healthcare professional.",
       title: "Vaccine record keeping"
+    },
+    {
+      category: "care",
+      disclaimer: "For organization only. Discuss care questions with your clinic or healthcare professional.",
+      id: "clinic-questions-source-pending",
+      lastCheckedAt: "Source to be added",
+      sourceOrganization: "Source to be added",
+      sourceUrl: "",
+      summary: "Keep a short list of questions you want to discuss during a clinic visit.",
+      title: "Questions to ask at the clinic"
     }
   ];
 }

@@ -6,6 +6,8 @@ import { useAppTheme } from "@/theme/ThemeProvider";
 import { AppChip } from "./AppChip";
 
 type AppSectionProps = {
+  actionAccessibilityHint?: string;
+  actionAccessibilityLabel?: string;
   actionLabel?: string;
   children?: ReactNode;
   onActionPress?: () => void;
@@ -13,7 +15,7 @@ type AppSectionProps = {
   title: string;
 };
 
-export function AppSection({ actionLabel, children, onActionPress, subtitle, title }: AppSectionProps) {
+export function AppSection({ actionAccessibilityHint, actionAccessibilityLabel, actionLabel, children, onActionPress, subtitle, title }: AppSectionProps) {
   const { theme } = useAppTheme();
 
   return (
@@ -23,7 +25,7 @@ export function AppSection({ actionLabel, children, onActionPress, subtitle, tit
           <Text style={{ color: theme.text, fontSize: fontSizes.lg, fontWeight: "900" }}>{title}</Text>
           {subtitle ? <Text style={{ color: theme.mutedText, lineHeight: 20, marginTop: 3 }}>{subtitle}</Text> : null}
         </View>
-        {actionLabel ? <AppChip label={actionLabel} onPress={onActionPress} variant="primary" /> : null}
+        {actionLabel ? <AppChip accessibilityHint={actionAccessibilityHint} accessibilityLabel={actionAccessibilityLabel} label={actionLabel} onPress={onActionPress} variant="primary" /> : null}
       </View>
       {children}
     </View>

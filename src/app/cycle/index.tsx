@@ -1014,7 +1014,7 @@ function SuccessToast({ message, onDismiss }: { message: string; onDismiss: () =
 function RealmNav() {
   return (
     <>
-      <FloatingBottomNav activeRouteName="health" showBabyPortal={false} />
+      <FloatingBottomNav activeRouteName="health" />
       <FloatingAssistantButton sensitiveProfile />
     </>
   );

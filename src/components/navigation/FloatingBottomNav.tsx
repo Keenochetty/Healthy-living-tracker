@@ -1,18 +1,14 @@
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { Href, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
 
-import { BabyPortalButton } from "@/components/navigation/BabyPortalButton";
 import { FloatingBottomNavItem } from "@/components/navigation/FloatingBottomNavItem";
 import type { AppIconName } from "@/constants/appIcons";
 import { appShadows, zLayers } from "@/theme/designSystem";
 
-const NAV_WIDTH_PERCENT = 0.92;
 const NAV_HEIGHT = 74;
-const WAVE_HEIGHT = 46;
-const TOTAL_HEIGHT = NAV_HEIGHT + WAVE_HEIGHT;
-const WAVE_BASE_WIDTH = 150;
+const NAV_MAX_WIDTH = 520;
+const NAV_SIDE_MARGIN = 12;
 
 type NavConfig = {
   accessibilityLabel: string;
@@ -68,10 +64,6 @@ const NAV_ITEMS: Record<string, NavConfig> = {
 
 type FloatingBottomNavProps = FloatingTabBarProps & {
   activeRouteName?: keyof typeof NAV_ITEMS;
-  activeBabyPortal?: boolean;
-  hasDueBabyReminder?: boolean;
-  multipleBabyProfiles?: boolean;
-  showBabyPortal?: boolean;
 };
 
 const STANDALONE_ROUTES = Object.keys(NAV_ITEMS).map((name) => ({ key: `standalone-${name}`, name }));
@@ -86,12 +78,8 @@ const NAV_HREFS: Record<string, Href> = {
 
 export function FloatingBottomNav({
   activeRouteName,
-  activeBabyPortal = false,
   descriptors = {},
-  hasDueBabyReminder = false,
-  multipleBabyProfiles = false,
   navigation,
-  showBabyPortal = false,
   state
 }: FloatingBottomNavProps) {
   const insets = useSafeAreaInsets();
@@ -105,61 +93,14 @@ export function FloatingBottomNav({
     );
   const visibleRoutes = routes.filter((route: TabRoute) => NAV_ITEMS[route.name]);
 
-  const navWidth = screenWidth * NAV_WIDTH_PERCENT;
-  const centerX = navWidth / 2;
-  const navTopY = WAVE_HEIGHT;
+  const compact = screenWidth < 400;
+  const navWidth = Math.min(screenWidth - NAV_SIDE_MARGIN * 2, NAV_MAX_WIDTH);
   const navSafeOffset = insets.bottom + 14;
-  const navPath = `
-    M 38 ${navTopY}
-    H ${centerX - WAVE_BASE_WIDTH / 2}
-    C ${centerX - 58} ${navTopY}
-      ${centerX - 50} ${navTopY - 24}
-      ${centerX - 28} ${navTopY - 36}
-    C ${centerX - 12} ${navTopY - 46}
-      ${centerX + 12} ${navTopY - 46}
-      ${centerX + 28} ${navTopY - 36}
-    C ${centerX + 50} ${navTopY - 24}
-      ${centerX + 58} ${navTopY}
-      ${centerX + WAVE_BASE_WIDTH / 2} ${navTopY}
-    H ${navWidth - 38}
-    Q ${navWidth} ${navTopY} ${navWidth} ${navTopY + 38}
-    V ${TOTAL_HEIGHT - 38}
-    Q ${navWidth} ${TOTAL_HEIGHT} ${navWidth - 38} ${TOTAL_HEIGHT}
-    H 38
-    Q 0 ${TOTAL_HEIGHT} 0 ${TOTAL_HEIGHT - 38}
-    V ${navTopY + 38}
-    Q 0 ${navTopY} 38 ${navTopY}
-    Z
-  `;
 
   return (
     <View pointerEvents="box-none" style={styles.overlay}>
       <View style={[styles.bottomNavWrapper, { bottom: navSafeOffset, width: navWidth }]}>
-        <Svg height={TOTAL_HEIGHT} style={styles.navSvg} width={navWidth}>
-          <Defs>
-            <LinearGradient id="navGlass" x1="0" x2="1" y1="0" y2="1">
-              <Stop offset="0" stopColor="rgba(36, 31, 30, 0.94)" />
-              <Stop offset="1" stopColor="rgba(12, 18, 25, 0.96)" />
-            </LinearGradient>
-          </Defs>
-          <Path
-            d={navPath}
-            fill="url(#navGlass)"
-            stroke="rgba(255,255,255,0.14)"
-            strokeWidth={1}
-          />
-        </Svg>
-
-        <View pointerEvents="box-none" style={styles.babySlot}>
-          <BabyPortalButton
-            active={activeBabyPortal}
-            hasDueReminder={hasDueBabyReminder}
-            multipleProfiles={multipleBabyProfiles}
-            visible={showBabyPortal}
-          />
-        </View>
-
-        <View style={styles.navContent}>
+        <View style={[styles.navContent, compact ? styles.navContentCompact : null]}>
           {visibleRoutes.map((route: TabRoute) => {
             const config = NAV_ITEMS[route.name];
             const focused = activeIndex === routes.findIndex((item: TabRoute) => item.key === route.key);
@@ -195,11 +136,11 @@ export function FloatingBottomNav({
             return (
               <FloatingBottomNavItem
                 accessibilityLabel={options.tabBarAccessibilityLabel ?? config.accessibilityLabel}
+                compact={compact}
                 focused={focused}
                 iconName={config.iconName}
                 key={route.key}
                 label={config.label}
-                offsetY={route.name === "health" && showBabyPortal && !focused ? 8 : 0}
                 onLongPress={onLongPress}
                 onPress={onPress}
               />
@@ -212,21 +153,14 @@ export function FloatingBottomNav({
 }
 
 const styles = StyleSheet.create({
-  babySlot: {
-    alignItems: "center",
-    height: 64,
-    justifyContent: "flex-start",
-    left: 0,
-    pointerEvents: "box-none",
-    position: "absolute",
-    right: 0,
-    top: 7,
-    zIndex: zLayers.floatingAction
-  },
   bottomNavWrapper: {
     alignItems: "center",
-    height: TOTAL_HEIGHT,
-    justifyContent: "flex-end",
+    backgroundColor: "rgba(12, 18, 25, 0.96)",
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 999,
+    borderWidth: 1,
+    height: NAV_HEIGHT,
+    justifyContent: "center",
     overflow: "visible",
     position: "absolute",
     zIndex: zLayers.floatingNav,
@@ -234,19 +168,15 @@ const styles = StyleSheet.create({
   },
   navContent: {
     alignItems: "center",
-    bottom: 10,
     flexDirection: "row",
-    height: 56,
+    height: "100%",
     justifyContent: "space-between",
-    left: 14,
-    position: "absolute",
-    right: 14,
+    paddingHorizontal: 12,
+    width: "100%",
     zIndex: zLayers.floatingAction
   },
-  navSvg: {
-    bottom: 0,
-    left: 0,
-    position: "absolute"
+  navContentCompact: {
+    paddingHorizontal: 8
   },
   overlay: {
     bottom: 0,

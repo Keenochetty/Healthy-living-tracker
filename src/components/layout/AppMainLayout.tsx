@@ -1,6 +1,6 @@
 import { Href, router } from "expo-router";
 import { ReactNode, useEffect, useState } from "react";
-import { View } from "react-native";
+import { View, type ViewStyle } from "react-native";
 
 import { AiFloatingQuickBar } from "@/components/ai/AiFloatingQuickBar";
 import { AppScreen } from "@/components/ui";
@@ -10,6 +10,8 @@ import { AppTopProfileHeader } from "./AppTopProfileHeader";
 
 type AppMainLayoutProps = {
   children: ReactNode;
+  safeBottom?: boolean;
+  screenStyle?: ViewStyle;
   scroll?: boolean;
   showAi?: boolean;
   showHeader?: boolean;
@@ -19,6 +21,8 @@ type AppMainLayoutProps = {
 
 export function AppMainLayout({
   children,
+  safeBottom = true,
+  screenStyle,
   scroll = true,
   showAi = false,
   showHeader = true,
@@ -39,7 +43,7 @@ export function AppMainLayout({
 
   return (
     <View style={{ flex: 1 }}>
-      <AppScreen scroll={scroll}>
+      <AppScreen safeBottom={safeBottom} scroll={scroll} style={screenStyle}>
         {showHeader ? (
           <AppTopProfileHeader
             avatarInitials={initials}

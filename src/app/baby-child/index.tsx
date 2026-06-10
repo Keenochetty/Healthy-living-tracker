@@ -1,13 +1,19 @@
 import { Href, router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { BabyBottomSheet } from "@/components/baby-child/BabyBottomSheet";
+import { BabyGrowthSection } from "@/components/baby-child/BabyGrowthSection";
+import { BabyHealthSection } from "@/components/baby-child/BabyHealthSection";
+import { BabyMilestonesSection } from "@/components/baby-child/BabyMilestonesSection";
+import { BabyOverview } from "@/components/baby-child/BabyOverview";
+import { BabyProfileSummary } from "@/components/baby-child/BabyProfileSummary";
+import type { BabyQuickLogMode } from "@/components/baby-child/BabyQuickLogGrid";
 import {
   DateWheelPicker,
   ManualEntryToggle,
   NumberWheelPicker,
   PresetChipGroup,
-  QuickLogBottomSheet,
   QuickNoteField,
   QuickSaveButton,
   TimeWheelPicker
@@ -32,7 +38,7 @@ import {
   getBabyCareSummary,
   getBabyChildProfiles,
   getBabyDiaperLogsByDate,
-  getBabyEventsForDate,
+  getBabyEventsForChildByDate,
   getBabyFeedingLogsByDate,
   getBabyGrowthLogs,
   getBabyMedicineLogs,
@@ -64,46 +70,23 @@ import type {
   VaccinationRecord
 } from "@/types/child";
 
-type BabyTab =
-  | "today"
-  | "feeding"
-  | "sleep"
-  | "diapers"
-  | "growth"
-  | "milestones"
-  | "solids"
-  | "medicine"
-  | "vaccines"
-  | "records"
-  | "reports"
-  | "learn"
-  | "settings";
+type BabyTab = "overview" | "growth" | "milestones" | "health" | "more";
 
-type SheetMode = "feed" | "sleep" | "diaper" | "growth" | "solid" | "medicine" | "vaccine" | "note" | null;
+type SheetMode = BabyQuickLogMode | null;
 
 const TABS: Array<{ key: BabyTab; label: string }> = [
-  { key: "today", label: "Today" },
-  { key: "feeding", label: "Feeding" },
-  { key: "sleep", label: "Sleep" },
-  { key: "diapers", label: "Diapers" },
+  { key: "overview", label: "Overview" },
   { key: "growth", label: "Growth" },
   { key: "milestones", label: "Milestones" },
-  { key: "solids", label: "Solids" },
-  { key: "medicine", label: "Medicine" },
-  { key: "vaccines", label: "Vaccines" },
-  { key: "records", label: "Records" },
-  { key: "reports", label: "Reports" },
-  { key: "learn", label: "Learn" },
-  { key: "settings", label: "Settings" }
+  { key: "health", label: "Health" },
+  { key: "more", label: "More" }
 ];
 
 const FEEDING_TYPES: BabyFeedingType[] = ["breastfeeding", "bottle_formula", "bottle_breast_milk", "mixed", "pumping", "solids", "other"];
 const DIAPER_TYPES: DiaperType[] = ["wet", "dirty", "mixed", "dry", "other"];
-const MILESTONE_CATEGORIES: MilestoneCategory[] = ["social_emotional", "language_communication", "cognitive", "movement_physical"];
-const MILESTONE_AGES = [2, 4, 6, 9, 12, 15, 18, 24, 30, 36, 48, 60];
 const FOOD_CATEGORIES = ["Fruit", "Vegetables", "Grains", "Protein", "Dairy", "Allergen foods", "Other"];
 const ALLERGENS = ["Egg", "Milk", "Peanut", "Tree nuts", "Wheat", "Soy", "Fish", "Shellfish", "Sesame", "Other"];
-const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY = getLocalDateKey(new Date());
 
 const BABY_FOOTER =
   "Baby and child tracking is for organization and education only. It is not medical advice and does not replace a pediatrician, doctor, nurse, clinic, or healthcare professional.";
@@ -158,21 +141,31 @@ export default function BabyChildRealm() {
   const [data, setData] = useState<BabyRealmData>(EMPTY_DATA);
   const [sheetMode, setSheetMode] = useState<SheetMode>(null);
   const [toast, setToast] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [isCaregiverView] = useState(false);
+  const loadRequestRef = useRef(0);
   const selectedProfile = useMemo(
     () => profiles.find((profile) => profile.id === selectedChildId) ?? profiles[0],
     [profiles, selectedChildId]
   );
 
   const loadRealm = useCallback(async () => {
+    const requestId = ++loadRequestRef.current;
+    setIsLoading(true);
+    setLoadError("");
     const nextProfiles = await getBabyChildProfiles();
     const nextSelectedId = selectedChildId ?? asParam(params.childId) ?? nextProfiles[0]?.id;
     const selected = nextProfiles.find((profile) => profile.id === nextSelectedId) ?? nextProfiles[0];
+    if (requestId !== loadRequestRef.current) return;
     setProfiles(nextProfiles);
     setSelectedChildId(selected?.id);
 
     if (!selected) {
-      setData({ ...EMPTY_DATA, learnCards: await getTrustedBabyLearnCards() });
+      const learnCards = await getTrustedBabyLearnCards();
+      if (requestId !== loadRequestRef.current) return;
+      setData({ ...EMPTY_DATA, learnCards });
+      setIsLoading(false);
       return;
     }
 
@@ -204,13 +197,14 @@ export default function BabyChildRealm() {
       getBabyVaccineRecords(selected.id),
       getBabyReportSummary(selected.id, "today"),
       getTrustedBabyLearnCards(),
-      getBabyEventsForDate(TODAY)
+      getBabyEventsForChildByDate(selected.id, TODAY)
     ]);
 
+    if (requestId !== loadRequestRef.current) return;
     setData({
       careSummary,
       diaperLogs,
-      events,
+      events: enrichBabyEvents(events, feedingLogs, sleepLogs, diaperLogs, medicineLogs),
       feedingLogs,
       growthLogs,
       learnCards,
@@ -222,11 +216,15 @@ export default function BabyChildRealm() {
       solidsLogs,
       vaccineRecords
     });
+    setIsLoading(false);
   }, [params.childId, selectedChildId]);
 
   useFocusEffect(
     useCallback(() => {
-      Promise.resolve().then(loadRealm).catch(() => undefined);
+      Promise.resolve().then(loadRealm).catch(() => {
+        setLoadError("Could not load Baby Care right now.");
+        setIsLoading(false);
+      });
     }, [loadRealm])
   );
 
@@ -234,6 +232,28 @@ export default function BabyChildRealm() {
     setToast(message);
     setSheetMode(null);
     await loadRealm();
+  }
+
+  function selectProfile(id: string) {
+    if (id === selectedChildId) return;
+    loadRequestRef.current += 1;
+    setSheetMode(null);
+    setToast("");
+    setLoadError("");
+    setData(EMPTY_DATA);
+    setIsLoading(true);
+    setSelectedChildId(id);
+  }
+
+  if (isLoading && !selectedProfile) {
+    return (
+      <>
+        <AppMainLayout subtitle="Private baby care tracker" title="Baby / Child">
+          <BabyLoadingState />
+        </AppMainLayout>
+        <BabyChildNavOverlay />
+      </>
+    );
   }
 
   if (!selectedProfile) {
@@ -249,17 +269,17 @@ export default function BabyChildRealm() {
           />
           <Footer text={BABY_FOOTER} />
         </AppMainLayout>
-        <BabyChildNavOverlay profiles={profiles} />
+        <BabyChildNavOverlay />
       </>
     );
   }
 
   return (
     <>
-      <AppMainLayout subtitle="Private baby care tracker" title="Baby / Child">
-        <BabyProfileHeader
+      <AppMainLayout showHeader={false}>
+        <BabyProfileSummary
           isCaregiverView={isCaregiverView}
-          onSelectProfile={setSelectedChildId}
+          onSelectProfile={selectProfile}
           profile={selectedProfile}
           profiles={profiles}
         />
@@ -277,161 +297,73 @@ export default function BabyChildRealm() {
           </AppCard>
         ) : null}
 
-        {activeTab === "today" ? (
-          <TodayTab data={data} onSheet={setSheetMode} profile={selectedProfile} />
+        {activeTab === "overview" ? (
+          <BabyOverview
+            care={{
+              diaperCount: data.diaperLogs.length,
+              dirtyDiaperCount: data.diaperLogs.filter((log) => log.diaperType === "dirty" || log.diaperType === "mixed").length,
+              feedCount: data.careSummary?.feeding.count ?? 0,
+              feedTotalMl: data.careSummary?.feeding.totalAmountMl ?? 0,
+              growthLatest: data.careSummary?.growth?.weight ? `${data.careSummary.growth.weight} kg` : undefined,
+              lastDiaper: data.careSummary?.diaper,
+              lastFeed: data.careSummary?.feeding.latest ? {
+                amountMl: data.careSummary.feeding.latest.finishedAmountMl,
+                loggedAt: data.careSummary.feeding.latest.loggedAt
+              } : undefined,
+              lastSleep: data.careSummary?.sleep.latest ? {
+                durationMinutes: data.careSummary.sleep.latest.durationMinutes,
+                loggedAt: data.careSummary.sleep.latest.loggedAt
+              } : undefined,
+              medicineDueCount: data.careSummary?.medicineDueCount ?? 0,
+              nextReminder: getNextReminder(data),
+              sleepBlockCount: data.sleepLogs.length,
+              sleepMinutes: data.careSummary?.sleep.totalMinutes ?? 0,
+              wetDiaperCount: data.diaperLogs.filter((log) => log.diaperType === "wet" || log.diaperType === "mixed").length,
+            }}
+            childProfileId={selectedProfile.id}
+            error={loadError}
+            events={data.events}
+            isLoading={isLoading}
+            onRetry={loadRealm}
+            onSheet={setSheetMode}
+          />
         ) : null}
-        {activeTab === "feeding" ? <FeedingTab data={data} onSheet={setSheetMode} /> : null}
-        {activeTab === "sleep" ? <SleepTab data={data} onSheet={setSheetMode} /> : null}
-        {activeTab === "diapers" ? <DiapersTab data={data} onSheet={setSheetMode} /> : null}
         {activeTab === "growth" ? <GrowthTab data={data} onSheet={setSheetMode} /> : null}
         {activeTab === "milestones" ? <MilestonesTab data={data} onSaved={afterSaved} profile={selectedProfile} /> : null}
-        {activeTab === "solids" ? <SolidsTab data={data} onSheet={setSheetMode} /> : null}
-        {activeTab === "medicine" ? <MedicineTab data={data} onSheet={setSheetMode} /> : null}
-        {activeTab === "vaccines" ? <VaccinesTab data={data} onSheet={setSheetMode} /> : null}
-        {activeTab === "records" ? <RecordsTab profile={selectedProfile} /> : null}
-        {activeTab === "reports" ? <ReportsTab data={data} /> : null}
-        {activeTab === "learn" ? <LearnTab cards={data.learnCards} /> : null}
-        {activeTab === "settings" ? <SettingsTab onSaved={afterSaved} profile={selectedProfile} /> : null}
+        {activeTab === "health" ? (
+          <BabyHealthSection
+            onAddVaccine={() => setSheetMode("vaccine")}
+            onMedicine={() => setSheetMode("medicine")}
+            onRecords={() => router.push("/records" as Href)}
+            onSchedule={() => router.push("/health-calendar" as Href)}
+            vaccineRecords={data.vaccineRecords}
+          />
+        ) : null}
+        {activeTab === "more" ? (
+          <View style={styles.stack}>
+            <FeedingTab data={data} onSheet={setSheetMode} />
+            <SleepTab data={data} onSheet={setSheetMode} />
+            <DiapersTab data={data} onSheet={setSheetMode} />
+            <SolidsTab data={data} onSheet={setSheetMode} />
+            <ReportsTab data={data} />
+            <LearnTab cards={data.learnCards} />
+            <SettingsTab key={selectedProfile.id} onSaved={afterSaved} profile={selectedProfile} />
+          </View>
+        ) : null}
 
-        <Footer text={BABY_FOOTER} />
+        {activeTab !== "overview" ? <Footer text={BABY_FOOTER} /> : null}
 
-        <FeedSheet childId={selectedProfile.id} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "feed"} />
-        <SleepSheet childId={selectedProfile.id} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "sleep"} />
-        <DiaperSheet childId={selectedProfile.id} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "diaper"} />
-        <GrowthSheet childId={selectedProfile.id} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "growth"} />
-        <SolidFoodSheet childId={selectedProfile.id} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "solid"} />
-        <MedicineSheet childId={selectedProfile.id} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "medicine"} />
-        <VaccineSheet childId={selectedProfile.id} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "vaccine"} />
-        <NoteSheet onClose={() => setSheetMode(null)} onSaved={afterSaved} profile={selectedProfile} visible={sheetMode === "note"} />
+        <FeedSheet key={`${selectedProfile.id}-feed-${sheetMode === "feed"}`} childId={selectedProfile.id} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "feed"} />
+        <SleepSheet key={`${selectedProfile.id}-sleep-${sheetMode === "sleep"}`} childId={selectedProfile.id} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "sleep"} />
+        <DiaperSheet key={`${selectedProfile.id}-diaper-${sheetMode === "diaper"}`} childId={selectedProfile.id} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "diaper"} />
+        <GrowthSheet key={`${selectedProfile.id}-growth-${sheetMode === "growth"}`} childId={selectedProfile.id} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "growth"} />
+        <SolidFoodSheet key={`${selectedProfile.id}-solid-${sheetMode === "solid"}`} childId={selectedProfile.id} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "solid"} />
+        <MedicineSheet key={`${selectedProfile.id}-medicine-${sheetMode === "medicine"}`} childId={selectedProfile.id} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "medicine"} />
+        <VaccineSheet key={`${selectedProfile.id}-vaccine-${sheetMode === "vaccine"}`} childId={selectedProfile.id} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} visible={sheetMode === "vaccine"} />
+        <NoteSheet key={`${selectedProfile.id}-note-${sheetMode === "note"}`} childName={selectedProfile.displayName} onClose={() => setSheetMode(null)} onSaved={afterSaved} profile={selectedProfile} visible={sheetMode === "note"} />
       </AppMainLayout>
-      <BabyChildNavOverlay profiles={profiles} />
+      <BabyChildNavOverlay />
     </>
-  );
-}
-
-function BabyProfileHeader({
-  isCaregiverView,
-  onSelectProfile,
-  profile,
-  profiles
-}: {
-  isCaregiverView: boolean;
-  onSelectProfile: (id: string) => void;
-  profile: BabyChildProfile;
-  profiles: BabyChildProfile[];
-}) {
-  return (
-    <AppCard style={styles.profileCard}>
-      <View style={styles.profileTop}>
-        <BabyAvatar label={`${profile.displayName} avatar`} name={profile.displayName} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.profileName}>{profile.displayName}</Text>
-          <Text style={styles.profileMeta}>{formatAge(profile.dateOfBirth)}</Text>
-          <Text style={styles.profileBadge}>{profile.privacy === "shared_selected" ? "Shared selected" : "Private by default"} - {isCaregiverView ? "Caregiver view" : "Parent view"}</Text>
-        </View>
-      </View>
-      {profiles.length > 1 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {profiles.map((item) => (
-            <Chip key={item.id} label={item.displayName} onPress={() => onSelectProfile(item.id)} selected={item.id === profile.id} />
-          ))}
-        </ScrollView>
-      ) : null}
-    </AppCard>
-  );
-}
-
-function TodayTab({ data, onSheet, profile }: { data: BabyRealmData; onSheet: (mode: SheetMode) => void; profile: BabyChildProfile }) {
-  const care = data.careSummary;
-  return (
-    <View style={styles.stack}>
-      <AppCard style={styles.heroCard}>
-        <Text style={styles.heroKicker}>Baby Portal</Text>
-        <Text style={styles.heroTitle}>Care for {profile.displayName}</Text>
-        <View style={styles.heroGrid}>
-          <HeroMetric label="Last feed" value={care?.feeding.latest ? formatAgo(care.feeding.latest.loggedAt) : "Log feed"} />
-          <HeroMetric label="Sleep today" value={care ? formatMinutes(care.sleep.totalMinutes) : "Start today"} />
-          <HeroMetric label="Last diaper" value={care?.diaper ? `${formatValue(care.diaper.diaperType)} - ${formatAgo(care.diaper.loggedAt)}` : "Log diaper"} />
-          <HeroMetric label="Next reminder" value={data.events[0]?.label ?? "Set up when ready"} />
-        </View>
-      </AppCard>
-
-      <AppSection title="Quick log" subtitle="Large thumb-friendly actions for frequent care." />
-      <QuickActionGrid onSheet={onSheet} />
-
-      <AppSection title="Today timeline" />
-      <Timeline events={data.events} onSheet={onSheet} />
-
-      <View style={styles.metricGrid}>
-        <MetricCard label="Feeds" value={`${care?.feeding.count ?? 0}`} />
-        <MetricCard label="Bottle total" value={`${care?.feeding.totalAmountMl ?? 0} ml`} />
-        <MetricCard label="Naps" value={`${care?.sleep.napCount ?? 0}`} />
-        <MetricCard label="Diapers" value={`${data.diaperLogs.length}`} />
-        <MetricCard label="Solids tried" value={`${care?.solids.triedCount ?? 0}`} />
-        <MetricCard label="Medicine due" value={`${care?.medicineDueCount ?? 0}`} />
-      </View>
-
-      <UpcomingCard data={data} />
-      <BabyAiSuggestions profile={profile} />
-      <AppCard style={styles.darkCard}>
-        <Text style={styles.darkTitle}>Recent notes</Text>
-        <Text style={styles.darkMuted}>{profile.medicalNotes || "Add notes when something feels useful to remember."}</Text>
-      </AppCard>
-      {data.learnCards[0] ? <LearnCard card={data.learnCards[0]} /> : null}
-    </View>
-  );
-}
-
-function QuickActionGrid({ onSheet }: { onSheet: (mode: SheetMode) => void }) {
-  const actions: Array<{ icon: string; label: string; mode: SheetMode }> = [
-    { icon: "nutrition", label: "Feed", mode: "feed" },
-    { icon: "sleep", label: "Sleep", mode: "sleep" },
-    { icon: "baby_child", label: "Diaper", mode: "diaper" },
-    { icon: "medication", label: "Medicine", mode: "medicine" },
-    { icon: "edit", label: "Note", mode: "note" },
-    { icon: "weight", label: "Growth", mode: "growth" },
-    { icon: "food", label: "Solid food", mode: "solid" },
-    { icon: "vaccines", label: "Vaccine", mode: "vaccine" }
-  ];
-  return (
-    <View style={styles.quickGrid}>
-      {actions.map((action) => (
-        <Pressable accessibilityLabel={`Log ${action.label}`} accessibilityRole="button" key={action.label} onPress={() => onSheet(action.mode)} style={styles.quickAction}>
-          <AppIcon color="#6ee7c8" decorative name={action.icon as never} size={22} />
-          <Text style={styles.quickText}>{action.label}</Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
-function BabyAiSuggestions({ profile }: { profile: BabyChildProfile }) {
-  const prompts = [
-    "Create a draft baby care note",
-    "Summarize feeding logs from today",
-    "Summarize sleep logs from today",
-    "Prepare a question for the pediatrician"
-  ];
-
-  function openAssistant(prompt: string) {
-    router.push(`/ai?mode=quick_logger&context=baby_child&profileId=${profile.id}&prompt=${encodeURIComponent(prompt)}` as Href);
-  }
-
-  return (
-    <AppCard style={styles.darkCard}>
-      <View style={styles.sectionHeaderRow}>
-        <View>
-          <Text style={styles.darkTitle}>AI helper</Text>
-          <Text style={styles.darkMuted}>Creates drafts only. Review before saving.</Text>
-        </View>
-        <AppIcon color="#c4b5fd" decorative name="ai_draft" size={22} />
-      </View>
-      <View style={styles.promptGrid}>
-        {prompts.map((prompt) => (
-          <GhostButton key={prompt} label={prompt} onPress={() => openAssistant(prompt)} />
-        ))}
-      </View>
-    </AppCard>
   );
 }
 
@@ -498,26 +430,7 @@ function DiapersTab({ data, onSheet }: { data: BabyRealmData; onSheet: (mode: Sh
 }
 
 function GrowthTab({ data, onSheet }: { data: BabyRealmData; onSheet: (mode: SheetMode) => void }) {
-  const latest = data.growthLogs[0];
-  return (
-    <SectionFrame
-      button="Add measurement"
-      empty={!data.growthLogs.length ? { message: "Track home or clinic measurements over time.", title: "Add growth measurements" } : undefined}
-      footer={GROWTH_FOOTER}
-      onPress={() => onSheet("growth")}
-      subtitle="Weight, length/height, head circumference and measurement source."
-      title="Growth"
-    >
-      <View style={styles.metricGrid}>
-        <MetricCard label="Latest weight" value={latest?.weight ? `${latest.weight} kg` : "Start today"} />
-        <MetricCard label="Length / height" value={latest?.height ? `${latest.height} cm` : "Set up when ready"} />
-        <MetricCard label="Head" value={latest?.headCircumference ? `${latest.headCircumference} cm` : "Set up when ready"} />
-        <MetricCard label="Source" value={latest?.measurementSource ? formatValue(latest.measurementSource) : "Not added"} />
-      </View>
-      <ChartCard title="Growth trend placeholder" values={data.growthLogs.slice(0, 6).map((log) => Math.min(1, (log.weight ?? 0) / 20))} />
-      <List items={data.growthLogs.slice(0, 8).map((log) => `${log.weight ?? "-"} kg - ${log.height ?? "-"} cm - ${formatValue(log.measurementSource ?? "home")}`)} />
-    </SectionFrame>
-  );
+  return <BabyGrowthSection logs={data.growthLogs} onAdd={() => onSheet("growth")} />;
 }
 
 function MilestonesTab({ data, onSaved, profile }: { data: BabyRealmData; onSaved: (message: string) => void; profile: BabyChildProfile }) {
@@ -536,35 +449,21 @@ function MilestonesTab({ data, onSaved, profile }: { data: BabyRealmData; onSave
   }
 
   return (
-    <SectionFrame
-      button="View checklist"
-      empty={!data.milestoneLogs.length ? { message: "Every child develops differently. Track what you notice.", title: "Milestones are checklists" } : undefined}
-      footer={MILESTONE_FOOTER}
-      onPress={() => undefined}
-      subtitle="Observed, not yet, unsure and notes. No delay labels."
-      title="Milestones"
-    >
-      <View style={styles.metricGrid}>
-        <MetricCard label="Observed" value={`${data.careSummary?.milestone.observedCount ?? 0}`} />
-        <MetricCard label="Checklist" value={`${data.milestoneChecklist.length}`} />
-      </View>
-      <AppCard style={styles.darkCard}>
-        <Text style={styles.darkTitle}>Add milestone note</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {MILESTONE_CATEGORIES.map((item) => <Chip key={item} label={formatValue(item)} onPress={() => setCategory(item)} selected={category === item} />)}
-        </ScrollView>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {MILESTONE_AGES.map((age) => <Chip key={age} label={`${age}m`} onPress={() => setAgeCheckpointMonths(age)} selected={ageCheckpointMonths === age} />)}
-        </ScrollView>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {(["observed", "not_yet", "unsure"] as MilestoneStatus[]).map((item) => <Chip key={item} label={formatValue(item)} onPress={() => setStatus(item)} selected={status === item} />)}
-        </ScrollView>
-        <TextInput onChangeText={setTitle} placeholder="Milestone title" placeholderTextColor="#94a3b8" style={styles.darkInput} value={title} />
-        <QuickNoteField onChangeText={setNotes} value={notes} />
-        <QuickSaveButton onPress={saveMilestone} title="Save milestone note" />
-      </AppCard>
-      <List items={[...data.milestoneChecklist.slice(0, 5).map((item) => `${item.ageCheckpointMonths}m - ${item.title}`), ...data.milestoneLogs.slice(0, 5).map((log) => `${log.title} - ${formatValue(log.status ?? "observed")}`)]} />
-    </SectionFrame>
+    <BabyMilestonesSection
+      ageCheckpointMonths={ageCheckpointMonths}
+      category={category}
+      checklist={data.milestoneChecklist}
+      logs={data.milestoneLogs}
+      notes={notes}
+      onAgeChange={setAgeCheckpointMonths}
+      onCategoryChange={setCategory}
+      onNotesChange={setNotes}
+      onSave={saveMilestone}
+      onStatusChange={setStatus}
+      onTitleChange={setTitle}
+      status={status}
+      title={title}
+    />
   );
 }
 
@@ -595,7 +494,7 @@ function MedicineTab({ data, onSheet }: { data: BabyRealmData; onSheet: (mode: S
       empty={!data.medicineLogs.length ? { message: "Medicine logs will appear here when added from label or healthcare instructions.", title: "Track medicine carefully" } : undefined}
       footer={MEDICINE_FOOTER}
       onPress={() => onSheet("medicine")}
-      subtitle="Label instruction notes, status, records and placeholders."
+      subtitle="Label instruction notes, status, records, and care details."
       title="Medicine"
     >
       <View style={styles.metricGrid}>
@@ -603,8 +502,8 @@ function MedicineTab({ data, onSheet }: { data: BabyRealmData; onSheet: (mode: S
         <MetricCard label="Taken" value={`${data.medicineLogs.filter((log) => log.status === "taken").length}`} />
       </View>
       <AppCard style={styles.darkCard}>
-        <Text style={styles.darkTitle}>Medicine label placeholder</Text>
-        <Text style={styles.darkMuted}>Photo/document support is prepared. No dose calculation is provided.</Text>
+        <Text style={styles.darkTitle}>Medicine instructions</Text>
+        <Text style={styles.darkMuted}>Keep label or healthcare professional instructions with the log. No dose calculation is provided.</Text>
       </AppCard>
       <List items={data.medicineLogs.slice(0, 8).map((log) => `${log.medicineName} - ${formatValue(log.status)}${log.doseInstruction ? ` - ${log.doseInstruction}` : ""}`)} />
     </SectionFrame>
@@ -618,7 +517,7 @@ function VaccinesTab({ data, onSheet }: { data: BabyRealmData; onSheet: (mode: S
       empty={!data.vaccineRecords.length ? { message: "Vaccine records from your clinic card will appear here.", title: "Add vaccine records" } : undefined}
       footer="Use this to record vaccine information from your clinic card or healthcare provider."
       onPress={() => onSheet("vaccine")}
-      subtitle="Clinic card details, next date, batch number and document placeholder."
+      subtitle="Clinic card details, next date, batch number, and notes."
       title="Vaccines"
     >
       <View style={styles.metricGrid}>
@@ -634,7 +533,7 @@ function RecordsTab({ profile }: { profile: BabyChildProfile }) {
   const recordTypes = ["Birth record", "Clinic card", "Vaccine card", "Doctor note", "Prescription", "Lab result", "Growth chart", "Feeding plan", "Allergy note", "Hospital document", "Other"];
   return (
     <View style={styles.stack}>
-      <AppSection title="Records" subtitle="Secure placeholders linked to the Records realm." />
+      <AppSection title="Records" subtitle="Private documents linked to the Records realm." />
       <AppCard style={styles.darkCard}>
         <Text style={styles.darkTitle}>Baby records for {profile.displayName}</Text>
         <Text style={styles.darkMuted}>Birth records, clinic cards, vaccine cards, prescriptions, lab results, feeding plans, and notes stay private unless shared through Family permissions.</Text>
@@ -732,7 +631,7 @@ function SectionFrame({
   );
 }
 
-function FeedSheet({ childId, onClose, onSaved, visible }: SheetProps) {
+function FeedSheet({ childId, childName, onClose, onSaved, visible }: SheetProps) {
   const [feedingType, setFeedingType] = useState<BabyFeedingType>("bottle_formula");
   const [side, setSide] = useState<"left" | "right" | "both" | "not_applicable">("not_applicable");
   const [amountMl, setAmountMl] = useState(90);
@@ -755,7 +654,7 @@ function FeedSheet({ childId, onClose, onSaved, visible }: SheetProps) {
   }
 
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Log feed" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save feed" title="Log feed" visible={visible}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{FEEDING_TYPES.map((type) => <Chip key={type} label={formatValue(type)} onPress={() => setFeedingType(type)} selected={feedingType === type} />)}</ScrollView>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{(["left", "right", "both", "not_applicable"] as const).map((value) => <Chip key={value} label={formatValue(value)} onPress={() => setSide(value)} selected={side === value} />)}</ScrollView>
       <ManualEntryToggle enabled={manualMode} onToggle={() => setManualMode((current) => !current)} />
@@ -773,12 +672,11 @@ function FeedSheet({ childId, onClose, onSaved, visible }: SheetProps) {
         </>
       )}
       <QuickNoteField onChangeText={setNotes} value={notes} />
-      <QuickSaveButton onPress={save} title="Save feed" />
-    </QuickLogBottomSheet>
+    </BabyQuickLogSheet>
   );
 }
 
-function SleepSheet({ childId, onClose, onSaved, visible }: SheetProps) {
+function SleepSheet({ childId, childName, onClose, onSaved, visible }: SheetProps) {
   const [sleepType, setSleepType] = useState<"nap" | "night" | "unknown">("nap");
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [notes, setNotes] = useState("");
@@ -787,17 +685,16 @@ function SleepSheet({ childId, onClose, onSaved, visible }: SheetProps) {
     await onSaved("Sleep logged");
   }
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Log sleep" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save sleep" title="Log sleep" visible={visible}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{(["nap", "night", "unknown"] as const).map((type) => <Chip key={type} label={formatValue(type)} onPress={() => setSleepType(type)} selected={sleepType === type} />)}</ScrollView>
       <PresetChipGroup onSelect={setDurationMinutes} presets={[20, 30, 45, 60, 90, 120]} selectedValue={durationMinutes} suffix="m" />
       <TimeWheelPicker onChange={setDurationMinutes} valueMinutes={durationMinutes} />
       <QuickNoteField onChangeText={setNotes} value={notes} />
-      <QuickSaveButton onPress={save} title="Save sleep" />
-    </QuickLogBottomSheet>
+    </BabyQuickLogSheet>
   );
 }
 
-function DiaperSheet({ childId, onClose, onSaved, visible }: SheetProps) {
+function DiaperSheet({ childId, childName, onClose, onSaved, visible }: SheetProps) {
   const [diaperType, setDiaperType] = useState<DiaperType>("wet");
   const [color, setColor] = useState("");
   const [texture, setTexture] = useState("");
@@ -807,29 +704,34 @@ function DiaperSheet({ childId, onClose, onSaved, visible }: SheetProps) {
     await onSaved("Diaper logged");
   }
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Log diaper" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save diaper" title="Log diaper" visible={visible}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{DIAPER_TYPES.map((type) => <Chip key={type} label={formatValue(type)} onPress={() => setDiaperType(type)} selected={diaperType === type} />)}</ScrollView>
       <TextInput onChangeText={setColor} placeholder="Color optional" placeholderTextColor="#94a3b8" style={styles.darkInput} value={color} />
       <TextInput onChangeText={setTexture} placeholder="Texture optional" placeholderTextColor="#94a3b8" style={styles.darkInput} value={texture} />
       <QuickNoteField onChangeText={setNotes} value={notes} />
-      <QuickSaveButton onPress={save} title="Save diaper" />
-    </QuickLogBottomSheet>
+    </BabyQuickLogSheet>
   );
 }
 
-function GrowthSheet({ childId, onClose, onSaved, visible }: SheetProps) {
+function GrowthSheet({ childId, childName, onClose, onSaved, visible }: SheetProps) {
   const [weightKg, setWeightKg] = useState("");
   const [lengthCm, setLengthCm] = useState("");
   const [headCircumferenceCm, setHeadCircumferenceCm] = useState("");
   const [source, setSource] = useState<"home" | "clinic" | "pediatrician" | "other">("home");
   const [date, setDate] = useState(TODAY);
   const [notes, setNotes] = useState("");
+  const [validationMessage, setValidationMessage] = useState("");
   async function save() {
+    if (!weightKg.trim() && !lengthCm.trim() && !headCircumferenceCm.trim()) {
+      setValidationMessage("Add at least one measurement before saving.");
+      return;
+    }
+    setValidationMessage("");
     await createBabyGrowthLog({ childProfileId: childId, headCircumferenceCm: toNumber(headCircumferenceCm), lengthCm: toNumber(lengthCm), measuredAt: `${date}T12:00:00.000Z`, measurementSource: source, notes, weightKg: toNumber(weightKg) });
     await onSaved("Growth measurement saved");
   }
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Add growth measurement" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save measurement" title="Add growth measurement" visible={visible}>
       <View style={styles.inputGrid}>
         <TextInput keyboardType="decimal-pad" onChangeText={setWeightKg} placeholder="Weight kg" placeholderTextColor="#94a3b8" style={styles.darkInput} value={weightKg} />
         <TextInput keyboardType="decimal-pad" onChangeText={setLengthCm} placeholder="Length cm" placeholderTextColor="#94a3b8" style={styles.darkInput} value={lengthCm} />
@@ -838,12 +740,13 @@ function GrowthSheet({ childId, onClose, onSaved, visible }: SheetProps) {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{(["home", "clinic", "pediatrician", "other"] as const).map((item) => <Chip key={item} label={formatValue(item)} onPress={() => setSource(item)} selected={source === item} />)}</ScrollView>
       <DateWheelPicker onChange={setDate} value={date} />
       <QuickNoteField onChangeText={setNotes} value={notes} />
-      <QuickSaveButton onPress={save} title="Save measurement" />
-    </QuickLogBottomSheet>
+      {validationMessage ? <Text style={styles.validationText}>{validationMessage}</Text> : null}
+      <Text style={styles.sheetText}>{GROWTH_FOOTER}</Text>
+    </BabyQuickLogSheet>
   );
 }
 
-function SolidFoodSheet({ childId, onClose, onSaved, visible }: SheetProps) {
+function SolidFoodSheet({ childId, childName, onClose, onSaved, visible }: SheetProps) {
   const [foodName, setFoodName] = useState("");
   const [texture, setTexture] = useState("");
   const [category, setCategory] = useState("Fruit");
@@ -857,7 +760,7 @@ function SolidFoodSheet({ childId, onClose, onSaved, visible }: SheetProps) {
     await onSaved("Solid food saved");
   }
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Add solid food" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save food" title="Add solid food" visible={visible}>
       <TextInput onChangeText={setFoodName} placeholder="Food tried" placeholderTextColor="#94a3b8" style={styles.darkInput} value={foodName} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{FOOD_CATEGORIES.map((item) => <Chip key={item} label={item} onPress={() => setCategory(item)} selected={category === item} />)}</ScrollView>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{ALLERGENS.map((item) => <Chip key={item} label={item} onPress={() => setAllergenCategory(item)} selected={allergenCategory === item} />)}</ScrollView>
@@ -865,12 +768,11 @@ function SolidFoodSheet({ childId, onClose, onSaved, visible }: SheetProps) {
       <TextInput onChangeText={setTexture} placeholder="Texture optional" placeholderTextColor="#94a3b8" style={styles.darkInput} value={texture} />
       <TextInput onChangeText={setReactionNote} placeholder="Reaction note optional" placeholderTextColor="#94a3b8" style={styles.darkInput} value={reactionNote} />
       <QuickNoteField onChangeText={setNotes} value={notes} />
-      <QuickSaveButton onPress={save} title="Save food" />
-    </QuickLogBottomSheet>
+    </BabyQuickLogSheet>
   );
 }
 
-function MedicineSheet({ childId, onClose, onSaved, visible }: SheetProps) {
+function MedicineSheet({ childId, childName, onClose, onSaved, visible }: SheetProps) {
   const [medicineName, setMedicineName] = useState("");
   const [doseInstruction, setDoseInstruction] = useState("");
   const [status, setStatus] = useState<BabyMedicineLog["status"]>("noted");
@@ -881,32 +783,37 @@ function MedicineSheet({ childId, onClose, onSaved, visible }: SheetProps) {
     await onSaved("Medicine log saved");
   }
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Baby medicine" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save medicine log" title="Baby medicine" visible={visible}>
       <TextInput onChangeText={setMedicineName} placeholder="Medicine name" placeholderTextColor="#94a3b8" style={styles.darkInput} value={medicineName} />
       <TextInput onChangeText={setDoseInstruction} placeholder="Label/instruction note" placeholderTextColor="#94a3b8" style={styles.darkInput} value={doseInstruction} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{(["due", "taken", "skipped", "missed", "snoozed", "noted"] as BabyMedicineLog["status"][]).map((item) => <Chip key={item} label={formatValue(item)} onPress={() => setStatus(item)} selected={status === item} />)}</ScrollView>
       <QuickNoteField onChangeText={setNotes} value={notes} />
       <Text style={styles.sheetText}>{MEDICINE_FOOTER}</Text>
-      <QuickSaveButton onPress={save} title="Save medicine log" />
-    </QuickLogBottomSheet>
+    </BabyQuickLogSheet>
   );
 }
 
-function VaccineSheet({ childId, onClose, onSaved, visible }: SheetProps) {
+function VaccineSheet({ childId, childName, onClose, onSaved, visible }: SheetProps) {
   const [vaccineName, setVaccineName] = useState("");
   const [dateReceived, setDateReceived] = useState(TODAY);
   const [doseNumber, setDoseNumber] = useState("");
   const [clinicLocation, setClinicLocation] = useState("");
   const [batchNumber, setBatchNumber] = useState("");
-  const [nextDoseDate, setNextDoseDate] = useState("");
+  const [recordSource, setRecordSource] = useState<NonNullable<VaccinationRecord["recordSource"]>>("clinic_card");
+  const [routeOrSite, setRouteOrSite] = useState<NonNullable<VaccinationRecord["routeOrSite"]>>("not_sure");
   const [notes, setNotes] = useState("");
+  const [validationMessage, setValidationMessage] = useState("");
   async function save() {
-    if (!vaccineName.trim()) return;
-    await createBabyVaccineRecord({ batchNumber, childId, clinicLocation, dateReceived, doseNumber, nextDoseDate, notes, status: "completed", vaccineName });
+    if (!vaccineName.trim()) {
+      setValidationMessage("Add the vaccine name before saving.");
+      return;
+    }
+    setValidationMessage("");
+    await createBabyVaccineRecord({ batchNumber, childId, clinicLocation, dateReceived, doseNumber, notes, recordSource, routeOrSite, status: "completed", vaccineName });
     await onSaved("Vaccine record saved");
   }
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Vaccine record" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save vaccine" title="Vaccine record" visible={visible}>
       <TextInput onChangeText={setVaccineName} placeholder="Vaccine name" placeholderTextColor="#94a3b8" style={styles.darkInput} value={vaccineName} />
       <DateWheelPicker onChange={setDateReceived} value={dateReceived} />
       <View style={styles.inputGrid}>
@@ -914,29 +821,69 @@ function VaccineSheet({ childId, onClose, onSaved, visible }: SheetProps) {
         <TextInput onChangeText={setBatchNumber} placeholder="Batch number" placeholderTextColor="#94a3b8" style={styles.darkInput} value={batchNumber} />
       </View>
       <TextInput onChangeText={setClinicLocation} placeholder="Clinic/location" placeholderTextColor="#94a3b8" style={styles.darkInput} value={clinicLocation} />
-      <TextInput onChangeText={setNextDoseDate} placeholder="Next date optional YYYY-MM-DD" placeholderTextColor="#94a3b8" style={styles.darkInput} value={nextDoseDate} />
+      <Text style={styles.sheetText}>Record source</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{(["clinic_card", "healthcare_provider", "parent_note", "unknown"] as const).map((item) => <Chip key={item} label={formatValue(item)} onPress={() => setRecordSource(item)} selected={recordSource === item} />)}</ScrollView>
+      <Text style={styles.sheetText}>Route or site, if known</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>{(["left_upper_arm", "right_upper_arm", "left_thigh", "right_thigh", "oral", "other", "not_sure"] as const).map((item) => <Chip key={item} label={formatValue(item)} onPress={() => setRouteOrSite(item)} selected={routeOrSite === item} />)}</ScrollView>
+      <Text style={styles.sheetText}>Record the site if it appears on the clinic card or was given by your healthcare provider.</Text>
+      <AppCard style={styles.darkCard}>
+        <Text style={styles.darkTitle}>Clinic card or photo</Text>
+        <Text style={styles.darkMuted}>Document linking will connect to Baby Records later.</Text>
+      </AppCard>
       <QuickNoteField onChangeText={setNotes} value={notes} />
-      <QuickSaveButton onPress={save} title="Save vaccine" />
-    </QuickLogBottomSheet>
+      {validationMessage ? <Text style={styles.validationText}>{validationMessage}</Text> : null}
+      <Text style={styles.sheetText}>Use this to record vaccine information from your clinic card or healthcare provider. Vaccine schedules should be confirmed with your clinic, nurse, doctor, pharmacist, or healthcare professional.</Text>
+    </BabyQuickLogSheet>
   );
 }
 
-function NoteSheet({ onClose, onSaved, profile, visible }: { onClose: () => void; onSaved: (message: string) => void; profile: BabyChildProfile; visible: boolean }) {
+function NoteSheet({ childName, onClose, onSaved, profile, visible }: { childName: string; onClose: () => void; onSaved: (message: string) => void; profile: BabyChildProfile; visible: boolean }) {
   const [note, setNote] = useState(profile.medicalNotes ?? "");
   async function save() {
     await updateBabyChildProfile(profile.id, { medicalNotes: note });
     await onSaved("Baby note saved");
   }
   return (
-    <QuickLogBottomSheet onClose={onClose} title="Baby note" visible={visible}>
+    <BabyQuickLogSheet childName={childName} onClose={onClose} onSave={save} saveTitle="Save note" title="Baby note" visible={visible}>
       <QuickNoteField onChangeText={setNote} value={note} />
-      <QuickSaveButton onPress={save} title="Save note" />
-    </QuickLogBottomSheet>
+    </BabyQuickLogSheet>
+  );
+}
+
+function BabyQuickLogSheet({
+  children,
+  childName,
+  onClose,
+  onSave,
+  saveTitle,
+  title,
+  visible
+}: {
+  children: React.ReactNode;
+  childName: string;
+  onClose: () => void;
+  onSave: () => void | Promise<void>;
+  saveTitle: string;
+  title: string;
+  visible: boolean;
+}) {
+  return (
+    <BabyBottomSheet
+      onClose={onClose}
+      onSave={onSave}
+      saveTitle={saveTitle}
+      subtitle={`${childName} · Now`}
+      title={title}
+      visible={visible}
+    >
+      {children}
+    </BabyBottomSheet>
   );
 }
 
 type SheetProps = {
   childId: string;
+  childName: string;
   onClose: () => void;
   onSaved: (message: string) => void;
   visible: boolean;
@@ -979,37 +926,15 @@ function BabyAvatar({ label, name }: { label: string; name: string }) {
   );
 }
 
-function Timeline({ events, onSheet }: { events: BabyCalendarEvent[]; onSheet: (mode: SheetMode) => void }) {
-  if (!events.length) {
-    return (
-      <AppCard style={styles.darkCard}>
-        <Text style={styles.darkTitle}>Start today</Text>
-        <Text style={styles.darkMuted}>Feeds, sleep, diapers, medicine, vaccines and care notes will appear here.</Text>
-        <View style={styles.actionRow}><GhostButton label="Log feed" onPress={() => onSheet("feed")} /></View>
-      </AppCard>
-    );
-  }
-  return <List items={events.slice(0, 8).map((event) => `${formatValue(event.type)} - ${event.label} - ${formatAgo(event.eventAt)}`)} />;
-}
-
-function UpcomingCard({ data }: { data: BabyRealmData }) {
-  const nextVaccine = data.vaccineRecords.find((record) => record.nextDoseDate || record.scheduledDate);
-  const nextMedicine = data.medicineLogs.find((log) => log.status === "due");
-  return (
-    <AppCard style={styles.darkCard}>
-      <Text style={styles.darkTitle}>Upcoming care</Text>
-      <Text style={styles.darkMuted}>{nextMedicine ? `${nextMedicine.medicineName} is marked due.` : nextVaccine ? `${nextVaccine.vaccineName} has a saved next date.` : "Appointments, vaccine dates, and medicine reminders will appear here when you add them."}</Text>
-    </AppCard>
-  );
-}
-
 function LearnCard({ card }: { card: BabyLearnCard }) {
+  const hasSource = Boolean(card.sourceUrl);
   return (
     <AppCard style={styles.darkCard}>
       <Text style={styles.darkTitle}>{card.title}</Text>
       <Text style={styles.darkMuted}>{card.summary}</Text>
-      <Text style={styles.sourceText}>{card.sourceOrganization} - {card.sourceUrl}</Text>
-      <Text style={styles.sourceText}>Reviewer/author: {card.reviewer ?? "Source organization"} - Last checked: {card.lastCheckedAt}</Text>
+      <Text style={styles.sourceText}>{hasSource ? card.sourceOrganization : "Trusted source to be added."}</Text>
+      <Text style={styles.sourceText}>Last checked: {card.lastCheckedAt}</Text>
+      <Text style={styles.sourceText}>{hasSource ? "Open source" : "Source to be added"}</Text>
       <Text style={styles.warningText}>{card.disclaimer}</Text>
     </AppCard>
   );
@@ -1059,15 +984,6 @@ function MetricCard({ label, value }: { label: string; value: string }) {
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value}</Text>
     </AppCard>
-  );
-}
-
-function HeroMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.heroMetric}>
-      <Text style={styles.heroMetricLabel}>{label}</Text>
-      <Text style={styles.heroMetricValue}>{value}</Text>
-    </View>
   );
 }
 
@@ -1127,21 +1043,30 @@ function Footer({ text }: { text: string }) {
   );
 }
 
-function BabyChildNavOverlay({ profiles }: { profiles: BabyChildProfile[] }) {
+function BabyChildNavOverlay() {
   return (
     <>
-      <FloatingBottomNav activeBabyPortal activeRouteName="health" multipleBabyProfiles={profiles.length > 1} showBabyPortal />
-      <FloatingAssistantButton avoidBabyPortal />
+      <FloatingBottomNav activeRouteName="health" />
+      <FloatingAssistantButton />
     </>
   );
 }
 
 function toTab(value?: string): BabyTab {
-  return TABS.some((tab) => tab.key === value) ? value as BabyTab : "today";
+  if (value === "growth") return "growth";
+  if (value === "milestones") return "milestones";
+  if (value === "medicine" || value === "vaccines" || value === "records" || value === "health") return "health";
+  if (value === "feeding" || value === "sleep" || value === "diapers" || value === "solids" || value === "reports" || value === "learn" || value === "settings" || value === "more") return "more";
+  return "overview";
 }
 
 function asParam(value?: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function getLocalDateKey(date: Date) {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
 }
 
 function toNumber(value: string) {
@@ -1152,14 +1077,6 @@ function toNumber(value: string) {
 function getAgeMonths(dateOfBirth?: string) {
   if (!dateOfBirth) return 0;
   return Math.max(0, Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / 2629800000));
-}
-
-function formatAge(dateOfBirth?: string) {
-  const months = getAgeMonths(dateOfBirth);
-  if (!dateOfBirth) return "Age not added";
-  if (months < 2) return `${Math.max(0, Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / 604800000))} weeks old`;
-  if (months < 24) return `${months} months old`;
-  return `${Math.floor(months / 12)} years old`;
 }
 
 function formatAgo(value: string) {
@@ -1178,6 +1095,52 @@ function formatMinutes(minutes: number) {
 
 function formatValue(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getNextReminder(data: BabyRealmData) {
+  const medicine = data.medicineLogs.find((log) => log.status === "due");
+  if (medicine) return medicine.medicineName;
+  const vaccine = data.vaccineRecords.find((record) => record.nextDoseDate || record.scheduledDate);
+  return vaccine ? vaccine.vaccineName : undefined;
+}
+
+function enrichBabyEvents(
+  events: BabyCalendarEvent[],
+  feedingLogs: BabyFeedingLog[],
+  sleepLogs: BabyRealmData["sleepLogs"],
+  diaperLogs: DiaperLog[],
+  medicineLogs: BabyMedicineLog[]
+) {
+  return events.map((event) => {
+    if (event.type === "feeding") {
+      const log = feedingLogs.find((item) => item.id === event.relatedId);
+      if (log) {
+        const amount = log.finishedAmountMl ? ` · ${log.finishedAmountMl} ml` : log.durationMinutes ? ` · ${formatMinutes(log.durationMinutes)}` : "";
+        return { ...event, label: `${formatValue(log.feedingType ?? log.feedType)}${amount}` };
+      }
+    }
+    if (event.type === "sleep") {
+      const log = sleepLogs.find((item) => item.id === event.relatedId);
+      if (log) return { ...event, label: `${formatValue(log.sleepType ?? "sleep")} · ${formatMinutes(log.durationMinutes)}` };
+    }
+    if (event.type === "diaper") {
+      const log = diaperLogs.find((item) => item.id === event.relatedId);
+      if (log) return { ...event, label: formatValue(log.diaperType) };
+    }
+    if (event.type === "medicine") {
+      const log = medicineLogs.find((item) => item.id === event.relatedId);
+      if (log) return { ...event, label: `${log.medicineName} · ${formatValue(log.status)}` };
+    }
+    return event;
+  });
+}
+
+function BabyLoadingState() {
+  return (
+    <View accessibilityLabel="Loading Baby Care" style={styles.stack}>
+      {[110, 220, 180].map((height) => <View key={height} style={[styles.loadingCard, { height }]} />)}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -1212,6 +1175,7 @@ const styles = StyleSheet.create({
   inputGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   listRow: { backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.10)", borderRadius: 18, borderWidth: 1, padding: 12 },
   listText: { color: "#e2e8f0", lineHeight: 20 },
+  loadingCard: { backgroundColor: "rgba(255,255,255,0.10)", borderRadius: 28 },
   metricCard: { backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.12)", borderWidth: 1, flexBasis: "47%", flexGrow: 1 },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   metricLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "900" },
@@ -1238,5 +1202,6 @@ const styles = StyleSheet.create({
   successText: { color: "#10201d", fontWeight: "900" },
   successToast: { alignItems: "center", alignSelf: "flex-start", backgroundColor: "#6ee7c8", borderRadius: 999, flexDirection: "row", gap: 8, minHeight: 44, paddingHorizontal: 14 },
   tabRow: { gap: 8, paddingRight: 16 },
+  validationText: { color: "#f59e0b", fontWeight: "900", lineHeight: 20 },
   warningText: { color: "#fbbf24", lineHeight: 20, marginTop: 8 }
 });

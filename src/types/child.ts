@@ -34,7 +34,8 @@ export type MilestoneCategory =
 export type MilestoneStatus =
   | "observed"
   | "not_yet"
-  | "unsure";
+  | "unsure"
+  | "ask_doctor";
 
 export type BabyCalendarEventType =
   | "feeding"
@@ -216,6 +217,8 @@ export type VaccinationRecord = {
   id: string;
   nextDoseDate?: string;
   notes?: string;
+  recordSource?: "clinic_card" | "healthcare_provider" | "parent_note" | "unknown";
+  routeOrSite?: "left_upper_arm" | "right_upper_arm" | "left_thigh" | "right_thigh" | "oral" | "other" | "not_sure";
   scheduledDate?: string;
   status: VaccinationStatus;
   updatedAt: string;

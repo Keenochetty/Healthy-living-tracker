@@ -8,7 +8,6 @@ import { lightImpact } from "@/lib/haptics";
 import { appRadius, zLayers } from "@/theme/designSystem";
 
 type FloatingAssistantButtonProps = {
-  avoidBabyPortal?: boolean;
   hiddenOnFocusedForm?: boolean;
   minimized?: boolean;
   sensitiveProfile?: boolean;
@@ -16,7 +15,6 @@ type FloatingAssistantButtonProps = {
 };
 
 export function FloatingAssistantButton({
-  avoidBabyPortal = false,
   hiddenOnFocusedForm = false,
   minimized = false,
   sensitiveProfile = false,
@@ -42,11 +40,11 @@ export function FloatingAssistantButton({
         borderColor: "rgba(255, 255, 255, 0.24)",
         borderWidth: 1,
         borderRadius: appRadius.pill,
-        bottom: insets.bottom + (avoidBabyPortal ? 152 : 106),
+        bottom: insets.bottom + 106,
         height: minimized ? 48 : 56,
         justifyContent: "center",
         position: "absolute",
-        right: avoidBabyPortal ? 18 : 24,
+        right: 24,
         transform: [{ scale: pressed ? 0.96 : 1 }],
         width: minimized ? 48 : 56,
         zIndex: zLayers.floatingAction,

@@ -5,6 +5,8 @@ import { radius, spacing } from "@/theme/tokens";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppChipProps = {
+  accessibilityHint?: string;
+  accessibilityLabel?: string;
   emoji?: string;
   icon?: ReactNode;
   label: string;
@@ -14,6 +16,8 @@ type AppChipProps = {
 };
 
 export function AppChip({
+  accessibilityHint,
+  accessibilityLabel,
   emoji,
   icon,
   label,
@@ -43,7 +47,7 @@ export function AppChip({
 
   if (onPress) {
     return (
-      <Pressable onPress={onPress} style={({ pressed }) => [style, pressed && { opacity: 0.82 }]}>
+      <Pressable accessibilityHint={accessibilityHint} accessibilityLabel={accessibilityLabel ?? label} accessibilityRole="button" onPress={onPress} style={({ pressed }) => [style, pressed && { opacity: 0.82 }]}>
         {content}
       </Pressable>
     );

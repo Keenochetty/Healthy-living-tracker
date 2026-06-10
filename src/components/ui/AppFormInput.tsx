@@ -1,9 +1,10 @@
-import { Text, TextInput, type KeyboardTypeOptions, type TextInputProps, View } from "react-native";
+import { Text, TextInput, type KeyboardTypeOptions, type StyleProp, type TextInputProps, View, type ViewStyle } from "react-native";
 
 import { radius, spacing } from "@/theme/tokens";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppFormInputProps = Omit<TextInputProps, "placeholder" | "value" | "onChangeText"> & {
+  containerStyle?: StyleProp<ViewStyle>;
   errorText?: string;
   helperText?: string;
   keyboardType?: KeyboardTypeOptions;
@@ -13,11 +14,11 @@ type AppFormInputProps = Omit<TextInputProps, "placeholder" | "value" | "onChang
   value: string;
 };
 
-export function AppFormInput({ errorText, helperText, label, multiline, style, ...props }: AppFormInputProps) {
+export function AppFormInput({ containerStyle, errorText, helperText, label, multiline, style, ...props }: AppFormInputProps) {
   const { theme } = useAppTheme();
 
   return (
-    <View style={{ gap: spacing.xs }}>
+    <View style={[{ gap: spacing.xs }, containerStyle]}>
       {label ? <Text style={{ color: theme.text, fontWeight: "900" }}>{label}</Text> : null}
       <TextInput
         multiline={multiline}
