@@ -15805,3 +15805,4 @@
 {"_e":"metro:bundling:progress","_t":1781183288064,"id":"1","progress":0.9980506827246036,"total":4102,"current":4098}
 {"_e":"metro:bundling:progress","_t":1781183288208,"id":"1","progress":0.999,"total":4105,"current":4105}
 {"_e":"metro:bundling:done","_t":1781183288642,"id":"1","total":4105,"ms":25412.8675}
+{"_e":"metro:client_log","_t":1781183507263,"level":"warn","data":["[expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead."]}
