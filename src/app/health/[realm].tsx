@@ -21,5 +21,9 @@ export default function HealthRealmRoute() {
     return <WomensHealthScreen />;
   }
 
+  if (realm.slug === "fitness") {
+    return <Redirect href="/fitness" />;
+  }
+
   return <HealthRealmPlaceholderScreen realm={realm} />;
 }

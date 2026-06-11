@@ -73,14 +73,14 @@ export const HEALTH_REALMS: HealthRealm[] = [
     icon: "fitness",
     introTitle: "Build a clear view of the movement you log",
     previews: [
-      { description: "Plan and log sessions.", icon: "fitness", status: "Planned", title: "Workouts" },
-      { description: "Organize strength sessions.", icon: "health", status: "Coming soon", title: "Strength" },
-      { description: "View steps and active time.", icon: "device_sync", status: "Planned", title: "Movement" },
-      { description: "Save milestones you log.", icon: "add", status: "Coming soon", title: "Personal bests" }
+      { description: "Plan and log sessions.", icon: "fitness", status: "Ready", title: "Workouts" },
+      { description: "Organize strength sessions.", icon: "health", status: "Ready", title: "Strength" },
+      { description: "View steps and active time.", icon: "device_sync", status: "Ready", title: "Movement" },
+      { description: "Save milestones you log.", icon: "add", status: "Ready", title: "Personal bests" }
     ],
     slug: "fitness",
-    status: "Planned",
-    subtitle: "A focused place for movement logs and future goals.",
+    status: "Ready",
+    subtitle: "A focused place for movement, workouts, recovery, and goals.",
     title: "Fitness"
   },
   {

@@ -42,7 +42,8 @@ export async function getWorkoutPrograms() {
   return supabase
     .from("fitness_workout_programs")
     .select("*")
-    .order("title", { ascending: true });
+    .order("title", { ascending: true })
+    .limit(24);
 }
 
 export async function getWorkoutProgramDays(planId: string) {
@@ -57,7 +58,8 @@ export async function getNutritionTemplates(filters?: NutritionTemplateFilters) 
   let query = supabase
     .from("fitness_nutrition_templates")
     .select("*")
-    .order("title", { ascending: true });
+    .order("title", { ascending: true })
+    .limit(24);
 
   if (filters?.audience) query = query.eq("audience", filters.audience);
   if (filters?.dietStyle) query = query.eq("diet_style", filters.dietStyle);

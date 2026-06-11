@@ -1,5 +1,5 @@
 import { Href, router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -12,6 +12,7 @@ import {
   QuickSaveButton,
   TimeWheelPicker
 } from "@/components/fitness/QuickWorkoutInputs";
+import { MuscleFocusCard, MuscleHeatMap, type MuscleScoreMap } from "@/components/fitness/muscle-map";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
 import {
@@ -32,6 +33,16 @@ import {
   getWorkoutSessions
 } from "@/lib/fitnessStorage";
 import { lightImpact, successImpact } from "@/lib/haptics";
+import {
+  getExercises,
+  getNutritionTemplates,
+  getWorkoutPrograms
+} from "@/services/fitnessContentService";
+import {
+  getMuscleHistoryScores,
+  recordMuscleLoadForExercise,
+  scoresFromExerciseFallback
+} from "@/services/fitnessMuscleMapService";
 import type {
   ExerciseEquipment,
   ExerciseLibraryItem,
@@ -49,6 +60,11 @@ import type {
 
 type FitnessTab = "today" | "start" | "routines" | "library" | "running" | "progress" | "body" | "guides";
 type EditableSetField = "reps" | "weight" | "rest" | "duration" | "distance" | null;
+type FitnessContentPreview = {
+  exerciseCount: number;
+  nutritionSuggestion?: string;
+  programCount: number;
+};
 
 const FITNESS_TABS: Array<{ key: FitnessTab; label: string }> = [
   { key: "today", label: "Today" },
@@ -63,6 +79,7 @@ const FITNESS_TABS: Array<{ key: FitnessTab; label: string }> = [
 
 const SAFETY_COPY =
   "Exercise guidance is for general fitness tracking only. If you are unsure, injured, pregnant, or managing a health condition, speak to a qualified professional.";
+const GOAL_COLORS = ["#0f766e", "#1d4ed8", "#7c3aed", "#be123c", "#9a3412", "#166534", "#155e75", "#6b21a8"];
 
 export default function FitnessScreen() {
   const [activeTab, setActiveTab] = useState<FitnessTab>("today");
@@ -78,11 +95,36 @@ export default function FitnessScreen() {
   const [manualMode, setManualMode] = useState(false);
   const [manualValue, setManualValue] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [contentPreview, setContentPreview] = useState<FitnessContentPreview | null>(null);
+  const [contentError, setContentError] = useState("");
+  const [contentLoading, setContentLoading] = useState(true);
 
   const loadFitness = useCallback(async () => {
     const [nextSummary, nextSessions] = await Promise.all([getTodayFitnessSummary(), getWorkoutSessions()]);
     setSummary(nextSummary);
     setSessions(nextSessions);
+
+    setContentLoading(true);
+    const [exerciseResult, programResult, nutritionResult] = await Promise.all([
+      getExercises(),
+      getWorkoutPrograms(),
+      getNutritionTemplates({ goal: "muscle_gain" })
+    ]);
+    const contentFailure = exerciseResult.error ?? programResult.error ?? nutritionResult.error;
+
+    if (contentFailure) {
+      setContentError("Live fitness content is unavailable. Showing the built-in starter library.");
+      setContentPreview(null);
+    } else {
+      const nutritionRow = nutritionResult.data?.[0] as { title?: string } | undefined;
+      setContentError("");
+      setContentPreview({
+        exerciseCount: exerciseResult.data?.length ?? 0,
+        nutritionSuggestion: nutritionRow?.title,
+        programCount: programResult.data?.length ?? 0
+      });
+    }
+    setContentLoading(false);
   }, []);
 
   useFocusEffect(
@@ -181,13 +223,29 @@ export default function FitnessScreen() {
       workoutType: selectedRoutine.goal === "endurance" ? "running" : selectedRoutine.goal === "mobility" ? "mobility" : "strength"
     });
     await completeWorkoutSession(session.id, { durationSeconds, endedAt: new Date().toISOString() });
+    await Promise.all(
+      sessionExercises.map((item) => {
+        const fallbackExercise = getExerciseById(item.exerciseId);
+        const completedSets = item.sets.filter((set) => set.completed).length;
+        const totalSets = Math.max(1, item.sets.length);
+        const intensityMultiplier = completedSets / totalSets;
+
+        return recordMuscleLoadForExercise({
+          exerciseId: item.exerciseId,
+          fallbackExercise,
+          intensityMultiplier,
+          source: "guided_workout_completed",
+          workoutSessionId: session.id
+        });
+      })
+    );
     setSaveMessage("Workout saved");
     await loadFitness();
     setActiveTab("progress");
   }
 
   return (
-    <AppMainLayout subtitle="Plans, sessions, running and progress" title="Workout">
+    <AppMainLayout subtitle="Movement, strength, recovery and progress" title="Fitness Realm">
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
         {FITNESS_TABS.map((tab) => (
           <FilterChip key={tab.key} label={tab.label} onPress={() => setActiveTab(tab.key)} selected={activeTab === tab.key} />
@@ -199,6 +257,9 @@ export default function FitnessScreen() {
       {activeTab === "today" ? (
         <TodayTab
           latestWorkout={latestWorkout}
+          contentError={contentError}
+          contentLoading={contentLoading}
+          contentPreview={contentPreview}
           onRoutine={selectRoutine}
           onTab={setActiveTab}
           summary={summary}
@@ -260,67 +321,270 @@ export default function FitnessScreen() {
 }
 
 function TodayTab({
+  contentError,
+  contentLoading,
+  contentPreview,
   latestWorkout,
   onRoutine,
   onTab,
   summary
 }: {
+  contentError: string;
+  contentLoading: boolean;
+  contentPreview: FitnessContentPreview | null;
   latestWorkout?: WorkoutSession;
   onRoutine: (routine: WorkoutRoutine, tab?: FitnessTab) => void;
   onTab: (tab: FitnessTab) => void;
   summary: FitnessSummary | null;
 }) {
   const plan = PREBUILT_ROUTINES[0];
+  const statusItems = [
+    { icon: "success", label: "Weekly streak", value: `${summary?.currentStreakDays ?? 0} days` },
+    { icon: "fitness", label: "Muscles trained", value: summary?.workoutsThisWeek ? "Full body" : "Ready today" },
+    { icon: "health", label: "Recovery", value: summary?.activeMinutesToday ? "Rest well" : "Fresh" },
+    { icon: "planning", label: "Goal progress", value: `${Math.round(summary?.weeklyGoalProgress ?? 0)}%` },
+    { icon: "reminder", label: "Next reminder", value: "Plan it" }
+  ] as const;
+
+  const goalPaths = [
+    ["Run 5km from beginner", "A steady run-walk path", "running"],
+    ["Bench press progression", "Build strength with control", "routines"],
+    ["Lose weight safely", "Consistency-first movement", "routines"],
+    ["Gain lean muscle", "Strength and recovery support", "routines"],
+    ["Pregnancy-safe movement", "General guidance with safety gates", "library"],
+    ["Postpartum core rebuild", "Gentle return with professional input", "library"],
+    ["Improve mobility", "Move more comfortably", "routines"],
+    ["Reduce stress with movement", "Low-pressure mental reset", "library"]
+  ] as const;
+
+  const exploreItems = [
+    ["Strength", "fitness", "routines", "#fb7185"],
+    ["Cardio", "health", "library", "#38bdf8"],
+    ["Running", "fitness", "running", "#60a5fa"],
+    ["Yoga", "mood", "library", "#a78bfa"],
+    ["Pilates", "fitness", "library", "#f472b6"],
+    ["Mobility", "health", "routines", "#6ee7c8"],
+    ["Stretching", "success", "library", "#86efac"],
+    ["Pregnancy-safe", "pregnancy", "library", "#f9a8d4"],
+    ["Postpartum", "child_baby", "library", "#fda4af"],
+    ["Kids movement", "baby_child", "library", "#fbbf24"],
+    ["Teen fitness", "fitness", "library", "#22d3ee"],
+    ["No equipment", "home", "library", "#34d399"],
+    ["Gym equipment", "fitness", "library", "#818cf8"],
+    ["Recovery", "health", "body", "#4ade80"],
+    ["Mental reset", "mood", "library", "#c084fc"],
+    ["Advanced / Insane", "warning", "library", "#fb923c"]
+  ] as const;
+
   return (
-    <View style={styles.stack}>
-      <AppCard style={[styles.darkHero, { borderColor: plan.accentColor }]}>
-        <View style={styles.mediaGlow}>
-          <AppIcon color={plan.accentColor} decorative name="fitness" size={28} />
+    <View style={styles.realmStack}>
+      {contentLoading ? <ContentState icon="sync" text="Loading live fitness suggestions..." /> : null}
+      {contentError ? <ContentState icon="warning" text={contentError} warning /> : null}
+      {!contentLoading && !contentError && contentPreview?.exerciseCount === 0 ? (
+        <ContentState icon="source" text="No live exercises yet. Showing the built-in starter library." />
+      ) : null}
+
+      <AppCard style={styles.realmHero}>
+        <View style={styles.heroGlowOne} />
+        <View style={styles.heroGlowTwo} />
+        <View style={styles.realmHeroTop}>
+          <View style={styles.realmIcon}>
+            <AppIcon color="#06231c" decorative name="fitness" size={27} />
+          </View>
+          <View style={styles.safetyBadge}>
+            <AppIcon color="#bbf7d0" decorative name="safety" size={15} />
+            <Text style={styles.safetyBadgeText}>Beginner friendly</Text>
+          </View>
         </View>
-        <Text style={styles.heroKicker}>Today Plan</Text>
-        <Text style={styles.heroTitle}>{plan.name}</Text>
-        <Text style={styles.heroSubtitle}>
-          {plan.durationMinutes} min - {formatWorkoutLabel(plan.location)} - {formatWorkoutLabel(plan.difficulty)}
-        </Text>
-        <View style={styles.chipRow}>
+        <Text style={styles.realmKicker}>Today's Fitness</Text>
+        <Text style={styles.realmHeroTitle}>{plan.name}</Text>
+        <Text style={styles.realmHeroSubtitle}>A calm, full-body reset that builds momentum without overdoing it.</Text>
+        <View style={styles.realmMetaRow}>
+          <RealmMeta icon="today" label={`${plan.durationMinutes} min`} />
+          <RealmMeta icon="fitness" label="Full body + core" />
+          <RealmMeta icon="health" label="Moderate recovery" />
+        </View>
+        <View style={styles.realmPillRow}>
           {plan.targetMuscles.slice(0, 3).map((muscle) => (
-            <Pill key={muscle} label={formatWorkoutLabel(muscle)} />
+            <View key={muscle} style={styles.realmPill}>
+              <Text style={styles.realmPillText}>{formatWorkoutLabel(muscle)}</Text>
+            </View>
           ))}
         </View>
-        <View style={styles.actionRow}>
-          <AppButton onPress={() => onRoutine(plan)} title="Start Workout" />
-          <GhostButton label="Change plan" onPress={() => onTab("routines")} />
+        <View style={styles.realmActionRow}>
+          <Pressable onPress={() => onRoutine(plan)} style={styles.primaryRealmButton}>
+            <AppIcon color="#06231c" decorative name="fitness" size={18} />
+            <Text style={styles.primaryRealmButtonText}>Start</Text>
+          </Pressable>
+          <RealmButton icon="sync" label="Swap" onPress={() => onTab("routines")} />
+          <RealmButton icon="edit" label="Quick Log" onPress={() => onTab("start")} />
         </View>
       </AppCard>
 
-      <AppSection title="Quick actions" subtitle="Start, build, browse or log in a few taps." />
-      <View style={styles.quickGrid}>
-        {[
-          ["Start Workout", "start", "fitness"],
-          ["Build Plan", "routines", "add"],
-          ["Exercise Library", "library", "search"],
-          ["Log Workout", "start", "edit"],
-          ["Running", "running", "fitness"],
-          ["Progress", "progress", "success"]
-        ].map(([label, tab, icon]) => (
-          <QuickAction key={label} iconName={icon} label={label} onPress={() => onTab(tab as FitnessTab)} />
-        ))}
-      </View>
-
-      <AppSection title="Suggested routines" />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalCards}>
-        {PREBUILT_ROUTINES.slice(0, 4).map((routine) => (
-          <RoutineCard compact key={routine.id} onStart={() => onRoutine(routine)} routine={routine} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statusRail}>
+        {statusItems.map((item) => (
+          <Pressable key={item.label} onPress={() => onTab(item.label === "Next reminder" ? "guides" : "progress")} style={styles.statusCard}>
+            <View style={styles.statusIcon}>
+              <AppIcon color="#14b8a6" decorative name={item.icon} size={18} />
+            </View>
+            <Text style={styles.statusValue}>{item.value}</Text>
+            <Text style={styles.statusLabel}>{item.label}</Text>
+          </Pressable>
         ))}
       </ScrollView>
 
-      <View style={styles.grid}>
-        <MetricCard label="Last workout" value={latestWorkout?.title ?? "Start today"} />
-        <MetricCard label="Weekly consistency" value={`${summary?.workoutsThisWeek ?? 0}/3 sessions`} />
-        <MetricCard label="Personal best" value="Complete a workout" />
-        <MetricCard label="Muscle focus" value="Back - Core - Arms" />
+      <RealmSectionHeader
+        eyebrow="Build towards something"
+        onPress={() => onTab("routines")}
+        title="Choose a goal path"
+      />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.goalRail}>
+        {goalPaths.map(([title, subtitle, tab], index) => (
+          <Pressable key={title} onPress={() => onTab(tab)} style={[styles.goalCard, { backgroundColor: GOAL_COLORS[index % GOAL_COLORS.length] }]}>
+            <Text style={styles.goalIndex}>0{index + 1}</Text>
+            <Text style={styles.goalTitle}>{title}</Text>
+            <Text style={styles.goalSubtitle}>{subtitle}</Text>
+            <View style={styles.goalArrow}>
+              <AppIcon color="#f8fafc" decorative name="add" size={18} />
+            </View>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      <RealmSectionHeader eyebrow="Find your movement" onPress={() => onTab("library")} title="Explore Fitness" />
+      <View style={styles.exploreGrid}>
+        {exploreItems.map(([label, icon, tab, color]) => (
+          <Pressable key={label} onPress={() => onTab(tab)} style={styles.exploreCard}>
+            <View style={[styles.exploreIcon, { backgroundColor: `${color}20` }]}>
+              <AppIcon color={color} decorative name={icon} size={21} />
+            </View>
+            <Text style={styles.exploreLabel}>{label}</Text>
+          </Pressable>
+        ))}
       </View>
-      <ProgressPreview sessions={[]} summary={summary} />
+
+      <AppCard style={styles.bodyMapCard}>
+        <View style={styles.bodyMapCopy}>
+          <Text style={styles.realmCardEyebrow}>Muscles used this week</Text>
+          <Text style={styles.realmCardTitle}>{summary?.workoutsThisWeek ? "Your movement map is taking shape" : "Your body map starts here"}</Text>
+          <Text style={styles.realmCardBody}>See which areas are active, balanced, or ready for recovery as you log sessions.</Text>
+          <Pressable onPress={() => onTab("body")} style={styles.lightButton}>
+            <Text style={styles.lightButtonText}>View body map</Text>
+          </Pressable>
+        </View>
+        <View pointerEvents="none" style={styles.bodyMapPreview}>
+          <MuscleHeatMap
+            compact
+            height={225}
+            mode="history"
+            muscleScores={summary?.workoutsThisWeek ? { abs: 0.45, chest: 0.7, quads: 0.25 } : {}}
+          />
+        </View>
+      </AppCard>
+
+      <AppCard style={styles.nutritionSupportCard}>
+        <View style={styles.supportIcon}>
+          <AppIcon color="#f59e0b" decorative name="nutrition" size={24} />
+        </View>
+        <View style={styles.supportCopy}>
+          <Text style={styles.supportEyebrow}>Workout-linked nutrition</Text>
+          <Text style={styles.supportTitle}>{contentPreview?.nutritionSuggestion ?? "Strength day: protein-focused recovery meal"}</Text>
+          <Text style={styles.supportBody}>Get recovery suggestions here, then use Food to plan or log meals.</Text>
+          <Pressable onPress={() => router.push("/food" as Href)}>
+            <Text style={styles.supportLink}>Open Food realm</Text>
+          </Pressable>
+        </View>
+      </AppCard>
+
+      <AppCard style={styles.recoveryCard}>
+        <View style={styles.recoveryHeader}>
+          <View style={styles.recoveryIcon}>
+            <AppIcon color="#fef3c7" decorative name="safety" size={22} />
+          </View>
+          <View style={styles.recoveryHeaderCopy}>
+            <Text style={styles.recoveryEyebrow}>Safety + recovery</Text>
+            <Text style={styles.recoveryTitle}>Train for the body you have today</Text>
+          </View>
+        </View>
+        <Text style={styles.recoveryBody}>
+          Pregnancy, postpartum, child, teen, injury recovery and extreme training paths need extra care. Fitness content is general guidance, not medical treatment or rehabilitation advice.
+        </Text>
+        <View style={styles.recoverySuggestion}>
+          <AppIcon color="#fdba74" decorative name="health" size={20} />
+          <View style={styles.recoverySuggestionCopy}>
+            <Text style={styles.recoverySuggestionTitle}>Recovery suggestion</Text>
+            <Text style={styles.recoverySuggestionBody}>Try 8 minutes of gentle mobility and stop if anything feels wrong.</Text>
+          </View>
+        </View>
+        <Text style={styles.listenCopy}>Listen to your body and seek professional advice where needed.</Text>
+      </AppCard>
+
+      <AppCard style={styles.liveLibraryCard}>
+        <View>
+          <Text style={styles.liveLibraryValue}>{contentPreview?.exerciseCount || EXERCISE_LIBRARY.length}+</Text>
+          <Text style={styles.liveLibraryLabel}>exercise previews ready</Text>
+        </View>
+        <View>
+          <Text style={styles.liveLibraryValue}>{contentPreview?.programCount || PREBUILT_ROUTINES.length}</Text>
+          <Text style={styles.liveLibraryLabel}>goal paths available</Text>
+        </View>
+        <Pressable onPress={() => onTab("library")} style={styles.liveLibraryButton}>
+          <AppIcon color="#06231c" decorative name="search" size={18} />
+        </Pressable>
+      </AppCard>
+
+      {latestWorkout ? (
+        <Text style={styles.lastWorkoutCopy}>Last logged: {latestWorkout.title}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+function ContentState({ icon, text, warning = false }: { icon: "source" | "sync" | "warning"; text: string; warning?: boolean }) {
+  return (
+    <View style={[styles.contentState, warning ? styles.contentStateWarning : null]}>
+      <AppIcon color={warning ? "#c2410c" : "#0f766e"} decorative name={icon} size={18} />
+      <Text style={[styles.contentStateText, warning ? styles.contentStateWarningText : null]}>{text}</Text>
+    </View>
+  );
+}
+
+function RealmMeta({ icon, label }: { icon: "fitness" | "health" | "today"; label: string }) {
+  return (
+    <View style={styles.realmMeta}>
+      <AppIcon color="#99f6e4" decorative name={icon} size={15} />
+      <Text style={styles.realmMetaText}>{label}</Text>
+    </View>
+  );
+}
+
+function RealmButton({ icon, label, onPress }: { icon: "edit" | "sync"; label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={styles.secondaryRealmButton}>
+      <AppIcon color="#f8fafc" decorative name={icon} size={17} />
+      <Text style={styles.secondaryRealmButtonText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function RealmSectionHeader({
+  eyebrow,
+  onPress,
+  title
+}: {
+  eyebrow: string;
+  onPress: () => void;
+  title: string;
+}) {
+  return (
+    <View style={styles.realmSectionHeader}>
+      <View>
+        <Text style={styles.realmSectionEyebrow}>{eyebrow}</Text>
+        <Text style={styles.realmSectionTitle}>{title}</Text>
+      </View>
+      <Pressable onPress={onPress} style={styles.realmSectionAction}>
+        <Text style={styles.realmSectionActionText}>See all</Text>
+      </Pressable>
     </View>
   );
 }
@@ -350,6 +614,7 @@ function StartTab({
 }) {
   const current = sessionExercises[currentExerciseIndex];
   const exercise = current ? getExerciseById(current.exerciseId) : undefined;
+  const activeMuscleScores = scoresFromExerciseFallback(exercise);
   const progress = totalSetCount ? completedSetCount / totalSetCount : 0;
 
   return (
@@ -366,6 +631,14 @@ function StartTab({
           <MediaPlaceholder accentColor={routine.accentColor} label="Exercise demo" />
           <Text style={styles.darkTitle}>{exercise.name}</Text>
           <Text style={styles.darkMuted}>{formatWorkoutLabel(exercise.primaryMuscle)} - {exercise.equipment.map(formatWorkoutLabel).join(", ")}</Text>
+          <View style={{ marginTop: 14 }}>
+            <MuscleFocusCard
+              compact
+              mode="exercise"
+              muscleScores={activeMuscleScores}
+              title="Working Muscles"
+            />
+          </View>
           <View style={styles.setList}>
             {current.sets.map((set, setIndex) => (
               <SetRow
@@ -560,18 +833,50 @@ function ProgressTab({ sessions, summary }: { sessions: WorkoutSession[]; summar
 }
 
 function BodyTab() {
+  const [scores, setScores] = useState<MuscleScoreMap>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    getMuscleHistoryScores(7)
+      .then((nextScores) => {
+        if (mounted) setScores(nextScores);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const hasHistory = Object.keys(scores).length > 0;
+
   return (
-    <View style={styles.stack}>
-      <AppSection title="Body" subtitle="Simple body progress support without image analysis or medical claims." />
-      <View style={styles.grid}>
-        <MetricCard label="Weight tracking" value="Open Biometrics" />
-        <MetricCard label="Measurements" value="Set up when ready" />
-        <MetricCard label="Progress photos" value="Placeholder" />
-        <MetricCard label="Goals" value="Strength - Mobility" />
-      </View>
+    <View style={{ gap: 16 }}>
+      <MuscleFocusCard
+        mode="history"
+        muscleScores={hasHistory ? scores : { chest: 0.7, abs: 0.45, quads: 0.25 }}
+        suggestedMuscles={hasHistory ? undefined : ["upper_back", "glutes"]}
+        title="Muscle Balance This Week"
+      />
+
       <AppCard style={styles.darkCard}>
-        <Text style={styles.darkTitle}>Muscle focus summary</Text>
-        <Text style={styles.darkMuted}>Based on starter routines: back, core, arms, legs and glutes are ready to track once sessions are logged.</Text>
+        <Text style={styles.darkTitle}>
+          {loading ? "Loading muscle history..." : "Body map guidance"}
+        </Text>
+        <Text style={styles.darkMuted}>
+          Complete workouts to build your real heatmap. Darker areas show higher recent load.
+          Suggested areas help balance training across the week.
+        </Text>
+        <View style={{ marginTop: 12 }}>
+          <AppButton
+            onPress={() => router.push("/fitness/body-map" as Href)}
+            title="Open full body map"
+          />
+        </View>
       </AppCard>
     </View>
   );
@@ -846,6 +1151,29 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 12
   },
+  bodyMapCard: {
+    alignItems: "center",
+    backgroundColor: "#e6fffa",
+    borderColor: "#99f6e4",
+    borderWidth: 1,
+    flexDirection: "row",
+    minHeight: 230,
+    overflow: "hidden",
+    paddingBottom: 0,
+    paddingRight: 0
+  },
+  bodyMapCopy: {
+    flex: 1,
+    paddingBottom: 18,
+    paddingLeft: 2,
+    paddingTop: 18,
+    zIndex: 2
+  },
+  bodyMapPreview: {
+    alignSelf: "flex-end",
+    height: 225,
+    width: 145
+  },
   barFill: {
     backgroundColor: "#6ee7c8",
     borderRadius: 999,
@@ -871,6 +1199,31 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8
+  },
+  contentState: {
+    alignItems: "center",
+    backgroundColor: "#ecfdf5",
+    borderColor: "#a7f3d0",
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 9,
+    paddingHorizontal: 13,
+    paddingVertical: 11
+  },
+  contentStateText: {
+    color: "#065f46",
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 17
+  },
+  contentStateWarning: {
+    backgroundColor: "#fff7ed",
+    borderColor: "#fed7aa"
+  },
+  contentStateWarningText: {
+    color: "#9a3412"
   },
   compactRoutine: {
     width: 260
@@ -934,6 +1287,38 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 12
   },
+  exploreCard: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#e2e8f0",
+    borderRadius: 20,
+    borderWidth: 1,
+    flexBasis: "22%",
+    flexGrow: 1,
+    gap: 8,
+    justifyContent: "center",
+    minHeight: 100,
+    padding: 9
+  },
+  exploreGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9
+  },
+  exploreIcon: {
+    alignItems: "center",
+    borderRadius: 15,
+    height: 42,
+    justifyContent: "center",
+    width: 42
+  },
+  exploreLabel: {
+    color: "#1e293b",
+    fontSize: 11,
+    fontWeight: "900",
+    lineHeight: 15,
+    textAlign: "center"
+  },
   filterChip: {
     backgroundColor: "rgba(15,23,42,0.08)",
     borderColor: "rgba(15,23,42,0.12)",
@@ -976,6 +1361,45 @@ const styles = StyleSheet.create({
     color: "#f8fafc",
     fontWeight: "900"
   },
+  goalArrow: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderRadius: 999,
+    height: 34,
+    justifyContent: "center",
+    marginTop: "auto",
+    transform: [{ rotate: "45deg" }],
+    width: 34
+  },
+  goalCard: {
+    borderRadius: 25,
+    minHeight: 190,
+    padding: 17,
+    width: 210
+  },
+  goalIndex: {
+    color: "rgba(255,255,255,0.58)",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 1
+  },
+  goalRail: {
+    gap: 11,
+    paddingRight: 16
+  },
+  goalSubtitle: {
+    color: "rgba(255,255,255,0.78)",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 7
+  },
+  goalTitle: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+    lineHeight: 24,
+    marginTop: 18
+  },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1002,6 +1426,78 @@ const styles = StyleSheet.create({
   horizontalCards: {
     gap: 12,
     paddingRight: 16
+  },
+  heroGlowOne: {
+    backgroundColor: "rgba(45,212,191,0.20)",
+    borderRadius: 999,
+    height: 210,
+    position: "absolute",
+    right: -75,
+    top: -75,
+    width: 210
+  },
+  heroGlowTwo: {
+    backgroundColor: "rgba(56,189,248,0.10)",
+    borderRadius: 999,
+    bottom: -85,
+    height: 180,
+    left: -60,
+    position: "absolute",
+    width: 180
+  },
+  lastWorkoutCopy: {
+    color: "#64748b",
+    fontSize: 12,
+    fontWeight: "700",
+    textAlign: "center"
+  },
+  lightButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#0f766e",
+    borderRadius: 999,
+    marginTop: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 11
+  },
+  lightButtonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  listenCopy: {
+    color: "#fed7aa",
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 18,
+    marginTop: 14
+  },
+  liveLibraryButton: {
+    alignItems: "center",
+    backgroundColor: "#5eead4",
+    borderRadius: 999,
+    height: 44,
+    justifyContent: "center",
+    marginLeft: "auto",
+    width: 44
+  },
+  liveLibraryCard: {
+    alignItems: "center",
+    backgroundColor: "#0f172a",
+    borderColor: "#334155",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 22
+  },
+  liveLibraryLabel: {
+    color: "#94a3b8",
+    fontSize: 10,
+    fontWeight: "800",
+    marginTop: 2
+  },
+  liveLibraryValue: {
+    color: "#f8fafc",
+    fontSize: 22,
+    fontWeight: "900"
   },
   mediaGlow: {
     alignItems: "center",
@@ -1062,6 +1558,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900"
   },
+  primaryRealmButton: {
+    alignItems: "center",
+    backgroundColor: "#5eead4",
+    borderRadius: 999,
+    flexDirection: "row",
+    gap: 7,
+    minHeight: 46,
+    paddingHorizontal: 20,
+    paddingVertical: 12
+  },
+  primaryRealmButtonText: {
+    color: "#06231c",
+    fontWeight: "900"
+  },
   progressFill: {
     borderRadius: 999,
     height: "100%"
@@ -1097,11 +1607,227 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10
   },
+  realmActionRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 20
+  },
+  realmCardBody: {
+    color: "#47635e",
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 8
+  },
+  realmCardEyebrow: {
+    color: "#0f766e",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.9,
+    textTransform: "uppercase"
+  },
+  realmCardTitle: {
+    color: "#12352f",
+    fontSize: 21,
+    fontWeight: "900",
+    lineHeight: 25,
+    marginTop: 6
+  },
+  realmHero: {
+    backgroundColor: "#071f1a",
+    borderColor: "#0f766e",
+    borderWidth: 1,
+    overflow: "hidden",
+    padding: 20
+  },
+  realmHeroSubtitle: {
+    color: "#b9d8d1",
+    lineHeight: 20,
+    marginTop: 7,
+    maxWidth: 330
+  },
+  realmHeroTitle: {
+    color: "#f0fdfa",
+    fontSize: 31,
+    fontWeight: "900",
+    letterSpacing: -0.8,
+    lineHeight: 35,
+    marginTop: 5
+  },
+  realmHeroTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  realmIcon: {
+    alignItems: "center",
+    backgroundColor: "#5eead4",
+    borderRadius: 18,
+    height: 52,
+    justifyContent: "center",
+    width: 52
+  },
+  realmKicker: {
+    color: "#5eead4",
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    marginTop: 22,
+    textTransform: "uppercase"
+  },
+  realmMeta: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 5
+  },
+  realmMetaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 13,
+    marginTop: 17
+  },
+  realmMetaText: {
+    color: "#ccfbf1",
+    fontSize: 11,
+    fontWeight: "800"
+  },
+  realmPill: {
+    backgroundColor: "rgba(94,234,212,0.10)",
+    borderColor: "rgba(153,246,228,0.18)",
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  realmPillRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+    marginTop: 12
+  },
+  realmPillText: {
+    color: "#99f6e4",
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  realmSectionAction: {
+    backgroundColor: "#e2e8f0",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  realmSectionActionText: {
+    color: "#334155",
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  realmSectionEyebrow: {
+    color: "#0f766e",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1,
+    textTransform: "uppercase"
+  },
+  realmSectionHeader: {
+    alignItems: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 4
+  },
+  realmSectionTitle: {
+    color: "#0f172a",
+    fontSize: 22,
+    fontWeight: "900",
+    letterSpacing: -0.4,
+    marginTop: 3
+  },
+  realmStack: {
+    gap: 18
+  },
+  recoveryBody: {
+    color: "#fde7ce",
+    lineHeight: 20,
+    marginTop: 14
+  },
+  recoveryCard: {
+    backgroundColor: "#422006",
+    borderColor: "#9a3412",
+    borderWidth: 1
+  },
+  recoveryEyebrow: {
+    color: "#fdba74",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1,
+    textTransform: "uppercase"
+  },
+  recoveryHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12
+  },
+  recoveryHeaderCopy: {
+    flex: 1
+  },
+  recoveryIcon: {
+    alignItems: "center",
+    backgroundColor: "rgba(251,146,60,0.18)",
+    borderRadius: 16,
+    height: 46,
+    justifyContent: "center",
+    width: 46
+  },
+  recoverySuggestion: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 18,
+    flexDirection: "row",
+    gap: 11,
+    marginTop: 15,
+    padding: 12
+  },
+  recoverySuggestionBody: {
+    color: "#fed7aa",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2
+  },
+  recoverySuggestionCopy: {
+    flex: 1
+  },
+  recoverySuggestionTitle: {
+    color: "#fff7ed",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  recoveryTitle: {
+    color: "#fff7ed",
+    fontSize: 19,
+    fontWeight: "900",
+    marginTop: 3
+  },
   routineCard: {
     backgroundColor: "#111827",
     borderRadius: 26,
     borderWidth: 1,
     padding: 14
+  },
+  safetyBadge: {
+    alignItems: "center",
+    backgroundColor: "rgba(34,197,94,0.12)",
+    borderColor: "rgba(187,247,208,0.18)",
+    borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  safetyBadgeText: {
+    color: "#bbf7d0",
+    fontSize: 10,
+    fontWeight: "900"
   },
   safetyText: {
     color: "#9a3412",
@@ -1145,6 +1871,23 @@ const styles = StyleSheet.create({
     minHeight: 44,
     justifyContent: "center"
   },
+  secondaryRealmButton: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderColor: "rgba(255,255,255,0.14)",
+    borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
+    minHeight: 46,
+    paddingHorizontal: 14,
+    paddingVertical: 11
+  },
+  secondaryRealmButtonText: {
+    color: "#f8fafc",
+    fontSize: 12,
+    fontWeight: "900"
+  },
   skeletonLine: {
     backgroundColor: "rgba(255,255,255,0.12)",
     borderRadius: 999,
@@ -1154,6 +1897,84 @@ const styles = StyleSheet.create({
   },
   stack: {
     gap: 14
+  },
+  statusCard: {
+    backgroundColor: "#ffffff",
+    borderColor: "#e2e8f0",
+    borderRadius: 21,
+    borderWidth: 1,
+    minHeight: 116,
+    padding: 13,
+    width: 125
+  },
+  statusIcon: {
+    alignItems: "center",
+    backgroundColor: "#ccfbf1",
+    borderRadius: 13,
+    height: 34,
+    justifyContent: "center",
+    width: 34
+  },
+  statusLabel: {
+    color: "#64748b",
+    fontSize: 10,
+    fontWeight: "800",
+    marginTop: 3
+  },
+  statusRail: {
+    gap: 9,
+    paddingRight: 16
+  },
+  statusValue: {
+    color: "#0f172a",
+    fontSize: 15,
+    fontWeight: "900",
+    marginTop: 12
+  },
+  supportBody: {
+    color: "#64748b",
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 5
+  },
+  supportCopy: {
+    flex: 1
+  },
+  supportEyebrow: {
+    color: "#b45309",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase"
+  },
+  supportIcon: {
+    alignItems: "center",
+    backgroundColor: "#fef3c7",
+    borderRadius: 17,
+    height: 50,
+    justifyContent: "center",
+    width: 50
+  },
+  supportLink: {
+    color: "#b45309",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 10
+  },
+  supportTitle: {
+    color: "#422006",
+    fontSize: 17,
+    fontWeight: "900",
+    lineHeight: 21,
+    marginTop: 4
+  },
+  nutritionSupportCard: {
+    alignItems: "flex-start",
+    backgroundColor: "#fffbeb",
+    borderColor: "#fde68a",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 13
   },
   successState: {
     alignItems: "center",

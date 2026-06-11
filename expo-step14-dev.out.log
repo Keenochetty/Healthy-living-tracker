@@ -1,0 +1,14 @@
+
+> family-health-app@1.0.0 dev
+> expo start --port 8082
+
+env: load .env
+env: export EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY EXPO_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY NEXT_PUBLIC_SUPABASE_URL OPENAI_API_KEY OPENAI_MODEL SMTP_FROM SMTP_HOST SMTP_PASSWORD SMTP_PORT SMTP_USER
+Starting project at C:\Users\keeno\OneDrive\Documents\GitHub\Healthy living tracker
+Using src/app as the root directory for Expo Router.
+Starting Metro Bundler
+
+Waiting on http://localhost:8082
+An update for expo is available: 56.0.8 → ~56.0.11
+11 other packages may need updating. Run npx expo install --check for details.
+Logs for your project will appear below.

@@ -9,10 +9,12 @@ import {
   QuickNoteField,
   QuickSaveButton
 } from "@/components/fitness/QuickWorkoutInputs";
+import { MuscleFocusCard } from "@/components/fitness/muscle-map";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
 import { EXERCISE_LIBRARY, formatWorkoutLabel, getExerciseById } from "@/constants/workoutLibrary";
 import { createWorkoutSession, completeWorkoutSession } from "@/lib/fitnessStorage";
+import { scoresFromExerciseFallback } from "@/services/fitnessMuscleMapService";
 
 const SAFETY_COPY =
   "Exercise guidance is for general fitness tracking only. If you are unsure, injured, pregnant, or managing a health condition, speak to a qualified professional.";
@@ -29,6 +31,7 @@ export default function ExerciseDetailScreen() {
   const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState<"reps" | "weight" | null>(null);
   const [saved, setSaved] = useState(false);
+  const muscleScores = useMemo(() => scoresFromExerciseFallback(exercise), [exercise]);
 
   async function saveExerciseLog() {
     const session = await createWorkoutSession({
@@ -63,6 +66,12 @@ export default function ExerciseDetailScreen() {
           <Pill label={formatWorkoutLabel(exercise.difficulty)} />
         </View>
       </AppCard>
+
+      <MuscleFocusCard
+        mode="exercise"
+        muscleScores={muscleScores}
+        title="Muscles targeted"
+      />
 
       <AppSection title="Instructions" />
       <AppCard style={styles.darkCard}>

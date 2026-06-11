@@ -818,7 +818,7 @@ function buildActiveRealms(_data: HealthData): RealmDefinition[] {
     item.status,
     item.description,
     "Open area",
-    `/health/${item.slug}` as Href,
+    (item.slug === "fitness" ? "/fitness" : `/health/${item.slug}`) as Href,
     item.slug === "womens-health" || item.slug === "baby-child" || item.slug === "documents"
   ));
 }
