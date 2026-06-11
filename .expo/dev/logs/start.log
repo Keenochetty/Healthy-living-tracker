@@ -15806,3 +15806,6 @@
 {"_e":"metro:bundling:progress","_t":1781183288208,"id":"1","progress":0.999,"total":4105,"current":4105}
 {"_e":"metro:bundling:done","_t":1781183288642,"id":"1","total":4105,"ms":25412.8675}
 {"_e":"metro:client_log","_t":1781183507263,"level":"warn","data":["[expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead."]}
+{"_e":"metro:bundling:started","_t":1781185883450,"id":"3","platform":"android","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1781185883450,"id":"3","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1781185883561,"id":"3","total":1,"ms":111.2969}
