@@ -1,0 +1,7 @@
+source_id,name,purpose,url,license_note
+SRC001,wger,Exercise/nutrition API structure and source of licensed community content,https://wger.readthedocs.io/en/latest/,Check license per exercise/media item.
+SRC002,MuscleMap by melihcolpan,Reference for dynamic muscle-map UX and layer approach,https://github.com/melihcolpan/MuscleMap,MIT license according to repository. Keep license notice if using code/assets.
+SRC003,USDA FoodData Central,Nutrition database/API,https://fdc.nal.usda.gov/api-guide/,USDA states data are public domain / CC0; cite source.
+SRC004,YouTube IFrame Player / CC license,Video embedding and Creative Commons checks,https://developers.google.com/youtube/terms/developer-policies,Embed using official player and store license/attribution; do not download/rehost unless rights allow.
+SRC005,CDC Physical Activity Guidelines,"Adults, children, pregnancy activity baseline",https://www.cdc.gov/physical-activity-basics/guidelines/index.html,Use as guidelines; do not imply medical advice.
+SRC006,AAP / HealthyChildren sports supplements,Children/teen supplement warnings,https://www.healthychildren.org/English/healthy-living/sports/Pages/Performance-Enhancing-Substances.aspx,Use as safety reference; do not copy proprietary content wholesale.

@@ -1,0 +1,9 @@
+rule_id,title,rule,data_fields
+CR001,Create plan calendar blocks,"When user activates a plan, create one calendar event per training/nutrition/reminder block.",active_plan_id;plan_day_id;session_id;start_time;end_time;reminder_minutes;location;visibility
+CR002,Respect available days,Ask user training days and preferred times before activation.,preferred_days;blackout_dates;calendar_conflicts
+CR003,Use safe defaults,Beginner sessions default to 20-35 minutes; pregnancy/postpartum/child sessions shorter and lower intensity.,audience;level;medical_flags
+CR004,Do not auto-schedule extreme training,Extreme/insane plans require confirmation and recovery spacing.,advanced_gate;rpe;rest_days
+CR005,Auto-add recovery,Schedule mobility/recovery after hard muscle groups or running increases.,primary_muscles;session_intensity;recovery_focus
+CR006,Reschedule not delete,"If missed, offer move/skip/modify; keep history record.",completion_status;missed_reason
+CR007,Nutrition schedules,Diet plan can create meal reminders without forcing calories unless user enabled nutrition tracking.,meal_schedule;diet_type;goal
+CR008,Safety stop signs,Calendar event details include warning stop signs for the selected audience.,safety_flags;contraindications

@@ -1,0 +1,11 @@
+goal_progression_id,title,audience,timeframe,progression_logic
+GP0001,Run 5km from 100m,general_adult,12 weeks,Start with 100m easy run + walk recovery. Add 50-150m total running per session when breathing recovers and no pain. Deload every 4th week. Goal is consistent time on feet before speed.
+GP0002,Bench press 20kg to 50kg,general_adult,12-24 weeks,"Train bench 2-3 times/week. Use 3x5-8 at RPE 6-8. Add 1.25-2.5kg only after completing all sets twice with good form; add rows, triceps, shoulder mobility and rest."
+GP0003,First push-up,general_adult,4-8 weeks,"Start wall/incline push-ups, then lower incline gradually. Add negatives and plank holds. Test floor push-up only when incline reps are smooth."
+GP0004,First pull-up,general_adult,8-16 weeks,"Use dead hangs, scap pulls, band-assisted reps, negatives and rows. Reduce assistance slowly. Stop before elbow/shoulder pain."
+GP0005,Safe weight loss starter,general_adult,ongoing,"Use small calorie deficit, high fiber, whole foods, protein adequacy, steps and strength training. Avoid crash diets; track energy, sleep and mood."
+GP0006,Pregnancy walking consistency,pregnant_woman,ongoing,"If cleared, accumulate moderate walking in short bouts. Stop for warning symptoms and adapt heat, terrain and fatigue."
+GP0007,Postpartum return to core,postpartum_parent,6-16 weeks,"Start breath/pelvic-floor coordination and walking after clearance. Progress to dead bugs, bridges and carries only if no symptoms."
+GP0008,Child active play habit,child_6_12,ongoing,"Use daily enjoyable play, games, climbing/running/jumping and family walks. Avoid body-shaming and fatigue punishment."
+GP0009,Teen strength technique,teen_13_17,8-12 weeks,"Build skill with light loads, supervised technique and gradual volume. No max lifts, no supplement prompts, no ego lifting."
+GP0010,Advanced conditioning block,general_adult,4 weeks,"Only for advanced adults. Alternate high and low stress days, cap RPE, monitor sleep, soreness and performance; deload if recovery drops."

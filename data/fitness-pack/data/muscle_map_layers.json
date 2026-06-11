@@ -1,0 +1,146 @@
+[
+  {
+    "layer_id": "chest",
+    "display_name": "Chest / pectorals",
+    "view": "front",
+    "recommended_asset_png": "assets/muscle_maps/chest.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "upper_back",
+    "display_name": "Upper back / traps",
+    "view": "back",
+    "recommended_asset_png": "assets/muscle_maps/upper_back.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "lats",
+    "display_name": "Lats",
+    "view": "back",
+    "recommended_asset_png": "assets/muscle_maps/lats.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "shoulders",
+    "display_name": "Shoulders / deltoids",
+    "view": "front_back",
+    "recommended_asset_png": "assets/muscle_maps/shoulders.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "biceps",
+    "display_name": "Biceps",
+    "view": "front",
+    "recommended_asset_png": "assets/muscle_maps/biceps.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "triceps",
+    "display_name": "Triceps",
+    "view": "back",
+    "recommended_asset_png": "assets/muscle_maps/triceps.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "forearms",
+    "display_name": "Forearms",
+    "view": "front_back",
+    "recommended_asset_png": "assets/muscle_maps/forearms.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "abs",
+    "display_name": "Abs / rectus abdominis",
+    "view": "front",
+    "recommended_asset_png": "assets/muscle_maps/abs.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "obliques",
+    "display_name": "Obliques",
+    "view": "front",
+    "recommended_asset_png": "assets/muscle_maps/obliques.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "lower_back",
+    "display_name": "Lower back / erectors",
+    "view": "back",
+    "recommended_asset_png": "assets/muscle_maps/full_body.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "glutes",
+    "display_name": "Glutes",
+    "view": "back",
+    "recommended_asset_png": "assets/muscle_maps/glutes.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "quads",
+    "display_name": "Quads",
+    "view": "front",
+    "recommended_asset_png": "assets/muscle_maps/quads.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "hamstrings",
+    "display_name": "Hamstrings",
+    "view": "back",
+    "recommended_asset_png": "assets/muscle_maps/hamstrings.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "calves",
+    "display_name": "Calves",
+    "view": "back",
+    "recommended_asset_png": "assets/muscle_maps/calves.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "hip_flexors",
+    "display_name": "Hip flexors",
+    "view": "front",
+    "recommended_asset_png": "assets/muscle_maps/full_body.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "adductors",
+    "display_name": "Adductors",
+    "view": "front",
+    "recommended_asset_png": "assets/muscle_maps/full_body.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "neck",
+    "display_name": "Neck",
+    "view": "front_back",
+    "recommended_asset_png": "assets/muscle_maps/neck.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  },
+  {
+    "layer_id": "full_body",
+    "display_name": "Full body",
+    "view": "front_back",
+    "recommended_asset_png": "assets/muscle_maps/full_body.png",
+    "heatmap_supported": true,
+    "notes": "Use this layer id to highlight the body map dynamically. Store intensity from 0.0 to 1.0 per exercise/session."
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "exercise_count": 2450,
+  "plan_count": 63,
+  "plan_day_count": 1988,
+  "nutrition_template_count": 312,
+  "goal_progression_count": 10,
+  "safety_rule_count": 10,
+  "asset_count": 20,
+  "version": "v0.2-youtube-ai-import-2026-06-11",
+  "exercise_rows": 2450,
+  "video_candidate_rows": 120,
+  "exercise_type_taxonomy_rows": 18,
+  "diet_type_taxonomy_rows": 21,
+  "calendar_activation_rules": 8,
+  "history_event_types": 10,
+  "youtube_policy": "embed_only_metadata_storage_no_video_downloads",
+  "ai_import_flow": "search_normalize_review_preview_import_activate_history"
+}

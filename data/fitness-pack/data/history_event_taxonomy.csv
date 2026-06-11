@@ -1,0 +1,11 @@
+history_event_type_id,event_key,description,recommended_payload_fields
+H001,plan_imported,User imported a workout/diet/health-care plan.,user_id;plan_id;source_urls;license_status;ai_summary
+H002,plan_activated,User activated plan and scheduled it to calendar.,user_id;plan_id;calendar_event_ids;start_date
+H003,plan_paused,User paused the plan.,user_id;plan_id;reason
+H004,plan_deleted,User deleted or archived plan.,user_id;plan_id;delete_type
+H005,session_completed,User completed a workout/session.,user_id;session_id;duration;rpe;notes;muscles_trained
+H006,session_skipped,User skipped a session.,user_id;session_id;reason;reschedule_choice
+H007,exercise_swapped,User swapped an exercise.,old_exercise_id;new_exercise_id;reason
+H008,nutrition_logged,User logged a meal or nutrition target.,meal_id;nutrition_template_id;calories;macros_optional
+H009,safety_warning_shown,App showed safety restriction warning.,warning_id;audience;safety_flags;acknowledged
+H010,ai_search_performed,User asked AI for a plan/content not in DB.,query;filters;sources_found;imported_boolean

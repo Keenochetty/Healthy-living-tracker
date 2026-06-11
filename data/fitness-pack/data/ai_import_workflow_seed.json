@@ -1,0 +1,79 @@
+{
+  "version": "v0.2-youtube-ai-import-2026-06-11",
+  "principle": "AI can find and normalize external diet/workout ideas, but imported plans must pass license, attribution, safety, and user-confirmation gates before activation.",
+  "import_statuses": [
+    "draft_search",
+    "normalized",
+    "needs_license_review",
+    "needs_safety_review",
+    "preview_ready",
+    "user_edited",
+    "active",
+    "paused",
+    "archived",
+    "deleted"
+  ],
+  "workflow_steps": [
+    {
+      "step": 1,
+      "name": "User search",
+      "description": "User asks for a plan, e.g. beginner 5km, pregnancy mobility, keto meal schedule, yoga for back pain."
+    },
+    {
+      "step": 2,
+      "name": "Search web/server sources",
+      "description": "Backend searches approved sources and returns citations/source URLs. Do not copy paywalled/protected plans wholesale."
+    },
+    {
+      "step": 3,
+      "name": "Normalize into internal schema",
+      "description": "AI converts result into plan days, sessions, exercises, nutrition notes, reminders and safety flags using app-owned wording."
+    },
+    {
+      "step": 4,
+      "name": "License and source gate",
+      "description": "Store source URLs, license terms, creator, attribution, and whether commercial app use is allowed."
+    },
+    {
+      "step": 5,
+      "name": "Safety gate",
+      "description": "Pregnancy, baby, child, teen, medical, injury, eating disorder, severe restriction and advanced training get hard warnings and professional review flags."
+    },
+    {
+      "step": 6,
+      "name": "User preview",
+      "description": "Show plan summary, calendar schedule, risks, source links, equipment, diet assumptions and edit controls before importing."
+    },
+    {
+      "step": 7,
+      "name": "Import plan",
+      "description": "Create user_plan, plan_days, scheduled calendar items and history records. Keep original imported draft version."
+    },
+    {
+      "step": 8,
+      "name": "Activate or pause",
+      "description": "User can activate, pause, share, duplicate, edit, archive or delete anytime."
+    },
+    {
+      "step": 9,
+      "name": "History tracking",
+      "description": "Log what was scheduled, completed, skipped, edited, swapped and deleted."
+    }
+  ],
+  "minimum_fields_for_imported_plan": [
+    "title",
+    "goal",
+    "audience",
+    "difficulty",
+    "duration_days",
+    "days_per_week",
+    "equipment",
+    "sessions",
+    "nutrition_notes",
+    "source_urls",
+    "license_status",
+    "safety_flags",
+    "calendar_schedule",
+    "review_status"
+  ]
+}

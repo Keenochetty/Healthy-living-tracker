@@ -1,0 +1,22 @@
+diet_type_id,title,description,audience_gate,focus,risk_flags,app_notes
+omnivore,Omnivore Balanced,Includes animal and plant foods,general,"balanced plate, protein, plants, hydration",allergy/medical/religious preference checks,normal default template
+vegetarian,Vegetarian,No meat; may include eggs/dairy depending user preference,general;pregnancy_with_review;teen_with_review,"protein variety, iron, B12, calcium, omega-3 planning",B12/iron gaps,store lacto/ovo sub-type
+vegan,Vegan,No animal products,general;pregnancy_with_professional_review;teen_with_review,"B12, iron, calcium, iodine, omega-3, protein completeness",micronutrient gaps,needs supplement/food planning from qualified source
+pescatarian,Pescatarian,Vegetarian base plus fish/seafood,general,"omega-3, lean protein, plants",fish allergy; mercury in pregnancy,pregnancy needs fish guidance review
+keto,Keto / Very Low Carb,"Low carbohydrate, higher fat approach",adult_only_medical_review,"electrolytes, fiber, micronutrients",not default for pregnancy/children; medication interactions,medical gate recommended
+low_carb,Low Carb,Moderate carbohydrate reduction,adult,"protein, vegetables, fiber, hydration",not suitable for all athletes/pregnancy/teens,gentle version only
+mediterranean,Mediterranean Style,"Plants, whole grains, legumes, fish, olive oil style pattern",general,"heart-health style default, flexible","allergies, cultural preferences",good general recommendation base
+paleo,Paleo Style,Whole-food pattern excluding grains/legumes/dairy in many versions,adult,"protein, vegetables, fruit, nuts/seeds",calcium/fiber gaps,review restrictions
+carnivore,Carnivore / Animal-Based Restrictive,Highly restrictive animal-food pattern,adult_only_professional_review,"track lipids, fiber/micronutrient risk",high restriction; not for kids/pregnancy default,do not auto-recommend
+halal,Halal-Compatible,Food choices respect halal rules,general,"halal protein sources, no alcohol/pork",cross-contamination,combine with diet style
+kosher,Kosher-Compatible,Food choices respect kosher rules,general,kosher certifications and meal pairing rules,cross-contamination,combine with diet style
+gluten_free,Gluten-Free,Avoid gluten-containing grains,medical_if_celiac,"gluten-free grains, fiber, nutrients",cross-contamination for celiac,requires strict labeling if celiac
+dairy_free,Dairy-Free,Avoid dairy products,general,calcium/vitamin D alternatives,calcium gaps,track substitutions
+lactose_free,Lactose-Free,Avoid lactose or use lactose-free products,general,lactose-free dairy or alternatives,calcium gaps,user tolerance varies
+low_fodmap,Low FODMAP,Temporary structured gut-symptom diet,medical_professional_only,phase-based elimination/reintroduction,too restrictive if unsupervised,dietitian review
+dash,DASH / Blood Pressure Support,Pattern often used for blood pressure support,medical_review,fruits/veg/low sodium balance,medication interactions,educational only
+diabetes_friendly,Diabetes-Aware,Carb-aware meal timing and glucose monitoring support,medical_review,"consistent carbs, fiber, protein, clinician plan",hypoglycemia/medication risk,must not replace clinician plan
+pregnancy_balanced,Pregnancy Balanced,Pregnancy-aware balanced eating,pregnancy_only_professional_review,"folate, iron, calcium, iodine, hydration, safe foods",food safety and medical risk,professional review before public use
+postpartum_recovery,Postpartum Recovery,"Recovery, lactation-aware options if applicable",postpartum,"protein, fluids, iron, fiber",lactation/allergy/medical needs,gentle and supportive
+child_balanced,Child Balanced,Age-appropriate family foods,child_medical_review,"growth, variety, hydration",avoid adult dieting and supplements,parent/pediatric guidance
+teen_athlete,Teen Athlete,Performance support for teens,teen_review,"enough energy, carbs, protein from food",supplement misuse; under-fueling,parent/coach/medical safeguards

@@ -1,0 +1,11 @@
+safety_rule_id,title,rule
+SR0001,Global medical disclaimer,"All content is educational and not diagnosis, treatment or medical advice. Users with symptoms, pregnancy, postpartum, child/baby profiles, chronic disease, injury or medication should get professional clearance."
+SR0002,Pregnancy stop signs,"Stop and seek care for bleeding, fluid leakage, regular painful contractions, dizziness/fainting, chest pain, calf swelling, severe headache, shortness of breath before exertion, or reduced fetal movement."
+SR0003,Pregnancy programming,"Default pregnancy content should be moderate, low-fall-risk, no contact sports, no overheating, no breath-holding and professionally reviewed."
+SR0004,Baby content,"Baby category is developmental play only. No workouts, no added weights, no forced stretching, no shaking, no sleep positioning advice, and adult supervision is required."
+SR0005,Children and supplements,"Children/teens should focus on fluids, food, training, conditioning and rest. Do not prompt protein powders, creatine, stimulants, pre-workouts or fat burners."
+SR0006,Progression rule,Use 5-10% volume/load changes at most for adults when recovery is good. Beginners progress slower. Pain or form loss means regress.
+SR0007,BMI note,"BMI is a screening metric, not a full health diagnosis. Pair it with waist, performance, health history, age, pregnancy status and professional advice."
+SR0008,Allergies,"Nutrition recommendations must check allergens, diet preference, religious restrictions, pregnancy status, age, medication and medical conditions before suggesting foods."
+SR0009,Advanced training,"Very high intensity is adult-only and should require readiness checks, warm-up, deloads, sleep/recovery monitoring and explicit warnings."
+SR0010,YouTube media,Do not download/rehost YouTube videos. Store embed URLs only when rights and policy are verified; store license/attribution metadata.

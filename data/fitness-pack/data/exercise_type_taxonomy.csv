@@ -1,0 +1,19 @@
+exercise_type_id,title,description,safe_audiences,equipment_options,risk_flags,programming_notes
+strength,Strength Training,"progressive resistance using bodyweight, bands, machines, dumbbells, barbells or improvised load",general_adult;teen;pregnancy_modified;postpartum_modified,none;bands;dumbbells;barbell;machines,form breakdown;too much load too soon;poor bracing,use RPE and gradual progression
+hypertrophy,Muscle Building / Hypertrophy,moderate-to-high volume muscle growth sessions,general_adult;young_adult;advanced,dumbbells;barbell;machines;bands,joint irritation;overuse;insufficient recovery,track volume per muscle group and deload
+powerlifting,Powerlifting Strength,squat bench deadlift focused strength progression,adult;advanced,barbell;rack;bench;plates,high load;technical failure,coach review strongly recommended
+cardio,Cardio Fitness,"walking, cycling, rowing, elliptical and aerobic sessions",general_adult;pregnancy_modified;postpartum_modified;child_play,none;bike;rower;treadmill,overexertion;heat;breathing distress,use talk test and RPE
+running,Running Progression,walk-run progressions from beginner to distance goals,adult;teen;young_adult,shoes;timer;gps optional,shin pain;knee pain;too much distance,increase total distance/time gradually
+hiit,HIIT / Interval Training,short intense intervals with recovery periods,adult;advanced,none;timer;bike;rower,not suitable for many pregnancy/postpartum/medical users,gate behind readiness checks
+yoga,Yoga,"mobility, breath, balance, flexibility and strength holds",general_adult;pregnancy_modified;postpartum_modified;child_modified,mat;blocks;strap,joint hypermobility;overstretching;supine pregnancy cautions,pregnancy/postpartum variations needed
+pilates,Pilates,"controlled core, posture and mobility work",general_adult;postpartum_modified;pregnancy_modified,mat;band;ball,abdominal doming;pelvic pressure,postpartum and pregnancy core screening
+mobility,Mobility,active range-of-motion and joint prep,all_safe_with_modification,none;band;stick,painful ranges,use pain-free range
+stretching,Stretching,static and dynamic stretches paired to muscles and sessions,all_safe_with_modification,none;strap;wall,overstretching;nerve symptoms,avoid numbness or sharp pain
+recovery,Recovery / Regeneration,"low-intensity recovery, breathing, soft tissue and easy movement",all,none;foam_roller;ball,pressure on injured tissue,low intensity only
+calisthenics,Calisthenics,skill and strength using bodyweight,adult;teen;advanced,pullup_bar;dip_bars;floor,wrist/shoulder overload,progress skill levels slowly
+pregnancy_mobility,Pregnancy Mobility,"trimester-aware movement, breathing, pelvic and back comfort work",pregnancy_only,mat;chair;wall;band,contraindications;supine/hot/high-risk issues,medical clearance and stop signs required
+postpartum_core,Postpartum Core Restore,"breathing, pelvic floor awareness, gentle core reconnection",postpartum_only,mat;chair,pain;bleeding increase;heaviness;doming,medical clearance and pelvic health review
+baby_tummy_time,Baby Tummy Time / Development,parent-assisted short supervised development positions,baby_only,blanket;toy,never unsupervised;developmental concerns,medical/pediatric review before public content
+child_fundamentals,Child Fundamental Movement,"play-based balance, jumping, crawling, throwing and coordination",child,none;cones;ball,fatigue;unsafe equipment,"play first, no adult-style intense programming"
+teen_conditioning,Teen Athletic Conditioning,"age-appropriate strength, agility and cardio",teen,none;bands;light_loads,supplement misuse;too much load,coach/parental review
+insane_training,Extreme / Insane Training,very advanced challenge plans for already conditioned users,advanced_adult_only,varies,high injury/rhabdo/overtraining risk,"hard gate, disclaimers and recovery tracking"
