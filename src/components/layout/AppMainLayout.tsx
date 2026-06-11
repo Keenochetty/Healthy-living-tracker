@@ -1,11 +1,11 @@
-import { Href, router } from "expo-router";
-import { ReactNode, useEffect, useState } from "react";
+import { Href, router, useFocusEffect } from "expo-router";
+import { ReactNode, useCallback, useState } from "react";
 import { View, type ViewStyle } from "react-native";
 
 import { AiFloatingQuickBar } from "@/components/ai/AiFloatingQuickBar";
+import { getInitials, PeopleAccountSheet, formatRelationship } from "@/components/identity";
 import { AppScreen } from "@/components/ui";
-import { getUserPreferences } from "@/lib/userPreferences";
-import type { UserPreferences } from "@/types/profile";
+import { useActiveProfile } from "@/context/ActiveProfileContext";
 import { AppTopProfileHeader } from "./AppTopProfileHeader";
 
 type AppMainLayoutProps = {
@@ -29,17 +29,28 @@ export function AppMainLayout({
   subtitle,
   title
 }: AppMainLayoutProps) {
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
-  const displayName = preferences?.displayName.trim() || "Friend";
-  const initials = displayName
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2) || "HL";
+  const { activeProfile, permittedProfiles, refreshProfiles, selectProfile } = useActiveProfile();
+  const [peopleAccountVisible, setPeopleAccountVisible] = useState(false);
+  const displayName = activeProfile?.displayName ?? "My profile";
+  const initials = getInitials(displayName);
 
-  useEffect(() => {
-    getUserPreferences().then(setPreferences);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfiles();
+    }, [refreshProfiles])
+  );
+
+  function openProfile(profile = activeProfile) {
+    if (!profile) return;
+    setPeopleAccountVisible(false);
+
+    if (profile.profileType === "self") {
+      router.push("/(tabs)/profile" as Href);
+      return;
+    }
+
+    router.push(`/profile/${profile.id}` as Href);
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -47,14 +58,28 @@ export function AppMainLayout({
         {showHeader ? (
           <AppTopProfileHeader
             avatarInitials={initials}
-            greeting={subtitle ?? "Welcome back,"}
+            avatarUri={activeProfile?.avatarUrl}
+            greeting={title ?? subtitle}
+            onOpenPeopleAccount={() => setPeopleAccountVisible(true)}
+            onOpenProfile={() => openProfile()}
             onQuickActionPress={() => router.push("/calendar" as Href)}
-            userName={title ?? displayName}
+            relationship={activeProfile ? formatRelationship(activeProfile) : "Me"}
+            userName={displayName}
           />
         ) : null}
         {children}
       </AppScreen>
       {showAi ? <AiFloatingQuickBar onScanPress={() => router.push("/ai" as Href)} /> : null}
+      <PeopleAccountSheet
+        activeProfile={activeProfile}
+        onClose={() => setPeopleAccountVisible(false)}
+        onOpenProfile={openProfile}
+        onSelectProfile={async (profileId) => {
+          await selectProfile(profileId);
+        }}
+        profiles={permittedProfiles}
+        visible={peopleAccountVisible}
+      />
     </View>
   );
 }

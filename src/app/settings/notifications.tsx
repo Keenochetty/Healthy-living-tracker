@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Text, TextInput, View, Switch } from "react-native";
+import { Linking, Text, TextInput, View, Switch } from "react-native";
 
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import { AppButton, AppCard, AppChip, AppSection } from "@/components/ui";
@@ -117,6 +117,7 @@ export default function NotificationSettingsScreen() {
           <InfoRow label="Device notifications" value={settings?.notificationsEnabled ? "On" : "Off"} />
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             <AppButton onPress={requestPermission} title="Request Permission" />
+            {settings?.permissionStatus === "denied" ? <AppButton onPress={() => Linking.openSettings()} title="Open System Settings" variant="outline" /> : null}
             <AppButton onPress={sendTest} title="Test Notification" variant="secondary" />
           </View>
         </View>

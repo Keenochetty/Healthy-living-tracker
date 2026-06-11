@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Image, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { AppCard } from "@/components/ui/AppCard";
+import { ensureImagePickerPermission } from "@/lib/devicePermissions";
 import {
   getSafetyStatusLabel,
   saveMedicationStandardMatch,
@@ -58,6 +59,7 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
   const [imageUri, setImageUri] = useState<string | undefined>();
 
   async function pickImage() {
+    if (!(await ensureImagePickerPermission("photos"))) return;
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
 
     if (!result.canceled) {

@@ -2,6 +2,7 @@ import {
   Baby,
   Bell,
   Bot,
+  Camera,
   CalendarPlus,
   HandHeart,
   FileText,
@@ -29,4 +30,10 @@ export const navItems = [
   { href: "/settings/account", label: "Account", icon: User }
 ] as const;
 
-export const mobileNavItems = navItems.slice(0, 5);
+export const mobileNavItems = [
+  { href: "/tabs/home", label: "Home", icon: Home },
+  { href: "/tabs/calendar", label: "Calendar", icon: CalendarPlus },
+  { href: "/tabs/scan", label: "Scan", icon: Camera, primaryAction: true },
+  { href: "/tabs/care", label: "Health", icon: HeartPulse },
+  { href: "/tabs/circle", label: "Circle", icon: Users }
+] as const;

@@ -29,6 +29,13 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
+          name="scan"
+          options={{
+            title: "Scan",
+          }}
+        />
+
+        <Tabs.Screen
           name="health"
           options={{
             title: "Health",
@@ -38,16 +45,11 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="circle"
           options={{
-            title: "Family",
+            title: "Circle",
           }}
         />
 
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Settings",
-          }}
-        />
+        <Tabs.Screen name="profile" options={{ href: null }} />
       </Tabs>
       <FloatingAssistantButton visible={showAssistant} />
     </>

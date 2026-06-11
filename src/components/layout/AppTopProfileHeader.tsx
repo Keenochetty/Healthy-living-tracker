@@ -1,20 +1,23 @@
 import { Bell, CalendarDays } from "lucide-react-native";
 import { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
-import { AppAvatar, AppIconButton } from "@/components/ui";
-import { fontSizes, spacing } from "@/theme/tokens";
-import { useAppTheme } from "@/theme/ThemeProvider";
+import { HealthSyncIdentityControl } from "@/components/identity";
+import { AppIconButton } from "@/components/ui";
+import { spacing } from "@/theme/tokens";
 
 type AppTopProfileHeaderProps = {
   avatarInitials: string;
   avatarUri?: string;
   greeting?: string;
   onNotificationPress?: () => void;
+  onOpenPeopleAccount: () => void;
+  onOpenProfile: () => void;
   onQuickActionPress?: () => void;
   rightActions?: ReactNode;
   showNotification?: boolean;
   showQuickAction?: boolean;
+  relationship: string;
   userName: string;
 };
 
@@ -23,14 +26,15 @@ export function AppTopProfileHeader({
   avatarUri,
   greeting = "Welcome back,",
   onNotificationPress,
+  onOpenPeopleAccount,
+  onOpenProfile,
   onQuickActionPress,
   rightActions,
   showNotification = true,
   showQuickAction = true,
+  relationship,
   userName
 }: AppTopProfileHeaderProps) {
-  const { theme } = useAppTheme();
-
   return (
     <View
       style={{
@@ -40,17 +44,7 @@ export function AppTopProfileHeader({
         justifyContent: "space-between"
       }}
     >
-      <View style={{ alignItems: "center", flex: 1, flexDirection: "row", gap: spacing.md }}>
-        <AppAvatar imageUri={avatarUri} initials={avatarInitials} size={46} />
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.mutedText, fontSize: fontSizes.sm, fontWeight: "700" }}>
-            {greeting}
-          </Text>
-          <Text style={{ color: theme.text, fontSize: fontSizes.lg, fontWeight: "900", marginTop: 2 }}>
-            {userName}
-          </Text>
-        </View>
-      </View>
+      <HealthSyncIdentityControl avatarUri={avatarUri} initials={avatarInitials} name={userName} onOpenPeopleAccount={onOpenPeopleAccount} onOpenProfile={onOpenProfile} pageTitle={greeting} relationship={relationship} />
 
       <View style={{ alignItems: "center", flexDirection: "row", gap: spacing.sm }}>
         {rightActions}

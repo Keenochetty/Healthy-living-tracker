@@ -34,16 +34,16 @@ export function FloatingBottomNavItem({
   onPress
 }: FloatingBottomNavItemProps) {
   const [isPressed, setIsPressed] = useState(false);
-  const labelWidth = Math.min(compact ? 66 : 72, Math.max(44, label.length * (compact ? 8 : 8.5) + 4));
-  const activeWidth = labelWidth + (compact ? 52 : 58);
-  const inactiveWidth = compact ? 42 : 48;
+  const labelWidth = Math.min(compact ? 58 : 64, Math.max(38, label.length * (compact ? 7 : 7.5) + 2));
+  const activeWidth = labelWidth + (compact ? 46 : 50);
+  const inactiveWidth = compact ? 38 : 42;
   const progress = useDerivedValue(() =>
     withTiming(focused ? 1 : 0, { duration: appMotion.navTransition })
   );
 
   const capsuleStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(progress.value, [0, 1], ["rgba(255,255,255,0)", appColors.navActive]),
-    borderColor: interpolateColor(progress.value, [0, 1], ["rgba(255,255,255,0)", "rgba(110, 231, 200, 0.20)"]),
+    borderColor: interpolateColor(progress.value, [0, 1], ["rgba(255,255,255,0)", "rgba(255,255,255,0.16)"]),
     transform: [
       {
         scale: withSpring(isPressed ? 0.95 : 1, appMotion.spring)
@@ -84,7 +84,7 @@ export function FloatingBottomNavItem({
         style={styles.pressable}
       >
         <Animated.View style={[styles.capsule, capsuleStyle]}>
-          <AppIcon color={iconColor} decorative name={iconName} size={22} strokeWidth={2.35} />
+          <AppIcon color={iconColor} decorative name={iconName} size={20} strokeWidth={2.2} />
           <Animated.Text numberOfLines={1} style={[styles.label, labelStyle]}>
             {label}
           </Animated.Text>
@@ -100,25 +100,25 @@ const styles = StyleSheet.create({
     borderRadius: appRadius.pill,
     borderWidth: 1,
     flexDirection: "row",
-    gap: 6,
-    height: 50,
+    gap: 5,
+    height: 46,
     justifyContent: "center",
     overflow: "hidden",
-    paddingHorizontal: 12
+    paddingHorizontal: 10
   },
   label: {
     color: appColors.navActiveText,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "800",
     includeFontPadding: false,
     flexShrink: 0
   },
   item: {
-    height: 52
+    height: 48
   },
   pressable: {
     alignItems: "center",
-    height: 52,
+    height: 48,
     justifyContent: "center",
     minHeight: touchTargets.minimum,
     width: "100%"

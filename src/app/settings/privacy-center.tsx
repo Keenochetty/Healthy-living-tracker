@@ -3,14 +3,16 @@ import { useCallback, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
-import { AppButton, AppCard, AppChip, AppIcon, AppSection } from "@/components/ui";
+import { AppButton, AppCard, AppChip, AppFormInput, AppIcon, AppSection } from "@/components/ui";
 import { PrivacyBadge } from "@/components/privacy";
+import { useAuth } from "@/context/AuthContext";
+import { ACCOUNT_DELETION_CONFIRMATION, clearLocalUserState, deleteAuthenticatedAccount, requestServerDataExport } from "@/lib/accountData";
 import {
   CONSENT_CATEGORIES,
+  completeDataExportRequest,
   createDataDeletionRequest,
   createDataExportRequest,
   denyConsent,
-  generateJsonExportPlaceholder,
   getConsentRecords,
   getDataDeletionRequests,
   getDataExportRequests,
@@ -22,6 +24,7 @@ import {
   revokeConsent
 } from "@/lib/privacyComplianceStorage";
 import { appColors, appSpacing, typography } from "@/theme/designSystem";
+import { reauthenticate } from "@/lib/securitySettings";
 import type {
   ConsentRecord,
   ConsentType,
@@ -71,6 +74,7 @@ const EXPORT_CATEGORIES = [
 ];
 
 export default function PrivacyCenterScreen() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<PrivacyTab>("summary");
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
   const [exports, setExports] = useState<DataExportRequest[]>([]);
@@ -80,6 +84,11 @@ export default function PrivacyCenterScreen() {
   const [terms, setTerms] = useState<PrivacyPolicyVersion | null>(null);
   const [medical, setMedical] = useState<PrivacyPolicyVersion | null>(null);
   const [exportPreview, setExportPreview] = useState<string | null>(null);
+  const [sensitiveActionPassword, setSensitiveActionPassword] = useState("");
+  const [sensitiveActionError, setSensitiveActionError] = useState("");
+  const [deletionConfirmation, setDeletionConfirmation] = useState("");
+  const [deletionCompleted, setDeletionCompleted] = useState(false);
+  const [sensitiveActionWorking, setSensitiveActionWorking] = useState(false);
 
   const loadPrivacyState = useCallback(async () => {
     const [
@@ -122,14 +131,55 @@ export default function PrivacyCenterScreen() {
   }
 
   async function requestExport() {
-    const request = await createDataExportRequest(EXPORT_CATEGORIES);
-    setExportPreview(await generateJsonExportPlaceholder(request.id));
-    await loadPrivacyState();
+    if (!user) {
+      setSensitiveActionError("Sign in to request a server-generated export.");
+      return;
+    }
+    setSensitiveActionWorking(true);
+    try {
+      await reauthenticate(sensitiveActionPassword);
+      const request = await createDataExportRequest(EXPORT_CATEGORIES);
+      const exportData = await requestServerDataExport(EXPORT_CATEGORIES);
+      await completeDataExportRequest(request.id);
+      setExportPreview(JSON.stringify(exportData, null, 2));
+      setSensitiveActionPassword("");
+      setSensitiveActionError("");
+      await loadPrivacyState();
+    } catch (error) {
+      setSensitiveActionError(error instanceof Error ? error.message : "Re-authentication failed.");
+    } finally {
+      setSensitiveActionWorking(false);
+    }
   }
 
   async function requestDeletion(deletionType: DataDeletionRequest["deletionType"]) {
-    await createDataDeletionRequest({ categories: [deletionType], deletionType });
-    await loadPrivacyState();
+    if (deletionType !== "full_account") {
+      await createDataDeletionRequest({ categories: [deletionType], deletionType });
+      await loadPrivacyState();
+      return;
+    }
+    if (!user) {
+      setSensitiveActionError("Sign in to delete an account.");
+      return;
+    }
+    if (deletionConfirmation !== ACCOUNT_DELETION_CONFIRMATION) {
+      setSensitiveActionError(`Type ${ACCOUNT_DELETION_CONFIRMATION} exactly to continue.`);
+      return;
+    }
+    setSensitiveActionWorking(true);
+    try {
+      await reauthenticate(sensitiveActionPassword);
+      await createDataDeletionRequest({ categories: ["full_account"], deletionType: "full_account" });
+      await deleteAuthenticatedAccount(deletionConfirmation);
+      setDeletionCompleted(true);
+      setSensitiveActionError("");
+      await clearLocalUserState();
+      setTimeout(() => router.replace("/auth" as Href), 900);
+    } catch (error) {
+      setSensitiveActionError(error instanceof Error ? error.message : "Re-authentication failed.");
+    } finally {
+      setSensitiveActionWorking(false);
+    }
   }
 
   return (
@@ -165,8 +215,16 @@ export default function PrivacyCenterScreen() {
           deletions={deletions}
           exportPreview={exportPreview}
           exports={exports}
+          password={sensitiveActionPassword}
+          error={sensitiveActionError}
+          confirmation={deletionConfirmation}
+          deletionCompleted={deletionCompleted}
+          working={sensitiveActionWorking}
+          signedIn={Boolean(user)}
           onDeletion={requestDeletion}
           onExport={requestExport}
+          onConfirmationChange={setDeletionConfirmation}
+          onPasswordChange={setSensitiveActionPassword}
         />
       ) : null}
       {activeTab === "audit" ? <AuditTab logs={auditLogs} /> : null}
@@ -186,23 +244,39 @@ function SummaryTab() {
     ["Sensitive health data is protected", "Women’s Health, Pregnancy, Baby / Child, Men’s Health, medication, biometrics, and records are private by default."],
     ["AI is draft-first", "AI suggestions are drafts until you confirm. Sensitive categories default off."],
     ["Device sync is optional", "You choose which data types to import, and synced data is never shared automatically."],
-    ["Export or delete", "You can request local-first export and deletion placeholders for legal review flows."]
+    ["Export or delete", "You can generate an authenticated export or permanently delete your account in-app."]
   ];
 
   return (
-    <AppSection title="Privacy Summary">
-      {cards.map(([title, body]) => (
-        <AppCard key={title}>
-          <View style={{ alignItems: "center", flexDirection: "row", gap: appSpacing.md }}>
-            <AppIcon container name="privacy" size={18} variant="private" />
-            <View style={{ flex: 1 }}>
-              <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
-              <Text style={[typography.body, { color: appColors.textSecondary, marginTop: 4 }]}>{body}</Text>
+    <>
+      <AppSection title="Privacy Summary">
+        {cards.map(([title, body]) => (
+          <AppCard key={title}>
+            <View style={{ alignItems: "center", flexDirection: "row", gap: appSpacing.md }}>
+              <AppIcon container name="privacy" size={18} variant="private" />
+              <View style={{ flex: 1 }}>
+                <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
+                <Text style={[typography.body, { color: appColors.textSecondary, marginTop: 4 }]}>{body}</Text>
+              </View>
             </View>
-          </View>
-        </AppCard>
-      ))}
-    </AppSection>
+          </AppCard>
+        ))}
+      </AppSection>
+      <AppSection title="Manage privacy and data">
+        <PrivacyLink description="Manage family sharing, Circle permissions, caregiver access, and sharing audit history." route="/(tabs)/circle" title="Sharing and caregiver permissions" />
+        <PrivacyLink description="Control sensitive lock-screen details and notification preferences." route="/settings/notifications" title="Notification privacy" />
+        <PrivacyLink description="Review, download where supported, manage, or delete uploaded records." route="/records" title="Records and uploaded documents" />
+      </AppSection>
+    </>
+  );
+}
+
+function PrivacyLink({ description, route, title }: { description: string; route: string; title: string }) {
+  return (
+    <AppCard onPress={() => router.push(route as Href)}>
+      <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
+      <Text style={[typography.body, { color: appColors.textSecondary, marginTop: 4 }]}>{description}</Text>
+    </AppCard>
   );
 }
 
@@ -296,21 +370,43 @@ function DataTab({
   deletions,
   exportPreview,
   exports,
+  password,
+  error,
+  confirmation,
+  deletionCompleted,
+  working,
+  signedIn,
+  onConfirmationChange,
+  onPasswordChange,
   onDeletion,
   onExport
 }: {
   deletions: DataDeletionRequest[];
   exportPreview: string | null;
   exports: DataExportRequest[];
+  password: string;
+  error: string;
+  confirmation: string;
+  deletionCompleted: boolean;
+  working: boolean;
+  signedIn: boolean;
+  onConfirmationChange: (value: string) => void;
+  onPasswordChange: (value: string) => void;
   onDeletion: (type: DataDeletionRequest["deletionType"]) => void;
   onExport: () => void;
 }) {
   return (
     <>
+      <AppCard variant="warning" style={{ gap: appSpacing.md }}>
+        <Text style={[typography.body, { color: appColors.text }]}>Sensitive exports and full account deletion require your current password.</Text>
+        <AppFormInput label="Current password" onChangeText={onPasswordChange} placeholder="Current password" secureTextEntry value={password} />
+        {error ? <Text style={{ color: appColors.error }}>{error}</Text> : null}
+      </AppCard>
       <AppSection title="Export My Data" subtitle={exports.length ? "Export requests are listed below." : "No data exports requested."}>
         <AppCard style={{ gap: appSpacing.md }}>
-          <Text style={[typography.body, { color: appColors.textSecondary }]}>Exports may contain sensitive health information. Store them safely.</Text>
-          <AppButton onPress={onExport} title="Request JSON export placeholder" />
+          <Text style={[typography.body, { color: appColors.textSecondary }]}>The secure server export contains records owned by your authenticated account. Exports may contain sensitive health information; store them safely.</Text>
+          <AppButton disabled={!signedIn} loading={working} onPress={onExport} title="Generate my data export" />
+          <AppButton onPress={() => router.push("/records" as Href)} title="Manage uploaded records" variant="secondary" />
         </AppCard>
         {exports.map((request) => (
           <AppCard key={request.id}>
@@ -329,12 +425,13 @@ function DataTab({
 
       <AppSection title="Delete My Data / Delete Account" subtitle={deletions.length ? "Deletion requests are listed below." : "No deletion requests."}>
         <AppCard variant="danger" style={{ gap: appSpacing.md }}>
-          <Text style={[typography.body, { color: appColors.text }]}>Deleted data may not be recoverable.</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: appSpacing.sm }}>
-            {(["module", "profile", "ai_history", "device_sync", "records", "full_account"] as const).map((type) => (
-              <AppButton key={type} onPress={() => onDeletion(type)} size="sm" title={type.replace(/_/g, " ")} variant="outline" />
-            ))}
-          </View>
+          <Text style={[typography.cardTitle, { color: appColors.text }]}>Permanently delete account</Text>
+          <Text style={[typography.body, { color: appColors.text }]}>This deletes your authenticated account and account-owned data. Shared family information owned by other people is not yours to delete.</Text>
+          <Text style={[typography.body, { color: appColors.text }]}>Security, fraud-prevention, transaction, and legal records may be retained where required by law or legitimate compliance obligations.</Text>
+          <Text style={[typography.body, { color: appColors.text }]}>Account deletion is not blocked by a subscription. Apple or Google Play subscriptions must be cancelled separately through the store.</Text>
+          <AppFormInput autoCapitalize="characters" helperText={`Type ${ACCOUNT_DELETION_CONFIRMATION} exactly.`} label="Deletion confirmation" onChangeText={onConfirmationChange} placeholder={ACCOUNT_DELETION_CONFIRMATION} value={confirmation} />
+          <AppButton disabled={!signedIn || confirmation !== ACCOUNT_DELETION_CONFIRMATION} loading={working} onPress={() => onDeletion("full_account")} title="Permanently delete my account" variant="danger" />
+          {deletionCompleted ? <Text style={[typography.body, { color: appColors.success }]}>Account deletion completed. Clearing local data and returning to sign in.</Text> : null}
         </AppCard>
         {deletions.map((request) => (
           <AppCard key={request.id}>

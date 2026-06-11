@@ -7,6 +7,7 @@ import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { SmartLogReviewScreen } from "@/components/nutrition/SmartLogReviewScreen";
 import { AppCard } from "@/components/ui/AppCard";
 import { NUTRITION_MEAL_GROUP_OPTIONS } from "@/constants/nutritionOptions";
+import { ensureImagePickerPermission } from "@/lib/devicePermissions";
 import {
   cancelSmartLogSession,
   confirmSmartLogSession,
@@ -68,6 +69,10 @@ export default function SmartLogScreen() {
   }, [method]);
 
   async function pickImage() {
+    if (!(await ensureImagePickerPermission("photos"))) {
+      setStatusMessage("Photo-library access was denied. You can enable it in system settings or continue without a photo.");
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: false,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,

@@ -115,8 +115,24 @@ export default function ProfileScreen() {
           <AppButton
             fullWidth
             iconLeft={<Settings2 color={theme.primary} size={18} />}
+            onPress={() => router.push("/settings/profile-contact" as Href)}
+            title="Edit profile and contacts"
+            variant="secondary"
+          />
+
+          <AppButton
+            fullWidth
+            iconLeft={<Settings2 color={theme.primary} size={18} />}
             onPress={() => router.push("/settings/privacy-center" as Href)}
             title="Privacy Center"
+            variant="secondary"
+          />
+
+          <AppButton
+            fullWidth
+            iconLeft={<Settings2 color={theme.primary} size={18} />}
+            onPress={() => router.push("/settings" as Href)}
+            title="App settings"
             variant="secondary"
           />
 

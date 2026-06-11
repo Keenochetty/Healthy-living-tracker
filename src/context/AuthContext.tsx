@@ -125,9 +125,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           ? {
               avatarUrl: row.avatar_url,
               createdAt: row.created_at,
+              displayName: row.display_name,
               email: row.email,
               fullName: row.full_name,
-              id: row.id
+              id: row.id,
+              phone: row.phone
             }
           : null
       )

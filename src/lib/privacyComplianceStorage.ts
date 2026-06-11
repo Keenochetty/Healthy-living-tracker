@@ -187,6 +187,16 @@ export async function generateJsonExportPlaceholder(requestId: string) {
   }, null, 2);
 }
 
+export async function completeDataExportRequest(requestId: string) {
+  const requests = await readJsonArray<DataExportRequest>(EXPORT_KEY);
+  const completedAt = new Date().toISOString();
+  const updated = requests.map((request) =>
+    request.id === requestId ? { ...request, completedAt, status: "ready" as const } : request
+  );
+  await writeJsonArray(EXPORT_KEY, updated);
+  return updated.find((request) => request.id === requestId) ?? null;
+}
+
 export async function expireExportFile(requestId: string) {
   const requests = await readJsonArray<DataExportRequest>(EXPORT_KEY);
   const updated = requests.map((request) =>

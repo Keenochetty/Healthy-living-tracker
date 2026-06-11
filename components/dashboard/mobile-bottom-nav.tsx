@@ -18,6 +18,7 @@ export function MobileBottomNav() {
           <Link
             className={cn(
               "flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-medium text-slate-400 transition",
+              "primaryAction" in item && item.primaryAction && "-translate-y-3 bg-sky-400 text-slate-950 shadow-[0_12px_28px_rgba(56,189,248,0.35)]",
               active && "bg-sky-400/15 text-white"
             )}
             href={item.href}

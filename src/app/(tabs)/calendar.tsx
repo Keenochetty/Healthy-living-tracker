@@ -1632,11 +1632,27 @@ function SchedulerSheet({
   const startDate = withTime(date, startHour, startMinute);
   const endDate = withTime(date, endHour, endMinute);
 
+  const resetForm = useCallback(() => {
+    setTitle("");
+    setNotes("");
+    setDate(initialDate);
+    setStartHour(initialDate.getHours());
+    setStartMinute(roundMinute(initialDate.getMinutes()));
+    setEndEnabled(false);
+    setEndHour(Math.min(23, initialDate.getHours() + 1));
+    setEndMinute(roundMinute(initialDate.getMinutes()));
+    setCategoryKey("personal");
+    setRepeatLabel("Does not repeat");
+    setAlertLabel("No alert");
+    setActivePicker(null);
+    setErrorMessage("");
+  }, [initialDate]);
+
   useEffect(() => {
     if (visible) {
       resetForm();
     }
-  }, [visible, initialDate]);
+  }, [resetForm, visible]);
 
   async function saveEvent() {
     setErrorMessage("");
@@ -1676,22 +1692,6 @@ function SchedulerSheet({
     } finally {
       setIsSaving(false);
     }
-  }
-
-  function resetForm() {
-    setTitle("");
-    setNotes("");
-    setDate(initialDate);
-    setStartHour(initialDate.getHours());
-    setStartMinute(roundMinute(initialDate.getMinutes()));
-    setEndEnabled(false);
-    setEndHour(Math.min(23, initialDate.getHours() + 1));
-    setEndMinute(roundMinute(initialDate.getMinutes()));
-    setCategoryKey("personal");
-    setRepeatLabel("Does not repeat");
-    setAlertLabel("No alert");
-    setActivePicker(null);
-    setErrorMessage("");
   }
 
   function applyPreset(preset: "now" | "morning" | "afternoon" | "evening") {

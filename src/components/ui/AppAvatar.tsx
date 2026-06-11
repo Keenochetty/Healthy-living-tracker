@@ -28,7 +28,7 @@ export function AppAvatar({ emoji, imageUri, initials, size = 44, status }: AppA
         }}
       >
         {imageUri ? (
-          <Image source={{ uri: imageUri }} style={{ height: size, width: size }} />
+          <Image alt={`${initials} avatar`} source={{ uri: imageUri }} style={{ height: size, width: size }} />
         ) : (
           <Text style={{ color: theme.primary, fontSize: size * 0.38, fontWeight: "900" }}>
             {emoji ?? initials.slice(0, 2).toUpperCase()}

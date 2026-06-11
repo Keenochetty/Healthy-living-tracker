@@ -12,6 +12,8 @@ import {
   createLabResultRecord,
   createPrescriptionRecord,
   createVaccineRecord,
+  deleteHealthRecord,
+  deleteHealthRecordFile,
   dismissRecordReminder,
   getDoctorVisits,
   getHealthRecordFolders,
@@ -654,7 +656,11 @@ function RecordCard({ onReload, record }: { onReload: () => void; record: Health
         {record.notes ? <Text style={{ color: "#64748b", lineHeight: 21 }}>{record.notes}</Text> : null}
         {record.reminderDate ? <Text style={{ color: "#64748b" }}>Reminder {record.reminderDate}</Text> : null}
         {record.tags.length ? <Text style={{ color: "#94a3b8" }}>{record.tags.join(", ")}</Text> : null}
-        <SecondaryButton label={record.isPinned ? "Unpin" : "Pin"} onPress={() => (record.isPinned ? unpinHealthRecord(record.id) : pinHealthRecord(record.id)).then(onReload)} />
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          <SecondaryButton label={record.isPinned ? "Unpin" : "Pin"} onPress={() => (record.isPinned ? unpinHealthRecord(record.id) : pinHealthRecord(record.id)).then(onReload)} />
+          {record.fileUrl ? <SecondaryButton label="Remove uploaded file" onPress={() => deleteHealthRecordFile(record.id).then(onReload)} /> : null}
+          <SecondaryButton label="Delete record" onPress={() => deleteHealthRecord(record.id).then(onReload)} />
+        </View>
       </View>
     </AppCard>
   );

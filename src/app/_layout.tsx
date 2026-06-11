@@ -3,7 +3,9 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { ActiveProfileProvider } from "@/context/ActiveProfileContext";
 import { GeneralHealthActivityProvider } from "@/components/health/GeneralHealthActivityProvider";
+import { AppLockGate } from "@/components/security";
 import { ProfileSettingsProvider } from "@/lib/profile-settings-context";
 import { AppThemeProvider } from "@/theme/ThemeProvider";
 
@@ -11,11 +13,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <ProfileSettingsProvider>
-          <AppThemeProvider>
-            <GeneralHealthActivityProvider>
-              <StatusBar style="dark" />
-              <Stack screenOptions={{ headerShown: false }}>
+        <ActiveProfileProvider>
+          <ProfileSettingsProvider>
+            <AppThemeProvider>
+              <GeneralHealthActivityProvider>
+              <AppLockGate>
+                <StatusBar style="dark" />
+                <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="ai/index" />
               <Stack.Screen name="ai/review/[jobId]" />
@@ -62,6 +66,7 @@ export default function RootLayout() {
               <Stack.Screen name="medication/[medicationId]" />
               <Stack.Screen name="mens-health/index" />
               <Stack.Screen name="pregnancy/index" />
+              <Stack.Screen name="profile/[profileId]" />
               <Stack.Screen name="records/index" />
               <Stack.Screen name="supplements/index" />
               <Stack.Screen name="supplements/add" />
@@ -76,11 +81,20 @@ export default function RootLayout() {
               <Stack.Screen name="reminders/[reminderId]" />
               <Stack.Screen name="scan-invite" />
               <Stack.Screen name="settings/notifications" />
+              <Stack.Screen name="settings/device-permissions" />
+              <Stack.Screen name="settings/medical-aid" />
               <Stack.Screen name="settings/privacy-center" />
-              </Stack>
-            </GeneralHealthActivityProvider>
-          </AppThemeProvider>
-        </ProfileSettingsProvider>
+              <Stack.Screen name="settings/profile-contact" />
+              <Stack.Screen name="settings/security" />
+              <Stack.Screen name="settings/subscription" />
+              <Stack.Screen name="settings/index" />
+              <Stack.Screen name="settings/coming-later" />
+                </Stack>
+              </AppLockGate>
+              </GeneralHealthActivityProvider>
+            </AppThemeProvider>
+          </ProfileSettingsProvider>
+        </ActiveProfileProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

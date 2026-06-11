@@ -2,6 +2,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
+import { ensureImagePickerPermission } from "@/lib/devicePermissions";
 import type { AiInputType } from "@/types/ai";
 
 export type AiInputSelection = {
@@ -19,6 +20,7 @@ type AiInputPickerCardProps = {
 
 export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProps) {
   async function takePhoto() {
+    if (!(await ensureImagePickerPermission("camera"))) return;
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: false,
       quality: 0.7
@@ -36,6 +38,7 @@ export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProp
   }
 
   async function choosePhoto() {
+    if (!(await ensureImagePickerPermission("photos"))) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: false,
       quality: 0.7

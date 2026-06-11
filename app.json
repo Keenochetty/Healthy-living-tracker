@@ -9,6 +9,14 @@
       "expo-router",
       "expo-localization",
       [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow Family Health to capture profile photos and health-related images only when you choose a camera action.",
+          "microphonePermission": false,
+          "photosPermission": "Allow Family Health to import profile photos, documents, and health-related images only when you choose an import action."
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Allow Family Health to scan trusted circle invite QR codes and food product barcodes.",

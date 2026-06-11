@@ -6,9 +6,9 @@ import { FloatingBottomNavItem } from "@/components/navigation/FloatingBottomNav
 import type { AppIconName } from "@/constants/appIcons";
 import { appShadows, zLayers } from "@/theme/designSystem";
 
-const NAV_HEIGHT = 74;
-const NAV_MAX_WIDTH = 520;
-const NAV_SIDE_MARGIN = 12;
+const NAV_HEIGHT = 64;
+const NAV_MAX_WIDTH = 360;
+const NAV_SIDE_MARGIN = 20;
 
 type NavConfig = {
   accessibilityLabel: string;
@@ -45,20 +45,20 @@ const NAV_ITEMS: Record<string, NavConfig> = {
     iconName: "calendar",
     label: "Calendar"
   },
+  scan: {
+    accessibilityLabel: "Open Scan",
+    iconName: "scan",
+    label: "Scan"
+  },
   health: {
     accessibilityLabel: "Open Health",
     iconName: "health",
     label: "Health"
   },
   circle: {
-    accessibilityLabel: "Open Family",
+    accessibilityLabel: "Open Circle",
     iconName: "circle",
-    label: "Family"
-  },
-  profile: {
-    accessibilityLabel: "Open Settings",
-    iconName: "settings",
-    label: "Settings"
+    label: "Circle"
   }
 };
 
@@ -72,7 +72,7 @@ const NAV_HREFS: Record<string, Href> = {
   calendar: "/(tabs)/calendar" as Href,
   circle: "/(tabs)/circle" as Href,
   health: "/(tabs)/health" as Href,
-  profile: "/(tabs)/profile" as Href,
+  scan: "/(tabs)/scan" as Href,
   today: "/(tabs)/today" as Href
 };
 
@@ -155,28 +155,28 @@ export function FloatingBottomNav({
 const styles = StyleSheet.create({
   bottomNavWrapper: {
     alignItems: "center",
-    backgroundColor: "rgba(12, 18, 25, 0.96)",
-    borderColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "rgba(13, 13, 15, 0.98)",
+    borderColor: "rgba(255,255,255,0.12)",
     borderRadius: 999,
     borderWidth: 1,
     height: NAV_HEIGHT,
     justifyContent: "center",
-    overflow: "visible",
+    overflow: "hidden",
     position: "absolute",
     zIndex: zLayers.floatingNav,
-    ...appShadows.floating,
+    ...appShadows.floating
   },
   navContent: {
     alignItems: "center",
     flexDirection: "row",
     height: "100%",
     justifyContent: "space-between",
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     width: "100%",
     zIndex: zLayers.floatingAction
   },
   navContentCompact: {
-    paddingHorizontal: 8
+    paddingHorizontal: 5
   },
   overlay: {
     bottom: 0,

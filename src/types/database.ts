@@ -5,10 +5,14 @@ export type ProfileRow = {
   avatar_url: string | null;
   country: string | null;
   created_at: string | null;
+  date_of_birth?: string | null;
+  display_name?: string | null;
   email: string | null;
   full_name: string | null;
   id: string;
   language: string | null;
+  phone?: string | null;
+  preferred_contact_method?: "email" | "phone" | "none" | null;
   timezone: string | null;
   updated_at: string | null;
 };
