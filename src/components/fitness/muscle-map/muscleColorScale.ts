@@ -6,7 +6,11 @@ export function getMuscleFill(score = 0) {
   return "#e5e7eb";
 }
 
-export function getMuscleStroke(score = 0, isSuggested = false, isCaution = false) {
+export function getMuscleStroke(
+  score = 0,
+  isSuggested = false,
+  isCaution = false,
+) {
   if (isCaution) return "#7c3aed";
   if (isSuggested) return "#2563eb";
   if (score >= 0.65) return "#991b1b";

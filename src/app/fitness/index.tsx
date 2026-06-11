@@ -1,6 +1,13 @@
 import { Href, router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import {
   DateWheelPicker,
@@ -10,9 +17,21 @@ import {
   QuickLogBottomSheet,
   QuickNoteField,
   QuickSaveButton,
-  TimeWheelPicker
+  TimeWheelPicker,
 } from "@/components/fitness/QuickWorkoutInputs";
-import { MuscleFocusCard, MuscleHeatMap, type MuscleScoreMap } from "@/components/fitness/muscle-map";
+import {
+  MuscleFocusCard,
+  type MuscleScoreMap,
+} from "@/components/fitness/muscle-map";
+import {
+  FitnessExploreGrid,
+  FitnessGoalPaths,
+  FitnessMuscleBalancePreview,
+  FitnessNutritionSupport,
+  FitnessSafetyRecoveryCard,
+  FitnessStatusRow,
+  FitnessTodayHero,
+} from "@/components/fitness/realm";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
 import {
@@ -24,24 +43,24 @@ import {
   WORKOUT_GOALS,
   WORKOUT_LOCATIONS,
   formatWorkoutLabel,
-  getExerciseById
+  getExerciseById,
 } from "@/constants/workoutLibrary";
 import {
   completeWorkoutSession,
   createWorkoutSession,
   getTodayFitnessSummary,
-  getWorkoutSessions
+  getWorkoutSessions,
 } from "@/lib/fitnessStorage";
 import { lightImpact, successImpact } from "@/lib/haptics";
 import {
   getExercises,
   getNutritionTemplates,
-  getWorkoutPrograms
+  getWorkoutPrograms,
 } from "@/services/fitnessContentService";
 import {
   getMuscleHistoryScores,
   recordMuscleLoadForExercise,
-  scoresFromExerciseFallback
+  scoresFromExerciseFallback,
 } from "@/services/fitnessMuscleMapService";
 import type {
   ExerciseEquipment,
@@ -55,11 +74,25 @@ import type {
   WorkoutGoalTag,
   WorkoutLocation,
   WorkoutRoutine,
-  WorkoutSession
+  WorkoutSession,
 } from "@/types/fitness";
 
-type FitnessTab = "today" | "start" | "routines" | "library" | "running" | "progress" | "body" | "guides";
-type EditableSetField = "reps" | "weight" | "rest" | "duration" | "distance" | null;
+type FitnessTab =
+  | "today"
+  | "start"
+  | "routines"
+  | "library"
+  | "running"
+  | "progress"
+  | "body"
+  | "guides";
+type EditableSetField =
+  | "reps"
+  | "weight"
+  | "rest"
+  | "duration"
+  | "distance"
+  | null;
 type FitnessContentPreview = {
   exerciseCount: number;
   nutritionSuggestion?: string;
@@ -74,33 +107,41 @@ const FITNESS_TABS: Array<{ key: FitnessTab; label: string }> = [
   { key: "running", label: "Running" },
   { key: "progress", label: "Progress" },
   { key: "body", label: "Body" },
-  { key: "guides", label: "Guides" }
+  { key: "guides", label: "Guides" },
 ];
 
 const SAFETY_COPY =
   "Exercise guidance is for general fitness tracking only. If you are unsure, injured, pregnant, or managing a health condition, speak to a qualified professional.";
-const GOAL_COLORS = ["#0f766e", "#1d4ed8", "#7c3aed", "#be123c", "#9a3412", "#166534", "#155e75", "#6b21a8"];
-
 export default function FitnessScreen() {
   const [activeTab, setActiveTab] = useState<FitnessTab>("today");
   const [summary, setSummary] = useState<FitnessSummary | null>(null);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
-  const [selectedRoutine, setSelectedRoutine] = useState<WorkoutRoutine>(PREBUILT_ROUTINES[0]);
-  const [sessionExercises, setSessionExercises] = useState<GuidedWorkoutExercise[]>(() =>
-    buildSessionExercises(PREBUILT_ROUTINES[0])
+  const [selectedRoutine, setSelectedRoutine] = useState<WorkoutRoutine>(
+    PREBUILT_ROUTINES[0],
   );
+  const [sessionExercises, setSessionExercises] = useState<
+    GuidedWorkoutExercise[]
+  >(() => buildSessionExercises(PREBUILT_ROUTINES[0]));
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [editing, setEditing] = useState<{ exerciseIndex: number; field: EditableSetField; setIndex: number } | null>(null);
+  const [editing, setEditing] = useState<{
+    exerciseIndex: number;
+    field: EditableSetField;
+    setIndex: number;
+  } | null>(null);
   const [quickValue, setQuickValue] = useState(0);
   const [manualMode, setManualMode] = useState(false);
   const [manualValue, setManualValue] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
-  const [contentPreview, setContentPreview] = useState<FitnessContentPreview | null>(null);
+  const [contentPreview, setContentPreview] =
+    useState<FitnessContentPreview | null>(null);
   const [contentError, setContentError] = useState("");
   const [contentLoading, setContentLoading] = useState(true);
 
   const loadFitness = useCallback(async () => {
-    const [nextSummary, nextSessions] = await Promise.all([getTodayFitnessSummary(), getWorkoutSessions()]);
+    const [nextSummary, nextSessions] = await Promise.all([
+      getTodayFitnessSummary(),
+      getWorkoutSessions(),
+    ]);
     setSummary(nextSummary);
     setSessions(nextSessions);
 
@@ -108,20 +149,25 @@ export default function FitnessScreen() {
     const [exerciseResult, programResult, nutritionResult] = await Promise.all([
       getExercises(),
       getWorkoutPrograms(),
-      getNutritionTemplates({ goal: "muscle_gain" })
+      getNutritionTemplates({ goal: "muscle_gain" }),
     ]);
-    const contentFailure = exerciseResult.error ?? programResult.error ?? nutritionResult.error;
+    const contentFailure =
+      exerciseResult.error ?? programResult.error ?? nutritionResult.error;
 
     if (contentFailure) {
-      setContentError("Live fitness content is unavailable. Showing the built-in starter library.");
+      setContentError(
+        "Live fitness content is unavailable. Showing the built-in starter library.",
+      );
       setContentPreview(null);
     } else {
-      const nutritionRow = nutritionResult.data?.[0] as { title?: string } | undefined;
+      const nutritionRow = nutritionResult.data?.[0] as
+        | { title?: string }
+        | undefined;
       setContentError("");
       setContentPreview({
         exerciseCount: exerciseResult.data?.length ?? 0,
         nutritionSuggestion: nutritionRow?.title,
-        programCount: programResult.data?.length ?? 0
+        programCount: programResult.data?.length ?? 0,
       });
     }
     setContentLoading(false);
@@ -129,16 +175,22 @@ export default function FitnessScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      Promise.resolve().then(loadFitness).catch(() => undefined);
-    }, [loadFitness])
+      Promise.resolve()
+        .then(loadFitness)
+        .catch(() => undefined);
+    }, [loadFitness]),
   );
 
   const completedSetCount = sessionExercises.reduce(
     (total, item) => total + item.sets.filter((set) => set.completed).length,
-    0
+    0,
   );
-  const totalSetCount = sessionExercises.reduce((total, item) => total + item.sets.length, 0);
-  const latestWorkout = sessions.find((session) => session.completed) ?? summary?.latestWorkout;
+  const totalSetCount = sessionExercises.reduce(
+    (total, item) => total + item.sets.length,
+    0,
+  );
+  const latestWorkout =
+    sessions.find((session) => session.completed) ?? summary?.latestWorkout;
 
   function selectRoutine(routine: WorkoutRoutine, tab: FitnessTab = "start") {
     setSelectedRoutine(routine);
@@ -147,9 +199,16 @@ export default function FitnessScreen() {
     setActiveTab(tab);
   }
 
-  function openSetEditor(exerciseIndex: number, setIndex: number, field: Exclude<EditableSetField, null>) {
+  function openSetEditor(
+    exerciseIndex: number,
+    setIndex: number,
+    field: Exclude<EditableSetField, null>,
+  ) {
     const currentSet = sessionExercises[exerciseIndex]?.sets[setIndex];
-    const currentValue = field === "weight" ? currentSet?.weightKg ?? 0 : currentSet?.reps ?? 0;
+    const currentValue =
+      field === "weight"
+        ? (currentSet?.weightKg ?? 0)
+        : (currentSet?.reps ?? 0);
     setEditing({ exerciseIndex, field, setIndex });
     setQuickValue(currentValue);
     setManualValue(String(currentValue || ""));
@@ -171,10 +230,10 @@ export default function FitnessScreen() {
                   ? set
                   : editing.field === "weight"
                     ? { ...set, weightKg: nextValue }
-                    : { ...set, reps: Math.round(nextValue) }
-              )
-            }
-      )
+                    : { ...set, reps: Math.round(nextValue) },
+              ),
+            },
+      ),
     );
     setEditing(null);
     successImpact();
@@ -188,10 +247,12 @@ export default function FitnessScreen() {
           : {
               ...exercise,
               sets: exercise.sets.map((set, currentSetIndex) =>
-                currentSetIndex === setIndex ? { ...set, completed: !set.completed } : set
-              )
-            }
-      )
+                currentSetIndex === setIndex
+                  ? { ...set, completed: !set.completed }
+                  : set,
+              ),
+            },
+      ),
     );
     successImpact();
   }
@@ -206,38 +267,52 @@ export default function FitnessScreen() {
           id: `${exercise.exerciseId}-set-${Date.now()}`,
           reps: lastSet?.reps ?? 10,
           setNumber: exercise.sets.length + 1,
-          weightKg: lastSet?.weightKg
+          weightKg: lastSet?.weightKg,
         };
         return { ...exercise, sets: [...exercise.sets, nextSet] };
-      })
+      }),
     );
   }
 
   async function finishWorkout() {
-    const durationSeconds = Math.max(selectedRoutine.durationMinutes * 60, completedSetCount * 90);
+    const durationSeconds = Math.max(
+      selectedRoutine.durationMinutes * 60,
+      completedSetCount * 90,
+    );
     const session = await createWorkoutSession({
       durationSeconds,
-      intensity: selectedRoutine.difficulty === "beginner" ? "easy" : "moderate",
+      intensity:
+        selectedRoutine.difficulty === "beginner" ? "easy" : "moderate",
       notes: `${completedSetCount}/${totalSetCount} sets completed from ${selectedRoutine.name}.`,
       title: selectedRoutine.name,
-      workoutType: selectedRoutine.goal === "endurance" ? "running" : selectedRoutine.goal === "mobility" ? "mobility" : "strength"
+      workoutType:
+        selectedRoutine.goal === "endurance"
+          ? "running"
+          : selectedRoutine.goal === "mobility"
+            ? "mobility"
+            : "strength",
     });
-    await completeWorkoutSession(session.id, { durationSeconds, endedAt: new Date().toISOString() });
-    await Promise.all(
-      sessionExercises.map((item) => {
-        const fallbackExercise = getExerciseById(item.exerciseId);
-        const completedSets = item.sets.filter((set) => set.completed).length;
-        const totalSets = Math.max(1, item.sets.length);
-        const intensityMultiplier = completedSets / totalSets;
+    await completeWorkoutSession(session.id, {
+      durationSeconds,
+      endedAt: new Date().toISOString(),
+    });
+    await Promise.allSettled(
+      sessionExercises
+        .filter((item) => item.sets.some((set) => set.completed))
+        .map((item) => {
+          const fallbackExercise = getExerciseById(item.exerciseId);
+          const completedSets = item.sets.filter((set) => set.completed).length;
+          const totalSets = Math.max(1, item.sets.length);
+          const intensityMultiplier = completedSets / totalSets;
 
-        return recordMuscleLoadForExercise({
-          exerciseId: item.exerciseId,
-          fallbackExercise,
-          intensityMultiplier,
-          source: "guided_workout_completed",
-          workoutSessionId: session.id
-        });
-      })
+          return recordMuscleLoadForExercise({
+            exerciseId: item.exerciseId,
+            fallbackExercise,
+            intensityMultiplier,
+            source: "guided_workout_completed",
+            workoutSessionId: session.id,
+          });
+        }),
     );
     setSaveMessage("Workout saved");
     await loadFitness();
@@ -245,14 +320,31 @@ export default function FitnessScreen() {
   }
 
   return (
-    <AppMainLayout subtitle="Movement, strength, recovery and progress" title="Fitness Realm">
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
+    <AppMainLayout
+      subtitle="Movement, strength, recovery and progress"
+      title="Fitness Realm"
+    >
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabRow}
+      >
         {FITNESS_TABS.map((tab) => (
-          <FilterChip key={tab.key} label={tab.label} onPress={() => setActiveTab(tab.key)} selected={activeTab === tab.key} />
+          <FilterChip
+            key={tab.key}
+            label={tab.label}
+            onPress={() => setActiveTab(tab.key)}
+            selected={activeTab === tab.key}
+          />
         ))}
       </ScrollView>
 
-      {saveMessage ? <SuccessState message={saveMessage} onDismiss={() => setSaveMessage("")} /> : null}
+      {saveMessage ? (
+        <SuccessState
+          message={saveMessage}
+          onDismiss={() => setSaveMessage("")}
+        />
+      ) : null}
 
       {activeTab === "today" ? (
         <TodayTab
@@ -279,10 +371,16 @@ export default function FitnessScreen() {
           totalSetCount={totalSetCount}
         />
       ) : null}
-      {activeTab === "routines" ? <RoutinesTab onRoutine={selectRoutine} /> : null}
+      {activeTab === "routines" ? (
+        <RoutinesTab onRoutine={selectRoutine} />
+      ) : null}
       {activeTab === "library" ? <LibraryTab /> : null}
-      {activeTab === "running" ? <RunningTab onSaved={loadFitness} onTab={setActiveTab} /> : null}
-      {activeTab === "progress" ? <ProgressTab sessions={sessions} summary={summary} /> : null}
+      {activeTab === "running" ? (
+        <RunningTab onSaved={loadFitness} onTab={setActiveTab} />
+      ) : null}
+      {activeTab === "progress" ? (
+        <ProgressTab sessions={sessions} summary={summary} />
+      ) : null}
       {activeTab === "body" ? <BodyTab /> : null}
       {activeTab === "guides" ? <GuidesTab /> : null}
 
@@ -293,7 +391,10 @@ export default function FitnessScreen() {
         title={editing?.field === "weight" ? "Update weight" : "Update reps"}
         visible={Boolean(editing)}
       >
-        <ManualEntryToggle enabled={manualMode} onToggle={() => setManualMode((current) => !current)} />
+        <ManualEntryToggle
+          enabled={manualMode}
+          onToggle={() => setManualMode((current) => !current)}
+        />
         {manualMode ? (
           <TextInput
             keyboardType="decimal-pad"
@@ -305,13 +406,34 @@ export default function FitnessScreen() {
           />
         ) : editing?.field === "weight" ? (
           <>
-            <PresetChipGroup onSelect={setQuickValue} presets={[0, 5, 10, 15, 20, 25, 30]} selectedValue={quickValue} suffix="kg" />
-            <NumberWheelPicker max={120} min={0} onChange={setQuickValue} step={2.5} suffix="kg" value={quickValue} />
+            <PresetChipGroup
+              onSelect={setQuickValue}
+              presets={[0, 5, 10, 15, 20, 25, 30]}
+              selectedValue={quickValue}
+              suffix="kg"
+            />
+            <NumberWheelPicker
+              max={120}
+              min={0}
+              onChange={setQuickValue}
+              step={2.5}
+              suffix="kg"
+              value={quickValue}
+            />
           </>
         ) : (
           <>
-            <PresetChipGroup onSelect={setQuickValue} presets={[5, 8, 10, 12, 15, 20]} selectedValue={quickValue} />
-            <NumberWheelPicker max={30} min={1} onChange={setQuickValue} value={quickValue} />
+            <PresetChipGroup
+              onSelect={setQuickValue}
+              presets={[5, 8, 10, 12, 15, 20]}
+              selectedValue={quickValue}
+            />
+            <NumberWheelPicker
+              max={30}
+              min={1}
+              onChange={setQuickValue}
+              value={quickValue}
+            />
           </>
         )}
         <QuickSaveButton onPress={saveSetValue} title="Save set value" />
@@ -327,7 +449,7 @@ function TodayTab({
   latestWorkout,
   onRoutine,
   onTab,
-  summary
+  summary,
 }: {
   contentError: string;
   contentLoading: boolean;
@@ -338,253 +460,123 @@ function TodayTab({
   summary: FitnessSummary | null;
 }) {
   const plan = PREBUILT_ROUTINES[0];
-  const statusItems = [
-    { icon: "success", label: "Weekly streak", value: `${summary?.currentStreakDays ?? 0} days` },
-    { icon: "fitness", label: "Muscles trained", value: summary?.workoutsThisWeek ? "Full body" : "Ready today" },
-    { icon: "health", label: "Recovery", value: summary?.activeMinutesToday ? "Rest well" : "Fresh" },
-    { icon: "planning", label: "Goal progress", value: `${Math.round(summary?.weeklyGoalProgress ?? 0)}%` },
-    { icon: "reminder", label: "Next reminder", value: "Plan it" }
-  ] as const;
-
-  const goalPaths = [
-    ["Run 5km from beginner", "A steady run-walk path", "running"],
-    ["Bench press progression", "Build strength with control", "routines"],
-    ["Lose weight safely", "Consistency-first movement", "routines"],
-    ["Gain lean muscle", "Strength and recovery support", "routines"],
-    ["Pregnancy-safe movement", "General guidance with safety gates", "library"],
-    ["Postpartum core rebuild", "Gentle return with professional input", "library"],
-    ["Improve mobility", "Move more comfortably", "routines"],
-    ["Reduce stress with movement", "Low-pressure mental reset", "library"]
-  ] as const;
-
-  const exploreItems = [
-    ["Strength", "fitness", "routines", "#fb7185"],
-    ["Cardio", "health", "library", "#38bdf8"],
-    ["Running", "fitness", "running", "#60a5fa"],
-    ["Yoga", "mood", "library", "#a78bfa"],
-    ["Pilates", "fitness", "library", "#f472b6"],
-    ["Mobility", "health", "routines", "#6ee7c8"],
-    ["Stretching", "success", "library", "#86efac"],
-    ["Pregnancy-safe", "pregnancy", "library", "#f9a8d4"],
-    ["Postpartum", "child_baby", "library", "#fda4af"],
-    ["Kids movement", "baby_child", "library", "#fbbf24"],
-    ["Teen fitness", "fitness", "library", "#22d3ee"],
-    ["No equipment", "home", "library", "#34d399"],
-    ["Gym equipment", "fitness", "library", "#818cf8"],
-    ["Recovery", "health", "body", "#4ade80"],
-    ["Mental reset", "mood", "library", "#c084fc"],
-    ["Advanced / Insane", "warning", "library", "#fb923c"]
-  ] as const;
 
   return (
     <View style={styles.realmStack}>
-      {contentLoading ? <ContentState icon="sync" text="Loading live fitness suggestions..." /> : null}
-      {contentError ? <ContentState icon="warning" text={contentError} warning /> : null}
-      {!contentLoading && !contentError && contentPreview?.exerciseCount === 0 ? (
-        <ContentState icon="source" text="No live exercises yet. Showing the built-in starter library." />
+      {contentLoading ? (
+        <ContentState icon="sync" text="Loading live fitness suggestions..." />
+      ) : null}
+      {contentError ? (
+        <ContentState icon="warning" text={contentError} warning />
+      ) : null}
+      {!contentLoading &&
+      !contentError &&
+      contentPreview?.exerciseCount === 0 ? (
+        <ContentState
+          icon="source"
+          text="No live exercises yet. Showing the built-in starter library."
+        />
       ) : null}
 
-      <AppCard style={styles.realmHero}>
-        <View style={styles.heroGlowOne} />
-        <View style={styles.heroGlowTwo} />
-        <View style={styles.realmHeroTop}>
-          <View style={styles.realmIcon}>
-            <AppIcon color="#06231c" decorative name="fitness" size={27} />
-          </View>
-          <View style={styles.safetyBadge}>
-            <AppIcon color="#bbf7d0" decorative name="safety" size={15} />
-            <Text style={styles.safetyBadgeText}>Beginner friendly</Text>
-          </View>
-        </View>
-        <Text style={styles.realmKicker}>Today's Fitness</Text>
-        <Text style={styles.realmHeroTitle}>{plan.name}</Text>
-        <Text style={styles.realmHeroSubtitle}>A calm, full-body reset that builds momentum without overdoing it.</Text>
-        <View style={styles.realmMetaRow}>
-          <RealmMeta icon="today" label={`${plan.durationMinutes} min`} />
-          <RealmMeta icon="fitness" label="Full body + core" />
-          <RealmMeta icon="health" label="Moderate recovery" />
-        </View>
-        <View style={styles.realmPillRow}>
-          {plan.targetMuscles.slice(0, 3).map((muscle) => (
-            <View key={muscle} style={styles.realmPill}>
-              <Text style={styles.realmPillText}>{formatWorkoutLabel(muscle)}</Text>
-            </View>
-          ))}
-        </View>
-        <View style={styles.realmActionRow}>
-          <Pressable onPress={() => onRoutine(plan)} style={styles.primaryRealmButton}>
-            <AppIcon color="#06231c" decorative name="fitness" size={18} />
-            <Text style={styles.primaryRealmButtonText}>Start</Text>
-          </Pressable>
-          <RealmButton icon="sync" label="Swap" onPress={() => onTab("routines")} />
-          <RealmButton icon="edit" label="Quick Log" onPress={() => onTab("start")} />
-        </View>
-      </AppCard>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statusRail}>
-        {statusItems.map((item) => (
-          <Pressable key={item.label} onPress={() => onTab(item.label === "Next reminder" ? "guides" : "progress")} style={styles.statusCard}>
-            <View style={styles.statusIcon}>
-              <AppIcon color="#14b8a6" decorative name={item.icon} size={18} />
-            </View>
-            <Text style={styles.statusValue}>{item.value}</Text>
-            <Text style={styles.statusLabel}>{item.label}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      <RealmSectionHeader
-        eyebrow="Build towards something"
-        onPress={() => onTab("routines")}
-        title="Choose a goal path"
+      <FitnessTodayHero
+        focusMuscles={plan.targetMuscles
+          .slice(0, 3)
+          .map((muscle) => formatWorkoutLabel(muscle))}
+        minutes={plan.durationMinutes}
+        movementTitle={plan.name}
+        onQuickLog={() => onTab("start")}
+        onStart={() => onRoutine(plan)}
+        onSwap={() => onTab("routines")}
+        readiness={
+          summary?.activeMinutesToday ? "Recovery mindful" : "Ready today"
+        }
       />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.goalRail}>
-        {goalPaths.map(([title, subtitle, tab], index) => (
-          <Pressable key={title} onPress={() => onTab(tab)} style={[styles.goalCard, { backgroundColor: GOAL_COLORS[index % GOAL_COLORS.length] }]}>
-            <Text style={styles.goalIndex}>0{index + 1}</Text>
-            <Text style={styles.goalTitle}>{title}</Text>
-            <Text style={styles.goalSubtitle}>{subtitle}</Text>
-            <View style={styles.goalArrow}>
-              <AppIcon color="#f8fafc" decorative name="add" size={18} />
-            </View>
-          </Pressable>
-        ))}
-      </ScrollView>
 
-      <RealmSectionHeader eyebrow="Find your movement" onPress={() => onTab("library")} title="Explore Fitness" />
-      <View style={styles.exploreGrid}>
-        {exploreItems.map(([label, icon, tab, color]) => (
-          <Pressable key={label} onPress={() => onTab(tab)} style={styles.exploreCard}>
-            <View style={[styles.exploreIcon, { backgroundColor: `${color}20` }]}>
-              <AppIcon color={color} decorative name={icon} size={21} />
-            </View>
-            <Text style={styles.exploreLabel}>{label}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <FitnessStatusRow
+        onProgress={() => onTab("progress")}
+        onReminder={() => onTab("guides")}
+        summary={summary}
+      />
 
-      <AppCard style={styles.bodyMapCard}>
-        <View style={styles.bodyMapCopy}>
-          <Text style={styles.realmCardEyebrow}>Muscles used this week</Text>
-          <Text style={styles.realmCardTitle}>{summary?.workoutsThisWeek ? "Your movement map is taking shape" : "Your body map starts here"}</Text>
-          <Text style={styles.realmCardBody}>See which areas are active, balanced, or ready for recovery as you log sessions.</Text>
-          <Pressable onPress={() => onTab("body")} style={styles.lightButton}>
-            <Text style={styles.lightButtonText}>View body map</Text>
-          </Pressable>
-        </View>
-        <View pointerEvents="none" style={styles.bodyMapPreview}>
-          <MuscleHeatMap
-            compact
-            height={225}
-            mode="history"
-            muscleScores={summary?.workoutsThisWeek ? { abs: 0.45, chest: 0.7, quads: 0.25 } : {}}
-          />
-        </View>
-      </AppCard>
+      <FitnessGoalPaths onSelect={(goal) => onTab(goal.destination)} />
 
-      <AppCard style={styles.nutritionSupportCard}>
-        <View style={styles.supportIcon}>
-          <AppIcon color="#f59e0b" decorative name="nutrition" size={24} />
-        </View>
-        <View style={styles.supportCopy}>
-          <Text style={styles.supportEyebrow}>Workout-linked nutrition</Text>
-          <Text style={styles.supportTitle}>{contentPreview?.nutritionSuggestion ?? "Strength day: protein-focused recovery meal"}</Text>
-          <Text style={styles.supportBody}>Get recovery suggestions here, then use Food to plan or log meals.</Text>
-          <Pressable onPress={() => router.push("/food" as Href)}>
-            <Text style={styles.supportLink}>Open Food realm</Text>
-          </Pressable>
-        </View>
-      </AppCard>
+      <FitnessExploreGrid
+        onSelect={(category) => onTab(category.destination)}
+      />
 
-      <AppCard style={styles.recoveryCard}>
-        <View style={styles.recoveryHeader}>
-          <View style={styles.recoveryIcon}>
-            <AppIcon color="#fef3c7" decorative name="safety" size={22} />
-          </View>
-          <View style={styles.recoveryHeaderCopy}>
-            <Text style={styles.recoveryEyebrow}>Safety + recovery</Text>
-            <Text style={styles.recoveryTitle}>Train for the body you have today</Text>
-          </View>
-        </View>
-        <Text style={styles.recoveryBody}>
-          Pregnancy, postpartum, child, teen, injury recovery and extreme training paths need extra care. Fitness content is general guidance, not medical treatment or rehabilitation advice.
-        </Text>
-        <View style={styles.recoverySuggestion}>
-          <AppIcon color="#fdba74" decorative name="health" size={20} />
-          <View style={styles.recoverySuggestionCopy}>
-            <Text style={styles.recoverySuggestionTitle}>Recovery suggestion</Text>
-            <Text style={styles.recoverySuggestionBody}>Try 8 minutes of gentle mobility and stop if anything feels wrong.</Text>
-          </View>
-        </View>
-        <Text style={styles.listenCopy}>Listen to your body and seek professional advice where needed.</Text>
-      </AppCard>
+      <FitnessMuscleBalancePreview
+        onOpen={() => router.push("/fitness/body-map" as Href)}
+        scores={
+          summary?.workoutsThisWeek
+            ? { abs: 0.45, chest: 0.7, quads: 0.25 }
+            : undefined
+        }
+      />
+
+      <FitnessNutritionSupport
+        onOpenFood={() => router.push("/food" as Href)}
+        suggestion={contentPreview?.nutritionSuggestion}
+      />
+
+      <FitnessSafetyRecoveryCard />
 
       <AppCard style={styles.liveLibraryCard}>
         <View>
-          <Text style={styles.liveLibraryValue}>{contentPreview?.exerciseCount || EXERCISE_LIBRARY.length}+</Text>
+          <Text style={styles.liveLibraryValue}>
+            {contentPreview?.exerciseCount || EXERCISE_LIBRARY.length}+
+          </Text>
           <Text style={styles.liveLibraryLabel}>exercise previews ready</Text>
         </View>
         <View>
-          <Text style={styles.liveLibraryValue}>{contentPreview?.programCount || PREBUILT_ROUTINES.length}</Text>
+          <Text style={styles.liveLibraryValue}>
+            {contentPreview?.programCount || PREBUILT_ROUTINES.length}
+          </Text>
           <Text style={styles.liveLibraryLabel}>goal paths available</Text>
         </View>
-        <Pressable onPress={() => onTab("library")} style={styles.liveLibraryButton}>
+        <Pressable
+          onPress={() => onTab("library")}
+          style={styles.liveLibraryButton}
+        >
           <AppIcon color="#06231c" decorative name="search" size={18} />
         </Pressable>
       </AppCard>
 
       {latestWorkout ? (
-        <Text style={styles.lastWorkoutCopy}>Last logged: {latestWorkout.title}</Text>
+        <Text style={styles.lastWorkoutCopy}>
+          Last logged: {latestWorkout.title}
+        </Text>
       ) : null}
     </View>
   );
 }
 
-function ContentState({ icon, text, warning = false }: { icon: "source" | "sync" | "warning"; text: string; warning?: boolean }) {
-  return (
-    <View style={[styles.contentState, warning ? styles.contentStateWarning : null]}>
-      <AppIcon color={warning ? "#c2410c" : "#0f766e"} decorative name={icon} size={18} />
-      <Text style={[styles.contentStateText, warning ? styles.contentStateWarningText : null]}>{text}</Text>
-    </View>
-  );
-}
-
-function RealmMeta({ icon, label }: { icon: "fitness" | "health" | "today"; label: string }) {
-  return (
-    <View style={styles.realmMeta}>
-      <AppIcon color="#99f6e4" decorative name={icon} size={15} />
-      <Text style={styles.realmMetaText}>{label}</Text>
-    </View>
-  );
-}
-
-function RealmButton({ icon, label, onPress }: { icon: "edit" | "sync"; label: string; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} style={styles.secondaryRealmButton}>
-      <AppIcon color="#f8fafc" decorative name={icon} size={17} />
-      <Text style={styles.secondaryRealmButtonText}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function RealmSectionHeader({
-  eyebrow,
-  onPress,
-  title
+function ContentState({
+  icon,
+  text,
+  warning = false,
 }: {
-  eyebrow: string;
-  onPress: () => void;
-  title: string;
+  icon: "source" | "sync" | "warning";
+  text: string;
+  warning?: boolean;
 }) {
   return (
-    <View style={styles.realmSectionHeader}>
-      <View>
-        <Text style={styles.realmSectionEyebrow}>{eyebrow}</Text>
-        <Text style={styles.realmSectionTitle}>{title}</Text>
-      </View>
-      <Pressable onPress={onPress} style={styles.realmSectionAction}>
-        <Text style={styles.realmSectionActionText}>See all</Text>
-      </Pressable>
+    <View
+      style={[styles.contentState, warning ? styles.contentStateWarning : null]}
+    >
+      <AppIcon
+        color={warning ? "#c2410c" : "#0f766e"}
+        decorative
+        name={icon}
+        size={18}
+      />
+      <Text
+        style={[
+          styles.contentStateText,
+          warning ? styles.contentStateWarningText : null,
+        ]}
+      >
+        {text}
+      </Text>
     </View>
   );
 }
@@ -599,14 +591,18 @@ function StartTab({
   routine,
   sessionExercises,
   toggleSet,
-  totalSetCount
+  totalSetCount,
 }: {
   addSet: (exerciseIndex: number) => void;
   completedSetCount: number;
   currentExerciseIndex: number;
   finishWorkout: () => void;
   onExerciseIndexChange: (index: number) => void;
-  onSetEdit: (exerciseIndex: number, setIndex: number, field: Exclude<EditableSetField, null>) => void;
+  onSetEdit: (
+    exerciseIndex: number,
+    setIndex: number,
+    field: Exclude<EditableSetField, null>,
+  ) => void;
   routine: WorkoutRoutine;
   sessionExercises: GuidedWorkoutExercise[];
   toggleSet: (exerciseIndex: number, setIndex: number) => void;
@@ -622,15 +618,23 @@ function StartTab({
       <AppCard style={styles.darkCard}>
         <Text style={styles.darkKicker}>Guided session</Text>
         <Text style={styles.darkTitle}>{routine.name}</Text>
-        <Text style={styles.darkMuted}>{completedSetCount}/{totalSetCount} sets complete</Text>
+        <Text style={styles.darkMuted}>
+          {completedSetCount}/{totalSetCount} sets complete
+        </Text>
         <ProgressBar color={routine.accentColor} value={progress} />
       </AppCard>
 
       {exercise && current ? (
         <AppCard style={styles.darkCard}>
-          <MediaPlaceholder accentColor={routine.accentColor} label="Exercise demo" />
+          <MediaPlaceholder
+            accentColor={routine.accentColor}
+            label="Exercise demo"
+          />
           <Text style={styles.darkTitle}>{exercise.name}</Text>
-          <Text style={styles.darkMuted}>{formatWorkoutLabel(exercise.primaryMuscle)} - {exercise.equipment.map(formatWorkoutLabel).join(", ")}</Text>
+          <Text style={styles.darkMuted}>
+            {formatWorkoutLabel(exercise.primaryMuscle)} -{" "}
+            {exercise.equipment.map(formatWorkoutLabel).join(", ")}
+          </Text>
           <View style={{ marginTop: 14 }}>
             <MuscleFocusCard
               compact
@@ -643,17 +647,29 @@ function StartTab({
             {current.sets.map((set, setIndex) => (
               <SetRow
                 key={set.id}
-                onEdit={(field) => onSetEdit(currentExerciseIndex, setIndex, field)}
+                onEdit={(field) =>
+                  onSetEdit(currentExerciseIndex, setIndex, field)
+                }
                 onToggle={() => toggleSet(currentExerciseIndex, setIndex)}
                 set={set}
               />
             ))}
           </View>
           <View style={styles.actionRow}>
-            <GhostButton label="Add set" onPress={() => addSet(currentExerciseIndex)} />
+            <GhostButton
+              label="Add set"
+              onPress={() => addSet(currentExerciseIndex)}
+            />
             <GhostButton
               label="Next exercise"
-              onPress={() => onExerciseIndexChange(Math.min(sessionExercises.length - 1, currentExerciseIndex + 1))}
+              onPress={() =>
+                onExerciseIndexChange(
+                  Math.min(
+                    sessionExercises.length - 1,
+                    currentExerciseIndex + 1,
+                  ),
+                )
+              }
             />
           </View>
         </AppCard>
@@ -666,7 +682,11 @@ function StartTab({
         />
       )}
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalCards}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.horizontalCards}
+      >
         {sessionExercises.map((item, index) => {
           const itemExercise = getExerciseById(item.exerciseId);
           return (
@@ -682,9 +702,13 @@ function StartTab({
 
       <AppCard style={styles.darkCard}>
         <Text style={styles.darkTitle}>Rest timer</Text>
-        <Text style={styles.darkMuted}>Rest timer placeholder: 60-90 seconds between hard sets.</Text>
+        <Text style={styles.darkMuted}>
+          Rest timer placeholder: 60-90 seconds between hard sets.
+        </Text>
         <View style={styles.chipRow}>
-          {[30, 60, 90, 120].map((seconds) => <Pill key={seconds} label={`${seconds}s`} />)}
+          {[30, 60, 90, 120].map((seconds) => (
+            <Pill key={seconds} label={`${seconds}s`} />
+          ))}
         </View>
       </AppCard>
       <AppButton onPress={finishWorkout} title="Finish workout" />
@@ -692,12 +716,23 @@ function StartTab({
   );
 }
 
-function RoutinesTab({ onRoutine }: { onRoutine: (routine: WorkoutRoutine, tab?: FitnessTab) => void }) {
+function RoutinesTab({
+  onRoutine,
+}: {
+  onRoutine: (routine: WorkoutRoutine, tab?: FitnessTab) => void;
+}) {
   return (
     <View style={styles.stack}>
-      <AppSection title="Routines" subtitle="Starter plans for home, gym, running, strength and recovery." />
+      <AppSection
+        title="Routines"
+        subtitle="Starter plans for home, gym, running, strength and recovery."
+      />
       {PREBUILT_ROUTINES.map((routine) => (
-        <RoutineCard key={routine.id} onStart={() => onRoutine(routine)} routine={routine} />
+        <RoutineCard
+          key={routine.id}
+          onStart={() => onRoutine(routine)}
+          routine={routine}
+        />
       ))}
     </View>
   );
@@ -707,31 +742,66 @@ function LibraryTab() {
   const [muscle, setMuscle] = useState<MuscleGroup | "all">("all");
   const [equipment, setEquipment] = useState<ExerciseEquipment | "all">("all");
   const [location, setLocation] = useState<WorkoutLocation | "all">("all");
-  const [difficulty, setDifficulty] = useState<WorkoutDifficulty | "all">("all");
+  const [difficulty, setDifficulty] = useState<WorkoutDifficulty | "all">(
+    "all",
+  );
   const [goal, setGoal] = useState<WorkoutGoalTag | "all">("all");
 
   const filteredExercises = useMemo(
     () =>
-      EXERCISE_LIBRARY.filter((exercise) =>
-        (muscle === "all" || exercise.primaryMuscle === muscle || exercise.secondaryMuscles.includes(muscle)) &&
-        (equipment === "all" || exercise.equipment.includes(equipment)) &&
-        (location === "all" || exercise.location.includes(location)) &&
-        (difficulty === "all" || exercise.difficulty === difficulty) &&
-        (goal === "all" || exercise.goalTags.includes(goal))
+      EXERCISE_LIBRARY.filter(
+        (exercise) =>
+          (muscle === "all" ||
+            exercise.primaryMuscle === muscle ||
+            exercise.secondaryMuscles.includes(muscle)) &&
+          (equipment === "all" || exercise.equipment.includes(equipment)) &&
+          (location === "all" || exercise.location.includes(location)) &&
+          (difficulty === "all" || exercise.difficulty === difficulty) &&
+          (goal === "all" || exercise.goalTags.includes(goal)),
       ),
-    [difficulty, equipment, goal, location, muscle]
+    [difficulty, equipment, goal, location, muscle],
   );
 
   return (
     <View style={styles.stack}>
-      <AppSection title="Exercise Library" subtitle="Browse by muscle, equipment, location, difficulty and goal." />
-      <FilterGroup label="Muscle group" options={["all", ...MUSCLE_GROUPS]} selected={muscle} onSelect={(value) => setMuscle(value as typeof muscle)} />
-      <FilterGroup label="Equipment" options={["all", ...EXERCISE_EQUIPMENT]} selected={equipment} onSelect={(value) => setEquipment(value as typeof equipment)} />
-      <FilterGroup label="Location" options={["all", ...WORKOUT_LOCATIONS]} selected={location} onSelect={(value) => setLocation(value as typeof location)} />
-      <FilterGroup label="Difficulty" options={["all", ...WORKOUT_DIFFICULTIES]} selected={difficulty} onSelect={(value) => setDifficulty(value as typeof difficulty)} />
-      <FilterGroup label="Goal" options={["all", ...WORKOUT_GOALS]} selected={goal} onSelect={(value) => setGoal(value as typeof goal)} />
+      <AppSection
+        title="Exercise Library"
+        subtitle="Browse by muscle, equipment, location, difficulty and goal."
+      />
+      <FilterGroup
+        label="Muscle group"
+        options={["all", ...MUSCLE_GROUPS]}
+        selected={muscle}
+        onSelect={(value) => setMuscle(value as typeof muscle)}
+      />
+      <FilterGroup
+        label="Equipment"
+        options={["all", ...EXERCISE_EQUIPMENT]}
+        selected={equipment}
+        onSelect={(value) => setEquipment(value as typeof equipment)}
+      />
+      <FilterGroup
+        label="Location"
+        options={["all", ...WORKOUT_LOCATIONS]}
+        selected={location}
+        onSelect={(value) => setLocation(value as typeof location)}
+      />
+      <FilterGroup
+        label="Difficulty"
+        options={["all", ...WORKOUT_DIFFICULTIES]}
+        selected={difficulty}
+        onSelect={(value) => setDifficulty(value as typeof difficulty)}
+      />
+      <FilterGroup
+        label="Goal"
+        options={["all", ...WORKOUT_GOALS]}
+        selected={goal}
+        onSelect={(value) => setGoal(value as typeof goal)}
+      />
       {filteredExercises.length ? (
-        filteredExercises.map((exercise) => <ExerciseCard exercise={exercise} key={exercise.id} />)
+        filteredExercises.map((exercise) => (
+          <ExerciseCard exercise={exercise} key={exercise.id} />
+        ))
       ) : (
         <PremiumEmptyState
           button="Browse exercises"
@@ -750,22 +820,37 @@ function LibraryTab() {
   );
 }
 
-function RunningTab({ onSaved, onTab }: { onSaved: () => void; onTab: (tab: FitnessTab) => void }) {
-  const [draft, setDraft] = useState<RunningLogDraft>({ distanceKm: 3, durationMinutes: 25, effort: "easy" });
+function RunningTab({
+  onSaved,
+  onTab,
+}: {
+  onSaved: () => void;
+  onTab: (tab: FitnessTab) => void;
+}) {
+  const [draft, setDraft] = useState<RunningLogDraft>({
+    distanceKm: 3,
+    durationMinutes: 25,
+    effort: "easy",
+  });
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const pace = draft.distanceKm > 0 ? draft.durationMinutes / draft.distanceKm : 0;
+  const pace =
+    draft.distanceKm > 0 ? draft.durationMinutes / draft.distanceKm : 0;
 
   async function saveRun() {
     const session = await createWorkoutSession({
       distanceKm: draft.distanceKm,
       durationSeconds: draft.durationMinutes * 60,
       intensity: draft.effort ?? "easy",
-      notes: [draft.routeNote, draft.notes].filter(Boolean).join(" - ") || undefined,
+      notes:
+        [draft.routeNote, draft.notes].filter(Boolean).join(" - ") || undefined,
       startedAt: `${date}T12:00:00.000Z`,
       title: "Running",
-      workoutType: "running"
+      workoutType: "running",
     });
-    await completeWorkoutSession(session.id, { durationSeconds: draft.durationMinutes * 60, endedAt: new Date().toISOString() });
+    await completeWorkoutSession(session.id, {
+      durationSeconds: draft.durationMinutes * 60,
+      endedAt: new Date().toISOString(),
+    });
     await onSaved();
     onTab("progress");
   }
@@ -775,7 +860,9 @@ function RunningTab({ onSaved, onTab }: { onSaved: () => void; onTab: (tab: Fitn
       <AppCard style={styles.darkHero}>
         <Text style={styles.heroKicker}>Running</Text>
         <Text style={styles.heroTitle}>Quick Start Run</Text>
-        <Text style={styles.heroSubtitle}>Manual logging now. Device routes can connect later.</Text>
+        <Text style={styles.heroSubtitle}>
+          Manual logging now. Device routes can connect later.
+        </Text>
         <View style={styles.actionRow}>
           <AppButton onPress={saveRun} title="Save run" />
           <GhostButton label="Starter plan" onPress={() => undefined} />
@@ -783,20 +870,51 @@ function RunningTab({ onSaved, onTab }: { onSaved: () => void; onTab: (tab: Fitn
       </AppCard>
       <AppCard style={styles.darkCard}>
         <Text style={styles.darkTitle}>Manual Run Log</Text>
-        <Text style={styles.darkMuted}>Pace preview: {pace ? `${pace.toFixed(1)} min/km` : "Add distance"}</Text>
+        <Text style={styles.darkMuted}>
+          Pace preview: {pace ? `${pace.toFixed(1)} min/km` : "Add distance"}
+        </Text>
         <Text style={styles.filterLabel}>Distance</Text>
-        <PresetChipGroup onSelect={(value) => setDraft((current) => ({ ...current, distanceKm: value }))} presets={[1, 3, 5, 10]} selectedValue={draft.distanceKm} suffix="km" />
-        <NumberWheelPicker max={21} min={0.5} onChange={(value) => setDraft((current) => ({ ...current, distanceKm: value }))} step={0.5} suffix="km" value={draft.distanceKm} />
+        <PresetChipGroup
+          onSelect={(value) =>
+            setDraft((current) => ({ ...current, distanceKm: value }))
+          }
+          presets={[1, 3, 5, 10]}
+          selectedValue={draft.distanceKm}
+          suffix="km"
+        />
+        <NumberWheelPicker
+          max={21}
+          min={0.5}
+          onChange={(value) =>
+            setDraft((current) => ({ ...current, distanceKm: value }))
+          }
+          step={0.5}
+          suffix="km"
+          value={draft.distanceKm}
+        />
         <Text style={styles.filterLabel}>Duration</Text>
-        <TimeWheelPicker onChange={(value) => setDraft((current) => ({ ...current, durationMinutes: value }))} valueMinutes={draft.durationMinutes} />
+        <TimeWheelPicker
+          onChange={(value) =>
+            setDraft((current) => ({ ...current, durationMinutes: value }))
+          }
+          valueMinutes={draft.durationMinutes}
+        />
         <Text style={styles.filterLabel}>Date</Text>
         <DateWheelPicker onChange={setDate} value={date} />
-        <QuickNoteField onChangeText={(notes) => setDraft((current) => ({ ...current, notes }))} value={draft.notes ?? ""} />
+        <QuickNoteField
+          onChangeText={(notes) =>
+            setDraft((current) => ({ ...current, notes }))
+          }
+          value={draft.notes ?? ""}
+        />
         <QuickSaveButton onPress={saveRun} title="Save run" />
       </AppCard>
       <View style={styles.grid}>
         <MetricCard label="Weekly distance" value="Log runs to unlock" />
-        <MetricCard label="Pace preview" value={pace ? `${pace.toFixed(1)} min/km` : "Start today"} />
+        <MetricCard
+          label="Pace preview"
+          value={pace ? `${pace.toFixed(1)} min/km` : "Start today"}
+        />
         <MetricCard label="Last run" value="Start today" />
         <MetricCard label="Running plan" value="Running Starter Plan" />
       </View>
@@ -804,13 +922,28 @@ function RunningTab({ onSaved, onTab }: { onSaved: () => void; onTab: (tab: Fitn
   );
 }
 
-function ProgressTab({ sessions, summary }: { sessions: WorkoutSession[]; summary: FitnessSummary | null }) {
+function ProgressTab({
+  sessions,
+  summary,
+}: {
+  sessions: WorkoutSession[];
+  summary: FitnessSummary | null;
+}) {
   const completedSessions = sessions.filter((session) => session.completed);
-  const totalVolume = completedSessions.reduce((total, session) => total + Math.round(session.durationSeconds / 60), 0);
-  const runningDistance = completedSessions.reduce((total, session) => total + (session.distanceKm ?? 0), 0);
+  const totalVolume = completedSessions.reduce(
+    (total, session) => total + Math.round(session.durationSeconds / 60),
+    0,
+  );
+  const runningDistance = completedSessions.reduce(
+    (total, session) => total + (session.distanceKm ?? 0),
+    0,
+  );
   return (
     <View style={styles.stack}>
-      <AppSection title="Progress" subtitle="Useful answers from the workouts you log." />
+      <AppSection
+        title="Progress"
+        subtitle="Useful answers from the workouts you log."
+      />
       {!completedSessions.length ? (
         <PremiumEmptyState
           button="Start workout"
@@ -822,12 +955,27 @@ function ProgressTab({ sessions, summary }: { sessions: WorkoutSession[]; summar
       <ProgressPreview sessions={sessions} summary={summary} />
       <View style={styles.grid}>
         <MetricCard label="Total volume" value={`${totalVolume} min`} />
-        <MetricCard label="Workout streak" value={`${summary?.currentStreakDays ?? 0} days`} />
-        <MetricCard label="Running trend" value={`${runningDistance.toFixed(1)} km`} />
-        <MetricCard label="Personal bests" value={completedSessions[0]?.title ?? "Start today"} />
+        <MetricCard
+          label="Workout streak"
+          value={`${summary?.currentStreakDays ?? 0} days`}
+        />
+        <MetricCard
+          label="Running trend"
+          value={`${runningDistance.toFixed(1)} km`}
+        />
+        <MetricCard
+          label="Personal bests"
+          value={completedSessions[0]?.title ?? "Start today"}
+        />
       </View>
-      <ChartCard title="Muscle group balance" values={[0.7, 0.5, 0.35, 0.6, 0.4]} />
-      <ChartCard title="Running distance trend" values={[0.2, 0.25, 0.45, 0.3, 0.55, 0.7, 0.6]} />
+      <ChartCard
+        title="Muscle group balance"
+        values={[0.7, 0.5, 0.35, 0.6, 0.4]}
+      />
+      <ChartCard
+        title="Running distance trend"
+        values={[0.2, 0.25, 0.45, 0.3, 0.55, 0.7, 0.6]}
+      />
     </View>
   );
 }
@@ -858,7 +1006,7 @@ function BodyTab() {
     <View style={{ gap: 16 }}>
       <MuscleFocusCard
         mode="history"
-        muscleScores={hasHistory ? scores : { chest: 0.7, abs: 0.45, quads: 0.25 }}
+        muscleScores={scores}
         suggestedMuscles={hasHistory ? undefined : ["upper_back", "glutes"]}
         title="Muscle Balance This Week"
       />
@@ -868,8 +1016,9 @@ function BodyTab() {
           {loading ? "Loading muscle history..." : "Body map guidance"}
         </Text>
         <Text style={styles.darkMuted}>
-          Complete workouts to build your real heatmap. Darker areas show higher recent load.
-          Suggested areas help balance training across the week.
+          {hasHistory
+            ? "Darker areas show higher recent load. Suggested areas help balance training across the week."
+            : "No muscle history yet. Complete workouts to build your real heatmap. Suggested areas show where you can begin."}
         </Text>
         <View style={{ marginTop: 12 }}>
           <AppButton
@@ -883,23 +1032,41 @@ function BodyTab() {
 }
 
 function GuidesTab() {
-  const prompts = ["Build me a beginner workout", "Explain this exercise", "Log my sets", "Suggest a home workout", "Summarize my week"];
+  const prompts = [
+    "Build me a beginner workout",
+    "Explain this exercise",
+    "Log my sets",
+    "Suggest a home workout",
+    "Summarize my week",
+  ];
   return (
     <View style={styles.stack}>
-      <AppSection title="Guides" subtitle="Workout education, media placeholders and assistant drafts." />
+      <AppSection
+        title="Guides"
+        subtitle="Workout education, media placeholders and assistant drafts."
+      />
       <AppCard style={styles.darkCard}>
         <Text style={styles.darkTitle}>Exercise media placeholders</Text>
-        <Text style={styles.darkMuted}>Exercise demo images, video URLs, routine covers and muscle diagrams are structured locally and ready for real media later.</Text>
+        <Text style={styles.darkMuted}>
+          Exercise demo images, video URLs, routine covers and muscle diagrams
+          are structured locally and ready for real media later.
+        </Text>
       </AppCard>
       <AppCard style={styles.darkCard}>
         <Text style={styles.darkTitle}>AI workout prompts</Text>
-        <Text style={styles.darkMuted}>Assistant output should create drafts only and avoid medical claims.</Text>
+        <Text style={styles.darkMuted}>
+          Assistant output should create drafts only and avoid medical claims.
+        </Text>
         <View style={styles.chipRow}>
           {prompts.map((prompt) => (
             <Pill
               key={prompt}
               label={prompt}
-              onPress={() => router.push(`/ai?mode=workout_logger&prompt=${encodeURIComponent(prompt)}` as Href)}
+              onPress={() =>
+                router.push(
+                  `/ai?mode=workout_logger&prompt=${encodeURIComponent(prompt)}` as Href,
+                )
+              }
             />
           ))}
         </View>
@@ -910,7 +1077,15 @@ function GuidesTab() {
   );
 }
 
-function RoutineCard({ compact = false, onStart, routine }: { compact?: boolean; onStart: () => void; routine: WorkoutRoutine }) {
+function RoutineCard({
+  compact = false,
+  onStart,
+  routine,
+}: {
+  compact?: boolean;
+  onStart: () => void;
+  routine: WorkoutRoutine;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -918,17 +1093,32 @@ function RoutineCard({ compact = false, onStart, routine }: { compact?: boolean;
         lightImpact();
         onStart();
       }}
-      style={[styles.routineCard, compact ? styles.compactRoutine : null, { borderColor: routine.accentColor }]}
+      style={[
+        styles.routineCard,
+        compact ? styles.compactRoutine : null,
+        { borderColor: routine.accentColor },
+      ]}
     >
-      <MediaPlaceholder accentColor={routine.accentColor} label="Routine cover" small={compact} />
+      <MediaPlaceholder
+        accentColor={routine.accentColor}
+        label="Routine cover"
+        small={compact}
+      />
       <Text style={styles.darkTitle}>{routine.name}</Text>
       <Text style={styles.darkMuted}>{routine.description}</Text>
       <View style={styles.chipRow}>
         <Pill label={`${routine.durationMinutes} min`} />
         <Pill label={formatWorkoutLabel(routine.difficulty)} />
-        <Pill label={routine.equipment.slice(0, 2).map(formatWorkoutLabel).join(", ")} />
+        <Pill
+          label={routine.equipment
+            .slice(0, 2)
+            .map(formatWorkoutLabel)
+            .join(", ")}
+        />
       </View>
-      <Text style={styles.darkMuted}>Target: {routine.targetMuscles.map(formatWorkoutLabel).join(" - ")}</Text>
+      <Text style={styles.darkMuted}>
+        Target: {routine.targetMuscles.map(formatWorkoutLabel).join(" - ")}
+      </Text>
       <View style={styles.actionRow}>
         <GhostButton label="Start" onPress={onStart} />
         <GhostButton label="Save" onPress={() => undefined} />
@@ -947,7 +1137,9 @@ function ExerciseCard({ exercise }: { exercise: ExerciseLibraryItem }) {
       <MediaPlaceholder accentColor="#6ee7c8" label="Exercise demo" small />
       <View style={styles.exerciseBody}>
         <Text style={styles.darkTitle}>{exercise.name}</Text>
-        <Text style={styles.darkMuted}>{formatWorkoutLabel(exercise.primaryMuscle)}</Text>
+        <Text style={styles.darkMuted}>
+          {formatWorkoutLabel(exercise.primaryMuscle)}
+        </Text>
         <View style={styles.chipRow}>
           <Pill label={formatWorkoutLabel(exercise.equipment[0] ?? "none")} />
           <Pill label={formatWorkoutLabel(exercise.difficulty)} />
@@ -961,14 +1153,16 @@ function ExerciseCard({ exercise }: { exercise: ExerciseLibraryItem }) {
 function SetRow({
   onEdit,
   onToggle,
-  set
+  set,
 }: {
   onEdit: (field: Exclude<EditableSetField, null>) => void;
   onToggle: () => void;
   set: GuidedWorkoutSet;
 }) {
   return (
-    <View style={[styles.setRow, set.completed ? styles.setRowCompleted : null]}>
+    <View
+      style={[styles.setRow, set.completed ? styles.setRowCompleted : null]}
+    >
       <Text style={styles.setNumber}>{set.setNumber}</Text>
       <Pressable onPress={() => onEdit("reps")} style={styles.setValue}>
         <Text style={styles.setLabel}>Reps</Text>
@@ -978,27 +1172,63 @@ function SetRow({
         <Text style={styles.setLabel}>Weight</Text>
         <Text style={styles.setText}>{set.weightKg ?? 0} kg</Text>
       </Pressable>
-      <Pressable accessibilityRole="button" onPress={onToggle} style={styles.completeButton}>
-        <AppIcon color={set.completed ? "#10201d" : "#6ee7c8"} decorative name="success" size={20} />
+      <Pressable
+        accessibilityRole="button"
+        onPress={onToggle}
+        style={styles.completeButton}
+      >
+        <AppIcon
+          color={set.completed ? "#10201d" : "#6ee7c8"}
+          decorative
+          name="success"
+          size={20}
+        />
       </Pressable>
     </View>
   );
 }
 
-function FilterGroup({ label, onSelect, options, selected }: { label: string; onSelect: (value: string) => void; options: string[]; selected: string }) {
+function FilterGroup({
+  label,
+  onSelect,
+  options,
+  selected,
+}: {
+  label: string;
+  onSelect: (value: string) => void;
+  options: string[];
+  selected: string;
+}) {
   return (
     <View style={styles.filterGroup}>
       <Text style={styles.filterLabel}>{label}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipRow}
+      >
         {options.map((option) => (
-          <FilterChip key={option} label={formatWorkoutLabel(option)} onPress={() => onSelect(option)} selected={selected === option} />
+          <FilterChip
+            key={option}
+            label={formatWorkoutLabel(option)}
+            onPress={() => onSelect(option)}
+            selected={selected === option}
+          />
         ))}
       </ScrollView>
     </View>
   );
 }
 
-function FilterChip({ label, onPress, selected }: { label: string; onPress: () => void; selected: boolean }) {
+function FilterChip({
+  label,
+  onPress,
+  selected,
+}: {
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -1008,14 +1238,33 @@ function FilterChip({ label, onPress, selected }: { label: string; onPress: () =
       }}
       style={[styles.filterChip, selected ? styles.filterChipSelected : null]}
     >
-      <Text style={[styles.filterChipText, selected ? styles.filterChipTextSelected : null]}>{label}</Text>
+      <Text
+        style={[
+          styles.filterChipText,
+          selected ? styles.filterChipTextSelected : null,
+        ]}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
 
-function QuickAction({ iconName, label, onPress }: { iconName: string; label: string; onPress: () => void }) {
+function QuickAction({
+  iconName,
+  label,
+  onPress,
+}: {
+  iconName: string;
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={styles.quickAction}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.quickAction}
+    >
       <AppIcon color="#6ee7c8" decorative name={iconName as never} size={22} />
       <Text style={styles.quickActionText}>{label}</Text>
     </Pressable>
@@ -1031,8 +1280,22 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ProgressPreview({ sessions, summary }: { sessions: WorkoutSession[]; summary: FitnessSummary | null }) {
-  const values = [0.35, 0.52, 0.25, Math.min(1, (summary?.workoutsThisWeek ?? 0) / 3), 0.6, 0.42, 0.7];
+function ProgressPreview({
+  sessions,
+  summary,
+}: {
+  sessions: WorkoutSession[];
+  summary: FitnessSummary | null;
+}) {
+  const values = [
+    0.35,
+    0.52,
+    0.25,
+    Math.min(1, (summary?.workoutsThisWeek ?? 0) / 3),
+    0.6,
+    0.42,
+    0.7,
+  ];
   return (
     <ChartCard
       subtitle={`${summary?.workoutsThisWeek ?? 0} workouts this week - ${sessions.length} total logs`}
@@ -1042,7 +1305,15 @@ function ProgressPreview({ sessions, summary }: { sessions: WorkoutSession[]; su
   );
 }
 
-function ChartCard({ subtitle, title, values }: { subtitle?: string; title: string; values: number[] }) {
+function ChartCard({
+  subtitle,
+  title,
+  values,
+}: {
+  subtitle?: string;
+  title: string;
+  values: number[];
+}) {
   return (
     <AppCard style={styles.darkCard}>
       <Text style={styles.darkTitle}>{title}</Text>
@@ -1050,7 +1321,12 @@ function ChartCard({ subtitle, title, values }: { subtitle?: string; title: stri
       <View style={styles.barRow}>
         {values.map((value, index) => (
           <View key={`${title}-${index}`} style={styles.barTrack}>
-            <View style={[styles.barFill, { height: `${Math.max(12, value * 100)}%` }]} />
+            <View
+              style={[
+                styles.barFill,
+                { height: `${Math.max(12, value * 100)}%` },
+              ]}
+            />
           </View>
         ))}
       </View>
@@ -1058,16 +1334,45 @@ function ChartCard({ subtitle, title, values }: { subtitle?: string; title: stri
   );
 }
 
-function MediaPlaceholder({ accentColor, label, small = false }: { accentColor: string; label: string; small?: boolean }) {
+function MediaPlaceholder({
+  accentColor,
+  label,
+  small = false,
+}: {
+  accentColor: string;
+  label: string;
+  small?: boolean;
+}) {
   return (
-    <View style={[styles.mediaPlaceholder, small ? styles.mediaSmall : null, { borderColor: accentColor }]}>
-      <AppIcon color={accentColor} decorative name="source" size={small ? 18 : 24} />
+    <View
+      style={[
+        styles.mediaPlaceholder,
+        small ? styles.mediaSmall : null,
+        { borderColor: accentColor },
+      ]}
+    >
+      <AppIcon
+        color={accentColor}
+        decorative
+        name="source"
+        size={small ? 18 : 24}
+      />
       <Text style={styles.mediaText}>{label}</Text>
     </View>
   );
 }
 
-function PremiumEmptyState({ button, message, onPress, title }: { button: string; message: string; onPress: () => void; title: string }) {
+function PremiumEmptyState({
+  button,
+  message,
+  onPress,
+  title,
+}: {
+  button: string;
+  message: string;
+  onPress: () => void;
+  title: string;
+}) {
   return (
     <AppCard style={styles.darkCard}>
       <Text style={styles.darkTitle}>{title}</Text>
@@ -1097,7 +1402,13 @@ function SafetyCard() {
   );
 }
 
-function SuccessState({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+function SuccessState({
+  message,
+  onDismiss,
+}: {
+  message: string;
+  onDismiss: () => void;
+}) {
   return (
     <Pressable onPress={onDismiss} style={styles.successState}>
       <AppIcon color="#10201d" decorative name="success" size={20} />
@@ -1106,9 +1417,19 @@ function SuccessState({ message, onDismiss }: { message: string; onDismiss: () =
   );
 }
 
-function GhostButton({ label, onPress }: { label: string; onPress: () => void }) {
+function GhostButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={styles.ghostButton}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.ghostButton}
+    >
       <Text style={styles.ghostText}>{label}</Text>
     </Pressable>
   );
@@ -1116,7 +1437,11 @@ function GhostButton({ label, onPress }: { label: string; onPress: () => void })
 
 function Pill({ label, onPress }: { label: string; onPress?: () => void }) {
   return (
-    <Pressable accessibilityRole={onPress ? "button" : undefined} onPress={onPress} style={styles.pill}>
+    <Pressable
+      accessibilityRole={onPress ? "button" : undefined}
+      onPress={onPress}
+      style={styles.pill}
+    >
       <Text style={styles.pillText}>{label}</Text>
     </Pressable>
   );
@@ -1125,12 +1450,22 @@ function Pill({ label, onPress }: { label: string; onPress?: () => void }) {
 function ProgressBar({ color, value }: { color: string; value: number }) {
   return (
     <View style={styles.progressTrack}>
-      <View style={[styles.progressFill, { backgroundColor: color, width: `${Math.max(4, Math.min(100, value * 100))}%` }]} />
+      <View
+        style={[
+          styles.progressFill,
+          {
+            backgroundColor: color,
+            width: `${Math.max(4, Math.min(100, value * 100))}%`,
+          },
+        ]}
+      />
     </View>
   );
 }
 
-function buildSessionExercises(routine: WorkoutRoutine): GuidedWorkoutExercise[] {
+function buildSessionExercises(
+  routine: WorkoutRoutine,
+): GuidedWorkoutExercise[] {
   return routine.exerciseIds.map((exerciseId) => ({
     exerciseId,
     sets: [1, 2, 3].map((setNumber) => ({
@@ -1138,8 +1473,8 @@ function buildSessionExercises(routine: WorkoutRoutine): GuidedWorkoutExercise[]
       id: `${exerciseId}-${setNumber}`,
       reps: routine.goal === "endurance" ? 15 : 10,
       setNumber,
-      weightKg: routine.location === "home" ? 0 : undefined
-    }))
+      weightKg: routine.location === "home" ? 0 : undefined,
+    })),
   }));
 }
 
@@ -1149,7 +1484,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    marginTop: 12
+    marginTop: 12,
   },
   bodyMapCard: {
     alignItems: "center",
@@ -1160,45 +1495,45 @@ const styles = StyleSheet.create({
     minHeight: 230,
     overflow: "hidden",
     paddingBottom: 0,
-    paddingRight: 0
+    paddingRight: 0,
   },
   bodyMapCopy: {
     flex: 1,
     paddingBottom: 18,
     paddingLeft: 2,
     paddingTop: 18,
-    zIndex: 2
+    zIndex: 2,
   },
   bodyMapPreview: {
     alignSelf: "flex-end",
     height: 225,
-    width: 145
+    width: 145,
   },
   barFill: {
     backgroundColor: "#6ee7c8",
     borderRadius: 999,
     bottom: 0,
     position: "absolute",
-    width: "100%"
+    width: "100%",
   },
   barRow: {
     alignItems: "flex-end",
     flexDirection: "row",
     gap: 8,
     height: 110,
-    marginTop: 16
+    marginTop: 16,
   },
   barTrack: {
     backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 999,
     flex: 1,
     height: "100%",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8
+    gap: 8,
   },
   contentState: {
     alignItems: "center",
@@ -1209,24 +1544,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 9,
     paddingHorizontal: 13,
-    paddingVertical: 11
+    paddingVertical: 11,
   },
   contentStateText: {
     color: "#065f46",
     flex: 1,
     fontSize: 12,
     fontWeight: "800",
-    lineHeight: 17
+    lineHeight: 17,
   },
   contentStateWarning: {
     backgroundColor: "#fff7ed",
-    borderColor: "#fed7aa"
+    borderColor: "#fed7aa",
   },
   contentStateWarningText: {
-    color: "#9a3412"
+    color: "#9a3412",
   },
   compactRoutine: {
-    width: 260
+    width: 260,
   },
   completeButton: {
     alignItems: "center",
@@ -1234,16 +1569,16 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     height: 44,
     justifyContent: "center",
-    width: 44
+    width: 44,
   },
   darkCard: {
     backgroundColor: "#111827",
     borderColor: "rgba(255,255,255,0.12)",
-    borderWidth: 1
+    borderWidth: 1,
   },
   darkHero: {
     backgroundColor: "#0f172a",
-    borderWidth: 1
+    borderWidth: 1,
   },
   darkInput: {
     backgroundColor: "rgba(255,255,255,0.08)",
@@ -1253,29 +1588,29 @@ const styles = StyleSheet.create({
     color: "#f8fafc",
     minHeight: 48,
     paddingHorizontal: 14,
-    paddingVertical: 10
+    paddingVertical: 10,
   },
   darkKicker: {
     color: "#6ee7c8",
     fontSize: 12,
     fontWeight: "900",
     letterSpacing: 0,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   darkMuted: {
     color: "#cbd5e1",
     lineHeight: 21,
-    marginTop: 4
+    marginTop: 4,
   },
   darkTitle: {
     color: "#f8fafc",
     fontSize: 20,
     fontWeight: "900",
-    marginTop: 4
+    marginTop: 4,
   },
   exerciseBody: {
     flex: 1,
-    gap: 4
+    gap: 4,
   },
   exerciseCard: {
     alignItems: "center",
@@ -1285,7 +1620,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
-    padding: 12
+    padding: 12,
   },
   exploreCard: {
     alignItems: "center",
@@ -1298,26 +1633,26 @@ const styles = StyleSheet.create({
     gap: 8,
     justifyContent: "center",
     minHeight: 100,
-    padding: 9
+    padding: 9,
   },
   exploreGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 9
+    gap: 9,
   },
   exploreIcon: {
     alignItems: "center",
     borderRadius: 15,
     height: 42,
     justifyContent: "center",
-    width: 42
+    width: 42,
   },
   exploreLabel: {
     color: "#1e293b",
     fontSize: 11,
     fontWeight: "900",
     lineHeight: 15,
-    textAlign: "center"
+    textAlign: "center",
   },
   filterChip: {
     backgroundColor: "rgba(15,23,42,0.08)",
@@ -1326,27 +1661,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 42,
     paddingHorizontal: 14,
-    paddingVertical: 10
+    paddingVertical: 10,
   },
   filterChipSelected: {
     backgroundColor: "#111827",
-    borderColor: "#6ee7c8"
+    borderColor: "#6ee7c8",
   },
   filterChipText: {
     color: "#475569",
-    fontWeight: "900"
+    fontWeight: "900",
   },
   filterChipTextSelected: {
-    color: "#f8fafc"
+    color: "#f8fafc",
   },
   filterGroup: {
-    gap: 8
+    gap: 8,
   },
   filterLabel: {
     color: "#64748b",
     fontSize: 12,
     fontWeight: "900",
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   ghostButton: {
     alignItems: "center",
@@ -1355,11 +1690,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 44,
     paddingHorizontal: 16,
-    paddingVertical: 11
+    paddingVertical: 11,
   },
   ghostText: {
     color: "#f8fafc",
-    fontWeight: "900"
+    fontWeight: "900",
   },
   goalArrow: {
     alignItems: "center",
@@ -1369,63 +1704,63 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: "auto",
     transform: [{ rotate: "45deg" }],
-    width: 34
+    width: 34,
   },
   goalCard: {
     borderRadius: 25,
     minHeight: 190,
     padding: 17,
-    width: 210
+    width: 210,
   },
   goalIndex: {
     color: "rgba(255,255,255,0.58)",
     fontSize: 12,
     fontWeight: "900",
-    letterSpacing: 1
+    letterSpacing: 1,
   },
   goalRail: {
     gap: 11,
-    paddingRight: 16
+    paddingRight: 16,
   },
   goalSubtitle: {
     color: "rgba(255,255,255,0.78)",
     fontSize: 12,
     lineHeight: 17,
-    marginTop: 7
+    marginTop: 7,
   },
   goalTitle: {
     color: "#ffffff",
     fontSize: 20,
     fontWeight: "900",
     lineHeight: 24,
-    marginTop: 18
+    marginTop: 18,
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10
+    gap: 10,
   },
   heroKicker: {
     color: "#6ee7c8",
     fontSize: 13,
     fontWeight: "900",
     marginTop: 12,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   heroSubtitle: {
     color: "#cbd5e1",
     lineHeight: 21,
-    marginTop: 6
+    marginTop: 6,
   },
   heroTitle: {
     color: "#f8fafc",
     fontSize: 30,
     fontWeight: "900",
-    marginTop: 4
+    marginTop: 4,
   },
   horizontalCards: {
     gap: 12,
-    paddingRight: 16
+    paddingRight: 16,
   },
   heroGlowOne: {
     backgroundColor: "rgba(45,212,191,0.20)",
@@ -1434,7 +1769,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: -75,
     top: -75,
-    width: 210
+    width: 210,
   },
   heroGlowTwo: {
     backgroundColor: "rgba(56,189,248,0.10)",
@@ -1443,13 +1778,13 @@ const styles = StyleSheet.create({
     height: 180,
     left: -60,
     position: "absolute",
-    width: 180
+    width: 180,
   },
   lastWorkoutCopy: {
     color: "#64748b",
     fontSize: 12,
     fontWeight: "700",
-    textAlign: "center"
+    textAlign: "center",
   },
   lightButton: {
     alignSelf: "flex-start",
@@ -1457,19 +1792,19 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     marginTop: 15,
     paddingHorizontal: 15,
-    paddingVertical: 11
+    paddingVertical: 11,
   },
   lightButtonText: {
     color: "#ffffff",
     fontSize: 12,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   listenCopy: {
     color: "#fed7aa",
     fontSize: 12,
     fontWeight: "800",
     lineHeight: 18,
-    marginTop: 14
+    marginTop: 14,
   },
   liveLibraryButton: {
     alignItems: "center",
@@ -1478,7 +1813,7 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: "center",
     marginLeft: "auto",
-    width: 44
+    width: 44,
   },
   liveLibraryCard: {
     alignItems: "center",
@@ -1486,18 +1821,18 @@ const styles = StyleSheet.create({
     borderColor: "#334155",
     borderWidth: 1,
     flexDirection: "row",
-    gap: 22
+    gap: 22,
   },
   liveLibraryLabel: {
     color: "#94a3b8",
     fontSize: 10,
     fontWeight: "800",
-    marginTop: 2
+    marginTop: 2,
   },
   liveLibraryValue: {
     color: "#f8fafc",
     fontSize: 22,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   mediaGlow: {
     alignItems: "center",
@@ -1506,7 +1841,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     height: 52,
     justifyContent: "center",
-    width: 52
+    width: 52,
   },
   mediaPlaceholder: {
     alignItems: "center",
@@ -1516,47 +1851,47 @@ const styles = StyleSheet.create({
     gap: 8,
     height: 150,
     justifyContent: "center",
-    marginBottom: 12
+    marginBottom: 12,
   },
   mediaSmall: {
     height: 84,
     marginBottom: 0,
-    width: 84
+    width: 84,
   },
   mediaText: {
     color: "#cbd5e1",
     fontSize: 12,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   metricCard: {
     backgroundColor: "#111827",
     borderColor: "rgba(255,255,255,0.12)",
     borderWidth: 1,
     flexBasis: "47%",
-    flexGrow: 1
+    flexGrow: 1,
   },
   metricLabel: {
     color: "#94a3b8",
     fontSize: 12,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   metricValue: {
     color: "#f8fafc",
     fontSize: 18,
     fontWeight: "900",
-    marginTop: 6
+    marginTop: 6,
   },
   pill: {
     backgroundColor: "rgba(255,255,255,0.10)",
     borderRadius: 999,
     minHeight: 34,
     paddingHorizontal: 11,
-    paddingVertical: 8
+    paddingVertical: 8,
   },
   pillText: {
     color: "#e2e8f0",
     fontSize: 12,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   primaryRealmButton: {
     alignItems: "center",
@@ -1566,22 +1901,22 @@ const styles = StyleSheet.create({
     gap: 7,
     minHeight: 46,
     paddingHorizontal: 20,
-    paddingVertical: 12
+    paddingVertical: 12,
   },
   primaryRealmButtonText: {
     color: "#06231c",
-    fontWeight: "900"
+    fontWeight: "900",
   },
   progressFill: {
     borderRadius: 999,
-    height: "100%"
+    height: "100%",
   },
   progressTrack: {
     backgroundColor: "rgba(255,255,255,0.10)",
     borderRadius: 999,
     height: 8,
     marginTop: 14,
-    overflow: "hidden"
+    overflow: "hidden",
   },
   quickAction: {
     alignItems: "center",
@@ -1594,58 +1929,58 @@ const styles = StyleSheet.create({
     gap: 8,
     minHeight: 92,
     justifyContent: "center",
-    padding: 12
+    padding: 12,
   },
   quickActionText: {
     color: "#f8fafc",
     fontSize: 12,
     fontWeight: "900",
-    textAlign: "center"
+    textAlign: "center",
   },
   quickGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10
+    gap: 10,
   },
   realmActionRow: {
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 20
+    marginTop: 20,
   },
   realmCardBody: {
     color: "#47635e",
     fontSize: 12,
     lineHeight: 18,
-    marginTop: 8
+    marginTop: 8,
   },
   realmCardEyebrow: {
     color: "#0f766e",
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 0.9,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   realmCardTitle: {
     color: "#12352f",
     fontSize: 21,
     fontWeight: "900",
     lineHeight: 25,
-    marginTop: 6
+    marginTop: 6,
   },
   realmHero: {
     backgroundColor: "#071f1a",
     borderColor: "#0f766e",
     borderWidth: 1,
     overflow: "hidden",
-    padding: 20
+    padding: 20,
   },
   realmHeroSubtitle: {
     color: "#b9d8d1",
     lineHeight: 20,
     marginTop: 7,
-    maxWidth: 330
+    maxWidth: 330,
   },
   realmHeroTitle: {
     color: "#f0fdfa",
@@ -1653,12 +1988,12 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: -0.8,
     lineHeight: 35,
-    marginTop: 5
+    marginTop: 5,
   },
   realmHeroTop: {
     alignItems: "center",
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   realmIcon: {
     alignItems: "center",
@@ -1666,7 +2001,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     height: 52,
     justifyContent: "center",
-    width: 52
+    width: 52,
   },
   realmKicker: {
     color: "#5eead4",
@@ -1674,23 +2009,23 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 1.1,
     marginTop: 22,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   realmMeta: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 5
+    gap: 5,
   },
   realmMetaRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 13,
-    marginTop: 17
+    marginTop: 17,
   },
   realmMetaText: {
     color: "#ccfbf1",
     fontSize: 11,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   realmPill: {
     backgroundColor: "rgba(94,234,212,0.10)",
@@ -1698,77 +2033,77 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 10,
-    paddingVertical: 7
+    paddingVertical: 7,
   },
   realmPillRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 7,
-    marginTop: 12
+    marginTop: 12,
   },
   realmPillText: {
     color: "#99f6e4",
     fontSize: 11,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   realmSectionAction: {
     backgroundColor: "#e2e8f0",
     borderRadius: 999,
     paddingHorizontal: 12,
-    paddingVertical: 8
+    paddingVertical: 8,
   },
   realmSectionActionText: {
     color: "#334155",
     fontSize: 11,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   realmSectionEyebrow: {
     color: "#0f766e",
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 1,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   realmSectionHeader: {
     alignItems: "flex-end",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 4
+    marginTop: 4,
   },
   realmSectionTitle: {
     color: "#0f172a",
     fontSize: 22,
     fontWeight: "900",
     letterSpacing: -0.4,
-    marginTop: 3
+    marginTop: 3,
   },
   realmStack: {
-    gap: 18
+    gap: 18,
   },
   recoveryBody: {
     color: "#fde7ce",
     lineHeight: 20,
-    marginTop: 14
+    marginTop: 14,
   },
   recoveryCard: {
     backgroundColor: "#422006",
     borderColor: "#9a3412",
-    borderWidth: 1
+    borderWidth: 1,
   },
   recoveryEyebrow: {
     color: "#fdba74",
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 1,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   recoveryHeader: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 12
+    gap: 12,
   },
   recoveryHeaderCopy: {
-    flex: 1
+    flex: 1,
   },
   recoveryIcon: {
     alignItems: "center",
@@ -1776,7 +2111,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     height: 46,
     justifyContent: "center",
-    width: 46
+    width: 46,
   },
   recoverySuggestion: {
     alignItems: "center",
@@ -1785,33 +2120,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 11,
     marginTop: 15,
-    padding: 12
+    padding: 12,
   },
   recoverySuggestionBody: {
     color: "#fed7aa",
     fontSize: 12,
     lineHeight: 17,
-    marginTop: 2
+    marginTop: 2,
   },
   recoverySuggestionCopy: {
-    flex: 1
+    flex: 1,
   },
   recoverySuggestionTitle: {
     color: "#fff7ed",
     fontSize: 12,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   recoveryTitle: {
     color: "#fff7ed",
     fontSize: 19,
     fontWeight: "900",
-    marginTop: 3
+    marginTop: 3,
   },
   routineCard: {
     backgroundColor: "#111827",
     borderRadius: 26,
     borderWidth: 1,
-    padding: 14
+    padding: 14,
   },
   safetyBadge: {
     alignItems: "center",
@@ -1822,32 +2157,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 5,
     paddingHorizontal: 10,
-    paddingVertical: 7
+    paddingVertical: 7,
   },
   safetyBadgeText: {
     color: "#bbf7d0",
     fontSize: 10,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   safetyText: {
     color: "#9a3412",
-    lineHeight: 20
+    lineHeight: 20,
   },
   setLabel: {
     color: "#94a3b8",
     fontSize: 11,
     fontWeight: "900",
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   setList: {
     gap: 8,
-    marginTop: 14
+    marginTop: 14,
   },
   setNumber: {
     color: "#f8fafc",
     fontSize: 18,
     fontWeight: "900",
-    width: 28
+    width: 28,
   },
   setRow: {
     alignItems: "center",
@@ -1855,21 +2190,21 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     flexDirection: "row",
     gap: 10,
-    padding: 10
+    padding: 10,
   },
   setRowCompleted: {
-    backgroundColor: "rgba(110,231,200,0.18)"
+    backgroundColor: "rgba(110,231,200,0.18)",
   },
   setText: {
     color: "#f8fafc",
     fontSize: 16,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   setValue: {
     flex: 1,
     gap: 2,
     minHeight: 44,
-    justifyContent: "center"
+    justifyContent: "center",
   },
   secondaryRealmButton: {
     alignItems: "center",
@@ -1881,22 +2216,22 @@ const styles = StyleSheet.create({
     gap: 6,
     minHeight: 46,
     paddingHorizontal: 14,
-    paddingVertical: 11
+    paddingVertical: 11,
   },
   secondaryRealmButtonText: {
     color: "#f8fafc",
     fontSize: 12,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   skeletonLine: {
     backgroundColor: "rgba(255,255,255,0.12)",
     borderRadius: 999,
     height: 14,
     marginTop: 12,
-    width: "90%"
+    width: "90%",
   },
   stack: {
-    gap: 14
+    gap: 14,
   },
   statusCard: {
     backgroundColor: "#ffffff",
@@ -1905,7 +2240,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 116,
     padding: 13,
-    width: 125
+    width: 125,
   },
   statusIcon: {
     alignItems: "center",
@@ -1913,39 +2248,39 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     height: 34,
     justifyContent: "center",
-    width: 34
+    width: 34,
   },
   statusLabel: {
     color: "#64748b",
     fontSize: 10,
     fontWeight: "800",
-    marginTop: 3
+    marginTop: 3,
   },
   statusRail: {
     gap: 9,
-    paddingRight: 16
+    paddingRight: 16,
   },
   statusValue: {
     color: "#0f172a",
     fontSize: 15,
     fontWeight: "900",
-    marginTop: 12
+    marginTop: 12,
   },
   supportBody: {
     color: "#64748b",
     fontSize: 12,
     lineHeight: 18,
-    marginTop: 5
+    marginTop: 5,
   },
   supportCopy: {
-    flex: 1
+    flex: 1,
   },
   supportEyebrow: {
     color: "#b45309",
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 0.8,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   supportIcon: {
     alignItems: "center",
@@ -1953,20 +2288,20 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     height: 50,
     justifyContent: "center",
-    width: 50
+    width: 50,
   },
   supportLink: {
     color: "#b45309",
     fontSize: 12,
     fontWeight: "900",
-    marginTop: 10
+    marginTop: 10,
   },
   supportTitle: {
     color: "#422006",
     fontSize: 17,
     fontWeight: "900",
     lineHeight: 21,
-    marginTop: 4
+    marginTop: 4,
   },
   nutritionSupportCard: {
     alignItems: "flex-start",
@@ -1974,7 +2309,7 @@ const styles = StyleSheet.create({
     borderColor: "#fde68a",
     borderWidth: 1,
     flexDirection: "row",
-    gap: 13
+    gap: 13,
   },
   successState: {
     alignItems: "center",
@@ -1984,14 +2319,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     minHeight: 44,
-    paddingHorizontal: 14
+    paddingHorizontal: 14,
   },
   successText: {
     color: "#10201d",
-    fontWeight: "900"
+    fontWeight: "900",
   },
   tabRow: {
     gap: 8,
-    paddingRight: 16
-  }
+    paddingRight: 16,
+  },
 });

@@ -48,7 +48,7 @@ export const MUSCLE_LABELS: Record<MuscleKey, string> = {
   calves: "Calves",
   adductors: "Adductors",
   abductors: "Abductors",
-  neck: "Neck"
+  neck: "Neck",
 };
 
 export const MUSCLE_KEYS = Object.keys(MUSCLE_LABELS) as MuscleKey[];
@@ -81,10 +81,12 @@ const ALIASES: Record<string, MuscleKey[]> = {
   hips: ["hip_flexors", "abductors", "adductors"],
   cardio: ["quads", "hamstrings", "calves"],
   mobility: ["hip_flexors", "lower_back", "abs"],
-  full_body: ["chest", "upper_back", "abs", "quads", "glutes"]
+  full_body: ["chest", "upper_back", "abs", "quads", "glutes"],
 };
 
-export function muscleKeysFromText(value?: string | string[] | null): MuscleKey[] {
+export function muscleKeysFromText(
+  value?: string | string[] | null,
+): MuscleKey[] {
   if (!value) return [];
 
   const raw = Array.isArray(value) ? value.join(",") : value;
@@ -115,25 +117,32 @@ export function muscleKeysFromText(value?: string | string[] | null): MuscleKey[
 
 export function topMuscles(scores: MuscleScoreMap, count = 3) {
   return Object.entries(scores)
-    .filter((entry): entry is [MuscleKey, number] => Boolean(entry[1]))
+    .filter(
+      (entry): entry is [MuscleKey, number] =>
+        Number.isFinite(entry[1]) && Number(entry[1]) > 0,
+    )
     .sort((left, right) => right[1] - left[1])
-    .slice(0, count)
+    .slice(0, Math.max(0, count))
     .map(([muscleKey, score]) => ({
       muscleKey,
       label: MUSCLE_LABELS[muscleKey],
-      score
+      score,
     }));
 }
 
 export function normalizeScores(scores: MuscleScoreMap): MuscleScoreMap {
-  const max = Math.max(...Object.values(scores).filter(Boolean), 0);
-
-  if (!max) return scores;
-
-  return Object.fromEntries(
+  const cleanScores = Object.fromEntries(
     Object.entries(scores).map(([key, value]) => [
       key,
-      Math.min(1, Math.max(0, Number(value ?? 0) / max))
-    ])
+      Number.isFinite(value) ? Math.max(0, Number(value)) : 0,
+    ]),
+  ) as MuscleScoreMap;
+  const max = Math.max(...Object.values(cleanScores), 0);
+
+  return Object.fromEntries(
+    Object.entries(cleanScores).map(([key, value]) => [
+      key,
+      max ? Math.min(1, Number(value ?? 0) / max) : 0,
+    ]),
   ) as MuscleScoreMap;
 }

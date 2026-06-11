@@ -4,9 +4,13 @@ export { MuscleLegendDropdown } from "./MuscleLegendDropdown";
 export {
   bodyGenderFromProfile,
   type BodyGender,
-  type BodyView
+  type BodyView,
 } from "./bodyPathData";
-export { getMuscleFill, getMuscleOpacity, getMuscleStroke } from "./muscleColorScale";
+export {
+  getMuscleFill,
+  getMuscleOpacity,
+  getMuscleStroke,
+} from "./muscleColorScale";
 export {
   muscleKeysFromText,
   MUSCLE_KEYS,
@@ -15,5 +19,5 @@ export {
   topMuscles,
   type MuscleKey,
   type MuscleScoreMap,
-  type MuscleTargetRole
+  type MuscleTargetRole,
 } from "./muscleLayerMap";

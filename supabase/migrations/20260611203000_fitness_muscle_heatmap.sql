@@ -85,22 +85,30 @@ drop policy if exists "Anyone can read fitness muscle groups" on public.fitness_
 create policy "Anyone can read fitness muscle groups"
 on public.fitness_muscle_groups
 for select
+to anon, authenticated
 using (true);
 
 drop policy if exists "Anyone can read fitness exercise muscle targets" on public.fitness_exercise_muscle_targets;
 create policy "Anyone can read fitness exercise muscle targets"
 on public.fitness_exercise_muscle_targets
 for select
+to anon, authenticated
 using (true);
 
 drop policy if exists "Users can read own muscle load history" on public.user_muscle_load_history;
 create policy "Users can read own muscle load history"
 on public.user_muscle_load_history
 for select
-using (auth.uid() = user_id);
+to authenticated
+using ((select auth.uid()) = user_id);
 
 drop policy if exists "Users can insert own muscle load history" on public.user_muscle_load_history;
 create policy "Users can insert own muscle load history"
 on public.user_muscle_load_history
 for insert
-with check (auth.uid() = user_id);
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+grant select on public.fitness_muscle_groups to anon, authenticated;
+grant select on public.fitness_exercise_muscle_targets to anon, authenticated;
+grant select, insert on public.user_muscle_load_history to authenticated;

@@ -6,7 +6,12 @@ import { useActiveProfile } from "@/context/ActiveProfileContext";
 import { bodyGenderFromProfile, type BodyGender } from "./bodyPathData";
 import { MuscleHeatMap } from "./MuscleHeatMap";
 import { MuscleLegendDropdown } from "./MuscleLegendDropdown";
-import { MUSCLE_LABELS, topMuscles, type MuscleKey, type MuscleScoreMap } from "./muscleLayerMap";
+import {
+  MUSCLE_LABELS,
+  topMuscles,
+  type MuscleKey,
+  type MuscleScoreMap,
+} from "./muscleLayerMap";
 
 export type MuscleFocusCardProps = {
   bodyGender?: BodyGender;
@@ -25,13 +30,19 @@ export function MuscleFocusCard({
   mode = "exercise",
   muscleScores,
   suggestedMuscles,
-  title = "Muscles Worked"
+  title = "Muscles Worked",
 }: MuscleFocusCardProps) {
   const { activeProfile } = useActiveProfile();
-  const [selectedMuscleKey, setSelectedMuscleKey] = useState<MuscleKey | undefined>();
+  const [selectedMuscleKey, setSelectedMuscleKey] = useState<
+    MuscleKey | undefined
+  >();
   const top = useMemo(() => topMuscles(muscleScores, 4), [muscleScores]);
-  const selectedLabel = selectedMuscleKey ? MUSCLE_LABELS[selectedMuscleKey] : undefined;
-  const selectedScore = selectedMuscleKey ? muscleScores[selectedMuscleKey] ?? 0 : 0;
+  const selectedLabel = selectedMuscleKey
+    ? MUSCLE_LABELS[selectedMuscleKey]
+    : undefined;
+  const selectedScore = selectedMuscleKey
+    ? (muscleScores[selectedMuscleKey] ?? 0)
+    : 0;
 
   return (
     <View style={styles.card}>
@@ -61,6 +72,7 @@ export function MuscleFocusCard({
       <MuscleHeatMap
         bodyGender={bodyGender ?? bodyGenderFromProfile(activeProfile?.gender)}
         cautionMuscles={cautionMuscles}
+        compact={compact}
         mode={mode}
         muscleScores={muscleScores}
         onSelectMuscle={setSelectedMuscleKey}
@@ -72,8 +84,8 @@ export function MuscleFocusCard({
         <View style={styles.selectedPanel}>
           <Text style={styles.selectedTitle}>{selectedLabel}</Text>
           <Text style={styles.selectedText}>
-            Current focus score: {Math.round(selectedScore * 100)}%. Higher scores mean stronger
-            involvement or heavier recent load.
+            Current focus score: {Math.round(selectedScore * 100)}%. Higher
+            scores mean stronger involvement or heavier recent load.
           </Text>
         </View>
       ) : null}
@@ -94,7 +106,7 @@ const styles = StyleSheet.create({
     shadowColor: "#0f172a",
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.06,
-    shadowRadius: 18
+    shadowRadius: 18,
   },
   chip: {
     backgroundColor: "#fff7ed",
@@ -102,53 +114,53 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 10,
-    paddingVertical: 6
+    paddingVertical: 6,
   },
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8
+    gap: 8,
   },
   chipText: {
     color: "#9a3412",
     fontSize: 12,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   emptyText: {
     color: "#64748b",
     fontSize: 13,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   selectedPanel: {
     backgroundColor: "#f8fafc",
     borderRadius: 18,
     gap: 4,
-    padding: 12
+    padding: 12,
   },
   selectedText: {
     color: "#64748b",
     fontSize: 12,
     fontWeight: "600",
-    lineHeight: 17
+    lineHeight: 17,
   },
   selectedTitle: {
     color: "#0f172a",
     fontSize: 13,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   subtitle: {
     color: "#64748b",
     fontSize: 12,
     fontWeight: "600",
-    marginTop: 3
+    marginTop: 3,
   },
   title: {
     color: "#0f172a",
     fontSize: 18,
-    fontWeight: "900"
-  }
+    fontWeight: "900",
+  },
 });

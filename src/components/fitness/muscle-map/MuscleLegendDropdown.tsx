@@ -2,13 +2,29 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const LEGEND_ITEMS = [
-  { color: "#e5e7eb", label: "Grey", text: "Not targeted or no recent activity." },
+  {
+    color: "#e5e7eb",
+    label: "Grey",
+    text: "Not targeted or no recent activity.",
+  },
   { color: "#fed7aa", label: "Peach", text: "Lightly involved." },
   { color: "#f97316", label: "Orange", text: "Secondary or moderate usage." },
   { color: "#dc2626", label: "Red", text: "Primary muscle or high usage." },
-  { color: "#7f1d1d", label: "Dark red", text: "High recent load. Recovery may need attention." },
-  { color: "#2563eb", label: "Blue outline", text: "Suggested muscle group to train next." },
-  { color: "#7c3aed", label: "Purple outline", text: "Safety caution or restricted movement." }
+  {
+    color: "#7f1d1d",
+    label: "Dark red",
+    text: "High recent load. Recovery may need attention.",
+  },
+  {
+    color: "#2563eb",
+    label: "Blue outline",
+    text: "Suggested muscle group to train next.",
+  },
+  {
+    color: "#7c3aed",
+    label: "Purple outline",
+    text: "Safety caution or restricted movement.",
+  },
 ];
 
 export function MuscleLegendDropdown() {
@@ -17,7 +33,11 @@ export function MuscleLegendDropdown() {
   return (
     <View style={styles.wrap}>
       <Pressable
+        accessibilityLabel={
+          open ? "Hide muscle map color legend" : "Show muscle map color legend"
+        }
         accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
         onPress={() => setOpen((current) => !current)}
         style={styles.button}
       >
@@ -37,7 +57,8 @@ export function MuscleLegendDropdown() {
             </View>
           ))}
           <Text style={styles.note}>
-            This map is general fitness guidance. It does not diagnose pain or injury.
+            This map is general fitness guidance. It does not diagnose pain or
+            injury.
           </Text>
         </View>
       ) : null}
@@ -55,21 +76,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 14,
-    paddingVertical: 12
+    paddingVertical: 12,
   },
   buttonText: {
     color: "#0f172a",
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   chevron: {
     color: "#475569",
     fontSize: 18,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   copy: {
     flex: 1,
-    gap: 2
+    gap: 2,
   },
   dot: {
     borderColor: "#cbd5e1",
@@ -77,19 +98,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: 14,
     marginTop: 3,
-    width: 14
+    width: 14,
   },
   label: {
     color: "#0f172a",
     fontSize: 12,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   note: {
     color: "#64748b",
     fontSize: 12,
     fontWeight: "600",
     lineHeight: 18,
-    marginTop: 4
+    marginTop: 4,
   },
   panel: {
     backgroundColor: "#ffffff",
@@ -97,19 +118,19 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     gap: 10,
-    padding: 14
+    padding: 14,
   },
   row: {
     flexDirection: "row",
-    gap: 10
+    gap: 10,
   },
   text: {
     color: "#64748b",
     fontSize: 12,
     fontWeight: "600",
-    lineHeight: 17
+    lineHeight: 17,
   },
   wrap: {
-    gap: 8
-  }
+    gap: 8,
+  },
 });
