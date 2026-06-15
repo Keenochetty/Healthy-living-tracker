@@ -24,6 +24,11 @@ import {
   type MuscleScoreMap,
 } from "@/components/fitness/muscle-map";
 import {
+  HealthDonutChart,
+  HealthMiniLineChart,
+  HealthProgressRing,
+} from "@/components/health/HealthHubCharts";
+import {
   FitnessExploreGrid,
   FitnessDashboardSections,
   FitnessGoalPaths,
@@ -35,7 +40,7 @@ import {
   FitnessWorkoutPrograms,
 } from "@/components/fitness/realm";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
-import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
+import { AppButton, AppCard, AppChip, AppIcon, AppSection } from "@/components/ui";
 import {
   FITNESS_EXPLORE_FEATURES,
   FITNESS_GOAL_FEATURES,
@@ -76,11 +81,19 @@ import {
   scoresFromExerciseFallback,
 } from "@/services/fitnessMuscleMapService";
 import {
+  getActivePlanProgress,
+  getFitnessSummary as getFitnessHistorySummary,
+  type ActivePlanProgress,
+  type FitnessHistorySummary,
+} from "@/services/fitnessHistoryService";
+import {
   getUserFeaturePreferences,
   shouldShowFeature,
   type UserFeaturePreference,
 } from "@/services/userFeaturePreferencesService";
 import { useAppTheme } from "@/theme/ThemeProvider";
+import { healthRealmAccents, realmAccentWithOpacity } from "@/theme/healthTheme";
+import { fontSizes, radius, spacing } from "@/theme/tokens";
 import type {
   ExerciseEquipment,
   ExerciseLibraryItem,
@@ -159,14 +172,21 @@ export default function FitnessScreen() {
   const [featurePreferences, setFeaturePreferences] = useState<
     UserFeaturePreference[]
   >([]);
+  const [activePlans, setActivePlans] = useState<ActivePlanProgress[]>([]);
+  const [historySummary, setHistorySummary] =
+    useState<FitnessHistorySummary | null>(null);
 
   const loadFitness = useCallback(async () => {
-    const [nextSummary, nextSessions] = await Promise.all([
+    const [nextSummary, nextSessions, nextActivePlans, nextHistorySummary] = await Promise.all([
       getTodayFitnessSummary(),
       getWorkoutSessions(),
+      getActivePlanProgress().catch(() => []),
+      getFitnessHistorySummary(30).catch(() => null),
     ]);
     setSummary(nextSummary);
     setSessions(nextSessions);
+    setActivePlans(nextActivePlans);
+    setHistorySummary(nextHistorySummary);
 
     setContentLoading(true);
     const [exerciseResult, programResult, nutritionResult] = await Promise.all([
@@ -417,12 +437,14 @@ export default function FitnessScreen() {
       {activeTab === "today" ? (
         <TodayTab
           latestWorkout={latestWorkout}
+          activePlans={activePlans}
           contentError={contentError}
           contentLoading={contentLoading}
           contentPreview={contentPreview}
           onRoutine={selectRoutine}
           onTab={setActiveTab}
           summary={summary}
+          historySummary={historySummary}
           visibleExplore={visibleExplore}
           visibleGoals={visibleGoals}
           visiblePrograms={visiblePrograms}
@@ -516,9 +538,11 @@ export default function FitnessScreen() {
 }
 
 function TodayTab({
+  activePlans,
   contentError,
   contentLoading,
   contentPreview,
+  historySummary,
   latestWorkout,
   onRoutine,
   onTab,
@@ -529,9 +553,11 @@ function TodayTab({
   visibleGoals,
   visiblePrograms,
 }: {
+  activePlans: ActivePlanProgress[];
   contentError: string;
   contentLoading: boolean;
   contentPreview: FitnessContentPreview | null;
+  historySummary: FitnessHistorySummary | null;
   latestWorkout?: WorkoutSession;
   onRoutine: (routine: WorkoutRoutine, tab?: FitnessTab) => void;
   onTab: (tab: FitnessTab) => void;
@@ -571,6 +597,17 @@ function TodayTab({
           text="No live exercises yet. Showing the built-in starter library."
         />
       ) : null}
+
+      <FitnessV8Snapshot
+        activePlan={activePlans[0]}
+        historySummary={historySummary}
+        latestWorkout={latestWorkout}
+        onRoutine={onRoutine}
+        onTab={onTab}
+        plan={plan}
+        showAiImport={showAiImport}
+        summary={summary}
+      />
 
       <FitnessTodayHero
         focusMuscles={plan.targetMuscles
@@ -691,6 +728,177 @@ function TodayTab({
       ) : null}
     </View>
   );
+}
+
+function FitnessV8Snapshot({
+  activePlan,
+  historySummary,
+  latestWorkout,
+  onRoutine,
+  onTab,
+  plan,
+  showAiImport,
+  summary,
+}: {
+  activePlan?: ActivePlanProgress;
+  historySummary: FitnessHistorySummary | null;
+  latestWorkout?: WorkoutSession;
+  onRoutine: (routine: WorkoutRoutine, tab?: FitnessTab) => void;
+  onTab: (tab: FitnessTab) => void;
+  plan: WorkoutRoutine;
+  showAiImport: boolean;
+  summary: FitnessSummary | null;
+}) {
+  const { theme } = useAppTheme();
+  const weeklyProgress = Math.max(
+    0,
+    Math.min(100, Math.round(summary?.weeklyGoalProgress ?? 0)),
+  );
+  // UI-only readiness score until a reviewed scoring model is connected.
+  const score = Math.min(
+    98,
+    50 +
+      Math.min(24, (summary?.workoutsThisWeek ?? 0) * 8) +
+      Math.min(12, (summary?.currentStreakDays ?? 0) * 2) +
+      Math.round(weeklyProgress * 0.12),
+  );
+  const consistency = sessionsForChart(summary?.workoutsThisWeek ?? 0);
+
+  return (
+    <View style={styles.snapshotStack}>
+      <AppCard
+        padding="md"
+        style={[
+          styles.snapshotHero,
+          { borderColor: realmAccentWithOpacity("fitness", 0.48) },
+        ]}
+      >
+        <View style={styles.snapshotCopy}>
+          <AppChip label="FITNESS READINESS" variant="primary" />
+          <Text style={[styles.snapshotTitle, { color: theme.text }]}>
+            {score >= 75 ? "Ready to build" : "Keep the next session steady"}
+          </Text>
+          <Text style={[styles.snapshotBody, { color: theme.mutedText }]}>
+            {summary?.workoutsThisWeek ?? 0} workouts this week ·{" "}
+            {summary?.currentStreakDays ?? 0} day streak
+          </Text>
+        </View>
+        <View style={styles.snapshotScore}>
+          <HealthProgressRing
+            color={healthRealmAccents.fitness}
+            progress={score}
+            trackColor={theme.primarySoft}
+          />
+          <View style={styles.snapshotScoreText}>
+            <Text style={[styles.snapshotScoreValue, { color: theme.text }]}>
+              {score}
+            </Text>
+            <Text style={[styles.snapshotScoreLabel, { color: theme.mutedText }]}>
+              score
+            </Text>
+          </View>
+        </View>
+      </AppCard>
+
+      <AppSection subtitle="Real plan progress and weekly consistency." title="Plan and progress">
+        <View style={styles.snapshotGrid}>
+          <AppCard
+            onPress={() =>
+              activePlan
+                ? router.push(`/fitness/imported-plan/${activePlan.id}` as Href)
+                : router.push("/fitness/programs" as Href)
+            }
+            padding="sm"
+            style={styles.snapshotPlanCard}
+          >
+            <View style={styles.snapshotCardHeader}>
+              <AppIcon color={healthRealmAccents.fitness} decorative name="calendar_timeline" size={18} />
+              <AppChip label={activePlan ? "Active" : "Choose plan"} variant={activePlan ? "success" : "muted"} />
+            </View>
+            <Text style={[styles.snapshotCardTitle, { color: theme.text }]}>
+              {activePlan?.title ?? "No active calendar plan"}
+            </Text>
+            <Text style={[styles.snapshotCardMeta, { color: theme.mutedText }]}>
+              {activePlan
+                ? `Day ${activePlan.currentDay} of ${activePlan.totalDays} · ${activePlan.progress}% complete`
+                : "Browse programs and activate one when ready."}
+            </Text>
+            {activePlan?.nextWorkout ? (
+              <Text style={[styles.snapshotNext, { color: healthRealmAccents.fitness }]}>
+                Next: {new Date(activePlan.nextWorkout).toLocaleDateString()}
+              </Text>
+            ) : null}
+          </AppCard>
+
+          <AppCard padding="sm" style={styles.snapshotChartCard}>
+            <View style={styles.snapshotChartTop}>
+              <HealthMiniLineChart
+                color={healthRealmAccents.fitness}
+                data={consistency}
+                height={46}
+                width={110}
+              />
+              <HealthDonutChart
+                colors={[healthRealmAccents.fitness, healthRealmAccents.health]}
+                trackColor={theme.primarySoft}
+                values={[
+                  historySummary?.workoutsCompleted ?? 0,
+                  historySummary?.workoutsSkipped ?? 0,
+                ]}
+              />
+            </View>
+            <Text style={[styles.snapshotCardTitle, { color: theme.text }]}>
+              Weekly consistency
+            </Text>
+            <Text style={[styles.snapshotCardMeta, { color: theme.mutedText }]}>
+              {historySummary?.workoutsCompleted ?? 0} completed ·{" "}
+              {historySummary?.workoutsSkipped ?? 0} skipped
+            </Text>
+          </AppCard>
+        </View>
+      </AppSection>
+
+      <AppSection subtitle="Continue existing fitness flows." title="Quick actions">
+        <View style={styles.snapshotActions}>
+          <AppChip label="Start workout" onPress={() => onRoutine(plan)} selected />
+          <AppChip label="Browse exercises" onPress={() => router.push("/fitness/library" as Href)} />
+          {showAiImport ? <AppChip label="Import plan" onPress={() => router.push("/fitness/ai-import" as Href)} /> : null}
+          <AppChip label="Active plans" onPress={() => router.push("/fitness/imported-plans" as Href)} />
+          <AppChip label="Add goal" onPress={() => router.push("/fitness/goals" as Href)} />
+          <AppChip label="History" onPress={() => router.push("/fitness/history" as Href)} />
+          <AppChip label="Muscle map" onPress={() => router.push("/fitness/body-map" as Href)} />
+          <AppChip label="Programs" onPress={() => router.push("/fitness/programs" as Href)} />
+          <AppChip label="Add to calendar" onPress={() => router.push("/fitness/programs" as Href)} />
+          <AppChip label="Search workouts" onPress={() => router.push("/ai?mode=workout_logger" as Href)} />
+          <AppChip label="Running" onPress={() => onTab("running")} />
+        </View>
+      </AppSection>
+
+      {latestWorkout ? (
+        <AppCard
+          onPress={() => router.push("/fitness/history" as Href)}
+          padding="sm"
+          style={styles.snapshotRecent}
+        >
+          <AppIcon color={healthRealmAccents.fitness} decorative name="success" size={18} />
+          <View style={styles.snapshotCopy}>
+            <Text style={[styles.snapshotCardTitle, { color: theme.text }]}>
+              Last workout: {latestWorkout.title}
+            </Text>
+            <Text style={[styles.snapshotCardMeta, { color: theme.mutedText }]}>
+              {Math.round(latestWorkout.durationSeconds / 60)} min ·{" "}
+              {latestWorkout.intensity} intensity
+            </Text>
+          </View>
+        </AppCard>
+      ) : null}
+    </View>
+  );
+}
+
+function sessionsForChart(workoutsThisWeek: number) {
+  // UI-only distribution until daily session aggregation is exposed.
+  return [0, 1, 0, workoutsThisWeek, 1, 0, Math.max(1, workoutsThisWeek - 1)];
 }
 
 function ContentState({
@@ -2403,6 +2611,25 @@ const styles = StyleSheet.create({
     minHeight: 44,
     justifyContent: "center",
   },
+  snapshotActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  snapshotBody: { fontSize: fontSizes.sm, lineHeight: 19, marginTop: spacing.xs },
+  snapshotCardHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  snapshotCardMeta: { fontSize: fontSizes.xs, lineHeight: 16, marginTop: spacing.xs },
+  snapshotCardTitle: { fontSize: fontSizes.sm, fontWeight: "900", marginTop: spacing.sm },
+  snapshotChartCard: { flex: 1, minHeight: 148 },
+  snapshotChartTop: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  snapshotCopy: { flex: 1 },
+  snapshotGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  snapshotHero: { alignItems: "center", borderWidth: 1, flexDirection: "row", gap: spacing.md },
+  snapshotNext: { fontSize: 10, fontWeight: "900", marginTop: spacing.sm },
+  snapshotPlanCard: { flex: 1, minHeight: 148 },
+  snapshotRecent: { alignItems: "center", borderWidth: 1, flexDirection: "row", gap: spacing.sm },
+  snapshotScore: { alignItems: "center", height: 82, justifyContent: "center", width: 82 },
+  snapshotScoreLabel: { fontSize: 9, fontWeight: "800", textTransform: "uppercase" },
+  snapshotScoreText: { alignItems: "center", position: "absolute" },
+  snapshotScoreValue: { fontSize: fontSizes.lg, fontWeight: "900" },
+  snapshotStack: { gap: spacing["2xl"] },
+  snapshotTitle: { fontSize: fontSizes.xl, fontWeight: "900", lineHeight: 28, marginTop: spacing.sm },
   secondaryRealmButton: {
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.08)",

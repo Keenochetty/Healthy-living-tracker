@@ -1,43 +1,59 @@
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AppCard, AppIcon, AppSection } from "@/components/ui";
+import { AppCard, AppChip, AppIcon, AppSection } from "@/components/ui";
+import { healthRealmAccents, realmAccentWithOpacity } from "@/theme/healthTheme";
 import { useAppTheme } from "@/theme/ThemeProvider";
+import { fontSizes, radius, spacing } from "@/theme/tokens";
 import type {
   CaregiverProfile,
   FamilyCircle,
   FamilyCircleMember,
   FamilyInvite,
+  HealthAuditLog,
   HealthProfile,
   ProfilePermission,
 } from "@/types/familyPermissions";
 
-const FAMILY = "#b7791f";
-const FAMILY_SOFT = "#fef3c7";
+const FAMILY = healthRealmAccents.family;
 
 export function FamilyRealmOverview({
+  activeProfile,
+  auditLogs,
   caregivers,
   circle,
   invites,
   members,
+  onCalendar,
   onCaregivers,
+  onCircles,
   onInvites,
+  onJoin,
   onMembers,
   onPermissions,
   onProfiles,
   permissions,
   profiles,
+  sharedRecordsCount,
+  sharedReminderCount,
 }: {
+  activeProfile: HealthProfile | null;
+  auditLogs: HealthAuditLog[];
   caregivers: CaregiverProfile[];
   circle: FamilyCircle | null;
   invites: FamilyInvite[];
   members: FamilyCircleMember[];
+  onCalendar: () => void;
   onCaregivers: () => void;
+  onCircles: () => void;
   onInvites: () => void;
+  onJoin: () => void;
   onMembers: () => void;
   onPermissions: () => void;
   onProfiles: () => void;
   permissions: ProfilePermission[];
   profiles: HealthProfile[];
+  sharedRecordsCount: number;
+  sharedReminderCount: number;
 }) {
   const childProfiles = profiles.filter(
     (profile) =>
@@ -48,12 +64,29 @@ export function FamilyRealmOverview({
   return (
     <View style={styles.stack}>
       <FamilyHero
+        activeProfile={activeProfile}
         circle={circle}
         invites={invites.length}
         members={members}
         permissions={permissions.length}
       />
+      <FamilyQuickActions
+        circle={circle}
+        onCalendar={onCalendar}
+        onCaregivers={onCaregivers}
+        onCircles={onCircles}
+        onInvites={onInvites}
+        onJoin={onJoin}
+        onPermissions={onPermissions}
+        onProfiles={onProfiles}
+      />
       <FamilyMembers members={members} onOpen={onMembers} />
+      <SharedCareActivity
+        auditLogs={auditLogs}
+        onOpen={onCalendar}
+        sharedRecordsCount={sharedRecordsCount}
+        sharedReminderCount={sharedReminderCount}
+      />
       <PermissionOverview onOpen={onPermissions} permissions={permissions} />
       <CaregiverOverview caregivers={caregivers} onOpen={onCaregivers} />
       <PendingInvites invites={invites} onOpen={onInvites} />
@@ -63,11 +96,13 @@ export function FamilyRealmOverview({
 }
 
 function FamilyHero({
+  activeProfile,
   circle,
   invites,
   members,
   permissions,
 }: {
+  activeProfile: HealthProfile | null;
   circle: FamilyCircle | null;
   invites: number;
   members: FamilyCircleMember[];
@@ -75,7 +110,15 @@ function FamilyHero({
 }) {
   const { theme } = useAppTheme();
   return (
-    <AppCard style={[styles.hero, { borderColor: `${FAMILY}38` }]}>
+    <AppCard
+      style={[
+        styles.hero,
+        {
+          backgroundColor: theme.surface,
+          borderColor: realmAccentWithOpacity("family", 0.42),
+        },
+      ]}
+    >
       <View style={styles.heroGlow} />
       <View style={styles.heroTop}>
         <View style={styles.heroCopy}>
@@ -87,6 +130,9 @@ function FamilyHero({
             Family relationships, caregiver contacts, and selected sharing
             permissions in one clear place.
           </Text>
+          <Text style={[styles.activeProfile, { color: theme.mutedText }]}>
+            Active profile: {activeProfile?.displayName ?? "No profile selected"}
+          </Text>
         </View>
         <View style={styles.avatarStack}>
           {members.slice(0, 3).map((member, index) => (
@@ -95,7 +141,7 @@ function FamilyHero({
               style={[
                 styles.stackAvatar,
                 {
-                  backgroundColor: index % 2 ? "#ffedd5" : FAMILY_SOFT,
+                  backgroundColor: realmAccentWithOpacity("family", index % 2 ? 0.22 : 0.14),
                   marginLeft: index ? -10 : 0,
                 },
               ]}
@@ -113,9 +159,9 @@ function FamilyHero({
         </View>
       </View>
       <View style={styles.heroStats}>
-        <HeroStat label="Members" value={`${members.length}`} />
-        <HeroStat label="Permissions" value={`${permissions}`} />
-        <HeroStat label="Pending" value={`${invites}`} />
+        <HeroStat label="Members" themeSurface={theme.background} value={`${members.length}`} />
+        <HeroStat label="Shared areas" themeSurface={theme.background} value={`${permissions}`} />
+        <HeroStat label="Pending" themeSurface={theme.background} value={`${invites}`} />
       </View>
       <View style={styles.circleBadge}>
         <Text style={styles.circleBadgeText}>
@@ -128,12 +174,120 @@ function FamilyHero({
   );
 }
 
-function HeroStat({ label, value }: { label: string; value: string }) {
+function HeroStat({
+  label,
+  themeSurface,
+  value,
+}: {
+  label: string;
+  themeSurface: string;
+  value: string;
+}) {
+  const { theme } = useAppTheme();
   return (
-    <View style={styles.heroStat}>
-      <Text style={styles.heroStatValue}>{value}</Text>
-      <Text style={styles.heroStatLabel}>{label}</Text>
+    <View style={[styles.heroStat, { backgroundColor: themeSurface }]}>
+      <Text style={[styles.heroStatValue, { color: theme.text }]}>{value}</Text>
+      <Text style={[styles.heroStatLabel, { color: theme.mutedText }]}>{label}</Text>
     </View>
+  );
+}
+
+function FamilyQuickActions({
+  circle,
+  onCalendar,
+  onCaregivers,
+  onCircles,
+  onInvites,
+  onJoin,
+  onPermissions,
+  onProfiles,
+}: {
+  circle: FamilyCircle | null;
+  onCalendar: () => void;
+  onCaregivers: () => void;
+  onCircles: () => void;
+  onInvites: () => void;
+  onJoin: () => void;
+  onPermissions: () => void;
+  onProfiles: () => void;
+}) {
+  return (
+    <AppSection subtitle="Manage sharing without exposing private details." title="Family actions">
+      <View style={styles.actionRow}>
+        <AppChip label={circle ? "Invite member" : "Create circle"} onPress={circle ? onInvites : onCircles} selected />
+        <AppChip label="Join circle" onPress={onJoin} />
+        <AppChip label="Manage roles" onPress={onPermissions} />
+        <AppChip label="Switch profile" onPress={onProfiles} />
+        <AppChip label="Caregivers" onPress={onCaregivers} />
+        <AppChip label="Shared care" onPress={onCalendar} />
+      </View>
+    </AppSection>
+  );
+}
+
+function SharedCareActivity({
+  auditLogs,
+  onOpen,
+  sharedRecordsCount,
+  sharedReminderCount,
+}: {
+  auditLogs: HealthAuditLog[];
+  onOpen: () => void;
+  sharedRecordsCount: number;
+  sharedReminderCount: number;
+}) {
+  const { theme } = useAppTheme();
+  const recent = auditLogs.slice(0, 3);
+  return (
+    <AppSection
+      actionLabel="Shared calendar"
+      onActionPress={onOpen}
+      subtitle="Only visible shared-care signals appear here."
+      title="Shared-care activity"
+    >
+      <View style={styles.activityMetrics}>
+        <ActivityMetric label="Shared reminders" value={sharedReminderCount} />
+        <ActivityMetric label="Care follow-ups" value={sharedRecordsCount} />
+        <ActivityMetric label="Recent updates" value={recent.length} />
+      </View>
+      {recent.length ? (
+        <View style={styles.activityList}>
+          {recent.map((log) => (
+            <AppCard key={log.id} padding="sm" style={styles.activityCard}>
+              <View style={styles.activityIcon}>
+                <AppIcon color={FAMILY} decorative name="shared" size={16} />
+              </View>
+              <View style={styles.copy}>
+                <Text style={[styles.activityTitle, { color: theme.text }]}>
+                  {formatLabel(log.action)}
+                </Text>
+                <Text style={[styles.activityMeta, { color: theme.mutedText }]}>
+                  {log.relatedRealm ? `${formatLabel(log.relatedRealm)} · ` : ""}
+                  {new Date(log.createdAt).toLocaleDateString()}
+                </Text>
+              </View>
+              <AppChip label="Shared" variant="success" />
+            </AppCard>
+          ))}
+        </View>
+      ) : (
+        <AppCard padding="sm" variant="soft">
+          <Text style={[styles.cardBody, { color: theme.mutedText }]}>
+            No shared-care activity yet. Private profile activity remains hidden.
+          </Text>
+        </AppCard>
+      )}
+    </AppSection>
+  );
+}
+
+function ActivityMetric({ label, value }: { label: string; value: number }) {
+  const { theme } = useAppTheme();
+  return (
+    <AppCard padding="sm" style={styles.activityMetric}>
+      <Text style={[styles.activityValue, { color: theme.text }]}>{value}</Text>
+      <Text style={[styles.activityLabel, { color: theme.mutedText }]}>{label}</Text>
+    </AppCard>
   );
 }
 
@@ -500,12 +654,23 @@ function formatLabel(value: string) {
 }
 
 const styles = StyleSheet.create({
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  activeProfile: { fontSize: fontSizes.xs, fontWeight: "800", marginTop: spacing.sm },
+  activityCard: { alignItems: "center", borderWidth: 1, flexDirection: "row", gap: spacing.sm },
+  activityIcon: { alignItems: "center", backgroundColor: realmAccentWithOpacity("family", 0.14), borderRadius: radius.md, height: 34, justifyContent: "center", width: 34 },
+  activityLabel: { fontSize: 10, fontWeight: "800", marginTop: 2, textAlign: "center" },
+  activityList: { gap: spacing.sm },
+  activityMeta: { fontSize: 10, marginTop: 2 },
+  activityMetric: { alignItems: "center", flex: 1, minHeight: 70 },
+  activityMetrics: { flexDirection: "row", gap: spacing.sm },
+  activityTitle: { fontSize: fontSizes.sm, fontWeight: "900" },
+  activityValue: { fontSize: fontSizes.lg, fontWeight: "900" },
   avatarStack: { alignItems: "center", flexDirection: "row" },
   cardBody: { fontSize: 12, lineHeight: 18, marginTop: 4 },
   cardTitle: { fontSize: 16, fontWeight: "900" },
   caregiverAvatar: {
     alignItems: "center",
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderRadius: 18,
     height: 50,
     justifyContent: "center",
@@ -516,7 +681,7 @@ const styles = StyleSheet.create({
   caregiverTop: { alignItems: "center", flexDirection: "row", gap: 11 },
   childAvatar: {
     alignItems: "center",
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderRadius: 16,
     height: 44,
     justifyContent: "center",
@@ -534,7 +699,7 @@ const styles = StyleSheet.create({
   childRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   circleBadge: {
     alignSelf: "flex-start",
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderRadius: 999,
     marginTop: 14,
     paddingHorizontal: 10,
@@ -589,14 +754,9 @@ const styles = StyleSheet.create({
     minHeight: 70,
     padding: 10,
   },
-  heroStatLabel: {
-    color: "#92400e",
-    fontSize: 10,
-    fontWeight: "800",
-    marginTop: 3,
-  },
+  heroStatLabel: { fontSize: 10, fontWeight: "800", marginTop: 3 },
   heroStats: { flexDirection: "row", gap: 8, marginTop: 17 },
-  heroStatValue: { color: "#422006", fontSize: 18, fontWeight: "900" },
+  heroStatValue: { fontSize: 18, fontWeight: "900" },
   heroTitle: { fontSize: 27, fontWeight: "900", lineHeight: 32, marginTop: 7 },
   heroTop: { alignItems: "center", flexDirection: "row", gap: 12 },
   inviteAction: { color: "#7c3aed", fontSize: 12, fontWeight: "900" },
@@ -616,7 +776,7 @@ const styles = StyleSheet.create({
   },
   memberAvatar: {
     alignItems: "center",
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderRadius: 18,
     height: 48,
     justifyContent: "center",
@@ -636,7 +796,7 @@ const styles = StyleSheet.create({
   memberStatus: { fontSize: 10, marginTop: 7 },
   permissionCard: { borderWidth: 1, padding: 16 },
   permissionChip: {
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 6,
@@ -651,7 +811,7 @@ const styles = StyleSheet.create({
   permissionHeader: { alignItems: "center", flexDirection: "row", gap: 11 },
   permissionIcon: {
     alignItems: "center",
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderRadius: 17,
     height: 48,
     justifyContent: "center",
@@ -660,7 +820,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.76, transform: [{ scale: 0.985 }] },
   roleBadge: {
     alignSelf: "flex-start",
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderRadius: 999,
     marginTop: 7,
     paddingHorizontal: 9,
@@ -670,7 +830,7 @@ const styles = StyleSheet.create({
   stack: { gap: 24 },
   stackAvatar: {
     alignItems: "center",
-    backgroundColor: FAMILY_SOFT,
+    backgroundColor: realmAccentWithOpacity("family", 0.14),
     borderColor: "#ffffff",
     borderRadius: 999,
     borderWidth: 2,

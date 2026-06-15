@@ -253,17 +253,24 @@ export default function FamilyScreen() {
   return (
     <AppMainLayout subtitle="Private family health" title="Family">
       <FamilyRealmOverview
+        activeProfile={activeProfile}
+        auditLogs={auditLogs}
         caregivers={caregivers}
         circle={selectedCircle}
         invites={invites}
         members={members}
+        onCalendar={() => setActiveTab("calendar")}
         onCaregivers={() => setActiveTab("caregivers")}
+        onCircles={() => setActiveTab("circles")}
         onInvites={() => setActiveTab("invites")}
+        onJoin={() => router.push("/scan-invite" as Href)}
         onMembers={() => setActiveTab("members")}
         onPermissions={() => setActiveTab("permissions")}
         onProfiles={() => setActiveTab("profiles")}
         permissions={permissions}
         profiles={profiles}
+        sharedRecordsCount={sharedRecordsCount}
+        sharedReminderCount={sharedReminderCount}
       />
 
       <ProfileSwitcher
