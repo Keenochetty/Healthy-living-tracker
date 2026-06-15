@@ -60,7 +60,11 @@ export function AppHeader({
 
       {rightSlot}
       {showNotificationIcon ? (
-        <AppIconButton icon={<Bell size={21} />} onPress={() => undefined} />
+        <AppIconButton
+          accessibilityLabel="Open notifications"
+          icon={<Bell size={21} />}
+          onPress={() => undefined}
+        />
       ) : null}
       {avatarInitials ? (
         <AppAvatar initials={avatarInitials} size={44} />

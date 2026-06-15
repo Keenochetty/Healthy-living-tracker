@@ -18,8 +18,19 @@ import {
   QuickSaveButton,
   TimeWheelPicker,
 } from "@/components/fitness/QuickWorkoutInputs";
+import {
+  HealthDonutChart,
+  HealthMiniLineChart,
+  HealthProgressRing,
+} from "@/components/health/HealthHubCharts";
 import { MedicationSupplementSafetyDashboard } from "@/components/medication/MedicationSupplementSafetyDashboard";
-import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
+import {
+  AppButton,
+  AppCard,
+  AppChip,
+  AppIcon,
+  AppSection,
+} from "@/components/ui";
 import { getSafetyStatusLabel } from "@/lib/medicationSafetyStorage";
 import {
   archiveMedication,
@@ -64,6 +75,11 @@ import type {
   Supplement,
   SupplementForm,
 } from "@/types/medication";
+import {
+  healthRealmAccents,
+  realmAccentWithOpacity,
+} from "@/theme/healthTheme";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 type ItemType = "medication" | "supplement";
 type RealmTab =
@@ -268,6 +284,9 @@ export function MedicationSupplementRealm({
         onOpenRefills={() =>
           setActiveTab(itemType === "medication" ? "refills" : "schedule")
         }
+        onOpenRecords={() => setActiveTab("records")}
+        onOpenSafety={() => setActiveTab("safety")}
+        onOpenSchedule={() => setActiveTab("schedule")}
       />
       <ScrollView
         horizontal
@@ -496,42 +515,90 @@ function Hero({
   itemType: ItemType;
   onAdd: () => void;
 }) {
+  const { theme } = useAppTheme();
   const dueCount = data.reminders.filter(
     (reminder) => reminder.status === "due",
   ).length;
   const takenCount = data.reminders.filter(
     (reminder) => reminder.status === "taken",
   ).length;
+  const missedCount = data.reminders.filter(
+    (reminder) => reminder.status === "missed",
+  ).length;
+  const adherenceScore = data.adherence.total
+    ? Math.round((data.adherence.taken / data.adherence.total) * 100)
+    : 0;
   const next = data.reminders.find(
     (reminder) => reminder.status === "due" || reminder.status === "upcoming",
   );
   return (
     <AppCard
+      padding="md"
       style={[
         styles.medsHeroCard,
-        { borderColor: `${getAccentColor(itemType)}44` },
+        {
+          backgroundColor: theme.surface,
+          borderColor: realmAccentWithOpacity("meds", 0.42),
+        },
       ]}
     >
-      <Text style={[styles.kicker, { color: getAccentColor(itemType) }]}>
-        {itemType === "medication" ? "Medication today" : "Supplements today"}
-      </Text>
-      <Text style={styles.medsHeroTitle}>
-        {dueCount} due | {takenCount} completed
-      </Text>
-      <Text style={styles.medsHeroBody}>
-        {next
-          ? `Next: ${next.itemName} ${next.scheduledAt ? `at ${formatTime(next.scheduledAt)}` : ""}`
-          : "No reminders due right now."}
-      </Text>
-      <View style={styles.actionRow}>
-        <AppButton
-          onPress={onAdd}
-          title={
-            itemType === "medication" ? "Add Medication" : "Add Supplement"
-          }
-        />
+      <View style={styles.v8HeroRow}>
+        <View style={styles.v8HeroCopy}>
+          <Text style={[styles.kicker, { color: healthRealmAccents.meds }]}>
+            {itemType === "medication"
+              ? "MEDICATION OVERVIEW"
+              : "SUPPLEMENT OVERVIEW"}
+          </Text>
+          <Text style={[styles.v8HeroTitle, { color: theme.text }]}>
+            {missedCount
+              ? `${missedCount} item${missedCount === 1 ? "" : "s"} need review`
+              : dueCount
+                ? `${dueCount} due today`
+                : "Schedule is clear"}
+          </Text>
+          <Text style={[styles.v8HeroBody, { color: theme.mutedText }]}>
+            {next
+              ? `Next: ${next.itemName}${next.scheduledAt ? ` at ${formatTime(next.scheduledAt)}` : ""}.`
+              : "No reminders due right now."}
+          </Text>
+        </View>
+        <View style={styles.v8Ring}>
+          <HealthProgressRing
+            color={healthRealmAccents.meds}
+            progress={adherenceScore}
+            size={78}
+            trackColor={theme.border}
+          />
+          <Text style={[styles.v8RingValue, { color: theme.text }]}>
+            {adherenceScore}%
+          </Text>
+        </View>
       </View>
+      <View style={styles.v8HeroStats}>
+        <HeroMetric label="Taken" value={takenCount} />
+        <HeroMetric label="Due" value={dueCount} />
+        <HeroMetric label="Schedules" value={data.schedules.length} />
+      </View>
+      <AppChip
+        label={`Add ${itemType === "medication" ? "medication" : "supplement"}`}
+        onPress={onAdd}
+        selected
+      />
     </AppCard>
+  );
+}
+
+function HeroMetric({ label, value }: { label: string; value: number }) {
+  const { theme } = useAppTheme();
+  return (
+    <View style={[styles.v8HeroMetric, { backgroundColor: theme.background }]}>
+      <Text style={[styles.v8HeroMetricValue, { color: theme.text }]}>
+        {value}
+      </Text>
+      <Text style={[styles.v8HeroMetricLabel, { color: theme.mutedText }]}>
+        {label}
+      </Text>
+    </View>
   );
 }
 
@@ -544,6 +611,9 @@ function ConnectedRealmOverview({
   onAddCurrent,
   onAddOther,
   onOpenRefills,
+  onOpenRecords,
+  onOpenSafety,
+  onOpenSchedule,
 }: {
   companionItems: Array<Medication | Supplement>;
   companionReminders: HealthScheduleReminder[];
@@ -553,6 +623,9 @@ function ConnectedRealmOverview({
   onAddCurrent: () => void;
   onAddOther: () => void;
   onOpenRefills: () => void;
+  onOpenRecords: () => void;
+  onOpenSafety: () => void;
+  onOpenSchedule: () => void;
 }) {
   const allReminders = [...data.reminders, ...companionReminders].sort(
     (left, right) =>
@@ -567,8 +640,25 @@ function ConnectedRealmOverview({
     <View style={styles.realmOverview}>
       <Hero data={data} itemType={itemType} onAdd={onAddCurrent} />
 
+      <MedicationSnapshot data={data} onOpenSchedule={onOpenSchedule} />
+
       <AppSection
-        subtitle="Medication and supplement reminders in time order."
+        subtitle="Existing actions open the current native workflows."
+        title="Quick actions"
+      >
+        <View style={styles.v8ActionRow}>
+          <AppChip label="Schedule" onPress={onOpenSchedule} selected />
+          <AppChip label="Safety review" onPress={onOpenSafety} />
+          <AppChip label="Records" onPress={onOpenRecords} />
+          <AppChip
+            label={itemType === "medication" ? "Add supplement" : "Add medication"}
+            onPress={onAddOther}
+          />
+        </View>
+      </AppSection>
+
+      <AppSection
+        subtitle="Medication and supplement reminders in time order. Tap a dose to use the existing action sheet."
         title="Today's dose timeline"
       >
         {allReminders.length ? (
@@ -667,6 +757,86 @@ function ConnectedRealmOverview({
         </Pressable>
       </View>
     </View>
+  );
+}
+
+function MedicationSnapshot({
+  data,
+  onOpenSchedule,
+}: {
+  data: RealmData;
+  onOpenSchedule: () => void;
+}) {
+  const { theme } = useAppTheme();
+  const values = [
+    data.adherence.taken,
+    data.adherence.skipped,
+    data.adherence.missed,
+  ];
+  const recentTrend = data.logs
+    .slice(0, 7)
+    .reverse()
+    .map((log) =>
+      log.status === "taken" ? 100 : log.status === "skipped" ? 50 : 15,
+    );
+  const trend =
+    recentTrend.length > 1
+      ? recentTrend
+      : [0, data.adherence.taken ? 100 : 0];
+
+  return (
+    <AppSection
+      actionLabel="View schedule"
+      onActionPress={onOpenSchedule}
+      subtitle="Real schedule, dose-log, and adherence data already stored in the app."
+      title="Tracking snapshot"
+    >
+      <View style={styles.v8SnapshotGrid}>
+        <AppCard padding="sm" style={styles.v8SnapshotCard}>
+          <View style={styles.v8SnapshotTop}>
+            <View>
+              <Text style={[styles.v8SnapshotLabel, { color: theme.mutedText }]}>
+                Adherence logs
+              </Text>
+              <Text style={[styles.v8SnapshotValue, { color: theme.text }]}>
+                {data.adherence.total}
+              </Text>
+            </View>
+            <HealthDonutChart
+              colors={[healthRealmAccents.meds, "#f59e0b", "#ef4444"]}
+              size={52}
+              trackColor={theme.border}
+              values={values}
+            />
+          </View>
+          <Text style={[styles.v8SnapshotMeta, { color: theme.mutedText }]}>
+            {data.adherence.taken} taken | {data.adherence.skipped} skipped |{" "}
+            {data.adherence.missed} not marked
+          </Text>
+        </AppCard>
+        <AppCard padding="sm" style={styles.v8SnapshotCard}>
+          <View style={styles.v8SnapshotTop}>
+            <View>
+              <Text style={[styles.v8SnapshotLabel, { color: theme.mutedText }]}>
+                Recent dose trend
+              </Text>
+              <Text style={[styles.v8SnapshotValue, { color: theme.text }]}>
+                {data.logs.length}
+              </Text>
+            </View>
+            <HealthMiniLineChart
+              color={healthRealmAccents.meds}
+              data={trend}
+              height={42}
+              width={86}
+            />
+          </View>
+          <Text style={[styles.v8SnapshotMeta, { color: theme.mutedText }]}>
+            Logged actions only. No health outcome interpretation.
+          </Text>
+        </AppCard>
+      </View>
+    </AppSection>
   );
 }
 
@@ -2528,6 +2698,94 @@ const styles = StyleSheet.create({
   },
   supplementChipRow: { gap: 8, paddingRight: 16 },
   supplementChipText: { color: "#1d4ed8", fontSize: 11, fontWeight: "900" },
+  v8ActionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  v8HeroCopy: {
+    flex: 1,
+  },
+  v8HeroMetric: {
+    borderRadius: 16,
+    flex: 1,
+    minWidth: 72,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  v8HeroMetricLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    marginTop: 2,
+    textTransform: "uppercase",
+  },
+  v8HeroMetricValue: {
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  v8HeroRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
+  },
+  v8HeroStats: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 12,
+    marginTop: 14,
+  },
+  v8HeroBody: {
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 6,
+  },
+  v8HeroTitle: {
+    fontSize: 23,
+    fontWeight: "900",
+    lineHeight: 27,
+    marginTop: 5,
+  },
+  v8Ring: {
+    alignItems: "center",
+    height: 78,
+    justifyContent: "center",
+    width: 78,
+  },
+  v8RingValue: {
+    fontSize: 15,
+    fontWeight: "900",
+    position: "absolute",
+  },
+  v8SnapshotCard: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    minWidth: 150,
+  },
+  v8SnapshotGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9,
+  },
+  v8SnapshotLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  v8SnapshotMeta: {
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 9,
+  },
+  v8SnapshotTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between",
+  },
+  v8SnapshotValue: {
+    fontSize: 22,
+    fontWeight: "900",
+    marginTop: 3,
+  },
   tabRow: { gap: 8, paddingRight: 16 },
   timeline: { gap: 10 },
   timelineIcon: {

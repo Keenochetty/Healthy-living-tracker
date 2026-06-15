@@ -1,14 +1,23 @@
 import { Href, router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AppCard, AppIcon, AppSection } from "@/components/ui";
+import {
+  HealthDonutChart,
+  HealthMiniLineChart,
+  HealthProgressRing,
+} from "@/components/health/HealthHubCharts";
+import { AppCard, AppChip, AppIcon, AppSection } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
+import { healthRealmAccents } from "@/theme/healthTheme";
 import { useAppTheme } from "@/theme/ThemeProvider";
+import { fontSizes, spacing } from "@/theme/tokens";
 import type {
   DailyNutritionSummary,
   NutritionDiaryEntry,
   NutritionMealGroup,
   NutritionTarget,
+  Recipe,
+  SavedMeal,
   WaterGoal,
 } from "@/types/nutrition";
 
@@ -33,6 +42,8 @@ export function FoodRealmOverview({
   onOpenMeal,
   onOpenPlanner,
   onScanFood,
+  recipes,
+  savedMeals,
   summary,
   target,
   waterGoal,
@@ -42,6 +53,8 @@ export function FoodRealmOverview({
   onOpenMeal: (meal: MealKey) => void;
   onOpenPlanner: () => void;
   onScanFood: () => void;
+  recipes: Recipe[];
+  savedMeals: SavedMeal[];
   summary: DailyNutritionSummary | null;
   target: NutritionTarget | null;
   waterGoal: WaterGoal | null;
@@ -56,11 +69,23 @@ export function FoodRealmOverview({
       <NutritionHero
         calories={calories}
         calorieTarget={calorieTarget}
+        entries={entries}
         onOpenMeal={onOpenMeal}
         onScanFood={onScanFood}
+        summary={summary}
+        target={target}
+        water={water}
+        waterTarget={waterTarget}
+      />
+      <NutritionQuickActions
+        onAddWater={onAddWater}
+        onOpenMeal={onOpenMeal}
+        onOpenPlanner={onOpenPlanner}
       />
       <NutrientSummary entries={entries} summary={summary} target={target} />
       <MealCards entries={entries} onOpenMeal={onOpenMeal} />
+      <RecentFoods entries={entries} />
+      <LibraryPreview recipes={recipes} savedMeals={savedMeals} />
       <ScanFoodCard onPress={onScanFood} />
       <HydrationCard
         currentMl={water}
@@ -76,16 +101,39 @@ export function FoodRealmOverview({
 function NutritionHero({
   calories,
   calorieTarget,
+  entries,
   onOpenMeal,
   onScanFood,
+  summary,
+  target,
+  water,
+  waterTarget,
 }: {
   calories: number;
   calorieTarget: number;
+  entries: NutritionDiaryEntry[];
   onOpenMeal: (meal: MealKey) => void;
   onScanFood: () => void;
+  summary: DailyNutritionSummary | null;
+  target: NutritionTarget | null;
+  water: number;
+  waterTarget: number;
 }) {
   const { theme } = useAppTheme();
   const progress = Math.min(1, calories / Math.max(1, calorieTarget));
+  const proteinProgress = (summary?.proteinGrams ?? 0) / Math.max(1, target?.proteinTargetG ?? 140);
+  const waterProgress = water / Math.max(1, waterTarget);
+  // UI-only balance score until a reviewed nutrition scoring model is connected.
+  const score = Math.min(
+    98,
+    Math.round(
+      35 +
+        Math.min(25, progress * 25) +
+        Math.min(20, proteinProgress * 20) +
+        Math.min(15, waterProgress * 15) +
+        Math.min(3, entries.length) * 1,
+    ),
+  );
   return (
     <AppCard style={[styles.hero, { borderColor: `${ORANGE}35` }]}>
       <View style={styles.heroGlow} />
@@ -102,13 +150,14 @@ function NutritionHero({
         </View>
         <View
           accessible
-          accessibilityLabel={`${Math.round(progress * 100)} percent of daily calorie target logged`}
+          accessibilityLabel={`Nutrition balance score ${score} out of 100`}
           style={styles.targetRing}
         >
-          <Text style={[styles.targetValue, { color: theme.text }]}>
-            {Math.round(calories)}
-          </Text>
-          <Text style={styles.targetUnit}>of {calorieTarget} kcal</Text>
+          <HealthProgressRing color={healthRealmAccents.food} progress={score} trackColor={theme.primarySoft} size={94} />
+          <View style={styles.scoreText}>
+            <Text style={[styles.targetValue, { color: theme.text }]}>{score}</Text>
+            <Text style={[styles.targetUnit, { color: theme.mutedText }]}>balance</Text>
+          </View>
         </View>
       </View>
       <View style={styles.progressTrack}>
@@ -129,6 +178,85 @@ function NutritionHero({
         <FoodButton icon="ai_draft" label="Scan food" onPress={onScanFood} />
       </View>
     </AppCard>
+  );
+}
+
+function NutritionQuickActions({
+  onAddWater,
+  onOpenMeal,
+  onOpenPlanner,
+}: {
+  onAddWater: () => void;
+  onOpenMeal: (meal: MealKey) => void;
+  onOpenPlanner: () => void;
+}) {
+  return (
+    <AppSection subtitle="Continue existing food and nutrition flows." title="Quick actions">
+      <View style={styles.quickActions}>
+        <AppChip label="Log meal" onPress={() => onOpenMeal("breakfast")} selected />
+        <AppChip label="Scan barcode" onPress={() => router.push("/food/barcode-scanner" as Href)} />
+        <AppChip label="Smart-log image" onPress={() => router.push("/food/smart-log" as Href)} />
+        <AppChip label="Add water" onPress={onAddWater} />
+        <AppChip label="Saved meals" onPress={() => router.push({ pathname: "/food", params: { tab: "saved_meals" } } as Href)} />
+        <AppChip label="Recipes" onPress={onOpenPlanner} />
+        <AppChip label="Daily note" onPress={() => router.push({ pathname: "/food", params: { tab: "settings" } } as Href)} />
+        <AppChip label="View reports" onPress={() => router.push({ pathname: "/food", params: { tab: "reports" } } as Href)} />
+      </View>
+    </AppSection>
+  );
+}
+
+function RecentFoods({ entries }: { entries: NutritionDiaryEntry[] }) {
+  const { theme } = useAppTheme();
+  return (
+    <AppSection subtitle="Recent real diary entries and their source." title="Recent foods">
+      {entries.length ? (
+        <View style={styles.recentList}>
+          {entries.slice(0, 4).map((entry) => (
+            <AppCard key={entry.id} padding="sm" style={styles.recentCard}>
+              <AppIcon color={healthRealmAccents.food} decorative name="nutrition" size={18} />
+              <View style={styles.recentCopy}>
+                <Text numberOfLines={1} style={[styles.recentTitle, { color: theme.text }]}>{entry.foodName}</Text>
+                <Text style={[styles.recentMeta, { color: theme.mutedText }]}>
+                  {Math.round(entry.calories)} kcal · {entry.entrySource?.replace(/_/g, " ") ?? "manual"}
+                </Text>
+              </View>
+              <AppChip label={entry.mealGroup} variant="muted" />
+            </AppCard>
+          ))}
+        </View>
+      ) : (
+        <AppCard padding="sm" variant="soft">
+          <Text style={[styles.recentMeta, { color: theme.mutedText }]}>No recent foods yet. Log a meal when ready.</Text>
+        </AppCard>
+      )}
+    </AppSection>
+  );
+}
+
+function LibraryPreview({
+  recipes,
+  savedMeals,
+}: {
+  recipes: Recipe[];
+  savedMeals: SavedMeal[];
+}) {
+  const { theme } = useAppTheme();
+  return (
+    <AppSection subtitle="Reusable meals and recipes already saved." title="Meal library">
+      <View style={styles.libraryGrid}>
+        <AppCard onPress={() => router.push({ pathname: "/food", params: { tab: "saved_meals" } } as Href)} padding="sm" style={styles.libraryCard}>
+          <HealthMiniLineChart color={healthRealmAccents.food} data={[0, 1, savedMeals.length, 1, savedMeals.length + 1]} />
+          <Text style={[styles.libraryValue, { color: theme.text }]}>{savedMeals.length}</Text>
+          <Text style={[styles.libraryLabel, { color: theme.mutedText }]}>Saved meals</Text>
+        </AppCard>
+        <AppCard onPress={() => router.push({ pathname: "/food", params: { tab: "recipes" } } as Href)} padding="sm" style={styles.libraryCard}>
+          <HealthDonutChart colors={[healthRealmAccents.food, healthRealmAccents.health]} trackColor={theme.primarySoft} values={[recipes.length, Math.max(1, savedMeals.length)]} />
+          <Text style={[styles.libraryValue, { color: theme.text }]}>{recipes.length}</Text>
+          <Text style={[styles.libraryLabel, { color: theme.mutedText }]}>Recipes</Text>
+        </AppCard>
+      </View>
+    </AppSection>
   );
 }
 
@@ -609,6 +737,12 @@ const styles = StyleSheet.create({
   },
   planningTitle: { fontSize: 15, fontWeight: "900" },
   pressed: { opacity: 0.76, transform: [{ scale: 0.985 }] },
+  quickActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  recentCard: { alignItems: "center", borderWidth: 1, flexDirection: "row", gap: spacing.sm },
+  recentCopy: { flex: 1, minWidth: 0 },
+  recentList: { gap: spacing.sm },
+  recentMeta: { fontSize: fontSizes.xs, lineHeight: 16 },
+  recentTitle: { fontSize: fontSizes.sm, fontWeight: "900" },
   progressFill: { backgroundColor: ORANGE, borderRadius: 999, height: "100%" },
   progressTrack: {
     backgroundColor: "#fed7aa",
@@ -653,14 +787,12 @@ const styles = StyleSheet.create({
   },
   targetRing: {
     alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#fdba74",
     borderRadius: 999,
-    borderWidth: 7,
-    height: 108,
+    height: 94,
     justifyContent: "center",
-    width: 108,
+    width: 94,
   },
+  scoreText: { alignItems: "center", position: "absolute" },
   targetUnit: {
     color: "#9a3412",
     fontSize: 9,
@@ -668,6 +800,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   targetValue: { fontSize: 20, fontWeight: "900" },
+  libraryCard: { flex: 1, minHeight: 130 },
+  libraryGrid: { flexDirection: "row", gap: spacing.sm },
+  libraryLabel: { fontSize: fontSizes.xs, fontWeight: "800", marginTop: 2 },
+  libraryValue: { fontSize: fontSizes.lg, fontWeight: "900", marginTop: spacing.sm },
   waterFill: { backgroundColor: "#38bdf8", borderRadius: 999, height: "100%" },
   waterTrack: {
     backgroundColor: "#bae6fd",

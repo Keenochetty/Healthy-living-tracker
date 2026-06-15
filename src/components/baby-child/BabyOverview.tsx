@@ -7,7 +7,16 @@ import {
   type BabyQuickLogMode,
 } from "@/components/baby-child/BabyQuickLogGrid";
 import { BabyTimeline } from "@/components/baby-child/BabyTimeline";
-import { AppCard, AppIcon } from "@/components/ui";
+import {
+  HealthDonutChart,
+  HealthMiniLineChart,
+  HealthProgressRing,
+} from "@/components/health/HealthHubCharts";
+import { AppCard, AppChip, AppIcon } from "@/components/ui";
+import {
+  healthRealmAccents,
+  realmAccentWithOpacity,
+} from "@/theme/healthTheme";
 import { useAppTheme } from "@/theme/ThemeProvider";
 import type { BabyCalendarEvent } from "@/types/child";
 
@@ -79,95 +88,16 @@ export function BabyOverview({
 
   return (
     <View style={styles.stack}>
-      <AppCard
-        style={[
-          styles.hero,
-          {
-            backgroundColor: isDark(theme.background)
-              ? (theme.surfaceSoft ?? theme.surface)
-              : "#fff0ed",
-            borderColor: theme.border,
-          },
-        ]}
-      >
-        <View style={styles.heroHeader}>
-          <View style={[styles.heroIcon, { backgroundColor: theme.surface }]}>
-            <AppIcon
-              color={theme.primary}
-              decorative
-              name="baby_child"
-              size={22}
-            />
-          </View>
-          <View style={styles.heroCopy}>
-            <Text style={[styles.heroTitle, { color: theme.text }]}>
-              Care Now
-            </Text>
-            <Text style={[styles.heroSubtitle, { color: theme.mutedText }]}>
-              Essentials at a glance
-            </Text>
-          </View>
-        </View>
-        <View style={[styles.careGrid, { backgroundColor: theme.surface }]}>
-          <CareMetric
-            icon="nutrition"
-            label="Last feed"
-            primary={
-              care.lastFeed
-                ? formatAgo(care.lastFeed.loggedAt)
-                : "Not logged yet"
-            }
-            secondary={
-              care.lastFeed?.amountMl
-                ? `${care.lastFeed.amountMl} ml`
-                : "Start when ready"
-            }
-            tone="#fff0e8"
-          />
-          <CareMetric
-            icon="sleep"
-            label="Last sleep"
-            primary={
-              care.lastSleep
-                ? formatAgo(care.lastSleep.loggedAt)
-                : "Not logged yet"
-            }
-            secondary={
-              care.lastSleep
-                ? formatMinutes(care.lastSleep.durationMinutes)
-                : "Start when ready"
-            }
-            tone="#f1edff"
-          />
-          <CareMetric
-            icon="baby_child"
-            label="Last diaper"
-            primary={
-              care.lastDiaper
-                ? formatAgo(care.lastDiaper.loggedAt)
-                : "Not logged yet"
-            }
-            secondary={
-              care.lastDiaper
-                ? formatValue(care.lastDiaper.diaperType)
-                : "Start when ready"
-            }
-            tone="#e8f8f4"
-          />
-          <CareMetric
-            icon="calendar"
-            label="Next reminder"
-            primary={care.nextReminder ?? "Add reminder"}
-            secondary={
-              care.nextReminder ? "Saved care reminder" : "Start when ready"
-            }
-            tone="#edf5ff"
-          />
-        </View>
-      </AppCard>
+      <BabyCareHero care={care} onSheet={onSheet} />
 
       <SectionTitle subtitle="Log in a tap, view in time." title="Quick Log" />
       <BabyQuickLogGrid onSelect={onSheet} />
+
+      <SectionTitle
+        subtitle="Real selected-child care logs with no medical interpretation."
+        title="Care snapshot"
+      />
+      <CareSnapshot care={care} />
 
       <SectionTitle title="Today's Timeline" />
       <BabyTimeline
@@ -210,50 +140,137 @@ export function BabyOverview({
   );
 }
 
-function CareMetric({
-  icon,
-  label,
-  primary,
-  secondary,
-  tone,
+function BabyCareHero({
+  care,
+  onSheet,
 }: {
-  icon: string;
-  label: string;
-  primary: string;
-  secondary: string;
-  tone: string;
+  care: BabyOverviewCare;
+  onSheet: (mode: BabyQuickLogMode) => void;
 }) {
   const { theme } = useAppTheme();
+  const activityCount =
+    care.feedCount + care.sleepBlockCount + care.diaperCount;
+  const headline = care.medicineDueCount
+    ? `${care.medicineDueCount} medicine item${care.medicineDueCount === 1 ? "" : "s"} due`
+    : care.nextReminder ?? "Care timeline is ready";
+
   return (
-    <View
+    <AppCard
+      padding="md"
       style={[
-        styles.metric,
-        { backgroundColor: isDark(theme.background) ? theme.surface : tone },
+        styles.v8Hero,
+        {
+          backgroundColor: theme.surface,
+          borderColor: realmAccentWithOpacity("baby", 0.42),
+        },
       ]}
     >
-      <View style={[styles.metricIcon, { backgroundColor: theme.primarySoft }]}>
-        <AppIcon
-          color={theme.primary}
-          decorative
-          name={icon as never}
-          size={20}
-        />
+      <View style={styles.v8HeroRow}>
+        <View style={styles.v8HeroCopy}>
+          <Text style={styles.v8Kicker}>BABY / CHILD CARE</Text>
+          <Text style={[styles.v8HeroTitle, { color: theme.text }]}>
+            {headline}
+          </Text>
+          <Text style={[styles.v8HeroBody, { color: theme.mutedText }]}>
+            {care.lastFeed
+              ? `Latest feed ${formatAgo(care.lastFeed.loggedAt)}.`
+              : "Start with the next care log when ready."}
+          </Text>
+        </View>
+        <View style={styles.v8Ring}>
+          <HealthProgressRing
+            color={healthRealmAccents.baby}
+            progress={Math.min(100, activityCount * 10)}
+            size={78}
+            trackColor={theme.border}
+          />
+          <Text style={[styles.v8RingValue, { color: theme.text }]}>
+            {activityCount}
+          </Text>
+        </View>
       </View>
-      <Text style={[styles.metricLabel, { color: theme.text }]}>{label}</Text>
+      <View style={styles.v8HeroStats}>
+        <HeroMetric label="Feeds" value={`${care.feedCount}`} />
+        <HeroMetric label="Sleep" value={formatMinutes(care.sleepMinutes)} />
+        <HeroMetric label="Diapers" value={`${care.diaperCount}`} />
+      </View>
+      <View style={styles.v8Actions}>
+        <AppChip label="Log feed" onPress={() => onSheet("feed")} selected />
+        <AppChip label="Log sleep" onPress={() => onSheet("sleep")} />
+        <AppChip label="Add note" onPress={() => onSheet("note")} />
+      </View>
+    </AppCard>
+  );
+}
+
+function HeroMetric({ label, value }: { label: string; value: string }) {
+  const { theme } = useAppTheme();
+  return (
+    <View style={[styles.v8HeroMetric, { backgroundColor: theme.background }]}>
       <Text
         numberOfLines={1}
-        adjustsFontSizeToFit
-        style={[styles.metricPrimary, { color: theme.text }]}
+        style={[styles.v8HeroMetricValue, { color: theme.text }]}
       >
-        {primary}
+        {value}
       </Text>
-      <Text
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        style={[styles.metricSecondary, { color: theme.mutedText }]}
-      >
-        {secondary}
+      <Text style={[styles.v8HeroMetricLabel, { color: theme.mutedText }]}>
+        {label}
       </Text>
+    </View>
+  );
+}
+
+function CareSnapshot({ care }: { care: BabyOverviewCare }) {
+  const { theme } = useAppTheme();
+  return (
+    <View style={styles.v8SnapshotGrid}>
+      <AppCard padding="sm" style={styles.v8SnapshotCard}>
+        <View style={styles.v8SnapshotTop}>
+          <View>
+            <Text style={[styles.v8SnapshotLabel, { color: theme.mutedText }]}>
+              Care activity
+            </Text>
+            <Text style={[styles.v8SnapshotValue, { color: theme.text }]}>
+              {care.feedCount + care.sleepBlockCount + care.diaperCount}
+            </Text>
+          </View>
+          <HealthMiniLineChart
+            color={healthRealmAccents.baby}
+            data={[
+              care.feedCount,
+              care.sleepBlockCount,
+              care.diaperCount,
+              care.medicineDueCount,
+            ]}
+            height={42}
+            width={86}
+          />
+        </View>
+        <Text style={[styles.v8SnapshotMeta, { color: theme.mutedText }]}>
+          Feed, sleep, diaper, and medicine logs today.
+        </Text>
+      </AppCard>
+      <AppCard padding="sm" style={styles.v8SnapshotCard}>
+        <View style={styles.v8SnapshotTop}>
+          <View>
+            <Text style={[styles.v8SnapshotLabel, { color: theme.mutedText }]}>
+              Diaper notes
+            </Text>
+            <Text style={[styles.v8SnapshotValue, { color: theme.text }]}>
+              {care.diaperCount}
+            </Text>
+          </View>
+          <HealthDonutChart
+            colors={[healthRealmAccents.baby, theme.warning]}
+            size={52}
+            trackColor={theme.border}
+            values={[care.wetDiaperCount, care.dirtyDiaperCount]}
+          />
+        </View>
+        <Text style={[styles.v8SnapshotMeta, { color: theme.mutedText }]}>
+          {care.wetDiaperCount} wet | {care.dirtyDiaperCount} dirty
+        </Text>
+      </AppCard>
     </View>
   );
 }
@@ -443,14 +460,6 @@ function formatValue(value: string) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function isDark(background: string) {
-  return (
-    background.startsWith("#0") ||
-    background.startsWith("#1") ||
-    background.startsWith("rgb")
-  );
-}
-
 const styles = StyleSheet.create({
   bar: { borderRadius: 999, flex: 1, minWidth: 7 },
   bars: {
@@ -543,4 +552,101 @@ const styles = StyleSheet.create({
   skeleton: { borderRadius: 26, borderWidth: 1, gap: 14, padding: 18 },
   skeletonLine: { borderRadius: 999, height: 14 },
   stack: { gap: 16 },
+  v8Actions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  v8Hero: {
+    borderWidth: 1,
+  },
+  v8HeroBody: {
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 6,
+  },
+  v8HeroCopy: {
+    flex: 1,
+  },
+  v8HeroMetric: {
+    borderRadius: 16,
+    flex: 1,
+    minWidth: 76,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  v8HeroMetricLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    marginTop: 3,
+    textTransform: "uppercase",
+  },
+  v8HeroMetricValue: {
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  v8HeroRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
+  },
+  v8HeroStats: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 12,
+    marginTop: 14,
+  },
+  v8HeroTitle: {
+    fontSize: 23,
+    fontWeight: "900",
+    lineHeight: 27,
+    marginTop: 5,
+  },
+  v8Kicker: {
+    color: healthRealmAccents.baby,
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  v8Ring: {
+    alignItems: "center",
+    height: 78,
+    justifyContent: "center",
+    width: 78,
+  },
+  v8RingValue: {
+    fontSize: 16,
+    fontWeight: "900",
+    position: "absolute",
+  },
+  v8SnapshotCard: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    minWidth: 150,
+  },
+  v8SnapshotGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9,
+  },
+  v8SnapshotLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  v8SnapshotMeta: {
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 9,
+  },
+  v8SnapshotTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between",
+  },
+  v8SnapshotValue: {
+    fontSize: 22,
+    fontWeight: "900",
+    marginTop: 3,
+  },
 });

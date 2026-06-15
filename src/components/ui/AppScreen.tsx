@@ -71,6 +71,7 @@ export function AppScreen({
       {scroll ? (
         <ScrollView
           contentContainerStyle={contentStyle}
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {children}

@@ -36,9 +36,9 @@ export function AppCard({
     {
       backgroundColor: background,
       borderColor:
-        variant === "glass" ? "rgba(255,255,255,0.45)" : theme.border,
+        variant === "glass" ? theme.border : theme.border,
       borderRadius: radii[radius],
-      borderWidth: variant === "glass" ? 1 : 0,
+      borderWidth: 1,
       padding:
         padding === "sm"
           ? spacing.md
@@ -47,7 +47,7 @@ export function AppCard({
             : spacing.xl,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: theme.background === "#0f172a" ? 0.16 : 0.06,
+      shadowOpacity: isDarkColor(theme.background) ? 0.16 : 0.06,
       shadowRadius: 16,
       elevation: 3,
     },
@@ -79,16 +79,24 @@ function getVariantBackground(
     case "primary":
       return theme.primary;
     case "warning":
-      return "#fff7ed";
+      return withAlpha(theme.warning, "18");
     case "danger":
-      return "#fee2e2";
+      return withAlpha(theme.danger, "18");
     case "success":
-      return "#ecfdf5";
+      return withAlpha(theme.success, "18");
     case "glass":
-      return theme.background === "#0f172a"
+      return isDarkColor(theme.background)
         ? "rgba(30,41,59,0.78)"
         : "rgba(255,255,255,0.78)";
     default:
       return theme.surface;
   }
+}
+
+function withAlpha(color: string, alpha: string) {
+  return /^#[0-9a-f]{6}$/i.test(color) ? `${color}${alpha}` : color;
+}
+
+function isDarkColor(color: string) {
+  return color.startsWith("#0") || color.startsWith("#1");
 }

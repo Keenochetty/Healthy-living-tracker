@@ -230,6 +230,8 @@ export default function FoodScreen() {
           onSheet={setSheetMode}
           onTab={setActiveTab}
           summary={summary}
+          recipes={recipes}
+          savedMeals={savedMeals}
           target={target}
           waterGoal={waterGoal}
         />
@@ -331,6 +333,8 @@ function TodayTab({
   onOpenMeal,
   onSheet,
   onTab,
+  recipes,
+  savedMeals,
   summary,
   target,
   waterGoal,
@@ -341,6 +345,8 @@ function TodayTab({
   onOpenMeal: (meal: MealKey) => void;
   onSheet: (mode: SheetMode) => void;
   onTab: (tab: NutritionTab) => void;
+  recipes: Recipe[];
+  savedMeals: SavedMeal[];
   summary: DailyNutritionSummary | null;
   target: NutritionTarget | null;
   waterGoal: WaterGoal | null;
@@ -353,6 +359,8 @@ function TodayTab({
         onOpenMeal={onOpenMeal}
         onOpenPlanner={() => onTab("recipes")}
         onScanFood={() => onSheet("smart_log")}
+        recipes={recipes}
+        savedMeals={savedMeals}
         summary={summary}
         target={target}
         waterGoal={waterGoal}

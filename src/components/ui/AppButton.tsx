@@ -7,6 +7,7 @@ import {
 } from "react-native";
 
 import { radius, spacing } from "@/theme/tokens";
+import { getContrastText } from "@/theme/designSystem";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppButtonProps = PressableProps & {
@@ -51,6 +52,7 @@ export function AppButton({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ busy: loading, disabled: disabled || loading }}
       disabled={disabled || loading}
       style={(state) => [
         {
@@ -125,13 +127,13 @@ function getButtonColors(
       return {
         backgroundColor: theme.success,
         borderColor: theme.success,
-        color: "#ffffff",
+        color: getContrastText(theme.success),
       };
     default:
       return {
         backgroundColor: theme.primary,
         borderColor: theme.primary,
-        color: "#ffffff",
+        color: getContrastText(theme.primary),
       };
   }
 }

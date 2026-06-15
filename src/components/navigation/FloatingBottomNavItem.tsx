@@ -12,6 +12,7 @@ import Animated, {
 import { AppIcon } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
 import { lightImpact } from "@/lib/haptics";
+import { getContrastText } from "@/theme/designSystem";
 import { appMotion, appRadius, touchTargets } from "@/theme/designSystem";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
@@ -37,9 +38,7 @@ export function FloatingBottomNavItem({
   const labelWidth = Math.min(66, Math.max(38, label.length * 7.5 + 2));
   const activeWidth = labelWidth + 50;
   const inactiveWidth = 42;
-  const activeForeground = isDarkBackground(theme.background)
-    ? theme.background
-    : "#ffffff";
+  const activeForeground = getContrastText(theme.primary);
   const progress = useDerivedValue(() =>
     withTiming(focused ? 1 : 0, { duration: appMotion.navTransition }),
   );
@@ -143,9 +142,3 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 });
-
-function isDarkBackground(color: string) {
-  return (
-    color.startsWith("#0") || color.startsWith("#1") || color.includes("rgba(")
-  );
-}

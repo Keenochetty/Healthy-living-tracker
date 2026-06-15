@@ -93,6 +93,7 @@ const GROUP_ICONS: Record<string, AppIconName> = {
 export default function SettingsControlPanelScreen() {
   const params = useLocalSearchParams<{ query?: string }>();
   const { isAuthenticated, preferences, profile } = useAuth();
+  const { theme } = useAppTheme();
   const [query, setQuery] = useState(
     typeof params.query === "string" ? params.query : "",
   );
@@ -134,7 +135,7 @@ export default function SettingsControlPanelScreen() {
       </AppSection>
 
       <View style={styles.searchWrap}>
-        <Search color="#64748b" size={19} />
+        <Search color={theme.mutedText} size={19} />
         <AppFormInput
           accessibilityLabel="Search settings"
           containerStyle={styles.searchInput}
@@ -222,17 +223,33 @@ function ProfileHero({
       .toUpperCase() || "HS";
 
   return (
-    <AppCard style={[styles.profileHero, { borderColor: theme.border }]}>
-      <AppAvatar imageUri={avatarUri} initials={initials} size={96} />
-      <Text style={[styles.profileName, { color: theme.text }]}>{name}</Text>
-      <Text style={[styles.profileMeta, { color: theme.mutedText }]}>
-        {email ?? (isAuthenticated ? "Signed-in account" : "Local profile")}
-      </Text>
-      <AppChip
-        label="Update photo and profile"
-        onPress={() => router.push("/settings/profile-contact" as Href)}
-        variant="primary"
-      />
+    <AppCard
+      style={[
+        styles.profileHero,
+        { backgroundColor: theme.primarySoft, borderColor: theme.border },
+      ]}
+    >
+      <AppAvatar imageUri={avatarUri} initials={initials} size={72} />
+      <View style={styles.profileCopy}>
+        <Text style={[styles.profileEyebrow, { color: theme.primary }]}>
+          ACCOUNT CONTROL PANEL
+        </Text>
+        <Text style={[styles.profileName, { color: theme.text }]}>{name}</Text>
+        <Text style={[styles.profileMeta, { color: theme.mutedText }]}>
+          {email ?? (isAuthenticated ? "Signed-in account" : "Local profile")}
+        </Text>
+        <View style={styles.profileActions}>
+          <AppChip
+            label={isAuthenticated ? "Synced" : "Local"}
+            variant={isAuthenticated ? "success" : "muted"}
+          />
+          <AppChip
+            label="Edit profile"
+            onPress={() => router.push("/settings/profile-contact" as Href)}
+            variant="primary"
+          />
+        </View>
+      </View>
     </AppCard>
   );
 }
@@ -260,7 +277,9 @@ function ControlCard({
         pressed ? styles.pressed : null,
       ]}
     >
-      <View style={styles.controlIcon}>
+      <View
+        style={[styles.controlIcon, { backgroundColor: theme.primarySoft }]}
+      >
         <AppIcon color={theme.primary} decorative name={icon} size={21} />
       </View>
       <Text style={[styles.controlTitle, { color: theme.text }]}>{title}</Text>
@@ -320,12 +339,24 @@ function SettingsRow({
       style={({ pressed }) => [
         styles.row,
         danger
-          ? styles.dangerRow
+          ? {
+              backgroundColor: `${theme.danger}12`,
+              borderColor: `${theme.danger}55`,
+            }
           : { backgroundColor: theme.surface, borderColor: theme.border },
         pressed ? styles.pressed : null,
       ]}
     >
-      <View style={[styles.rowIcon, danger ? styles.dangerIcon : null]}>
+      <View
+        style={[
+          styles.rowIcon,
+          {
+            backgroundColor: danger
+              ? `${theme.danger}20`
+              : theme.primarySoft,
+          },
+        ]}
+      >
         <AppIcon
           color={danger ? theme.danger : theme.primary}
           decorative
@@ -394,7 +425,6 @@ const styles = StyleSheet.create({
   controlGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   controlIcon: {
     alignItems: "center",
-    backgroundColor: "#f1f5f9",
     borderRadius: 15,
     height: 42,
     justifyContent: "center",
@@ -402,26 +432,21 @@ const styles = StyleSheet.create({
   },
   controlTitle: { fontSize: 13, fontWeight: "900", marginTop: 10 },
   copy: { flex: 1, gap: 5, minWidth: 0 },
-  dangerGroup: {
-    backgroundColor: "#fff7f7",
-    borderColor: "#fecaca",
-    borderRadius: 24,
-    borderWidth: 1,
-    gap: 8,
-    padding: 8,
-  },
-  dangerIcon: { backgroundColor: "#fee2e2" },
-  dangerRow: { backgroundColor: "#fffafa", borderColor: "#fecaca" },
+  dangerGroup: { gap: 8 },
   description: { fontSize: 13, lineHeight: 18 },
   group: { gap: 8 },
   profileHero: {
     alignItems: "center",
-    backgroundColor: "#f8fafc",
     borderWidth: 1,
-    padding: 20,
+    flexDirection: "row",
+    gap: spacing.md,
+    padding: spacing.lg,
   },
-  profileMeta: { fontSize: 12, marginBottom: 13, marginTop: 5 },
-  profileName: { fontSize: 22, fontWeight: "900", marginTop: 12 },
+  profileActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  profileCopy: { flex: 1, gap: spacing.xs },
+  profileEyebrow: { fontSize: 10, fontWeight: "900", letterSpacing: 1.2 },
+  profileMeta: { fontSize: 12, marginBottom: spacing.xs },
+  profileName: { fontSize: 20, fontWeight: "900" },
   pressed: { opacity: 0.72 },
   row: {
     alignItems: "center",
@@ -440,7 +465,6 @@ const styles = StyleSheet.create({
   },
   rowIcon: {
     alignItems: "center",
-    backgroundColor: "#f1f5f9",
     borderRadius: 16,
     height: 44,
     justifyContent: "center",

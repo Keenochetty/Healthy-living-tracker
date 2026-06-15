@@ -3,7 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
-import { AppButton, AppCard, AppChip, AppFormInput } from "@/components/ui";
+import {
+  AppButton,
+  AppCard,
+  AppChip,
+  AppFormInput,
+  AppIcon,
+} from "@/components/ui";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { getCountryByName } from "@/constants/countries";
 import {
@@ -287,8 +293,21 @@ export default function OnboardingScreen() {
         <View style={{ gap: 16 }}>
           <AppCard
             radius="2xl"
-            style={{ borderColor: theme.border, borderWidth: 1, padding: 24 }}
+            style={{
+              backgroundColor: theme.primarySoft,
+              borderColor: theme.border,
+              borderWidth: 1,
+              gap: 16,
+              padding: 24,
+            }}
           >
+            <View style={styles.welcomeIconRow}>
+              <AppIcon container name="health" size={26} variant="primary" />
+              <AppChip label="Private by default" variant="private" />
+            </View>
+            <Text style={[styles.eyebrow, { color: theme.primary }]}>
+              HEALTHOS
+            </Text>
             <Text style={[styles.heroTitle, { color: theme.text }]}>
               Your health, family, and daily care in one place.
             </Text>
@@ -296,6 +315,12 @@ export default function OnboardingScreen() {
               Track what matters, keep records organized, and choose what you
               want to see at a glance.
             </Text>
+            <View style={styles.pillGrid}>
+              <AppChip label="Health" variant="success" />
+              <AppChip label="Plans" variant="info" />
+              <AppChip label="Family" variant="primary" />
+              <AppChip label="Records" variant="muted" />
+            </View>
           </AppCard>
           <AppButton
             onPress={() => finishStep("privacy_promise")}
@@ -322,11 +347,19 @@ export default function OnboardingScreen() {
             "Sensitive health data stays protected",
             "AI suggestions require confirmation",
             "This app is not a doctor",
-          ].map((item) => (
-            <AppCard key={item}>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>
-                {item}
-              </Text>
+          ].map((item, index) => (
+            <AppCard key={item} padding="sm" radius="lg">
+              <View style={styles.promiseRow}>
+                <AppIcon
+                  container
+                  name={index === 5 ? "health" : "privacy"}
+                  size={18}
+                  variant={index === 5 ? "warning" : "primary"}
+                />
+                <Text style={[styles.cardTitle, { color: theme.text }]}>
+                  {item}
+                </Text>
+              </View>
             </AppCard>
           ))}
           <Text style={[styles.footer, { color: theme.mutedText }]}>
@@ -818,6 +851,11 @@ function formatValue(value: string) {
 
 const styles = {
   cardTitle: { fontSize: 17, fontWeight: "900" as const },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: "900" as const,
+    letterSpacing: 1.4,
+  },
   footer: { fontSize: 13, lineHeight: 20 },
   genderCard: {
     alignItems: "center" as const,
@@ -841,6 +879,16 @@ const styles = {
     flexWrap: "wrap" as const,
     gap: 8,
   },
+  promiseRow: {
+    alignItems: "center" as const,
+    flexDirection: "row" as const,
+    gap: 12,
+  },
   sectionTitle: { fontSize: 18, fontWeight: "900" as const },
   title: { fontSize: 28, fontWeight: "900" as const },
+  welcomeIconRow: {
+    alignItems: "center" as const,
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+  },
 };

@@ -1,20 +1,23 @@
 import { Href, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { OnboardingChoiceCard } from "@/components/onboarding/OnboardingChoiceCard";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 import { UnitPreviewCard } from "@/components/onboarding/UnitPreviewCard";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import { AppFormInput } from "@/components/ui";
+import { AppButton, AppFormInput } from "@/components/ui";
 import { COUNTRY_OPTIONS, getCountryByName } from "@/constants/countries";
 import {
   getUserPreferences,
   updateUserPreferences,
 } from "@/lib/userPreferences";
 import type { UserPreferences } from "@/types/profile";
+import { typography } from "@/theme/designSystem";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export default function OnboardingProfileScreen() {
+  const { theme } = useAppTheme();
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const selectedCountry = getCountryByName(
     preferences?.country ?? "South Africa",
@@ -60,10 +63,10 @@ export default function OnboardingProfileScreen() {
       <OnboardingProgress step={2} totalSteps={5} />
 
       <View style={{ gap: 5 }}>
-        <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
+        <Text style={[typography.screenTitle, { color: theme.text }]}>
           Set up your profile
         </Text>
-        <Text style={{ color: "#64748b", lineHeight: 21 }}>
+        <Text style={[typography.body, { color: theme.mutedText }]}>
           Add a name and pick the country settings that fit you.
         </Text>
       </View>
@@ -81,10 +84,10 @@ export default function OnboardingProfileScreen() {
 
       <View style={{ gap: 10 }}>
         <View>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+          <Text style={[typography.sectionTitle, { color: theme.text }]}>
             Country and region
           </Text>
-          <Text style={{ color: "#64748b", marginTop: 3 }}>
+          <Text style={[typography.helper, { color: theme.mutedText, marginTop: 3 }]}>
             Default region: {selectedCountry.country} /{" "}
             {selectedCountry.currency} / {selectedCountry.timezone}
           </Text>
@@ -104,33 +107,7 @@ export default function OnboardingProfileScreen() {
 
       <UnitPreviewCard units={preferences.units} />
 
-      <PrimaryButton label="Continue" onPress={continueToModules} />
+      <AppButton fullWidth title="Continue" onPress={continueToModules} />
     </ScreenWrapper>
-  );
-}
-
-function PrimaryButton({
-  label,
-  onPress,
-}: {
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      style={{
-        alignItems: "center",
-        backgroundColor: "#7c3aed",
-        borderRadius: 18,
-        justifyContent: "center",
-        minHeight: 54,
-      }}
-    >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
   );
 }

@@ -21,6 +21,7 @@ export function AiSearchBar({ onPress }: { onPress: () => void }) {
       }}
     >
       <Pressable
+        accessibilityHint="Opens assistant actions and search"
         accessibilityLabel="Open HealthOS AI search"
         accessibilityRole="button"
         onPress={onPress}

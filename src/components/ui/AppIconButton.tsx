@@ -2,9 +2,11 @@ import { cloneElement, isValidElement, ReactElement, ReactNode } from "react";
 import { Pressable } from "react-native";
 
 import { radius } from "@/theme/tokens";
+import { getContrastText } from "@/theme/designSystem";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppIconButtonProps = {
+  accessibilityLabel?: string;
   icon: ReactNode;
   onPress: () => void;
   size?: "sm" | "md" | "lg";
@@ -12,6 +14,7 @@ type AppIconButtonProps = {
 };
 
 export function AppIconButton({
+  accessibilityLabel,
   icon,
   onPress,
   size = "md",
@@ -28,6 +31,7 @@ export function AppIconButton({
 
   return (
     <Pressable
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({
@@ -53,11 +57,11 @@ function getIconButtonColors(
 ) {
   switch (variant) {
     case "primary":
-      return { background: theme.primary, icon: "#ffffff" };
+      return { background: theme.primary, icon: getContrastText(theme.primary) };
     case "ghost":
       return { background: "transparent", icon: theme.primary };
     case "danger":
-      return { background: "#fee2e2", icon: theme.danger };
+      return { background: theme.primarySoft, icon: theme.danger };
     default:
       return { background: theme.surface, icon: theme.text };
   }

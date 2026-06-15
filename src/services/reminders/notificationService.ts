@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants, { AppOwnership } from "expo-constants";
 import { router } from "expo-router";
 import { Platform } from "react-native";
 
@@ -961,12 +962,20 @@ function extractNotificationData(input: unknown) {
 
 async function loadNotifications() {
   if (notificationsModule) return notificationsModule;
+  // Importing expo-notifications itself throws on Android Expo Go in SDK 53+.
+  // In-app reminders remain available; device delivery requires a dev/release build.
+  if (isAndroidExpoGo()) return null;
+
   try {
     notificationsModule = await import("expo-notifications");
     return notificationsModule;
   } catch {
     return null;
   }
+}
+
+function isAndroidExpoGo() {
+  return Platform.OS === "android" && Constants.appOwnership === AppOwnership.Expo;
 }
 
 function safeJsonParse(value: string) {

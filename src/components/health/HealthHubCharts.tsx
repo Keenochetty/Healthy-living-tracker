@@ -34,7 +34,6 @@ export function HealthProgressRing({
         cy={size / 2}
         fill="none"
         r={radius}
-        rotation="-90"
         stroke={color}
         strokeDasharray={`${circumference} ${circumference}`}
         strokeDashoffset={circumference * (1 - normalized / 100)}
@@ -57,6 +56,10 @@ export function HealthMiniLineChart({
   height?: number;
   width?: number;
 }) {
+  if (!data.length) {
+    return <Svg height={height} width={width} />;
+  }
+
   const min = Math.min(...data);
   const range = Math.max(1, Math.max(...data) - min);
   const points = data.map((value, index) => ({
@@ -95,7 +98,8 @@ export function HealthDonutChart({
   const strokeWidth = 7;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const total = Math.max(1, values.reduce((sum, value) => sum + value, 0));
+  const safeValues = values.map((value) => Math.max(0, value));
+  const total = Math.max(1, safeValues.reduce((sum, value) => sum + value, 0));
   let offset = 0;
 
   return (
@@ -109,7 +113,7 @@ export function HealthDonutChart({
           stroke={trackColor}
           strokeWidth={strokeWidth}
         />
-        {values.map((value, index) => {
+        {safeValues.map((value, index) => {
           const length = (value / total) * circumference;
           const segment = (
             <Circle

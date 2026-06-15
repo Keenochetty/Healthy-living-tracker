@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { radius, spacing } from "@/theme/tokens";
+import { getContrastText } from "@/theme/designSystem";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppChipProps = {
@@ -81,21 +82,25 @@ function getChipColors(
     return {
       background: theme.primary,
       border: theme.primary,
-      text: "#ffffff",
+      text: getContrastText(theme.primary),
     };
   }
 
   const map = {
-    danger: ["#fee2e2", "#fecaca", theme.danger],
+    danger: [withAlpha(theme.danger, "20"), withAlpha(theme.danger, "55"), theme.danger],
     default: [theme.surface, theme.border, theme.mutedText],
-    info: ["#dbeafe", "#bfdbfe", theme.info],
-    muted: ["#f8fafc", theme.border, theme.mutedText],
+    info: [withAlpha(theme.info, "20"), withAlpha(theme.info, "55"), theme.info],
+    muted: [theme.surfaceSoft ?? theme.surface, theme.border, theme.mutedText],
     primary: [theme.primarySoft, theme.primarySoft, theme.primary],
-    private: ["#f5f3ff", "#ddd6fe", "#7c3aed"],
-    success: ["#dcfce7", "#bbf7d0", theme.success],
-    warning: ["#fef3c7", "#fde68a", theme.warning],
+    private: [withAlpha(theme.secondary, "20"), withAlpha(theme.secondary, "55"), theme.secondary],
+    success: [withAlpha(theme.success, "20"), withAlpha(theme.success, "55"), theme.success],
+    warning: [withAlpha(theme.warning, "20"), withAlpha(theme.warning, "55"), theme.warning],
   } as const;
 
   const [background, border, text] = map[variant];
   return { background, border, text };
+}
+
+function withAlpha(color: string, alpha: string) {
+  return /^#[0-9a-f]{6}$/i.test(color) ? `${color}${alpha}` : color;
 }

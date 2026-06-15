@@ -22,13 +22,28 @@ import {
   QuickNoteField,
   QuickSaveButton,
 } from "@/components/fitness/QuickWorkoutInputs";
+import {
+  HealthDonutChart,
+  HealthMiniLineChart,
+  HealthProgressRing,
+} from "@/components/health/HealthHubCharts";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import {
   FloatingAssistantButton,
   FloatingBottomNav,
 } from "@/components/navigation";
-import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
+import {
+  AppButton,
+  AppCard,
+  AppChip,
+  AppIcon,
+  AppSection,
+} from "@/components/ui";
 import { lightImpact, successImpact } from "@/lib/haptics";
+import {
+  calculatePregnancyWeekSummary,
+  getPregnancyProfile,
+} from "@/lib/pregnancyStorage";
 import {
   archiveContraceptionMethod,
   calculateCycleEstimate,
@@ -72,6 +87,15 @@ import type {
   WomensHealthTodaySummary,
   WomensSymptomLog,
 } from "@/types/womensHealth";
+import type {
+  PregnancyProfile,
+  PregnancyWeekSummary,
+} from "@/types/pregnancy";
+import {
+  healthRealmAccents,
+  realmAccentWithOpacity,
+} from "@/theme/healthTheme";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 type WomensHealthTab =
   | "today"
@@ -204,6 +228,8 @@ type RealmData = {
   shares: WomensHealthSharePermission[];
   learnCards: TrustedHealthContentCard[];
   overlays: CalendarHaloOverlay[];
+  pregnancyProfile: PregnancyProfile | null;
+  pregnancyWeek: PregnancyWeekSummary | null;
 };
 
 const EMPTY_DATA: RealmData = {
@@ -214,6 +240,8 @@ const EMPTY_DATA: RealmData = {
   moods: [],
   overlays: [],
   periods: [],
+  pregnancyProfile: null,
+  pregnancyWeek: null,
   profile: null,
   settings: null,
   shares: [],
@@ -247,6 +275,8 @@ export default function WomensHealthScreen() {
       shares,
       learnCards,
       overlays,
+      pregnancyProfile,
+      pregnancyWeek,
     ] = await Promise.all([
       getWomensHealthSettings(),
       getCycleProfile(),
@@ -260,6 +290,8 @@ export default function WomensHealthScreen() {
       getWomensHealthSharePermissions(),
       getTrustedHealthContentCards(),
       getCalendarHaloOverlaysForDateRange(monthStart, monthEnd),
+      getPregnancyProfile(),
+      calculatePregnancyWeekSummary(),
     ]);
 
     setData({
@@ -270,6 +302,8 @@ export default function WomensHealthScreen() {
       moods,
       overlays,
       periods,
+      pregnancyProfile,
+      pregnancyWeek,
       profile,
       settings,
       shares,
@@ -316,7 +350,7 @@ export default function WomensHealthScreen() {
         subtitle="Private cycle and contraception tracker"
         title="Women’s Health"
       >
-        <HeaderCard summary={data.summary} />
+        <HeaderCard data={data} />
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -459,24 +493,106 @@ function ActivationState({ onEnable }: { onEnable: () => void }) {
   );
 }
 
-function HeaderCard({ summary }: { summary: WomensHealthTodaySummary | null }) {
+function HeaderCard({ data }: { data: RealmData }) {
+  const { theme } = useAppTheme();
+  const summary = data.summary;
+  const cycleLength = data.profile?.cycleLengthDays ?? 28;
+  const progress = summary?.cycleDay
+    ? Math.min(100, Math.round((summary.cycleDay / cycleLength) * 100))
+    : 0;
+  const pregnancyActive = data.pregnancyProfile?.status === "active";
+
   return (
-    <AppCard style={styles.headerCard}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerIcon}>
-          <AppIcon color="#be185d" decorative name="contraception" size={24} />
-        </View>
-        <View style={{ flex: 1 }}>
+    <AppCard
+      padding="md"
+      style={[
+        styles.headerCard,
+        {
+          backgroundColor: theme.surface,
+          borderColor: realmAccentWithOpacity("women", 0.42),
+        },
+      ]}
+    >
+      <View style={styles.v8HeroRow}>
+        <View style={styles.v8HeroCopy}>
           <Text style={styles.headerKicker}>
-            {summary?.privacyStatus ?? "Private"}
+            {summary?.privacyStatus ?? "Private"} WOMEN'S HEALTH
           </Text>
-          <Text style={styles.headerTitle}>Cycle + contraception</Text>
-          <Text style={styles.headerBody}>
-            Gentle estimates, private logs, reminders, and education.
+          <Text style={[styles.v8HeroTitle, { color: theme.text }]}>
+            {pregnancyActive
+              ? `Pregnancy week ${data.pregnancyWeek?.weekNumber ?? "—"}`
+              : summary?.cycleDay
+                ? `Cycle day ${summary.cycleDay}`
+                : "Your private health space"}
+          </Text>
+          <Text style={[styles.v8HeroBody, { color: theme.mutedText }]}>
+            {pregnancyActive
+              ? `${formatValue(data.pregnancyWeek?.trimester ?? "unknown")} trimester tracking is active.`
+              : summary?.nextPeriodText ??
+                "Add a period start date when you are ready."}
+          </Text>
+        </View>
+        <View style={styles.v8Ring}>
+          <HealthProgressRing
+            color={healthRealmAccents.women}
+            progress={
+              pregnancyActive
+                ? Math.min(
+                    100,
+                    ((data.pregnancyWeek?.weekNumber ?? 0) / 40) * 100,
+                  )
+                : progress
+            }
+            size={78}
+            trackColor={theme.border}
+          />
+          <Text style={[styles.v8RingValue, { color: theme.text }]}>
+            {pregnancyActive
+              ? `W${data.pregnancyWeek?.weekNumber ?? "—"}`
+              : summary?.cycleDay ?? "—"}
           </Text>
         </View>
       </View>
+      <View style={styles.v8HeroStats}>
+        <V8HeroMetric
+          label="Symptoms"
+          value={`${summary?.symptomCountToday ?? 0} today`}
+        />
+        <V8HeroMetric
+          label="Contraception"
+          value={summary?.contraceptionStatus ?? "Not tracking"}
+        />
+        <V8HeroMetric
+          label="Overlay"
+          value={data.settings?.overlayEnabled ? "Private on" : "Off"}
+        />
+      </View>
+      <View style={styles.v8ActionRow}>
+        <AppChip label="Pregnancy" onPress={() => router.push("/pregnancy")} />
+        <AppChip
+          label="Privacy"
+          onPress={() => router.push("/settings/privacy-center")}
+          selected
+        />
+      </View>
     </AppCard>
+  );
+}
+
+function V8HeroMetric({ label, value }: { label: string; value: string }) {
+  const { theme } = useAppTheme();
+  return (
+    <View style={[styles.v8HeroMetric, { backgroundColor: theme.background }]}>
+      <Text
+        numberOfLines={1}
+        style={[styles.v8HeroMetricValue, { color: theme.text }]}
+      >
+        {value}
+      </Text>
+      <Text style={[styles.v8HeroMetricLabel, { color: theme.mutedText }]}>
+        {label}
+      </Text>
+    </View>
   );
 }
 
@@ -493,39 +609,13 @@ function TodayTab({
   selectedDate: string;
   setSelectedDate: (date: string) => void;
 }) {
-  const summary = data.summary;
   return (
     <View style={styles.stack}>
-      <AppCard style={styles.heroCard}>
-        <Text style={styles.kicker}>Based on your logs</Text>
-        <Text style={styles.heroTitle}>
-          {summary?.cycleDay
-            ? `Cycle Day ${summary.cycleDay}`
-            : "Start cycle tracking"}
-        </Text>
-        <Text style={styles.heroBody}>
-          {summary?.nextPeriodText ??
-            "Add your period start date when you are ready."}
-        </Text>
-        <View style={styles.heroGrid}>
-          <HeroMetric
-            label="Period"
-            value={summary?.activePeriod ? "Logged today" : "Not logged today"}
-          />
-          <HeroMetric
-            label="Symptoms"
-            value={`${summary?.symptomCountToday ?? 0} today`}
-          />
-          <HeroMetric
-            label="Mood"
-            value={summary?.latestMood?.mood ?? "Not logged"}
-          />
-          <HeroMetric
-            label="Privacy"
-            value={summary?.privacyStatus ?? "Private"}
-          />
-        </View>
-      </AppCard>
+      <WomensHealthSnapshot data={data} />
+      <OverviewQuickActions
+        onOpenSheet={onOpenSheet}
+        onTab={onTab}
+      />
 
       <CompactCalendar
         data={data}
@@ -547,6 +637,112 @@ function TodayTab({
       <AiSuggestions />
       {data.learnCards[0] ? <LearnCard card={data.learnCards[0]} /> : null}
     </View>
+  );
+}
+
+function WomensHealthSnapshot({ data }: { data: RealmData }) {
+  const { theme } = useAppTheme();
+  const cautionCount = data.contraceptionLogs.filter(
+    (log) => log.eventType === "late" || log.eventType === "missed",
+  ).length;
+  const symptomTrend = data.symptoms
+    .slice(0, 7)
+    .reverse()
+    .map((log) => severityScore(log.severity));
+  const trend =
+    symptomTrend.length > 1
+      ? symptomTrend
+      : [0, data.symptoms.length ? 1 : 0];
+
+  return (
+    <AppSection
+      subtitle="Real private logs and reminders. No medical interpretation."
+      title="Status snapshot"
+    >
+      <View style={styles.v8SnapshotGrid}>
+        <AppCard padding="sm" style={styles.v8SnapshotCard}>
+          <View style={styles.v8SnapshotTop}>
+            <View>
+              <Text style={[styles.v8SnapshotLabel, { color: theme.mutedText }]}>
+                Private logs
+              </Text>
+              <Text style={[styles.v8SnapshotValue, { color: theme.text }]}>
+                {data.periods.length + data.symptoms.length + data.moods.length}
+              </Text>
+            </View>
+            <HealthDonutChart
+              colors={[healthRealmAccents.women, theme.warning, theme.info]}
+              size={52}
+              trackColor={theme.border}
+              values={[
+                data.periods.length,
+                data.symptoms.length,
+                data.moods.length,
+              ]}
+            />
+          </View>
+          <Text style={[styles.v8SnapshotMeta, { color: theme.mutedText }]}>
+            {data.periods.length} cycle | {data.symptoms.length} symptom |{" "}
+            {data.moods.length} mood
+          </Text>
+        </AppCard>
+        <AppCard padding="sm" style={styles.v8SnapshotCard}>
+          <View style={styles.v8SnapshotTop}>
+            <View>
+              <Text style={[styles.v8SnapshotLabel, { color: theme.mutedText }]}>
+                Symptom trend
+              </Text>
+              <Text style={[styles.v8SnapshotValue, { color: theme.text }]}>
+                {data.symptoms.length}
+              </Text>
+            </View>
+            <HealthMiniLineChart
+              color={healthRealmAccents.women}
+              data={trend}
+              height={42}
+              width={86}
+            />
+          </View>
+          <Text style={[styles.v8SnapshotMeta, { color: theme.mutedText }]}>
+            {cautionCount
+              ? `${cautionCount} contraception reminder${cautionCount === 1 ? "" : "s"} need review.`
+              : "No missed or late contraception notes."}
+          </Text>
+        </AppCard>
+      </View>
+    </AppSection>
+  );
+}
+
+function OverviewQuickActions({
+  onOpenSheet,
+  onTab,
+}: {
+  onOpenSheet: (mode: SheetMode) => void;
+  onTab: (tab: WomensHealthTab) => void;
+}) {
+  return (
+    <AppSection
+      subtitle="Open existing private logs, routes, and settings."
+      title="Quick actions"
+    >
+      <View style={styles.v8ActionRow}>
+        <AppChip
+          label="Log period"
+          onPress={() => onOpenSheet("period")}
+          selected
+        />
+        <AppChip label="Log symptom" onPress={() => onOpenSheet("symptoms")} />
+        <AppChip label="Contraception" onPress={() => onTab("contraception")} />
+        <AppChip label="Calendar" onPress={() => onTab("calendar")} />
+        <AppChip
+          label="Pregnancy update"
+          onPress={() => router.push("/pregnancy")}
+        />
+        <AppChip label="Records" onPress={() => router.push("/records")} />
+        <AppChip label="Privacy" onPress={() => onTab("privacy")} />
+      </View>
+    </AppSection>
   );
 }
 
@@ -2346,4 +2542,93 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   tabRow: { gap: 8, paddingRight: 16 },
+  v8ActionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  v8HeroBody: {
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 6,
+  },
+  v8HeroCopy: {
+    flex: 1,
+  },
+  v8HeroMetric: {
+    borderRadius: 16,
+    flex: 1,
+    minWidth: 82,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  v8HeroMetricLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    marginTop: 3,
+    textTransform: "uppercase",
+  },
+  v8HeroMetricValue: {
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  v8HeroRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
+  },
+  v8HeroStats: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12,
+    marginTop: 14,
+  },
+  v8HeroTitle: {
+    fontSize: 23,
+    fontWeight: "900",
+    lineHeight: 27,
+    marginTop: 5,
+  },
+  v8Ring: {
+    alignItems: "center",
+    height: 78,
+    justifyContent: "center",
+    width: 78,
+  },
+  v8RingValue: {
+    fontSize: 14,
+    fontWeight: "900",
+    position: "absolute",
+  },
+  v8SnapshotCard: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    minWidth: 150,
+  },
+  v8SnapshotGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9,
+  },
+  v8SnapshotLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  v8SnapshotMeta: {
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 9,
+  },
+  v8SnapshotTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between",
+  },
+  v8SnapshotValue: {
+    fontSize: 22,
+    fontWeight: "900",
+    marginTop: 3,
+  },
 });

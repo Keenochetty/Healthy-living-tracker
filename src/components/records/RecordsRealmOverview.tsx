@@ -1,16 +1,27 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { AppCard, AppIcon, AppSection } from "@/components/ui";
+import {
+  HealthDonutChart,
+  HealthMiniLineChart,
+  HealthProgressRing,
+} from "@/components/health/HealthHubCharts";
+import { AppCard, AppChip, AppIcon, AppSection } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
+import {
+  healthRealmAccents,
+  realmAccentWithOpacity,
+} from "@/theme/healthTheme";
 import { useAppTheme } from "@/theme/ThemeProvider";
 import type {
   HealthRecord,
   HealthRecordType,
+  PrescriptionRecord,
   RecordsOverviewSummary,
 } from "@/types/healthRecords";
+import type { Medication, Supplement } from "@/types/medication";
 
-const RECORDS = "#7c3aed";
-const RECORDS_SOFT = "#f3e8ff";
+const RECORDS = healthRealmAccents.records;
+const RECORDS_SOFT = realmAccentWithOpacity("records", 0.14);
 
 type RecordsCategory = {
   icon: AppIconName;
@@ -42,22 +53,31 @@ export function RecordsRealmOverview({
   onFilter,
   onScan,
   onUpload,
+  medications,
+  prescriptions,
   query,
   records,
   summary,
+  supplements,
   onQueryChange,
 }: {
+  medications: Medication[];
   onCategory: (types: HealthRecordType[]) => void;
   onFilter: (filter: "all" | "labs" | "prescriptions" | "vaccines") => void;
   onQueryChange: (value: string) => void;
   onScan: () => void;
   onUpload: () => void;
+  prescriptions: PrescriptionRecord[];
   query: string;
   records: HealthRecord[];
   summary: RecordsOverviewSummary | null;
+  supplements: Supplement[];
 }) {
   const sharedCount = records.filter((record) => isSharedRecord(record)).length;
   const privateCount = records.length - sharedCount;
+  const linkedRecords = records.filter(
+    (record) => record.relatedMedicationId || record.relatedSupplementId,
+  );
 
   return (
     <View style={styles.stack}>
@@ -67,7 +87,17 @@ export function RecordsRealmOverview({
         sharedCount={sharedCount}
         summary={summary}
       />
-      <UploadActions onScan={onScan} onUpload={onUpload} />
+      <RecordsActivityMetrics
+        privateCount={privateCount}
+        records={records}
+        sharedCount={sharedCount}
+        summary={summary}
+      />
+      <RecordsQuickActions
+        onCategory={onCategory}
+        onScan={onScan}
+        onUpload={onUpload}
+      />
       <SearchAndFilters
         onFilter={onFilter}
         onQueryChange={onQueryChange}
@@ -75,7 +105,15 @@ export function RecordsRealmOverview({
       />
       <CategoryGrid onCategory={onCategory} records={records} />
       <RecentDocuments
+        onCategory={onCategory}
         records={summary?.recentRecords ?? records.slice(0, 5)}
+      />
+      <LinkedMedicationRecords
+        linkedRecords={linkedRecords}
+        medications={medications}
+        onCategory={onCategory}
+        prescriptions={prescriptions}
+        supplements={supplements}
       />
       <SharingOverview privateCount={privateCount} sharedCount={sharedCount} />
     </View>
@@ -94,22 +132,48 @@ function RecordsHero({
   summary: RecordsOverviewSummary | null;
 }) {
   const { theme } = useAppTheme();
+  const attention = summary?.recordsNeedingAttention ?? 0;
+  const activityScore = records.length
+    ? Math.max(
+        0,
+        Math.round(((records.length - attention) / records.length) * 100),
+      )
+    : 100;
 
   return (
-    <AppCard style={[styles.hero, { borderColor: `${RECORDS}38` }]}>
+    <AppCard
+      padding="md"
+      style={[
+        styles.hero,
+        {
+          backgroundColor: theme.surface,
+          borderColor: realmAccentWithOpacity("records", 0.42),
+        },
+      ]}
+    >
       <View style={styles.heroGlow} />
       <View style={styles.heroTop}>
-        <View style={styles.heroIcon}>
-          <AppIcon color={RECORDS} decorative name="records" size={27} />
-        </View>
         <View style={styles.copy}>
           <Text style={styles.heroKicker}>SECURE RECORDS</Text>
           <Text style={[styles.heroTitle, { color: theme.text }]}>
-            Your health documents, organized
+            {attention
+              ? `${attention} item${attention === 1 ? "" : "s"} need review`
+              : "Records are organized"}
           </Text>
           <Text style={[styles.heroBody, { color: theme.mutedText }]}>
-            Keep scans, notes, results, and family health history private and
-            easy to find.
+            Scans, notes, results, and linked care documents remain private by
+            default.
+          </Text>
+        </View>
+        <View style={styles.heroRing}>
+          <HealthProgressRing
+            color={RECORDS}
+            progress={activityScore}
+            size={78}
+            trackColor={theme.border}
+          />
+          <Text style={[styles.heroRingValue, { color: theme.text }]}>
+            {activityScore}%
           </Text>
         </View>
       </View>
@@ -133,69 +197,122 @@ function RecordsHero({
   );
 }
 
-function HeroStat({ label, value }: { label: string; value: string }) {
+function RecordsActivityMetrics({
+  privateCount,
+  records,
+  sharedCount,
+  summary,
+}: {
+  privateCount: number;
+  records: HealthRecord[];
+  sharedCount: number;
+  summary: RecordsOverviewSummary | null;
+}) {
+  const { theme } = useAppTheme();
+  const recentActivity = records
+    .slice(0, 7)
+    .reverse()
+    .map((record, index) => new Date(record.updatedAt).getTime() || index + 1);
+  const activity =
+    recentActivity.length > 1 ? recentActivity : [0, records.length || 1];
+
   return (
-    <View style={styles.heroStat}>
-      <Text style={styles.heroStatValue}>{value}</Text>
-      <Text style={styles.heroStatLabel}>{label}</Text>
-    </View>
+    <AppSection
+      subtitle="Real record activity, privacy flags, and follow-up reminders."
+      title="Records snapshot"
+    >
+      <View style={styles.metricGrid}>
+        <AppCard padding="sm" style={styles.metricCard}>
+          <View style={styles.metricTop}>
+            <View>
+              <Text style={[styles.metricLabel, { color: theme.mutedText }]}>
+                Privacy distribution
+              </Text>
+              <Text style={[styles.metricValue, { color: theme.text }]}>
+                {records.length}
+              </Text>
+            </View>
+            <HealthDonutChart
+              colors={[RECORDS, theme.success]}
+              size={52}
+              trackColor={theme.border}
+              values={[privateCount, sharedCount]}
+            />
+          </View>
+          <Text style={[styles.metricMeta, { color: theme.mutedText }]}>
+            {privateCount} private | {sharedCount} shared with permission
+          </Text>
+        </AppCard>
+        <AppCard padding="sm" style={styles.metricCard}>
+          <View style={styles.metricTop}>
+            <View>
+              <Text style={[styles.metricLabel, { color: theme.mutedText }]}>
+                Recent activity
+              </Text>
+              <Text style={[styles.metricValue, { color: theme.text }]}>
+                {summary?.recentRecords.length ?? 0}
+              </Text>
+            </View>
+            <HealthMiniLineChart
+              color={RECORDS}
+              data={activity}
+              height={42}
+              width={86}
+            />
+          </View>
+          <Text style={[styles.metricMeta, { color: theme.mutedText }]}>
+            {summary?.upcomingReminders.length ?? 0} upcoming follow-up
+            {summary?.upcomingReminders.length === 1 ? "" : "s"}
+          </Text>
+        </AppCard>
+      </View>
+    </AppSection>
   );
 }
 
-function UploadActions({
+function RecordsQuickActions({
+  onCategory,
   onScan,
   onUpload,
 }: {
+  onCategory: (types: HealthRecordType[]) => void;
   onScan: () => void;
   onUpload: () => void;
 }) {
-  const { theme } = useAppTheme();
-
   return (
-    <View
-      style={[
-        styles.uploadCard,
-        { backgroundColor: theme.surface, borderColor: theme.border },
-      ]}
+    <AppSection
+      subtitle="Open existing Records workflows without changing storage behavior."
+      title="Quick actions"
     >
-      <View style={styles.uploadIcon}>
-        <AppIcon color={RECORDS} decorative name="upload" size={24} />
+      <View style={styles.quickActions}>
+        <AppChip label="Upload document" onPress={onUpload} selected />
+        <AppChip label="Scan record" onPress={onScan} />
+        <AppChip
+          label="Add medical note"
+          onPress={() => onCategory(["health_note"])}
+        />
+        <AppChip
+          label="Add prescription"
+          onPress={() => onCategory(["prescription"])}
+        />
+        <AppChip
+          label="Add lab result"
+          onPress={() => onCategory(["lab_result"])}
+        />
       </View>
-      <Text style={[styles.uploadTitle, { color: theme.text }]}>
-        Upload a document
-      </Text>
-      <Text style={[styles.uploadBody, { color: theme.mutedText }]}>
-        Add a file, photo, prescription, scan, or medical note.
-      </Text>
-      <View style={styles.actionRow}>
-        <ActionButton icon="upload" label="Upload" onPress={onUpload} />
-        <ActionButton icon="scan" label="Scan" onPress={onScan} />
-      </View>
-    </View>
+    </AppSection>
   );
 }
 
-function ActionButton({
-  icon,
-  label,
-  onPress,
-}: {
-  icon: "scan" | "upload";
-  label: string;
-  onPress: () => void;
-}) {
+function HeroStat({ label, value }: { label: string; value: string }) {
+  const { theme } = useAppTheme();
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.actionButton,
-        pressed ? styles.pressed : null,
-      ]}
-    >
-      <AppIcon color={RECORDS} decorative name={icon} size={17} />
-      <Text style={styles.actionButtonText}>{label}</Text>
-    </Pressable>
+    <View style={[styles.heroStat, { backgroundColor: theme.background }]}>
+      <Text style={[styles.heroStatValue, { color: theme.text }]}>{value}</Text>
+      <Text style={[styles.heroStatLabel, { color: theme.mutedText }]}>
+        {label}
+      </Text>
+    </View>
   );
 }
 
@@ -314,7 +431,13 @@ function CategoryGrid({
   );
 }
 
-function RecentDocuments({ records }: { records: HealthRecord[] }) {
+function RecentDocuments({
+  onCategory,
+  records,
+}: {
+  onCategory: (types: HealthRecordType[]) => void;
+  records: HealthRecord[];
+}) {
   const { theme } = useAppTheme();
 
   return (
@@ -326,10 +449,12 @@ function RecentDocuments({ records }: { records: HealthRecord[] }) {
         <View style={styles.documentList}>
           {records.slice(0, 4).map((record) => {
             const privateRecord = !isSharedRecord(record);
+            const privacyLabel = getPrivacyLabel(record);
 
             return (
               <AppCard
                 key={record.id}
+                onPress={() => onCategory([record.type])}
                 style={[styles.documentRow, { borderColor: theme.border }]}
               >
                 <View style={styles.documentIcon}>
@@ -351,7 +476,8 @@ function RecentDocuments({ records }: { records: HealthRecord[] }) {
                     style={[styles.documentMeta, { color: theme.mutedText }]}
                   >
                     {formatLabel(record.type)} |{" "}
-                    {record.documentDate ?? "No date"}
+                    {record.documentDate ?? formatShortDate(record.createdAt)} |{" "}
+                    {record.fileType ? formatLabel(record.fileType) : "Manual"}
                   </Text>
                 </View>
                 <View
@@ -372,7 +498,7 @@ function RecentDocuments({ records }: { records: HealthRecord[] }) {
                       { color: privateRecord ? "#6d28d9" : "#047857" },
                     ]}
                   >
-                    {privateRecord ? "Private" : "Shared"}
+                    {privacyLabel}
                   </Text>
                 </View>
               </AppCard>
@@ -389,6 +515,101 @@ function RecentDocuments({ records }: { records: HealthRecord[] }) {
           </Text>
           <Text style={[styles.emptyBody, { color: theme.mutedText }]}>
             Upload your first record to build a secure, searchable history.
+          </Text>
+        </AppCard>
+      )}
+    </AppSection>
+  );
+}
+
+function LinkedMedicationRecords({
+  linkedRecords,
+  medications,
+  onCategory,
+  prescriptions,
+  supplements,
+}: {
+  linkedRecords: HealthRecord[];
+  medications: Medication[];
+  onCategory: (types: HealthRecordType[]) => void;
+  prescriptions: PrescriptionRecord[];
+  supplements: Supplement[];
+}) {
+  const { theme } = useAppTheme();
+  const linkedPrescriptions = prescriptions.filter(
+    (prescription) => prescription.relatedMedicationId,
+  );
+  const total = linkedRecords.length + linkedPrescriptions.length;
+
+  return (
+    <AppSection
+      actionLabel="Prescriptions"
+      onActionPress={() => onCategory(["prescription"])}
+      subtitle="Neutral links to medication and supplement records already stored in Records."
+      title="Linked medication records"
+    >
+      {total ? (
+        <View style={styles.documentList}>
+          {linkedRecords.slice(0, 3).map((record) => {
+            const linkedName =
+              medications.find((item) => item.id === record.relatedMedicationId)
+                ?.name ??
+              supplements.find((item) => item.id === record.relatedSupplementId)
+                ?.name ??
+              "Linked item";
+            const privacyLabel = getPrivacyLabel(record);
+            return (
+              <AppCard
+                key={record.id}
+                onPress={() => onCategory([record.type])}
+                padding="sm"
+                style={styles.linkedCard}
+              >
+                <View style={styles.documentIcon}>
+                  <AppIcon color={RECORDS} decorative name="medication" size={19} />
+                </View>
+                <View style={styles.copy}>
+                  <Text style={[styles.documentTitle, { color: theme.text }]}>
+                    {record.title}
+                  </Text>
+                  <Text style={[styles.documentMeta, { color: theme.mutedText }]}>
+                    Linked medication record | {linkedName}
+                  </Text>
+                </View>
+                <AppChip
+                  label={privacyLabel}
+                  variant={isSharedRecord(record) ? "success" : "private"}
+                />
+              </AppCard>
+            );
+          })}
+          {linkedPrescriptions.slice(0, Math.max(0, 3 - linkedRecords.length)).map(
+            (prescription) => (
+              <AppCard
+                key={prescription.id}
+                onPress={() => onCategory(["prescription"])}
+                padding="sm"
+                style={styles.linkedCard}
+              >
+                <View style={styles.documentIcon}>
+                  <AppIcon color={RECORDS} decorative name="documents" size={19} />
+                </View>
+                <View style={styles.copy}>
+                  <Text style={[styles.documentTitle, { color: theme.text }]}>
+                    {prescription.title}
+                  </Text>
+                  <Text style={[styles.documentMeta, { color: theme.mutedText }]}>
+                    Prescription attached | Review with provider
+                  </Text>
+                </View>
+              </AppCard>
+            ),
+          )}
+        </View>
+      ) : (
+        <AppCard padding="sm" variant="soft">
+          <Text style={[styles.emptyBody, { color: theme.mutedText }]}>
+            No linked medication or supplement records yet.
           </Text>
         </AppCard>
       )}
@@ -436,6 +657,18 @@ function isSharedRecord(record: HealthRecord) {
     record.sharedWithPartner ||
     Boolean(record.allowedViewerIds?.length)
   );
+}
+
+function getPrivacyLabel(record: HealthRecord) {
+  if (record.lockedPrivate) return "Locked";
+  return isSharedRecord(record) ? "Shared" : "Private";
+}
+
+function formatShortDate(value: string) {
+  return new Date(value).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
 }
 
 function formatLabel(value: string) {
@@ -561,6 +794,17 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 1,
   },
+  heroRing: {
+    alignItems: "center",
+    height: 78,
+    justifyContent: "center",
+    width: 78,
+  },
+  heroRingValue: {
+    fontSize: 15,
+    fontWeight: "900",
+    position: "absolute",
+  },
   heroStat: {
     alignItems: "center",
     backgroundColor: "#ffffff",
@@ -579,6 +823,41 @@ const styles = StyleSheet.create({
   heroStatValue: { color: "#3b0764", fontSize: 18, fontWeight: "900" },
   heroTitle: { fontSize: 25, fontWeight: "900", lineHeight: 30, marginTop: 6 },
   heroTop: { alignItems: "center", flexDirection: "row", gap: 12 },
+  linkedCard: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
+  metricCard: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    minWidth: 150,
+  },
+  metricGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9,
+  },
+  metricLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  metricMeta: {
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 9,
+  },
+  metricTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between",
+  },
+  metricValue: {
+    fontSize: 22,
+    fontWeight: "900",
+    marginTop: 3,
+  },
   pressed: { opacity: 0.76, transform: [{ scale: 0.985 }] },
   privacyPill: {
     alignItems: "center",
@@ -590,6 +869,11 @@ const styles = StyleSheet.create({
   },
   privacyText: { fontSize: 9, fontWeight: "900" },
   privatePill: { backgroundColor: RECORDS_SOFT },
+  quickActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   searchBox: {
     alignItems: "center",
     borderRadius: 18,

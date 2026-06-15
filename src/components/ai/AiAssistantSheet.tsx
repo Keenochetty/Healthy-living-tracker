@@ -1,6 +1,7 @@
 import { Href, router } from "expo-router";
 import { useState } from "react";
 import { Modal, Pressable, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppChip, AppIcon } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
@@ -33,6 +34,7 @@ export function AiAssistantSheet({
   onClose,
   visible,
 }: AiAssistantSheetProps) {
+  const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -75,7 +77,9 @@ export function AiAssistantSheet({
             borderWidth: 1,
             gap: spacing.lg,
             maxHeight: "84%",
-            padding: spacing.xl,
+            paddingBottom: spacing.xl + insets.bottom,
+            paddingHorizontal: spacing.xl,
+            paddingTop: spacing.lg,
           }}
         >
           <View
@@ -117,6 +121,7 @@ export function AiAssistantSheet({
           >
             <AppIcon color={theme.primary} decorative name="ai" size={18} />
             <TextInput
+              accessibilityLabel="Search HealthOS assistant"
               onChangeText={setQuery}
               onSubmitEditing={() =>
                 query.trim() && setStatus(`Search preview: "${query.trim()}"`)

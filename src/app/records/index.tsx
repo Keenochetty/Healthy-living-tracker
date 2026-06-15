@@ -199,9 +199,12 @@ export default function RecordsScreen() {
           setAiMessage(AI_PLACEHOLDER);
         }}
         onUpload={() => setActiveTab("documents")}
+        medications={medications}
+        prescriptions={prescriptions}
         query={query}
         records={records}
         summary={summary}
+        supplements={supplements}
       />
 
       <ScrollView

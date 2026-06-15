@@ -1,18 +1,22 @@
 import { Href, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { OnboardingChoiceCard } from "@/components/onboarding/OnboardingChoiceCard";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
+import { AppButton } from "@/components/ui";
 import { APP_MODULES, CORE_MODULE_KEYS } from "@/constants/modules";
 import {
   getUserPreferences,
   updateUserPreferences,
 } from "@/lib/userPreferences";
 import type { AppModuleKey } from "@/types/app";
+import { typography } from "@/theme/designSystem";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export default function OnboardingModulesScreen() {
+  const { theme } = useAppTheme();
   const [enabledModules, setEnabledModules] =
     useState<AppModuleKey[]>(CORE_MODULE_KEYS);
 
@@ -44,10 +48,10 @@ export default function OnboardingModulesScreen() {
       <OnboardingProgress step={3} totalSteps={5} />
 
       <View style={{ gap: 5 }}>
-        <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
+        <Text style={[typography.screenTitle, { color: theme.text }]}>
           Choose what you need now
         </Text>
-        <Text style={{ color: "#64748b", lineHeight: 21 }}>
+        <Text style={[typography.body, { color: theme.mutedText }]}>
           Core tools stay on. Add more only when they fit your life.
         </Text>
       </View>
@@ -70,33 +74,7 @@ export default function OnboardingModulesScreen() {
         })}
       </View>
 
-      <PrimaryButton label="Continue" onPress={continueToTheme} />
+      <AppButton fullWidth title="Continue" onPress={continueToTheme} />
     </ScreenWrapper>
-  );
-}
-
-function PrimaryButton({
-  label,
-  onPress,
-}: {
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      style={{
-        alignItems: "center",
-        backgroundColor: "#7c3aed",
-        borderRadius: 18,
-        justifyContent: "center",
-        minHeight: 54,
-      }}
-    >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
   );
 }

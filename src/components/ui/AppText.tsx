@@ -1,6 +1,7 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from "react-native";
 
-import { theme } from "@/constants/themes";
+import { typography } from "@/theme/designSystem";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppTextVariant = "body" | "caption" | "eyebrow" | "heading" | "title";
 
@@ -15,12 +16,14 @@ export function AppText({
   variant = "body",
   ...props
 }: AppTextProps) {
+  const { theme } = useAppTheme();
+
   return (
     <Text
       style={[
         styles.base,
         styles[variant],
-        color ? { color } : undefined,
+        { color: color ?? theme.text },
         style,
       ]}
       {...props}
@@ -29,35 +32,19 @@ export function AppText({
 }
 
 const variants: Record<AppTextVariant, TextStyle> = {
-  body: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  caption: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
+  body: typography.body,
+  caption: typography.caption,
   eyebrow: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.8,
+    ...typography.caption,
+    fontWeight: "900",
+    letterSpacing: 1.2,
     textTransform: "uppercase",
   },
-  heading: {
-    fontSize: 20,
-    fontWeight: "800",
-    lineHeight: 26,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: "800",
-    lineHeight: 36,
-  },
+  heading: typography.sectionTitle,
+  title: typography.screenTitle,
 };
 
 const styles = StyleSheet.create({
-  base: {
-    color: theme.colors.text,
-  },
+  base: {},
   ...variants,
 });

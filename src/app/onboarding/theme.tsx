@@ -1,20 +1,23 @@
 import { Href, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 import { ThemeOptionCard } from "@/components/onboarding/ThemeOptionCard";
+import { AppButton } from "@/components/ui";
 import { USER_THEMES, getUserTheme } from "@/constants/themes";
 import {
   getUserPreferences,
   updateUserPreferences,
 } from "@/lib/userPreferences";
 import { useAppTheme } from "@/theme/ThemeProvider";
+import { typography } from "@/theme/designSystem";
 import type { UserThemeKey } from "@/types/profile";
 
 export default function OnboardingThemeScreen() {
-  const { setThemeKey: saveProviderThemeKey } = useAppTheme();
+  const { setThemeKey: saveProviderThemeKey, theme: activeTheme } =
+    useAppTheme();
   const [themeKey, setThemeKey] = useState<UserThemeKey>("soft_lavender");
   const theme = getUserTheme(themeKey);
 
@@ -43,10 +46,10 @@ export default function OnboardingThemeScreen() {
       />
 
       <View style={{ gap: 5 }}>
-        <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
+        <Text style={[typography.screenTitle, { color: activeTheme.text }]}>
           Choose a theme
         </Text>
-        <Text style={{ color: "#64748b", lineHeight: 21 }}>
+        <Text style={[typography.body, { color: activeTheme.mutedText }]}>
           Pick a look that feels calm and useful. You can change it later.
         </Text>
       </View>
@@ -62,39 +65,7 @@ export default function OnboardingThemeScreen() {
         ))}
       </View>
 
-      <PrimaryButton
-        color={theme.primary}
-        label="Continue"
-        onPress={continueToUnits}
-      />
+      <AppButton fullWidth title="Continue" onPress={continueToUnits} />
     </ScreenWrapper>
-  );
-}
-
-function PrimaryButton({
-  color,
-  label,
-  onPress,
-}: {
-  color: string;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      style={{
-        alignItems: "center",
-        backgroundColor: color,
-        borderRadius: 18,
-        justifyContent: "center",
-        minHeight: 54,
-      }}
-    >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
   );
 }
