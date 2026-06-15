@@ -2299,7 +2299,7 @@ const styles = StyleSheet.create({
   },
   saveText: { color: "#ffffff", fontWeight: "900" },
   screen: { flex: 1 },
-  scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(15,23,42,0.58)" },
+  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.58)" },
   secondaryCard: { borderRadius: 24, borderWidth: 1, gap: 13, padding: 17 },
   sectionMeta: { fontSize: 13, lineHeight: 19, marginTop: 2 },
   sectionTitle: { fontSize: 19, fontWeight: "900" },

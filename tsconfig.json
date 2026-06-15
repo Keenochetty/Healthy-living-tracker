@@ -5,7 +5,6 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -16,12 +15,12 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/components/*": ["src/components/*", "components/*"],
-      "@/constants/*": ["src/constants/*", "constants/*"],
-      "@/lib/*": ["src/lib/*", "lib/*"],
-      "@/types/*": ["src/types/*", "types/*"],
-      "@/utils/*": ["src/utils/*", "utils/*"],
-      "@/*": ["src/*", "*"]
+      "@/components/*": ["src/components/*"],
+      "@/constants/*": ["src/constants/*"],
+      "@/lib/*": ["src/lib/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/*": ["src/*"]
     }
   },
   "include": [

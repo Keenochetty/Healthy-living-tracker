@@ -902,7 +902,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   saveText: { color: "#ffffff", fontWeight: "900" },
-  scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(15,23,42,0.58)" },
+  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.58)" },
   sheet: {
     alignSelf: "center",
     borderTopLeftRadius: 28,
