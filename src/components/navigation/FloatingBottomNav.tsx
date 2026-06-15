@@ -49,20 +49,20 @@ const NAV_ITEMS: Record<string, NavConfig> = {
     iconName: "calendar",
     label: "Calendar",
   },
+  scan: {
+    accessibilityLabel: "Open Scan",
+    iconName: "scan",
+    label: "Scan",
+  },
   health: {
     accessibilityLabel: "Open Health",
     iconName: "health",
     label: "Health",
   },
-  fitness: {
-    accessibilityLabel: "Open Fitness",
-    iconName: "fitness",
-    label: "Fitness",
-  },
-  food: {
-    accessibilityLabel: "Open Food",
-    iconName: "food",
-    label: "Food",
+  circle: {
+    accessibilityLabel: "Open Family",
+    iconName: "caregiver",
+    label: "Family",
   },
 };
 
@@ -77,9 +77,9 @@ const STANDALONE_ROUTES = Object.keys(NAV_ITEMS).map((name) => ({
 
 const NAV_HREFS: Record<string, Href> = {
   calendar: "/(tabs)/calendar" as Href,
-  fitness: "/(tabs)/fitness" as Href,
-  food: "/(tabs)/food" as Href,
+  circle: "/(tabs)/circle" as Href,
   health: "/(tabs)/health" as Href,
+  scan: "/(tabs)/scan" as Href,
   today: "/(tabs)/today" as Href,
 };
 

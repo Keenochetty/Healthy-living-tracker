@@ -1,11 +1,13 @@
 import { Tabs } from "expo-router";
+import { useState } from "react";
 
-import {
-  FloatingAssistantButton,
-  FloatingBottomNav,
-} from "@/components/navigation";
+import { AiAssistantSheet } from "@/components/ai/AiAssistantSheet";
+import { AiSearchBar } from "@/components/ai/AiSearchBar";
+import { FloatingBottomNav } from "@/components/navigation";
 
 export default function TabsLayout() {
+  const [assistantVisible, setAssistantVisible] = useState(false);
+
   return (
     <>
       <Tabs
@@ -29,25 +31,29 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
+          name="scan"
+          options={{
+            title: "Scan",
+          }}
+        />
+
+        <Tabs.Screen
           name="health"
           options={{
             title: "Health",
           }}
         />
 
-        <Tabs.Screen
-          name="fitness"
-          options={{
-            title: "Fitness",
-          }}
-        />
-
-        <Tabs.Screen name="food" options={{ title: "Food" }} />
-        <Tabs.Screen name="scan" options={{ href: null }} />
-        <Tabs.Screen name="circle" options={{ href: null }} />
+        <Tabs.Screen name="circle" options={{ title: "Family" }} />
+        <Tabs.Screen name="fitness" options={{ href: null }} />
+        <Tabs.Screen name="food" options={{ href: null }} />
         <Tabs.Screen name="profile" options={{ href: null }} />
       </Tabs>
-      <FloatingAssistantButton />
+      <AiSearchBar onPress={() => setAssistantVisible(true)} />
+      <AiAssistantSheet
+        onClose={() => setAssistantVisible(false)}
+        visible={assistantVisible}
+      />
     </>
   );
 }

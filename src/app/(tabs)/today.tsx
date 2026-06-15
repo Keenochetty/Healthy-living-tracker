@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
+import { TodayRealmShortcuts } from "@/components/today/TodayRealmShortcuts";
 import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
 import type { FeaturePreferenceKey } from "@/constants/featurePreferenceConfig";
@@ -326,6 +327,13 @@ export default function TodayScreen() {
           />
         </View>
       </AppCard>
+
+      <TodayRealmShortcuts
+        showChildCare={show("child_care")}
+        showFamily={show("family_circle")}
+        showFitness={show("fitness")}
+        showNutrition={show("nutrition")}
+      />
 
       {empty ? <EmptyDay /> : null}
 
