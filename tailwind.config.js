@@ -4,7 +4,8 @@ module.exports = {
   content: [
     "./app/**/*.{js,jsx,ts,tsx}",
     "./components/**/*.{js,jsx,ts,tsx}",
-    "./lib/**/*.{js,jsx,ts,tsx}"
+    "./lib/**/*.{js,jsx,ts,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}"
   ],
   presets: [require("nativewind/preset")],
   theme: {
@@ -34,6 +35,19 @@ module.exports = {
           red: "#B42318",
           grey: "#667085"
         },
+        realm: {
+          health: "hsl(var(--health) / <alpha-value>)",
+          fitness: "hsl(var(--fitness) / <alpha-value>)",
+          food: "hsl(var(--food) / <alpha-value>)",
+          women: "hsl(var(--women) / <alpha-value>)",
+          baby: "hsl(var(--baby) / <alpha-value>)",
+          family: "hsl(var(--family) / <alpha-value>)",
+          records: "hsl(var(--records) / <alpha-value>)",
+          meds: "hsl(var(--meds) / <alpha-value>)"
+        },
+        "surface-soft": "hsl(var(--surface-soft) / <alpha-value>)",
+        "surface-raised": "hsl(var(--surface-raised) / <alpha-value>)",
+        "surface-glass": "hsl(var(--surface-glass))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -76,8 +90,9 @@ module.exports = {
         sm: "calc(var(--radius, 18px) - 4px)"
       },
       boxShadow: {
-        card: "0 14px 40px rgba(15, 23, 42, 0.08)",
-        soft: "0 10px 28px rgba(37, 99, 169, 0.12)"
+        card: "var(--shadow-card)",
+        soft: "var(--shadow-soft)",
+        float: "var(--shadow-float)"
       }
     }
   },

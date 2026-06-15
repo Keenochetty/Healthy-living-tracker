@@ -135,6 +135,8 @@ export function MedicationSupplementRealm({ itemType }: { itemType: ItemType }) 
   const [selectedReminder, setSelectedReminder] = useState<HealthScheduleReminder | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>(null);
   const [toast, setToast] = useState("");
+  const [companionItems, setCompanionItems] = useState<Array<Medication | Supplement>>([]);
+  const [companionReminders, setCompanionReminders] = useState<HealthScheduleReminder[]>([]);
   const [data, setData] = useState<RealmData>({
     adherence: EMPTY_ADHERENCE,
     documents: [],
@@ -150,17 +152,21 @@ export function MedicationSupplementRealm({ itemType }: { itemType: ItemType }) 
   const accent = getAccentColor(itemType);
 
   const loadRealm = useCallback(async () => {
-    const [items, notes, todaySummary, adherence] = await Promise.all([
+    const [items, notes, todaySummary, adherence, nextCompanionItems, companionSummary] = await Promise.all([
       itemType === "medication" ? getMedications() : getSupplements(),
       getNotesByDate(new Date(), itemType),
       itemType === "medication" ? calculateTodayMedicationSchedule() : calculateTodaySupplementSchedule(),
-      itemType === "medication" ? getMedicationAdherenceSummary() : getSupplementAdherenceSummary()
+      itemType === "medication" ? getMedicationAdherenceSummary() : getSupplementAdherenceSummary(),
+      itemType === "medication" ? getSupplements() : getMedications(),
+      itemType === "medication" ? calculateTodaySupplementSchedule() : calculateTodayMedicationSchedule()
     ]);
     const schedules = (await Promise.all(items.map((item) => getSchedulesByItem(itemType, item.id)))).flat();
     const logs = (await Promise.all(items.map((item) => getDoseLogsByItem(itemType, item.id)))).flat();
     const documents = (await Promise.all(items.map((item) => getHealthDocumentsByItem(itemType, item.id)))).flat();
 
     setData({ adherence, documents, items, logs, notes, reminders: todaySummary.reminders, schedules });
+    setCompanionItems(nextCompanionItems);
+    setCompanionReminders(companionSummary.reminders);
     setSelectedItemId((current) => current ?? items[0]?.id ?? null);
   }, [itemType]);
 
@@ -179,7 +185,23 @@ export function MedicationSupplementRealm({ itemType }: { itemType: ItemType }) 
 
   return (
     <View style={styles.stack}>
-      <Hero itemType={itemType} data={data} onAdd={() => setSheetMode("item")} />
+      <ConnectedRealmOverview
+        companionItems={companionItems}
+        companionReminders={companionReminders}
+        data={data}
+        itemType={itemType}
+        onAction={(reminder) => {
+          if (reminder.itemType !== itemType) {
+            router.push(`/${reminder.itemType === "medication" ? "medication" : "supplements"}` as Href);
+            return;
+          }
+          setSelectedReminder(reminder);
+          setSheetMode("action");
+        }}
+        onAddCurrent={() => setSheetMode("item")}
+        onAddOther={() => router.push(`/${itemType === "medication" ? "supplements/add" : "medication/add"}` as Href)}
+        onOpenRefills={() => setActiveTab(itemType === "medication" ? "refills" : "schedule")}
+      />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
         {tabs.map((tab) => <Chip key={tab.key} label={tab.label} onPress={() => setActiveTab(tab.key)} selected={activeTab === tab.key} tint={accent} />)}
       </ScrollView>
@@ -279,15 +301,130 @@ function Hero({ data, itemType, onAdd }: { data: RealmData; itemType: ItemType; 
   const takenCount = data.reminders.filter((reminder) => reminder.status === "taken").length;
   const next = data.reminders.find((reminder) => reminder.status === "due" || reminder.status === "upcoming");
   return (
-    <AppCard style={[styles.heroCard, { borderColor: getAccentColor(itemType) }]}>
+    <AppCard style={[styles.medsHeroCard, { borderColor: `${getAccentColor(itemType)}44` }]}>
       <Text style={[styles.kicker, { color: getAccentColor(itemType) }]}>{itemType === "medication" ? "Medication today" : "Supplements today"}</Text>
-      <Text style={styles.heroTitle}>{dueCount} due · {takenCount} completed</Text>
-      <Text style={styles.heroBody}>{next ? `Next: ${next.itemName} ${next.scheduledAt ? `at ${formatTime(next.scheduledAt)}` : ""}` : "No reminders due right now."}</Text>
+      <Text style={styles.medsHeroTitle}>{dueCount} due | {takenCount} completed</Text>
+      <Text style={styles.medsHeroBody}>{next ? `Next: ${next.itemName} ${next.scheduledAt ? `at ${formatTime(next.scheduledAt)}` : ""}` : "No reminders due right now."}</Text>
       <View style={styles.actionRow}>
         <AppButton onPress={onAdd} title={itemType === "medication" ? "Add Medication" : "Add Supplement"} />
       </View>
     </AppCard>
   );
+}
+
+function ConnectedRealmOverview({
+  companionItems,
+  companionReminders,
+  data,
+  itemType,
+  onAction,
+  onAddCurrent,
+  onAddOther,
+  onOpenRefills
+}: {
+  companionItems: Array<Medication | Supplement>;
+  companionReminders: HealthScheduleReminder[];
+  data: RealmData;
+  itemType: ItemType;
+  onAction: (reminder: HealthScheduleReminder) => void;
+  onAddCurrent: () => void;
+  onAddOther: () => void;
+  onOpenRefills: () => void;
+}) {
+  const allReminders = [...data.reminders, ...companionReminders].sort((left, right) =>
+    String(left.scheduledAt ?? "").localeCompare(String(right.scheduledAt ?? ""))
+  );
+  const medications = itemType === "medication" ? data.items : companionItems;
+  const supplements = itemType === "supplement" ? data.items : companionItems;
+
+  return (
+    <View style={styles.realmOverview}>
+      <Hero data={data} itemType={itemType} onAdd={onAddCurrent} />
+
+      <AppSection subtitle="Medication and supplement reminders in time order." title="Today's dose timeline">
+        {allReminders.length ? (
+          <View style={styles.timeline}>
+            {allReminders.slice(0, 6).map((reminder, index) => (
+              <Pressable accessibilityRole="button" key={`${reminder.scheduleId ?? index}-${reminder.itemId}-${reminder.scheduledAt}`} onPress={() => onAction(reminder)} style={styles.softDoseCard}>
+                <View style={styles.doseTimePill}><Text style={styles.doseTimeText}>{reminder.scheduledAt ? formatTime(reminder.scheduledAt) : "As needed"}</Text></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.doseTitle}>{reminder.itemName}</Text>
+                  <Text style={styles.doseMeta}>{reminder.itemType === "medication" ? "Medication" : "Supplement"} | {formatReminderStatus(reminder)}</Text>
+                </View>
+                <StatusBadge label={formatReminderStatus(reminder)} />
+              </Pressable>
+            ))}
+          </View>
+        ) : <PremiumEmptyState message="Add a schedule when you want gentle dose reminders." title="No doses scheduled today" />}
+      </AppSection>
+
+      <ConnectedItemLists medications={medications} supplements={supplements} />
+
+      <AppSection actionLabel="Manage" onActionPress={onOpenRefills} subtitle="Keep labels, prescription notes, and schedules easy to review." title="Refills and reminders">
+        <AppCard style={styles.softReminderCard}>
+          <View style={styles.softReminderIcon}><AppIcon color="#6d28d9" decorative name="reminder" size={22} /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.softCardTitle}>{data.schedules.length} active schedule{data.schedules.length === 1 ? "" : "s"}</Text>
+            <Text style={styles.softCardBody}>{data.documents.length ? `${data.documents.length} linked label or prescription record${data.documents.length === 1 ? "" : "s"}.` : "Add labels or prescription notes when useful."}</Text>
+          </View>
+        </AppCard>
+      </AppSection>
+
+      <AppSection subtitle="Informational notes only. Always confirm important guidance." title="Food and exercise interactions">
+        <AppCard style={styles.interactionCard}>
+          <AppIcon color="#b45309" decorative name="warning" size={21} />
+          <Text style={styles.interactionText}>Some medicines or supplements may have food, activity, or timing instructions. Follow the label and check with a pharmacist or healthcare professional if unsure.</Text>
+        </AppCard>
+      </AppSection>
+
+      <View style={styles.addActionRow}>
+        <Pressable accessibilityRole="button" onPress={itemType === "medication" ? onAddCurrent : onAddOther} style={styles.addAction}>
+          <AppIcon color="#6d28d9" decorative name="add" size={19} />
+          <Text style={styles.addActionText}>Add medication</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={itemType === "supplement" ? onAddCurrent : onAddOther} style={styles.addAction}>
+          <AppIcon color="#2563eb" decorative name="add" size={19} />
+          <Text style={styles.addActionText}>Add supplement</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function ConnectedItemLists({ medications, supplements }: { medications: Array<Medication | Supplement>; supplements: Array<Medication | Supplement> }) {
+  return (
+    <View style={styles.connectedLists}>
+      <AppSection subtitle="Prescription and over-the-counter items you entered." title="Medications">
+        <View style={styles.softItemList}>
+          {medications.length ? medications.slice(0, 3).map((item) => <SoftItemCard item={item} itemType="medication" key={item.id} />) : <SoftEmptyCard text="No medications added yet." />}
+        </View>
+      </AppSection>
+      <AppSection subtitle="Supplements remain visually separate but connected." title="Supplements">
+        {supplements.length ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.supplementChipRow}>
+            {supplements.slice(0, 6).map((item) => <View key={item.id} style={styles.supplementChip}><Text style={styles.supplementChipText}>{item.name}</Text></View>)}
+          </ScrollView>
+        ) : <SoftEmptyCard text="No supplements added yet." />}
+      </AppSection>
+    </View>
+  );
+}
+
+function SoftItemCard({ item, itemType }: { item: Medication | Supplement; itemType: ItemType }) {
+  return (
+    <AppCard style={styles.softItemCard}>
+      <View style={styles.softItemIcon}><AppIcon color="#6d28d9" decorative name={itemType === "medication" ? "medication" : "nutrition"} size={20} /></View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.softCardTitle}>{item.name}</Text>
+        <Text style={styles.softCardBody}>{item.strength ?? formatValue(item.form)} | {getSafetyStatusLabel(item.safetyStatus)}</Text>
+      </View>
+      <PrivacyBadge />
+    </AppCard>
+  );
+}
+
+function SoftEmptyCard({ text }: { text: string }) {
+  return <AppCard style={styles.softEmptyCard}><Text style={styles.softCardBody}>{text}</Text></AppCard>;
 }
 
 function TodayTab({ data, itemType, onAction, onSheet }: { data: RealmData; itemType: ItemType; onAction: (reminder: HealthScheduleReminder) => void; onSheet: (mode: SheetMode) => void }) {
@@ -889,6 +1026,9 @@ function getAccentColor(itemType: ItemType) {
 }
 
 const styles = StyleSheet.create({
+  addAction: { alignItems: "center", backgroundColor: "#f5f3ff", borderColor: "#ddd6fe", borderRadius: 18, borderWidth: 1, flex: 1, flexDirection: "row", gap: 7, justifyContent: "center", minHeight: 48 },
+  addActionRow: { flexDirection: "row", gap: 9 },
+  addActionText: { color: "#5b21b6", fontSize: 12, fontWeight: "900" },
   actionRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
   badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   barFill: { backgroundColor: "#a78bfa", borderRadius: 999, bottom: 0, position: "absolute", width: "100%" },
@@ -900,10 +1040,15 @@ const styles = StyleSheet.create({
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingRight: 16 },
   chipText: { color: "#475569", fontWeight: "900" },
   chipTextSelected: { color: "#ffffff" },
+  connectedLists: { gap: 22 },
   darkCard: { backgroundColor: "#111827", borderColor: "rgba(255,255,255,0.12)", borderWidth: 1 },
   darkInput: { backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.14)", borderRadius: 16, borderWidth: 1, color: "#f8fafc", minHeight: 48, paddingHorizontal: 14, paddingVertical: 10 },
   darkMuted: { color: "#cbd5e1", lineHeight: 21, marginTop: 6 },
   darkTitle: { color: "#f8fafc", fontSize: 20, fontWeight: "900" },
+  doseMeta: { color: "#64748b", fontSize: 11, marginTop: 4 },
+  doseTimePill: { backgroundColor: "#ede9fe", borderRadius: 16, minWidth: 70, paddingHorizontal: 10, paddingVertical: 9 },
+  doseTimeText: { color: "#6d28d9", fontSize: 11, fontWeight: "900", textAlign: "center" },
+  doseTitle: { color: "#0f172a", fontSize: 15, fontWeight: "900" },
   emptyBody: { color: "#64748b", lineHeight: 21, marginTop: 6 },
   emptyCard: { backgroundColor: "#fff7ed", borderColor: "#fed7aa", borderWidth: 1 },
   emptyTitle: { color: "#0f172a", fontSize: 20, fontWeight: "900" },
@@ -917,6 +1062,8 @@ const styles = StyleSheet.create({
   itemCard: { backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 24, borderWidth: 1, padding: 16 },
   itemMeta: { color: "#64748b", lineHeight: 20, marginTop: 5 },
   itemTitle: { color: "#0f172a", fontSize: 20, fontWeight: "900" },
+  interactionCard: { alignItems: "flex-start", backgroundColor: "#fff7ed", borderColor: "#fdba74", borderWidth: 1, flexDirection: "row", gap: 10, padding: 16 },
+  interactionText: { color: "#9a3412", flex: 1, fontSize: 12, lineHeight: 19 },
   kicker: { fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   learnBody: { color: "#475569", lineHeight: 21, marginTop: 7 },
   learnCard: { backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderWidth: 1 },
@@ -928,6 +1075,9 @@ const styles = StyleSheet.create({
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
   metricLabel: { color: "#94a3b8", fontSize: 12, fontWeight: "900" },
   metricValue: { color: "#f8fafc", fontSize: 16, fontWeight: "900", marginTop: 6 },
+  medsHeroBody: { color: "#64748b", lineHeight: 21, marginTop: 7 },
+  medsHeroCard: { backgroundColor: "#f5f3ff", borderWidth: 1, overflow: "hidden" },
+  medsHeroTitle: { color: "#2e1065", fontSize: 27, fontWeight: "900", marginTop: 6 },
   privacyBadge: { backgroundColor: "#f8fafc", borderColor: "#cbd5e1", borderRadius: 999, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 6 },
   privacyBadgeText: { color: "#475569", fontSize: 12, fontWeight: "900" },
   privacyBody: { color: "#475569", lineHeight: 20, marginTop: 4 },
@@ -942,13 +1092,26 @@ const styles = StyleSheet.create({
   reminderCard: { alignItems: "center", backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 22, borderWidth: 1, flexDirection: "row", gap: 12, padding: 14 },
   reminderMeta: { color: "#64748b", marginTop: 4 },
   reminderTitle: { color: "#0f172a", fontSize: 16, fontWeight: "900" },
+  realmOverview: { gap: 24 },
   sectionHeaderRow: { alignItems: "center", flexDirection: "row", gap: 12, justifyContent: "space-between" },
   sheetText: { color: "#cbd5e1", lineHeight: 21 },
+  softCardBody: { color: "#64748b", fontSize: 11, lineHeight: 17, marginTop: 4 },
+  softCardTitle: { color: "#0f172a", fontSize: 15, fontWeight: "900" },
+  softDoseCard: { alignItems: "center", backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 22, borderWidth: 1, flexDirection: "row", gap: 11, padding: 14 },
+  softEmptyCard: { backgroundColor: "#fafafa", borderColor: "#e2e8f0", borderStyle: "dashed", borderWidth: 1 },
+  softItemCard: { alignItems: "center", backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderWidth: 1, flexDirection: "row", gap: 11, padding: 14 },
+  softItemIcon: { alignItems: "center", backgroundColor: "#ede9fe", borderRadius: 16, height: 44, justifyContent: "center", width: 44 },
+  softItemList: { gap: 9 },
+  softReminderCard: { alignItems: "center", backgroundColor: "#f5f3ff", borderColor: "#ddd6fe", borderWidth: 1, flexDirection: "row", gap: 11, padding: 16 },
+  softReminderIcon: { alignItems: "center", backgroundColor: "#ede9fe", borderRadius: 17, height: 48, justifyContent: "center", width: 48 },
   stack: { gap: 14 },
   statusBadge: { backgroundColor: "#f1f5f9", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
   statusBadgeText: { color: "#475569", fontSize: 12, fontWeight: "900" },
   successText: { color: "#10201d", fontWeight: "900" },
   successToast: { alignItems: "center", alignSelf: "flex-start", backgroundColor: "#a7f3d0", borderRadius: 999, flexDirection: "row", gap: 8, minHeight: 44, paddingHorizontal: 14 },
+  supplementChip: { backgroundColor: "#dbeafe", borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8 },
+  supplementChipRow: { gap: 8, paddingRight: 16 },
+  supplementChipText: { color: "#1d4ed8", fontSize: 11, fontWeight: "900" },
   tabRow: { gap: 8, paddingRight: 16 },
   timeline: { gap: 10 },
   timelineIcon: { alignItems: "center", borderRadius: 16, height: 46, justifyContent: "center", width: 46 }

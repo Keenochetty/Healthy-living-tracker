@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppCard, AppIcon } from "@/components/ui";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export function FitnessNutritionSupport({
   onOpenFood,
@@ -9,21 +10,22 @@ export function FitnessNutritionSupport({
   onOpenFood: () => void;
   suggestion?: string;
 }) {
+  const { theme } = useAppTheme();
   return (
-    <AppCard style={styles.card}>
-      <View style={styles.icon}>
-        <AppIcon color="#f59e0b" decorative name="nutrition" size={24} />
+    <AppCard style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+      <View style={[styles.icon, { backgroundColor: theme.primarySoft }]}>
+        <AppIcon color={theme.warning} decorative name="nutrition" size={24} />
       </View>
       <View style={styles.copy}>
-        <Text style={styles.eyebrow}>Workout-linked nutrition</Text>
-        <Text style={styles.title}>
+        <Text style={[styles.eyebrow, { color: theme.warning }]}>Workout-linked nutrition</Text>
+        <Text style={[styles.title, { color: theme.text }]}>
           {suggestion ?? "Strength day: protein-focused recovery meal"}
         </Text>
-        <Text style={styles.body}>
+        <Text style={[styles.body, { color: theme.mutedText }]}>
           Get recovery guidance here, then use Food to plan or log meals.
         </Text>
         <Pressable onPress={onOpenFood}>
-          <Text style={styles.link}>Open Food realm</Text>
+          <Text style={[styles.link, { color: theme.primary }]}>Open Food realm</Text>
         </Pressable>
       </View>
     </AppCard>

@@ -50,7 +50,10 @@ import {
   skipReminder
 } from "@/lib/reminderStorage";
 import { getUserPreferences } from "@/lib/userPreferences";
+import { getFitnessCalendarReminders } from "@/services/fitnessPlanActivationService";
+import { markWorkoutCompleted, markWorkoutSkipped } from "@/services/fitnessHistoryService";
 import { useAppTheme } from "@/theme/ThemeProvider";
+import { healthRealmAccents } from "@/theme/designSystem";
 import { getCalendarHaloOverlaysForDateRange, getWomensHealthSettings } from "@/lib/womensHealthStorage";
 import type { AppModuleKey } from "@/types/app";
 import type { AppReminder, ReminderStatus, ReminderType } from "@/types/reminders";
@@ -104,17 +107,17 @@ const SCHEDULER_CATEGORIES: Array<{
 ];
 
 const TYPE_ACCENTS: Record<ReminderType, { color: string; icon: string; label: string }> = {
-  caregiver: { color: "#a78bfa", icon: "caregiver", label: "Caregiver" },
-  child_baby: { color: "#7dd3fc", icon: "baby_child", label: "Baby" },
-  custom: { color: "#cbd5e1", icon: "calendar", label: "Event" },
-  doctor_visit: { color: "#93c5fd", icon: "health", label: "Health" },
-  elder_care: { color: "#86efac", icon: "elder_care", label: "Elder" },
-  family: { color: "#c4b5fd", icon: "family", label: "Family" },
-  fitness: { color: "#6ee7c8", icon: "fitness", label: "Workout" },
-  food: { color: "#f8b84e", icon: "water", label: "Food / Water" },
-  medication: { color: "#f0abfc", icon: "medication", label: "Medication" },
-  personal: { color: "#fef3c7", icon: "calendar", label: "Personal" },
-  work: { color: "#bae6fd", icon: "calendar", label: "Work" }
+  caregiver: { color: healthRealmAccents.family, icon: "caregiver", label: "Caregiver" },
+  child_baby: { color: healthRealmAccents.baby, icon: "baby_child", label: "Baby" },
+  custom: { color: healthRealmAccents.records, icon: "calendar", label: "Event" },
+  doctor_visit: { color: healthRealmAccents.health, icon: "health", label: "Health" },
+  elder_care: { color: healthRealmAccents.health, icon: "elder_care", label: "Elder" },
+  family: { color: healthRealmAccents.family, icon: "family", label: "Family" },
+  fitness: { color: healthRealmAccents.fitness, icon: "fitness", label: "Workout" },
+  food: { color: healthRealmAccents.food, icon: "water", label: "Food / Water" },
+  medication: { color: healthRealmAccents.meds, icon: "medication", label: "Medication" },
+  personal: { color: healthRealmAccents.records, icon: "calendar", label: "Personal" },
+  work: { color: healthRealmAccents.fitness, icon: "calendar", label: "Work" }
 };
 
 export default function CalendarScreen() {
@@ -244,10 +247,11 @@ export default function CalendarScreen() {
       setIsLoading(true);
     }
 
-    const [preferences, reminders, womensSettings, overlays] =
+    const [preferences, reminders, fitnessCalendarReminders, womensSettings, overlays] =
       await Promise.all([
         getUserPreferences(),
         getReminders(),
+        getFitnessCalendarReminders(),
         getWomensHealthSettings(),
         getCalendarHaloOverlaysForDateRange(addDays(monthStart, -7), addDays(monthEnd, 7))
       ]);
@@ -259,7 +263,7 @@ export default function CalendarScreen() {
     }
 
     setEnabledModules(preferences.enabledModules);
-    setAllReminders(filterVisibleReminders(reminders, preferences.enabledModules));
+    setAllReminders(filterVisibleReminders([...reminders, ...fitnessCalendarReminders], preferences.enabledModules));
     setWomensOverlayEnabled(canShowWomensOverlay);
     setWomensOverlays(canShowWomensOverlay ? overlays : []);
     hasLoadedCalendarRef.current = true;
@@ -273,12 +277,34 @@ export default function CalendarScreen() {
   );
 
   async function handleComplete(reminder: AppReminder) {
+    const calendarEventId =
+      typeof reminder.metadata?.calendarEventId === "string"
+        ? reminder.metadata.calendarEventId
+        : undefined;
+    if (calendarEventId && reminder.type === "fitness") {
+      await markWorkoutCompleted({
+        description: reminder.notes,
+        relatedCalendarEventId: calendarEventId,
+        title: reminder.title,
+      });
+    }
     await completeReminder(reminder.id);
     await cancelReminderNotification(reminder.notificationId);
     await loadCalendar();
   }
 
   async function handleSkip(reminder: AppReminder) {
+    const calendarEventId =
+      typeof reminder.metadata?.calendarEventId === "string"
+        ? reminder.metadata.calendarEventId
+        : undefined;
+    if (calendarEventId && reminder.type === "fitness") {
+      await markWorkoutSkipped({
+        description: reminder.notes,
+        relatedCalendarEventId: calendarEventId,
+        title: reminder.title,
+      });
+    }
     await skipReminder(reminder.id);
     await cancelReminderNotification(reminder.notificationId);
     await loadCalendar();
@@ -400,13 +426,13 @@ export default function CalendarScreen() {
             }
           ]}
         >
-          <View style={styles.agendaPinnedHeader}>
+          <View style={[styles.agendaPinnedHeader, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: theme.background }]}>
             <View style={{ flex: 1 }}>
               <View style={styles.agendaDateRow}>
-                <View style={styles.agendaDateDot} />
-                <Text style={styles.panelTitle}>{formatAgendaDate(selectedDate, notebookOpen)}</Text>
+                <View style={[styles.agendaDateDot, { backgroundColor: theme.primary }]} />
+                <Text style={[styles.panelTitle, { color: theme.text }]}>{formatAgendaDate(selectedDate, notebookOpen)}</Text>
               </View>
-              <Text style={styles.panelKicker}>
+              <Text style={[styles.panelKicker, { color: theme.mutedText }]}>
                 {selectedReminders.length
                   ? `${selectedReminders.length} item${selectedReminders.length === 1 ? "" : "s"} planned`
                   : "Nothing planned"}
@@ -527,12 +553,13 @@ function CalendarHeader({
   onPrevious: () => void;
   yearLabel: number;
 }) {
+  const { theme } = useAppTheme();
   return (
-    <AppCard style={styles.headerCard}>
+    <AppCard style={[styles.headerCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
       <View style={styles.headerTop}>
         <View style={styles.monthSelector}>
           <IconButton label="Previous month" small muted onPress={onPrevious}>
-            <ChevronLeft color="#e2e8f0" size={17} />
+            <ChevronLeft color={theme.mutedText} size={17} />
           </IconButton>
           <Pressable
             accessibilityHint="Open month and year picker"
@@ -541,18 +568,18 @@ function CalendarHeader({
             onPress={onOpenMonthPicker}
             style={({ pressed }) => [styles.monthSelectorButton, pressed ? styles.pressed : null]}
           >
-            <Text style={styles.monthTitle}>{monthLabel} {yearLabel}</Text>
+            <Text style={[styles.monthTitle, { color: theme.text }]}>{monthLabel} {yearLabel}</Text>
           </Pressable>
           <IconButton label="Next month" small muted onPress={onNext}>
-            <ChevronRight color="#e2e8f0" size={17} />
+            <ChevronRight color={theme.mutedText} size={17} />
           </IconButton>
         </View>
         <View style={styles.headerActions}>
-          <IconButton label="Filter placeholder" muted onPress={onFilter}>
-            <Filter color="#e2e8f0" size={18} />
+          <IconButton label="Filter calendar" muted onPress={onFilter}>
+            <Filter color={theme.mutedText} size={18} />
           </IconButton>
           <IconButton label="Add event" onPress={onAdd}>
-            <Plus color="#10201d" size={19} />
+            <Plus color="#ffffff" size={19} />
           </IconButton>
         </View>
       </View>
@@ -571,11 +598,12 @@ function MonthGrid({
   onSelect: (date: Date) => void;
   selectedDate: Date;
 }) {
+  const { theme } = useAppTheme();
   return (
-    <AppCard style={styles.monthCard}>
+    <AppCard style={[styles.monthCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
       <View style={styles.weekHeader}>
         {DAY_NAMES.map((day) => (
-          <Text key={day} style={styles.weekHeaderText}>{day}</Text>
+          <Text key={day} style={[styles.weekHeaderText, { color: theme.mutedText }]}>{day}</Text>
         ))}
       </View>
       <View style={styles.monthGrid}>
@@ -604,6 +632,7 @@ function DayCell({
   onPress: () => void;
   selected: boolean;
 }) {
+  const { theme } = useAppTheme();
   const isToday = isSameDay(day.date, new Date());
   const topIndicators = day.reminders.slice(0, 4);
   const overlay = day.overlays[0];
@@ -624,17 +653,19 @@ function DayCell({
       onPress={onPress}
       style={({ pressed }) => [
         styles.dayCell,
+        { backgroundColor: theme.surfaceSoft ?? theme.background, borderColor: theme.border },
         !day.inCurrentMonth ? styles.dayCellMuted : null,
-        isToday ? styles.dayCellToday : null,
-        selected ? styles.dayCellSelected : null,
+        isToday ? { backgroundColor: theme.primary, borderColor: theme.primary } : null,
+        selected ? { borderColor: theme.primary, borderWidth: 2 } : null,
         pressed ? styles.pressed : null
       ]}
     >
       {overlay ? <View pointerEvents="none" style={[styles.halo, { borderColor: getOverlayColor(overlay) }]} /> : null}
       <Text style={[
         styles.dayNumber,
+        { color: isToday ? "#ffffff" : theme.text },
         !day.inCurrentMonth ? styles.dayNumberMuted : null,
-        selected ? styles.dayNumberSelected : null
+        selected && !isToday ? { color: theme.primary } : null
       ]}>
         {day.date.getDate()}
       </Text>
@@ -662,8 +693,9 @@ function WeekStrip({
   onSelect: (date: Date) => void;
   selectedDate: Date;
 }) {
+  const { theme } = useAppTheme();
   return (
-    <View style={styles.weekStrip}>
+    <View style={[styles.weekStrip, { backgroundColor: theme.background, borderColor: theme.border }]}>
       {days.map((day) => {
         const selected = isSameDay(day.date, selectedDate);
         const today = isSameDay(day.date, new Date());
@@ -680,16 +712,17 @@ function WeekStrip({
             onPress={() => onSelect(day.date)}
             style={({ pressed }) => [
               styles.weekDay,
-              today ? styles.weekDayToday : null,
-              selected ? styles.weekDaySelected : null,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+              today ? { backgroundColor: theme.primary, borderColor: theme.primary } : null,
+              selected ? { borderColor: theme.primary, borderWidth: 2 } : null,
               pressed ? styles.pressed : null
             ]}
           >
             {today ? <View style={[styles.weekTodayMarker, selected ? styles.weekTodayMarkerSelected : null]} /> : null}
-            <Text style={[styles.weekDayLabel, selected ? styles.weekDayTextSelected : null]}>
+            <Text style={[styles.weekDayLabel, { color: today ? "#ffffff" : theme.mutedText }, selected && !today ? { color: theme.primary } : null]}>
               {DAY_NAMES[day.date.getDay()]}
             </Text>
-            <Text style={[styles.weekDayNumber, selected ? styles.weekDayTextSelected : null]}>
+            <Text style={[styles.weekDayNumber, { color: today ? "#ffffff" : theme.text }, selected && !today ? { color: theme.primary } : null]}>
               {day.date.getDate()}
             </Text>
             <View style={styles.weekDots}>
@@ -1397,7 +1430,7 @@ function ReminderRow({
 
   return (
     <Pressable onPress={onOpen} style={({ pressed }) => [styles.reminderRow, pressed ? styles.pressed : null]}>
-      <View style={[styles.typeIcon, { backgroundColor: `${accent.color}24` }]}>
+      <View style={[styles.typeIcon, { backgroundColor: accentSoftColor(accent.color, 0.14) }]}>
         <AppIcon color={accent.color} decorative name={accent.icon as never} size={19} />
       </View>
       <View style={{ flex: 1 }}>
@@ -1418,7 +1451,7 @@ function TimelineRow({ onOpen, reminder }: { onOpen: () => void; reminder: AppRe
 
   return (
     <Pressable onPress={onOpen} style={({ pressed }) => [styles.timelineRow, pressed ? styles.pressed : null]}>
-      <View style={[styles.timelineIcon, { backgroundColor: `${accent.color}22` }]}>
+      <View style={[styles.timelineIcon, { backgroundColor: accentSoftColor(accent.color, 0.13) }]}>
         <AppIcon color={accent.color} decorative name={accent.icon as never} size={18} />
       </View>
       <View style={{ flex: 1 }}>
@@ -1520,6 +1553,7 @@ function IconButton({
   onPress: () => void;
   small?: boolean;
 }) {
+  const { theme } = useAppTheme();
   return (
     <Pressable
       accessibilityLabel={label}
@@ -1527,8 +1561,9 @@ function IconButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.iconButton,
+        { backgroundColor: theme.primary },
         small ? styles.iconButtonSmall : null,
-        muted ? styles.iconButtonMuted : null,
+        muted ? { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1 } : null,
         pressed ? styles.pressed : null
       ]}
     >
@@ -2083,6 +2118,11 @@ function formatAgendaDate(date: Date, compact: boolean) {
   }).format(date);
 }
 
+function accentSoftColor(color: string, opacity: number) {
+  const hsl = color.replace("hsl(", "").replace(")", "");
+  return color.startsWith("hsl(") ? `hsla(${hsl}, ${opacity})` : color;
+}
+
 function formatDateKey(dateKey: string) {
   return formatDateLabel(new Date(`${dateKey}T12:00:00`));
 }
@@ -2153,9 +2193,9 @@ const styles = StyleSheet.create({
   agendaPinnedHeader: {
     alignItems: "flex-start",
     backgroundColor: "#080f1d",
-    borderBottomColor: "rgba(255,255,255,0.08)",
+    borderBottomColor: "transparent",
     borderBottomWidth: 1,
-    borderColor: "rgba(255,255,255,0.10)",
+    borderColor: "transparent",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderTopWidth: 1,
@@ -2259,11 +2299,11 @@ const styles = StyleSheet.create({
   dayCell: {
     backgroundColor: "rgba(255,255,255,0.045)",
     borderColor: "rgba(255,255,255,0.06)",
-    borderRadius: 8,
+    borderRadius: 16,
     borderWidth: 1,
     flexBasis: "13.05%",
     flexGrow: 1,
-    height: 52,
+    height: 50,
     justifyContent: "space-between",
     overflow: "hidden",
     paddingHorizontal: 5,
@@ -2372,7 +2412,7 @@ const styles = StyleSheet.create({
     gap: 9
   },
   halo: {
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 2,
     bottom: 4,
     left: 4,
@@ -2390,7 +2430,7 @@ const styles = StyleSheet.create({
   headerCard: {
     backgroundColor: "#0f172a",
     borderColor: "rgba(110,231,200,0.18)",
-    borderRadius: 14,
+    borderRadius: 22,
     borderWidth: 1,
     gap: 10
   },
@@ -2487,10 +2527,10 @@ const styles = StyleSheet.create({
   monthCard: {
     backgroundColor: "#0f172a",
     borderColor: "rgba(255,255,255,0.10)",
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
     borderWidth: 1,
     overflow: "hidden",
     paddingVertical: 18
@@ -2511,7 +2551,7 @@ const styles = StyleSheet.create({
   monthSelectorButton: {
     backgroundColor: "rgba(255,255,255,0.08)",
     borderColor: "rgba(255,255,255,0.12)",
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
     flex: 1,
     maxWidth: 190,
@@ -3219,6 +3259,8 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   weekStrip: {
+    borderBottomWidth: 1,
+    borderTopWidth: 1,
     flexDirection: "row",
     gap: 6,
     minHeight: CALENDAR_COLLAPSED_HEIGHT,

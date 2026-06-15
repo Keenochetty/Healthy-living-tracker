@@ -43,10 +43,14 @@ export function BabyProfileSummary({
         </View>
       </View>
 
-      {profiles.length > 1 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.selectorRow}>
+      <View style={styles.switcherHeading}>
+        <Text style={[styles.switcherTitle, { color: theme.text }]}>Child profiles</Text>
+        <Text style={[styles.switcherMeta, { color: theme.mutedText }]}>Parent-controlled care view</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.selectorRow}>
           {profiles.map((item) => {
             const selected = item.id === profile.id;
+            const itemInitials = item.displayName.trim().slice(0, 2).toUpperCase() || "CH";
             return (
               <Pressable
                 accessibilityRole="button"
@@ -56,17 +60,20 @@ export function BabyProfileSummary({
                 style={[
                   styles.selector,
                   {
-                    backgroundColor: selected ? theme.primary : theme.primarySoft,
+                    backgroundColor: selected ? theme.primarySoft : theme.surface,
                     borderColor: selected ? theme.primary : theme.border
                   }
                 ]}
               >
-                <Text style={[styles.selectorText, { color: selected ? "#10201d" : theme.text }]}>{item.displayName}</Text>
+                <View style={[styles.selectorAvatar, { backgroundColor: selected ? theme.surface : theme.primarySoft }]}>
+                  <Text style={[styles.selectorAvatarText, { color: theme.text }]}>{item.avatarEmoji || itemInitials}</Text>
+                </View>
+                <Text numberOfLines={1} style={[styles.selectorText, { color: theme.text }]}>{item.displayName}</Text>
+                <Text style={[styles.selectorStatus, { color: selected ? theme.primary : theme.mutedText }]}>{selected ? "Viewing" : formatAge(item.dateOfBirth)}</Text>
               </Pressable>
             );
           })}
-        </ScrollView>
-      ) : null}
+      </ScrollView>
     </AppCard>
   );
 }
@@ -99,7 +106,13 @@ const styles = StyleSheet.create({
   name: { fontSize: 27, fontWeight: "900" },
   profileCopy: { flex: 1 },
   profileRow: { alignItems: "center", flexDirection: "row", gap: 14 },
-  selector: { borderRadius: 999, borderWidth: 1, minHeight: 40, paddingHorizontal: 14, paddingVertical: 9 },
-  selectorRow: { gap: 8, paddingTop: 16 },
-  selectorText: { fontWeight: "900" }
+  selector: { alignItems: "center", borderRadius: 22, borderWidth: 1, gap: 6, minHeight: 116, padding: 12, width: 132 },
+  selectorAvatar: { alignItems: "center", borderRadius: 999, height: 42, justifyContent: "center", width: 42 },
+  selectorAvatarText: { fontSize: 15, fontWeight: "900" },
+  selectorRow: { gap: 10, paddingRight: 12 },
+  selectorStatus: { fontSize: 10, fontWeight: "800" },
+  selectorText: { fontSize: 13, fontWeight: "900", maxWidth: 108 },
+  switcherHeading: { marginTop: 18, marginBottom: 10 },
+  switcherMeta: { fontSize: 11, marginTop: 3 },
+  switcherTitle: { fontSize: 15, fontWeight: "900" }
 });

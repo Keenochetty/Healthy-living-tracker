@@ -12,11 +12,11 @@ import Animated, {
 import { AppIcon } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
 import { lightImpact } from "@/lib/haptics";
-import { appColors, appMotion, appRadius, touchTargets } from "@/theme/designSystem";
+import { appMotion, appRadius, touchTargets } from "@/theme/designSystem";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 type FloatingBottomNavItemProps = {
   accessibilityLabel: string;
-  compact?: boolean;
   focused: boolean;
   iconName: AppIconName;
   label: string;
@@ -26,7 +26,6 @@ type FloatingBottomNavItemProps = {
 
 export function FloatingBottomNavItem({
   accessibilityLabel,
-  compact = false,
   focused,
   iconName,
   label,
@@ -34,16 +33,18 @@ export function FloatingBottomNavItem({
   onPress
 }: FloatingBottomNavItemProps) {
   const [isPressed, setIsPressed] = useState(false);
-  const labelWidth = Math.min(compact ? 58 : 64, Math.max(38, label.length * (compact ? 7 : 7.5) + 2));
-  const activeWidth = labelWidth + (compact ? 46 : 50);
-  const inactiveWidth = compact ? 38 : 42;
+  const { theme } = useAppTheme();
+  const labelWidth = Math.min(66, Math.max(38, label.length * 7.5 + 2));
+  const activeWidth = labelWidth + 50;
+  const inactiveWidth = 42;
+  const activeForeground = isDarkBackground(theme.background) ? theme.background : "#ffffff";
   const progress = useDerivedValue(() =>
     withTiming(focused ? 1 : 0, { duration: appMotion.navTransition })
   );
 
   const capsuleStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(progress.value, [0, 1], ["rgba(255,255,255,0)", appColors.navActive]),
-    borderColor: interpolateColor(progress.value, [0, 1], ["rgba(255,255,255,0)", "rgba(255,255,255,0.16)"]),
+    backgroundColor: interpolateColor(progress.value, [0, 1], ["rgba(255,255,255,0)", theme.primary]),
+    borderColor: interpolateColor(progress.value, [0, 1], ["rgba(255,255,255,0)", theme.primary]),
     transform: [
       {
         scale: withSpring(isPressed ? 0.95 : 1, appMotion.spring)
@@ -61,7 +62,7 @@ export function FloatingBottomNavItem({
     width: interpolate(progress.value, [0, 1], [inactiveWidth, activeWidth])
   }));
 
-  const iconColor = focused ? appColors.navActiveText : appColors.navInactive;
+  const iconColor = focused ? activeForeground : theme.mutedText;
 
   return (
     <Animated.View style={[styles.item, itemStyle]}>
@@ -85,7 +86,7 @@ export function FloatingBottomNavItem({
       >
         <Animated.View style={[styles.capsule, capsuleStyle]}>
           <AppIcon color={iconColor} decorative name={iconName} size={20} strokeWidth={2.2} />
-          <Animated.Text numberOfLines={1} style={[styles.label, labelStyle]}>
+          <Animated.Text numberOfLines={1} style={[styles.label, { color: activeForeground }, labelStyle]}>
             {label}
           </Animated.Text>
         </Animated.View>
@@ -107,7 +108,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10
   },
   label: {
-    color: appColors.navActiveText,
     fontSize: 12,
     fontWeight: "800",
     includeFontPadding: false,
@@ -124,3 +124,7 @@ const styles = StyleSheet.create({
     width: "100%"
   }
 });
+
+function isDarkBackground(color: string) {
+  return color.startsWith("#0") || color.startsWith("#1") || color.includes("rgba(");
+}

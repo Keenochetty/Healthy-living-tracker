@@ -20,7 +20,9 @@ export function AppAvatar({ emoji, imageUri, initials, size = 44, status }: AppA
         style={{
           alignItems: "center",
           backgroundColor: theme.primarySoft,
+          borderColor: theme.border,
           borderRadius: radius.full,
+          borderWidth: 1,
           height: size,
           justifyContent: "center",
           overflow: "hidden",

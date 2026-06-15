@@ -5,21 +5,33 @@ import {
   FITNESS_GOAL_PATHS,
   type FitnessGoalPath,
 } from "@/constants/fitnessRealmConfig";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export function FitnessGoalPaths({
+  goals = FITNESS_GOAL_PATHS,
   onSelect,
+  onViewAll,
 }: {
+  goals?: FitnessGoalPath[];
   onSelect: (goal: FitnessGoalPath) => void;
+  onViewAll?: () => void;
 }) {
+  const { theme } = useAppTheme();
   return (
     <View style={styles.section}>
-      <Heading eyebrow="Build towards something" title="Goal Paths" />
+      <View style={styles.headingRow}>
+        <View>
+          <Text style={[styles.eyebrow, { color: theme.primary }]}>Build towards something</Text>
+          <Text style={[styles.heading, { color: theme.text }]}>Goal Paths</Text>
+        </View>
+        {onViewAll ? <Pressable onPress={onViewAll}><Text style={[styles.viewAll, { color: theme.primary }]}>View all</Text></Pressable> : null}
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.rail}
       >
-        {FITNESS_GOAL_PATHS.map((goal) => (
+        {goals.map((goal) => (
           <Pressable
             key={goal.id}
             onPress={() => onSelect(goal)}
@@ -48,15 +60,6 @@ export function FitnessGoalPaths({
   );
 }
 
-function Heading({ eyebrow, title }: { eyebrow: string; title: string }) {
-  return (
-    <View>
-      <Text style={styles.eyebrow}>{eyebrow}</Text>
-      <Text style={styles.heading}>{title}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   badge: {
     backgroundColor: "rgba(255,255,255,0.16)",
@@ -77,6 +80,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   heading: { color: "#0f172a", fontSize: 22, fontWeight: "900", marginTop: 3 },
+  headingRow: { alignItems: "flex-end", flexDirection: "row", justifyContent: "space-between" },
   icon: {
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.14)",
@@ -111,4 +115,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  viewAll: { fontSize: 11, fontWeight: "900", paddingVertical: 6 },
 });

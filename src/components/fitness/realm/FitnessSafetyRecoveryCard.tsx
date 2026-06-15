@@ -2,28 +2,30 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { AppCard, AppIcon } from "@/components/ui";
 import { FITNESS_SAFETY_NOTES } from "@/constants/fitnessRealmConfig";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export function FitnessSafetyRecoveryCard() {
+  const { theme } = useAppTheme();
   return (
-    <AppCard style={styles.card}>
+    <AppCard style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
       <View style={styles.header}>
         <View style={styles.icon}>
           <AppIcon color="#fef3c7" decorative name="safety" size={22} />
         </View>
         <View style={styles.headerCopy}>
-          <Text style={styles.eyebrow}>Safety + recovery</Text>
-          <Text style={styles.title}>Train for the body you have today</Text>
+          <Text style={[styles.eyebrow, { color: theme.warning }]}>Safety + recovery</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Train for the body you have today</Text>
         </View>
       </View>
-      <Text style={styles.body}>
+      <Text style={[styles.body, { color: theme.mutedText }]}>
         Fitness content is general guidance, not medical treatment or
         rehabilitation advice. Seek professional advice when needed.
       </Text>
       <View style={styles.notes}>
-        {FITNESS_SAFETY_NOTES.slice(0, 5).map((note) => (
-          <View key={note.id} style={styles.note}>
-            <Text style={styles.noteTitle}>{note.title}</Text>
-            <Text style={styles.noteBody}>{note.guidance}</Text>
+        {FITNESS_SAFETY_NOTES.slice(0, 6).map((note) => (
+          <View key={note.id} style={[styles.note, { backgroundColor: theme.primarySoft }]}>
+            <Text style={[styles.noteTitle, { color: theme.text }]}>{note.title}</Text>
+            <Text style={[styles.noteBody, { color: theme.mutedText }]}>{note.guidance}</Text>
           </View>
         ))}
       </View>

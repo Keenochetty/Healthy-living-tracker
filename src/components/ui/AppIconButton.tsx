@@ -26,7 +26,9 @@ export function AppIconButton({ icon, onPress, size = "md", variant = "default" 
       style={({ pressed }) => ({
         alignItems: "center",
         backgroundColor: colors.background,
+        borderColor: variant === "default" ? theme.border : "transparent",
         borderRadius: radius.full,
+        borderWidth: variant === "default" ? 1 : 0,
         height: dimension,
         justifyContent: "center",
         opacity: pressed ? 0.82 : 1,

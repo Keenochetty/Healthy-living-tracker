@@ -1,8 +1,9 @@
 import { Href, router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
-import { AppButton, AppCard, AppChip, AppSection } from "@/components/ui";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
+import { AppButton, AppCard, AppChip, AppFormInput } from "@/components/ui";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { getCountryByName } from "@/constants/countries";
 import {
@@ -13,7 +14,6 @@ import {
   completeOnboarding,
   completeOnboardingStep,
   createInitialHealthProfile,
-  createOnboardingState,
   getOnboardingState,
   getSuggestedWidgetsForModules,
   saveInitialAssistantConsent,
@@ -32,6 +32,7 @@ import type {
   OnboardingStep
 } from "@/types/onboarding";
 import type { WidgetKey } from "@/types/app";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 const GOALS: Array<{ key: MainHealthGoal; label: string }> = [
   { key: "general_health", label: "General health" },
@@ -46,6 +47,30 @@ const GOALS: Array<{ key: MainHealthGoal; label: string }> = [
   { key: "records_organization", label: "Records organization" },
   { key: "custom", label: "Custom" }
 ];
+
+const SETUP_GOALS: Array<{ label: string; modules: HealthModuleKey[] }> = [
+  { label: "Fitness", modules: ["workout"] },
+  { label: "Nutrition", modules: ["nutrition"] },
+  { label: "Family Circle", modules: ["family_circles"] },
+  { label: "Muscle Growth", modules: ["workout", "nutrition"] },
+  { label: "Weight Loss", modules: ["workout", "nutrition", "biometrics"] },
+  { label: "Family Planning", modules: ["womens_health"] },
+  { label: "Food Planning", modules: ["nutrition", "calendar"] },
+  { label: "Daily Planning", modules: ["calendar"] },
+  { label: "Workout Guide", modules: ["workout"] },
+  { label: "Pregnancy", modules: ["pregnancy"] },
+  { label: "Child Care", modules: ["baby_child"] },
+  { label: "Medication", modules: ["medication"] },
+  { label: "Supplements", modules: ["supplements"] },
+  { label: "Records", modules: ["records"] }
+];
+
+const GENDER_OPTIONS = [
+  { key: "woman", label: "Woman", description: "Offer optional cycle, fertility, contraception, and pregnancy setup." },
+  { key: "man", label: "Man", description: "Keep women's health options hidden unless managing them for someone else." },
+  { key: "another", label: "Another identity", description: "Choose only the health modules that are useful to you." },
+  { key: "prefer_not_to_say", label: "Prefer not to say", description: "Continue without gender-based suggestions." }
+] as const;
 
 const LAYOUTS: Array<{ key: HomeLayoutPreference; label: string }> = [
   { key: "simple", label: "Simple" },
@@ -69,20 +94,11 @@ const AI_CATEGORIES = [
   "family_caregiver"
 ];
 
-const INPUT_STYLE = {
-  backgroundColor: "#ffffff",
-  borderColor: "#e2e8f0",
-  borderRadius: 16,
-  borderWidth: 1,
-  color: "#0f172a",
-  minHeight: 50,
-  paddingHorizontal: 14
-};
-
 const DEFAULT_SELECTED_MODULES: HealthModuleKey[] = ["calendar", "records"];
 const EMPTY_WIDGET_KEYS: WidgetKey[] = [];
 
 export default function OnboardingScreen() {
+  const { theme } = useAppTheme();
   const [state, setState] = useState<OnboardingState | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -105,6 +121,12 @@ export default function OnboardingScreen() {
   const suggestedWidgets = useMemo(
     () => getSuggestedWidgetsForModules(selectedModules, state?.homeLayoutPreference ?? "simple"),
     [selectedModules, state?.homeLayoutPreference]
+  );
+  const visibleModuleOptions = useMemo(
+    () => sexOrGender === "man"
+      ? HEALTH_MODULE_OPTIONS.filter((module) => module.key !== "womens_health" && module.key !== "pregnancy")
+      : HEALTH_MODULE_OPTIONS,
+    [sexOrGender]
   );
 
   async function refresh(next?: OnboardingState) {
@@ -132,9 +154,12 @@ export default function OnboardingScreen() {
       sexOrGender: clean(sexOrGender),
       unitSystem
     });
-    await refresh(await updateOnboardingState({
-      selectedModules: applyDefaultModulesFromGoal(mainGoal)
-    }));
+    const suggested = applyDefaultModulesFromGoal(mainGoal);
+    const combined = Array.from(new Set([...selectedModules, ...suggested]));
+    const profileModules = sexOrGender === "man"
+      ? combined.filter((module) => module !== "womens_health" && module !== "pregnancy")
+      : combined;
+    await refresh(await updateOnboardingState({ selectedModules: profileModules }));
     await finishStep("module_selection");
   }
 
@@ -143,6 +168,18 @@ export default function OnboardingScreen() {
     const selected = state.selectedModules.includes(moduleKey)
       ? state.selectedModules.filter((item) => item !== moduleKey)
       : [...state.selectedModules, moduleKey];
+    await refresh(await updateOnboardingState({
+      selectedModules: selected,
+      selectedWidgetKeys: getSuggestedWidgetsForModules(selected, state.homeLayoutPreference ?? "simple")
+    }));
+  }
+
+  async function toggleSetupGoal(modules: HealthModuleKey[]) {
+    if (!state) return;
+    const isSelected = modules.every((module) => state.selectedModules.includes(module));
+    const selected = isSelected
+      ? state.selectedModules.filter((module) => !modules.includes(module))
+      : Array.from(new Set([...state.selectedModules, ...modules]));
     await refresh(await updateOnboardingState({
       selectedModules: selected,
       selectedWidgetKeys: getSuggestedWidgetsForModules(selected, state.homeLayoutPreference ?? "simple")
@@ -189,18 +226,13 @@ export default function OnboardingScreen() {
 
   return (
     <ScreenWrapper>
-      <View style={{ gap: 8 }}>
-        <Text style={{ color: "#64748b", fontWeight: "900" }}>Step {progress} of {ONBOARDING_STEPS.length}</Text>
-        <View style={{ backgroundColor: "#e2e8f0", borderRadius: 999, height: 8, overflow: "hidden" }}>
-          <View style={{ backgroundColor: "#7c3aed", height: 8, width: `${progress / ONBOARDING_STEPS.length * 100}%` }} />
-        </View>
-      </View>
+      <OnboardingProgress step={progress} totalSteps={ONBOARDING_STEPS.length} />
 
       {step === "welcome" ? (
         <View style={{ gap: 16 }}>
-          <AppCard backgroundColor="#f5f3ff">
-            <Text style={styles.heroTitle}>Your health, family, and daily care in one place.</Text>
-            <Text style={styles.muted}>Track what matters, keep records organized, and choose what you want to see at a glance.</Text>
+          <AppCard radius="2xl" style={{ borderColor: theme.border, borderWidth: 1, padding: 24 }}>
+            <Text style={[styles.heroTitle, { color: theme.text }]}>Your health, family, and daily care in one place.</Text>
+            <Text style={[styles.muted, { color: theme.mutedText }]}>Track what matters, keep records organized, and choose what you want to see at a glance.</Text>
           </AppCard>
           <AppButton onPress={() => finishStep("privacy_promise")} title="Get Started" />
           <AppButton onPress={finishOnboarding} title="I will set up later" variant="secondary" />
@@ -211,9 +243,9 @@ export default function OnboardingScreen() {
         <View style={{ gap: 14 }}>
           <Header subtitle="Your setup starts private. Sharing, AI, device sync, and sensitive modules stay optional." title="Privacy promise" />
           {["Private by default", "You choose what to share", "Family access is optional", "Sensitive health data stays protected", "AI suggestions require confirmation", "This app is not a doctor"].map((item) => (
-            <AppCard key={item}><Text style={styles.cardTitle}>{item}</Text></AppCard>
+            <AppCard key={item}><Text style={[styles.cardTitle, { color: theme.text }]}>{item}</Text></AppCard>
           ))}
-          <Text style={styles.footer}>This app helps with tracking, organization, reminders, and trusted education. It is not medical advice and does not replace a doctor, pharmacist, nurse, clinic, pediatrician, midwife, therapist, or healthcare professional.</Text>
+          <Text style={[styles.footer, { color: theme.mutedText }]}>This app helps with tracking, organization, reminders, and trusted education. It is not medical advice and does not replace a doctor, pharmacist, nurse, clinic, pediatrician, midwife, therapist, or healthcare professional.</Text>
           <AppButton onPress={() => finishStep("profile_setup")} title="Continue" />
         </View>
       ) : null}
@@ -221,13 +253,44 @@ export default function OnboardingScreen() {
       {step === "profile_setup" ? (
         <View style={{ gap: 14 }}>
           <Header subtitle="A basic personal profile is enough. Everything else can wait." title="Create personal profile" />
-          <TextInput onChangeText={setDisplayName} placeholder="Display name" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={displayName} />
-          <TextInput onChangeText={setDateOfBirth} placeholder="Date of birth optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={dateOfBirth} />
-          <TextInput onChangeText={setSexOrGender} placeholder="Sex/gender optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={sexOrGender} />
-          <TextInput onChangeText={setCountry} placeholder="Country" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={country} />
+          <AppFormInput label="Display name" onChangeText={setDisplayName} placeholder="Your name" value={displayName} />
+          <AppFormInput helperText="Optional" label="Date of birth" onChangeText={setDateOfBirth} placeholder="DD/MM/YYYY" value={dateOfBirth} />
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Which profile best fits you?</Text>
+          <View style={styles.genderGrid}>
+            {GENDER_OPTIONS.map((option) => (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                key={option.key}
+                onPress={() => setSexOrGender(option.key)}
+                style={[
+                  styles.genderCard,
+                  {
+                    backgroundColor: sexOrGender === option.key ? theme.primarySoft : theme.surface,
+                    borderColor: sexOrGender === option.key ? theme.primary : theme.border
+                  }
+                ]}
+              >
+                <Text style={[styles.cardTitle, { color: theme.text, textAlign: "center" }]}>{option.label}</Text>
+                <Text style={[styles.footer, { color: theme.mutedText, textAlign: "center" }]}>{option.description}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <AppFormInput label="Country" onChangeText={setCountry} placeholder="Country" value={country} />
           <ChipRow current={unitSystem} onSelect={(value) => setUnitSystem(value as "metric" | "imperial")} options={[["metric", "Metric"], ["imperial", "Imperial"]]} />
-          <Text style={styles.sectionTitle}>Main health goal optional</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Main health goal optional</Text>
           <ChipRow current={mainGoal} onSelect={(value) => setMainGoal(value as MainHealthGoal)} options={GOALS.map((goal) => [goal.key, goal.label])} />
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>What would you like to use the app for?</Text>
+          <View style={styles.pillGrid}>
+            {SETUP_GOALS.map((goal) => (
+              <AppChip
+                key={goal.label}
+                label={goal.label}
+                onPress={() => toggleSetupGoal(goal.modules)}
+                selected={goal.modules.every((module) => selectedModules.includes(module))}
+                variant="primary"
+              />
+            ))}
+          </View>
           <AppButton onPress={saveProfile} title="Save Profile" />
           <AppButton onPress={() => skipStep("module_selection")} title="Skip profile details" variant="secondary" />
         </View>
@@ -236,7 +299,7 @@ export default function OnboardingScreen() {
       {step === "module_selection" ? (
         <View style={{ gap: 14 }}>
           <Header subtitle="Turn on only what you want now. You can turn this on later." title="Choose health modules" />
-          {HEALTH_MODULE_OPTIONS.map((module) => (
+          {visibleModuleOptions.map((module) => (
             <SelectableCard
               badge={module.privacyBadge}
               description={module.description}
@@ -253,15 +316,15 @@ export default function OnboardingScreen() {
       {step === "widget_selection" ? (
         <View style={{ gap: 14 }}>
           <Header subtitle="Choose what you want to see first. We added a simple default. You can customize it anytime." title="Choose quick-view widgets" />
-          <Text style={styles.sectionTitle}>Home layout style</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Home layout style</Text>
           <ChipRow current={state.homeLayoutPreference ?? "simple"} onSelect={(value) => chooseLayout(value as HomeLayoutPreference)} options={LAYOUTS.map((layout) => [layout.key, layout.label])} />
-          <Text style={styles.sectionTitle}>Suggested widgets</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Suggested widgets</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {suggestedWidgets.map((widget) => (
               <AppChip key={widget} label={formatValue(widget)} onPress={() => toggleWidget(widget)} selected={selectedWidgets.includes(widget)} variant="primary" />
             ))}
           </ScrollView>
-          <Text style={styles.muted}>Selected: {selectedWidgets.length ? selectedWidgets.map(formatValue).join(", ") : "Simple default"}</Text>
+          <Text style={[styles.muted, { color: theme.mutedText }]}>Selected: {selectedWidgets.length ? selectedWidgets.map(formatValue).join(", ") : "Simple default"}</Text>
           <AppButton onPress={saveWidgets} title="Save Widgets" />
           <AppButton onPress={() => skipStep("units_country")} title="Skip widgets" variant="secondary" />
         </View>
@@ -270,8 +333,8 @@ export default function OnboardingScreen() {
       {step === "units_country" ? (
         <View style={{ gap: 14 }}>
           <Header subtitle="Default for South Africa/global is metric: kg, cm, ml, Celsius." title="Units and country" />
-          <Text style={styles.cardTitle}>Country: {getCountryByName(country).country}</Text>
-          <Text style={styles.muted}>Preferred units: {unitSystem === "metric" ? "kg, cm, ml, Celsius" : "lb, in, oz, Fahrenheit"}</Text>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Country: {getCountryByName(country).country}</Text>
+          <Text style={[styles.muted, { color: theme.mutedText }]}>Preferred units: {unitSystem === "metric" ? "kg, cm, ml, Celsius" : "lb, in, oz, Fahrenheit"}</Text>
           <AppButton onPress={() => finishStep("notifications")} title="Continue" />
         </View>
       ) : null}
@@ -282,7 +345,7 @@ export default function OnboardingScreen() {
           <ChoiceButton label="Not now" onPress={() => saveNotifications("not_now")} />
           <ChoiceButton label="In-app reminders only" onPress={() => saveNotifications("in_app_only")} />
           <ChoiceButton label="Device notifications" onPress={() => saveNotifications("device_notifications")} />
-          <Text style={styles.footer}>Sensitive notification privacy uses private lock-screen text by default.</Text>
+          <Text style={[styles.footer, { color: theme.mutedText }]}>Sensitive notification privacy uses private lock-screen text by default.</Text>
         </View>
       ) : null}
 
@@ -292,7 +355,7 @@ export default function OnboardingScreen() {
           <ChoiceButton label="Not now" onPress={() => skipFamilySetup().then(() => finishStep("ai_consent"))} />
           <ChoiceButton label="Create family circle later" onPress={() => finishStep("ai_consent")} />
           <ChoiceButton label="Add child profile later" onPress={() => updateOnboardingState({ selectedModules: [...selectedModules, "baby_child"] }).then(() => finishStep("ai_consent"))} />
-          <Text style={styles.muted}>You can create a family circle later.</Text>
+          <Text style={[styles.muted, { color: theme.mutedText }]}>You can create a family circle later.</Text>
         </View>
       ) : null}
 
@@ -302,8 +365,8 @@ export default function OnboardingScreen() {
           <ToggleRow label="Enable assistant" onChange={setAiEnabled} value={aiEnabled} />
           {aiEnabled ? AI_CATEGORIES.map((category) => (
             <ToggleRow key={category} label={formatValue(category)} onChange={() => setAiCategories((current) => current.includes(category) ? current.filter((item) => item !== category) : [...current, category])} value={aiCategories.includes(category)} />
-          )) : <Text style={styles.muted}>You can turn on the assistant later.</Text>}
-          <Text style={styles.footer}>AI suggestions are drafts. Review and confirm before saving. Sensitive categories are off by default.</Text>
+          )) : <Text style={[styles.muted, { color: theme.mutedText }]}>You can turn on the assistant later.</Text>}
+          <Text style={[styles.footer, { color: theme.mutedText }]}>AI suggestions are drafts. Review and confirm before saving. Sensitive categories are off by default.</Text>
           <AppButton onPress={() => saveAiConsent(aiEnabled)} title="Save AI Settings" />
           <AppButton onPress={() => saveAiConsent(false)} title="Skip AI" variant="secondary" />
         </View>
@@ -311,11 +374,11 @@ export default function OnboardingScreen() {
 
       {step === "finish" ? (
         <View style={{ gap: 14 }}>
-          <AppCard backgroundColor="#ecfdf5">
-            <Text style={styles.heroTitle}>You are ready.</Text>
-            <Text style={styles.muted}>You can add more health modules anytime.</Text>
+          <AppCard variant="success">
+            <Text style={[styles.heroTitle, { color: theme.text }]}>You are ready.</Text>
+            <Text style={[styles.muted, { color: theme.mutedText }]}>You can add more health modules anytime.</Text>
           </AppCard>
-          {state.skippedSteps.length ? <Text style={styles.muted}>Finish setup later: {state.skippedSteps.map(formatValue).join(", ")}</Text> : null}
+          {state.skippedSteps.length ? <Text style={[styles.muted, { color: theme.mutedText }]}>Finish setup later: {state.skippedSteps.map(formatValue).join(", ")}</Text> : null}
           <AppButton onPress={finishOnboarding} title="Go to Health Overview" />
         </View>
       ) : null}
@@ -331,22 +394,24 @@ export default function OnboardingScreen() {
 }
 
 function Header({ subtitle, title }: { subtitle: string; title: string }) {
+  const { theme } = useAppTheme();
   return (
     <View style={{ gap: 6 }}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.muted}>{subtitle}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
+      <Text style={[styles.muted, { color: theme.mutedText }]}>{subtitle}</Text>
     </View>
   );
 }
 
 function SelectableCard({ badge, description, onPress, selected, title }: { badge: string; description: string; onPress: () => void; selected: boolean; title: string }) {
+  const { theme } = useAppTheme();
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
-      <AppCard backgroundColor={selected ? "#f5f3ff" : "#ffffff"}>
+      <AppCard backgroundColor={selected ? theme.primarySoft : theme.surface} style={{ borderColor: selected ? theme.primary : theme.border, borderWidth: 1 }}>
         <View style={{ flexDirection: "row", gap: 12, justifyContent: "space-between" }}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>{title}</Text>
-            <Text style={styles.muted}>{description}</Text>
+            <Text style={[styles.cardTitle, { color: theme.text }]}>{title}</Text>
+            <Text style={[styles.muted, { color: theme.mutedText }]}>{description}</Text>
           </View>
           <AppChip label={badge} variant={selected ? "primary" : "muted"} />
         </View>
@@ -370,10 +435,11 @@ function ChipRow({ current, onSelect, options }: { current: string; onSelect: (v
 }
 
 function ToggleRow({ label, onChange, value }: { label: string; onChange: (value: boolean) => void; value: boolean }) {
+  const { theme } = useAppTheme();
   return (
-    <View style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, flexDirection: "row", justifyContent: "space-between", padding: 12 }}>
-      <Text style={{ color: "#0f172a", flex: 1, fontWeight: "900" }}>{label}</Text>
-      <Switch onValueChange={onChange} value={value} />
+    <View style={{ alignItems: "center", backgroundColor: theme.surface, borderColor: theme.border, borderRadius: 16, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", padding: 12 }}>
+      <Text style={{ color: theme.text, flex: 1, fontWeight: "900" }}>{label}</Text>
+      <Switch onValueChange={onChange} thumbColor={value ? theme.primary : undefined} value={value} />
     </View>
   );
 }
@@ -387,10 +453,13 @@ function formatValue(value: string) {
 }
 
 const styles = {
-  cardTitle: { color: "#0f172a", fontSize: 17, fontWeight: "900" as const },
-  footer: { color: "#64748b", fontSize: 13, lineHeight: 20 },
-  heroTitle: { color: "#0f172a", fontSize: 30, fontWeight: "900" as const, lineHeight: 36 },
-  muted: { color: "#64748b", lineHeight: 21 },
-  sectionTitle: { color: "#0f172a", fontSize: 18, fontWeight: "900" as const },
-  title: { color: "#0f172a", fontSize: 28, fontWeight: "900" as const }
+  cardTitle: { fontSize: 17, fontWeight: "900" as const },
+  footer: { fontSize: 13, lineHeight: 20 },
+  genderCard: { alignItems: "center" as const, borderRadius: 22, borderWidth: 1, gap: 8, justifyContent: "center" as const, minHeight: 132, padding: 16, width: "48%" as const },
+  genderGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 12 },
+  heroTitle: { fontSize: 30, fontWeight: "900" as const, lineHeight: 36 },
+  muted: { lineHeight: 21 },
+  pillGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: "900" as const },
+  title: { fontSize: 28, fontWeight: "900" as const }
 };

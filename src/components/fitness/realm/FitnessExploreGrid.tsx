@@ -5,24 +5,28 @@ import {
   FITNESS_EXPLORE_CATEGORIES,
   type FitnessExploreCategory,
 } from "@/constants/fitnessRealmConfig";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export function FitnessExploreGrid({
+  categories = FITNESS_EXPLORE_CATEGORIES,
   onSelect,
 }: {
+  categories?: FitnessExploreCategory[];
   onSelect: (category: FitnessExploreCategory) => void;
 }) {
+  const { theme } = useAppTheme();
   return (
     <View style={styles.section}>
       <View>
-        <Text style={styles.eyebrow}>Find your movement</Text>
-        <Text style={styles.heading}>Explore Fitness</Text>
+        <Text style={[styles.eyebrow, { color: theme.primary }]}>Find your movement</Text>
+        <Text style={[styles.heading, { color: theme.text }]}>Explore Fitness</Text>
       </View>
       <View style={styles.grid}>
-        {FITNESS_EXPLORE_CATEGORIES.map((category) => (
+        {categories.map((category) => (
           <Pressable
             key={category.id}
             onPress={() => onSelect(category)}
-            style={styles.card}
+            style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}
           >
             <View
               style={[
@@ -37,9 +41,9 @@ export function FitnessExploreGrid({
                 size={21}
               />
             </View>
-            <Text style={styles.title}>{category.title}</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{category.title}</Text>
             {category.safetyBadge ? (
-              <Text style={styles.badge}>{category.safetyBadge}</Text>
+              <Text style={[styles.badge, { color: theme.warning }]}>{category.safetyBadge}</Text>
             ) : null}
           </Pressable>
         ))}

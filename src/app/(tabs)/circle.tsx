@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Linking, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
+import { FamilyRealmOverview } from "@/components/circle/FamilyRealmOverview";
 import { AppButton, AppCard, AppChip, AppSection } from "@/components/ui";
 import {
   acceptFamilyInvite,
@@ -213,22 +214,18 @@ export default function FamilyScreen() {
 
   return (
     <AppMainLayout subtitle="Private family health" title="Family">
-      <AppCard backgroundColor="#8b5cf6">
-        <Text style={{ color: "#ffffff", fontSize: 24, fontWeight: "900" }}>Family Circles</Text>
-        <Text style={{ color: "#ede9fe", lineHeight: 21, marginTop: 6 }}>
-          Your health information is private by default. Share selected areas only when you are ready.
-        </Text>
-      </AppCard>
-
-      <DashboardSummary
-        activeProfile={activeProfile}
+      <FamilyRealmOverview
         caregivers={caregivers}
-        circles={circles}
+        circle={selectedCircle}
         invites={invites}
         members={members}
-        permissionCount={permissions.length}
-        sharedRecordsCount={sharedRecordsCount}
-        sharedReminderCount={sharedReminderCount}
+        onCaregivers={() => setActiveTab("caregivers")}
+        onInvites={() => setActiveTab("invites")}
+        onMembers={() => setActiveTab("members")}
+        onPermissions={() => setActiveTab("permissions")}
+        onProfiles={() => setActiveTab("profiles")}
+        permissions={permissions}
+        profiles={profiles}
       />
 
       <ProfileSwitcher activeProfile={activeProfile} onSelect={changeActiveProfile} profiles={profiles} />
@@ -263,39 +260,6 @@ export default function FamilyScreen() {
       {activeTab === "emergency" ? <EmergencyTab activeProfile={activeProfile} card={emergencyCard} onChanged={loadFamily} /> : null}
       {activeTab === "settings" ? <SettingsTab auditLogs={auditLogs} /> : null}
     </AppMainLayout>
-  );
-}
-
-function DashboardSummary({
-  activeProfile,
-  caregivers,
-  circles,
-  invites,
-  members,
-  permissionCount,
-  sharedRecordsCount,
-  sharedReminderCount
-}: {
-  activeProfile: HealthProfile | null;
-  caregivers: CaregiverProfile[];
-  circles: FamilyCircle[];
-  invites: FamilyInvite[];
-  members: FamilyCircleMember[];
-  permissionCount: number;
-  sharedRecordsCount: number;
-  sharedReminderCount: number;
-}) {
-  return (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-      <MetricCard label="Circles" value={`${circles.length}`} />
-      <MetricCard label="Members" value={`${members.length}`} />
-      <MetricCard label="Caregivers" value={`${caregivers.length}`} />
-      <MetricCard label="Invites" value={`${invites.length}`} />
-      <MetricCard label="Shared reminders" value={`${sharedReminderCount}`} />
-      <MetricCard label="Shared records" value={`${sharedRecordsCount}`} />
-      <MetricCard label="Permissions" value={`${permissionCount}`} />
-      <MetricCard label="Active profile" value={activeProfile?.displayName ?? "Self"} />
-    </View>
   );
 }
 

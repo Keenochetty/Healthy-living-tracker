@@ -24,6 +24,7 @@ export default function RootLayout() {
               <Stack.Screen name="ai/index" />
               <Stack.Screen name="ai/review/[jobId]" />
               <Stack.Screen name="auth/index" />
+              <Stack.Screen name="auth/forgot-password" />
               <Stack.Screen name="auth/login" />
               <Stack.Screen name="auth/sign-in" />
               <Stack.Screen name="auth/sign-up" />
@@ -41,8 +42,19 @@ export default function RootLayout() {
               <Stack.Screen name="elder/[elderId]" />
               <Stack.Screen name="biometrics/index" />
               <Stack.Screen name="device-sync/index" />
-              <Stack.Screen name="fitness/index" />
+              <Stack.Screen name="fitness/library" />
+              <Stack.Screen name="fitness/history" />
+              <Stack.Screen name="fitness/programs" />
+              <Stack.Screen name="fitness/program/[programId]" />
+              <Stack.Screen name="fitness/program/[programId]/activate" />
+              <Stack.Screen name="fitness/goals" />
+              <Stack.Screen name="fitness/goal/[goalId]" />
               <Stack.Screen name="fitness/exercise/[exerciseId]" />
+              <Stack.Screen name="fitness/ai-import" />
+              <Stack.Screen name="fitness/ai-import/preview" />
+              <Stack.Screen name="fitness/imported-plans" />
+              <Stack.Screen name="fitness/imported-plan/[importedPlanId]" />
+              <Stack.Screen name="fitness/preferences" />
               <Stack.Screen name="health-calendar/index" />
               <Stack.Screen name="health/[realm]" options={{ animation: "slide_from_right" }} />
               <Stack.Screen name="health/general/history" options={{ animation: "slide_from_right" }} />
@@ -52,7 +64,6 @@ export default function RootLayout() {
               <Stack.Screen name="health/general/temperature" options={{ animation: "slide_from_right" }} />
               <Stack.Screen name="health/general/oxygen-saturation" options={{ animation: "slide_from_right" }} />
               <Stack.Screen name="health/general/weight" options={{ animation: "slide_from_right" }} />
-              <Stack.Screen name="food/index" />
               <Stack.Screen name="food/barcode-scanner" />
               <Stack.Screen name="food/barcode-product" />
               <Stack.Screen name="food/smart-log" />

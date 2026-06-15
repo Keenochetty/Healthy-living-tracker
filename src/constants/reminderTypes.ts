@@ -12,42 +12,42 @@ export type ReminderTypeDefinition = {
 
 export const REMINDER_TYPES: ReminderTypeDefinition[] = [
   {
-    colour: "#8b5cf6",
+    colour: "#8652d6",
     description: "Personal tasks, habits and daily planning.",
     emoji: "Me",
     key: "personal",
     label: "Personal"
   },
   {
-    colour: "#3b82f6",
+    colour: "#3279f4",
     description: "Work tasks, meetings and deadlines.",
     emoji: "Work",
     key: "work",
     label: "Work"
   },
   {
-    colour: "#f97316",
+    colour: "#7860e5",
     description: "Medication reminders with safe wording.",
     emoji: "Med",
     key: "medication",
     label: "Medication"
   },
   {
-    colour: "#06b6d4",
+    colour: "#24897f",
     description: "Doctor visits, checkups and appointments.",
     emoji: "Doc",
     key: "doctor_visit",
     label: "Doctor Visit"
   },
   {
-    colour: "#ec4899",
+    colour: "#f0ae2e",
     description: "Shared family events when circle features grow.",
     emoji: "Fam",
     key: "family",
     label: "Family"
   },
   {
-    colour: "#22c55e",
+    colour: "#3279f4",
     description: "Workouts, walks and movement goals.",
     emoji: "Fit",
     key: "fitness",
@@ -55,7 +55,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     moduleKey: "fitness"
   },
   {
-    colour: "#65a30d",
+    colour: "#f58d24",
     description: "Meal planning, food logs and hydration.",
     emoji: "Food",
     key: "food",
@@ -63,7 +63,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     moduleKey: "food"
   },
   {
-    colour: "#a855f7",
+    colour: "#48b9f0",
     description: "Future baby care reminders.",
     emoji: "Baby",
     key: "child_baby",
@@ -71,7 +71,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     moduleKey: "child_baby"
   },
   {
-    colour: "#10b981",
+    colour: "#24897f",
     description: "Future elder check-ins and care tasks.",
     emoji: "Elder",
     key: "elder_care",
@@ -79,7 +79,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     moduleKey: "elder_care"
   },
   {
-    colour: "#ea580c",
+    colour: "#f0ae2e",
     description: "Future caregiver shifts and care notes.",
     emoji: "Care",
     key: "caregiver",
@@ -87,7 +87,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     moduleKey: "caregiver"
   },
   {
-    colour: "#64748b",
+    colour: "#8652d6",
     description: "A custom reminder you define.",
     emoji: "Note",
     key: "custom",

@@ -1,5 +1,6 @@
 import { Check } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 type OnboardingChoiceCardProps = {
   description: string;
@@ -18,6 +19,7 @@ export function OnboardingChoiceCard({
   selected,
   title
 }: OnboardingChoiceCardProps) {
+  const { theme } = useAppTheme();
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -25,8 +27,8 @@ export function OnboardingChoiceCard({
       onPress={onPress}
       style={{
         alignItems: "center",
-        backgroundColor: selected ? "#f5f3ff" : "#ffffff",
-        borderColor: selected ? "#c4b5fd" : "#f1f5f9",
+        backgroundColor: selected ? theme.primarySoft : theme.surface,
+        borderColor: selected ? theme.primary : theme.border,
         borderRadius: 24,
         borderWidth: 1,
         flexDirection: "row",
@@ -38,7 +40,7 @@ export function OnboardingChoiceCard({
       <View
         style={{
           alignItems: "center",
-          backgroundColor: "#ffffff",
+          backgroundColor: theme.surface,
           borderRadius: 18,
           height: 48,
           justifyContent: "center",
@@ -49,10 +51,10 @@ export function OnboardingChoiceCard({
       </View>
 
       <View style={{ flex: 1 }}>
-        <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900" }}>
+        <Text style={{ color: theme.text, fontSize: 16, fontWeight: "900" }}>
           {title}
         </Text>
-        <Text style={{ color: "#64748b", lineHeight: 19, marginTop: 4 }}>
+        <Text style={{ color: theme.mutedText, lineHeight: 19, marginTop: 4 }}>
           {description}
         </Text>
       </View>
@@ -60,7 +62,7 @@ export function OnboardingChoiceCard({
       <View
         style={{
           alignItems: "center",
-          backgroundColor: selected ? "#7c3aed" : "#e2e8f0",
+          backgroundColor: selected ? theme.primary : theme.border,
           borderRadius: 13,
           height: 26,
           justifyContent: "center",

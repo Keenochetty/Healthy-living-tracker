@@ -11,6 +11,7 @@ import {
   QuickSaveButton
 } from "@/components/fitness/QuickWorkoutInputs";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
+import { FoodRealmOverview } from "@/components/nutrition/FoodRealmOverview";
 import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
 import {
   addRecipeServingToDiary,
@@ -220,47 +221,18 @@ function TodayTab({
   target: NutritionTarget | null;
   waterGoal: WaterGoal | null;
 }) {
-  const caloriesTarget = target?.caloriesTarget ?? 2000;
-  const proteinTarget = target?.proteinTargetG ?? 140;
-  const waterTarget = waterGoal?.targetMl ?? target?.waterTargetMl ?? 2500;
-  const calories = summary?.calories ?? 0;
-  const protein = summary?.proteinGrams ?? 0;
-  const water = waterGoal?.currentMl ?? summary?.waterMl ?? 0;
-
   return (
     <View style={styles.stack}>
-      <AppCard style={styles.darkHero}>
-        <View style={styles.heroIcon}><AppIcon color="#6ee7c8" decorative name="nutrition" size={28} /></View>
-        <Text style={styles.heroTitle}>Today nutrition</Text>
-        <Text style={styles.heroSubtitle}>Track meals, water, and goals.</Text>
-        <View style={styles.heroMetrics}>
-          <HeroMetric label="Calories" progress={calories / caloriesTarget} value={`${Math.round(calories).toLocaleString()} / ${caloriesTarget.toLocaleString()} cal`} />
-          <HeroMetric label="Protein" progress={protein / proteinTarget} value={`${Math.round(protein)} / ${proteinTarget}g`} />
-          <HeroMetric label="Water" progress={water / waterTarget} value={`${formatWater(water)} / ${formatWater(waterTarget)}`} water />
-        </View>
-      </AppCard>
-
-      <View style={styles.macroGrid}>
-        <MacroCard helper="Based on your goal" label="Calories" target={`${caloriesTarget} cal`} value={`${Math.round(calories)} cal`} valueRatio={calories / caloriesTarget} />
-        <MacroCard helper={protein ? "Logged" : "Start today"} label="Protein" target={`${proteinTarget}g`} value={`${Math.round(protein)}g`} valueRatio={protein / proteinTarget} />
-        <MacroCard helper="Logged" label="Carbs" target={`${target?.carbsTargetG ?? 250}g`} value={`${Math.round(summary?.carbsGrams ?? 0)}g`} valueRatio={(summary?.carbsGrams ?? 0) / (target?.carbsTargetG ?? 250)} />
-        <MacroCard helper="Logged" label="Fat" target={`${target?.fatTargetG ?? 70}g`} value={`${Math.round(summary?.fatGrams ?? 0)}g`} valueRatio={(summary?.fatGrams ?? 0) / (target?.fatTargetG ?? 70)} />
-        <MacroCard helper="Show when logged" label="Fiber" target={`${target?.fiberTargetG ?? 30}g`} value={`${Math.round(entries.reduce((total, entry) => total + (entry.fiberG ?? 0), 0))}g`} valueRatio={entries.reduce((total, entry) => total + (entry.fiberG ?? 0), 0) / (target?.fiberTargetG ?? 30)} />
-        <MacroCard helper="Hydration" label="Water" target={formatWater(waterTarget)} value={formatWater(water)} valueRatio={water / waterTarget} water />
-      </View>
-
-      <AppSection title="Meal timeline" subtitle="What you logged today." />
-      <MealTimeline entries={entries} onOpenMeal={onOpenMeal} />
-
-      <AppSection title="Quick add" />
-      <View style={styles.quickGrid}>
-        <QuickAction icon="add" label="Add Meal" onPress={() => onOpenMeal("breakfast")} />
-        <QuickAction icon="scan_barcode" label="Scan Barcode" onPress={() => onSheet("barcode")} />
-        <QuickAction icon="ai_draft" label="Smart Log" onPress={() => onSheet("smart_log")} />
-        <QuickAction icon="water" label="Add Water" onPress={() => onSheet("water")} />
-        <QuickAction icon="save" label="Saved Meal" onPress={() => onTab("saved_meals")} />
-        <QuickAction icon="source" label="Create Recipe" onPress={() => router.push("/food/recipe" as Href)} />
-      </View>
+      <FoodRealmOverview
+        entries={entries}
+        onAddWater={() => onSheet("water")}
+        onOpenMeal={onOpenMeal}
+        onOpenPlanner={() => onTab("recipes")}
+        onScanFood={() => onSheet("smart_log")}
+        summary={summary}
+        target={target}
+        waterGoal={waterGoal}
+      />
 
       <AppCard style={styles.darkCard}>
         <Text style={styles.darkTitle}>Suggested next action</Text>

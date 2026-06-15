@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   notebookList: {
     borderColor: "rgba(255,255,255,0.08)",
-    borderRadius: 14,
+    borderRadius: 22,
     borderWidth: 1,
     overflow: "hidden"
   },
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.025)",
     borderBottomColor: "rgba(255,255,255,0.08)",
     borderBottomWidth: 1,
-    padding: 12
+    padding: 14
   },
   notebookRowLight: {
     backgroundColor: "#ffffff",

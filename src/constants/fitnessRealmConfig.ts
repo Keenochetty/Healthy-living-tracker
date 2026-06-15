@@ -11,12 +11,23 @@ export type FitnessRealmDestination =
 
 export type FitnessGoalPath = {
   accentColor: string;
+  currentLevel?: string;
   destination: FitnessRealmDestination;
+  difficulty?: string;
+  goalType?: string;
   icon: AppIconName;
   id: string;
+  nutritionSupport?: string;
+  progression?: Array<{ description: string; title: string }>;
+  recoveryRequirement?: string;
   safetyBadge?: string;
+  safetyLevel?: string;
   subtitle: string;
+  targetLevel?: string;
+  timeline?: string;
   title: string;
+  trainingDays?: string;
+  whyItHelps?: string;
 };
 
 export type FitnessExploreCategory = {
@@ -33,6 +44,35 @@ export type FitnessSafetyNote = {
   id: string;
   title: string;
 };
+
+export type FitnessWorkoutProgram = {
+  accentColor: string;
+  audience?: string;
+  averageMinutes?: number;
+  days?: number;
+  daysPerWeek?: number;
+  duration: string;
+  equipment?: string[];
+  focus?: string[];
+  goal?: string;
+  id: string;
+  level?: string;
+  recoveryDays?: string;
+  routineId: string;
+  safetyBadge?: string;
+  subtitle: string;
+  title: string;
+};
+
+export const FITNESS_WORKOUT_PROGRAMS: FitnessWorkoutProgram[] = [
+  { accentColor: "#0f766e", audience: "Adults", averageMinutes: 28, days: 7, daysPerWeek: 3, duration: "7 days", equipment: ["Bodyweight"], focus: ["Full body", "Core"], goal: "Consistency", id: "starter", level: "Beginner", recoveryDays: "4 lighter or rest days", routineId: "routine-home-full-body", subtitle: "A calm way to build momentum", title: "7-day starter" },
+  { accentColor: "#1d4ed8", audience: "Adults", averageMinutes: 30, days: 28, daysPerWeek: 4, duration: "28 days", equipment: ["Bodyweight", "Kettlebell"], focus: ["Full body", "Cardio"], goal: "Weight loss", id: "challenge", level: "Beginner", recoveryDays: "3 recovery days weekly", routineId: "routine-weight-loss-circuit", subtitle: "Progressive sessions with recovery", title: "28-day challenge" },
+  { accentColor: "#7c3aed", audience: "Adults", averageMinutes: 55, days: 28, daysPerWeek: 3, duration: "4 weeks", equipment: ["Barbell", "Dumbbell", "Machine"], focus: ["Chest", "Back", "Legs"], goal: "Muscle gain", id: "strength", level: "Intermediate", recoveryDays: "Rest between lifting days", routineId: "routine-muscle-gain-3-day", subtitle: "Build a reliable strength base", title: "Strength builder" },
+  { accentColor: "#166534", audience: "Adults", averageMinutes: 28, days: 14, daysPerWeek: 3, duration: "2 weeks", equipment: ["Bodyweight"], focus: ["Full body", "Core"], goal: "Home fitness", id: "home", level: "Beginner", recoveryDays: "Alternate training days", routineId: "routine-home-full-body", subtitle: "Simple sessions without equipment", title: "Home no-equipment" },
+  { accentColor: "#475569", audience: "Adults", averageMinutes: 45, days: 21, daysPerWeek: 3, duration: "3 weeks", equipment: ["Dumbbell", "Barbell", "Cable"], focus: ["Chest", "Shoulders", "Arms"], goal: "Strength", id: "gym", level: "Intermediate", recoveryDays: "Rest between hard sessions", routineId: "routine-push-day", subtitle: "A structured gym starting point", title: "Gym plan" },
+  { accentColor: "#9a3412", audience: "Pregnancy", averageMinutes: 22, days: 14, daysPerWeek: 3, duration: "2 weeks", equipment: ["None", "Resistance band"], focus: ["Mobility", "Full body"], goal: "Pregnancy-safe movement", id: "pregnancy", level: "Beginner", recoveryDays: "Adjust to your body", routineId: "routine-mobility-recovery", safetyBadge: "General guidance", subtitle: "Adapt movement with professional input", title: "Pregnancy safe" },
+  { accentColor: "#155e75", audience: "Adults", averageMinutes: 22, days: 7, daysPerWeek: 3, duration: "7 days", equipment: ["None", "Resistance band"], focus: ["Mobility", "Full body"], goal: "Recovery", id: "recovery", level: "Beginner", recoveryDays: "Designed as lighter movement", routineId: "routine-mobility-recovery", subtitle: "Mobility and lighter movement", title: "Recovery / mobility" },
+];
 
 export const FITNESS_GOAL_PATHS: FitnessGoalPath[] = [
   {

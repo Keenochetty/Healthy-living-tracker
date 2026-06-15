@@ -35,7 +35,33 @@ export function AppScreen({
   };
 
   return (
-    <View style={{ backgroundColor: backgroundColor ?? theme.background, flex: 1 }}>
+    <View style={{ backgroundColor: backgroundColor ?? theme.background, flex: 1, overflow: "hidden" }}>
+      <View
+        pointerEvents="none"
+        style={{
+          backgroundColor: theme.primary,
+          borderRadius: 999,
+          height: 230,
+          left: -115,
+          opacity: 0.08,
+          position: "absolute",
+          top: -150,
+          width: 230
+        }}
+      />
+      <View
+        pointerEvents="none"
+        style={{
+          backgroundColor: theme.info,
+          borderRadius: 999,
+          height: 180,
+          opacity: 0.07,
+          position: "absolute",
+          right: -105,
+          top: -95,
+          width: 180
+        }}
+      />
       {scroll ? (
         <ScrollView
           contentContainerStyle={contentStyle}

@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { AppIcon } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
 import type { FitnessSummary } from "@/types/fitness";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export function FitnessStatusRow({
   onProgress,
@@ -13,6 +14,7 @@ export function FitnessStatusRow({
   onReminder: () => void;
   summary: FitnessSummary | null;
 }) {
+  const { theme } = useAppTheme();
   const items: Array<{
     icon: AppIconName;
     label: string;
@@ -58,12 +60,12 @@ export function FitnessStatusRow({
       contentContainerStyle={styles.rail}
     >
       {items.map((item) => (
-        <Pressable key={item.label} onPress={item.onPress} style={styles.card}>
-          <View style={styles.icon}>
-            <AppIcon color="#0f766e" decorative name={item.icon} size={18} />
+        <Pressable key={item.label} onPress={item.onPress} style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+          <View style={[styles.icon, { backgroundColor: theme.primarySoft }]}>
+            <AppIcon color={theme.primary} decorative name={item.icon} size={18} />
           </View>
-          <Text style={styles.value}>{item.value}</Text>
-          <Text style={styles.label}>{item.label}</Text>
+          <Text style={[styles.value, { color: theme.text }]}>{item.value}</Text>
+          <Text style={[styles.label, { color: theme.mutedText }]}>{item.label}</Text>
         </Pressable>
       ))}
     </ScrollView>

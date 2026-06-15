@@ -1,39 +1,20 @@
 import { Href, router } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Pressable, Text } from "react-native";
 
+import { AuthShell } from "@/components/auth/AuthShell";
 import { AuthForm } from "@/components/auth/AuthForm";
-import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
+import { AppButton } from "@/components/ui";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 export default function SignInScreen() {
+  const { theme } = useAppTheme();
   return (
-    <ScreenWrapper>
-      <View style={{ gap: 4 }}>
-        <Text style={{ color: "#64748b", fontSize: 14 }}>Supabase account</Text>
-        <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
-          Sign in
-        </Text>
-        <Text style={{ color: "#64748b", lineHeight: 20 }}>
-          Sync your profile, settings, modules, widgets, theme, country and units.
-        </Text>
-      </View>
-
+    <AuthShell subtitle="Sync your profile, settings, modules, widgets, theme, country and units." title="Welcome back">
       <AuthForm mode="login" onSuccess={() => router.replace("/" as Href)} />
-
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => router.push("/auth/sign-up" as Href)}
-        style={{
-          alignItems: "center",
-          backgroundColor: "#ffffff",
-          borderRadius: 18,
-          justifyContent: "center",
-          minHeight: 52
-        }}
-      >
-        <Text style={{ color: "#7c3aed", fontWeight: "900" }}>
-          Create an account
-        </Text>
-      </TouchableOpacity>
-    </ScreenWrapper>
+      <Pressable onPress={() => router.push("/auth/forgot-password" as Href)} style={{ alignItems: "center", padding: 8 }}>
+        <Text style={{ color: theme.primary, fontWeight: "800" }}>Forgot password?</Text>
+      </Pressable>
+      <AppButton fullWidth onPress={() => router.push("/auth/sign-up" as Href)} title="Create an account" variant="outline" />
+    </AuthShell>
   );
 }

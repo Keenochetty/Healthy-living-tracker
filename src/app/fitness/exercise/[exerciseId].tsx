@@ -1,6 +1,6 @@
-import { useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Href, router, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   NumberWheelPicker,
@@ -9,185 +9,178 @@ import {
   QuickNoteField,
   QuickSaveButton,
 } from "@/components/fitness/QuickWorkoutInputs";
-import { MuscleFocusCard } from "@/components/fitness/muscle-map";
+import {
+  MuscleFocusCard,
+  type MuscleScoreMap,
+} from "@/components/fitness/muscle-map";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
 import {
   EXERCISE_LIBRARY,
   formatWorkoutLabel,
-  getExerciseById,
+  getExerciseById as getLocalExerciseById,
 } from "@/constants/workoutLibrary";
 import {
-  createWorkoutSession,
   completeWorkoutSession,
+  createWorkoutSession,
 } from "@/lib/fitnessStorage";
-import { scoresFromExerciseFallback } from "@/services/fitnessMuscleMapService";
+import {
+  getExerciseById as getLiveExerciseById,
+  normalizeExerciseContent,
+  type FitnessExerciseContent,
+} from "@/services/fitnessContentService";
+import { getExerciseMuscleScores } from "@/services/fitnessMuscleMapService";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
-const SAFETY_COPY =
-  "Exercise guidance is for general fitness tracking only. If you are unsure, injured, pregnant, or managing a health condition, speak to a qualified professional.";
+const STOP_GUIDANCE =
+  "Stop if you feel pain, dizziness, bleeding, unusual shortness of breath, or symptoms that feel unsafe. Seek professional advice when needed.";
 
 export default function ExerciseDetailScreen() {
+  const { theme } = useAppTheme();
   const params = useLocalSearchParams<{ exerciseId?: string }>();
-  const exercise = useMemo(
-    () =>
-      getExerciseById(String(params.exerciseId ?? "")) ?? EXERCISE_LIBRARY[0],
-    [params.exerciseId],
+  const exerciseId = String(params.exerciseId ?? "");
+  const localFallback = useMemo(
+    () => getLocalExerciseById(exerciseId) ?? EXERCISE_LIBRARY[0],
+    [exerciseId],
   );
+  const [exercise, setExercise] = useState<FitnessExerciseContent>(() =>
+    normalizeExerciseContent(localFallback),
+  );
+  const [muscleScores, setMuscleScores] = useState<MuscleScoreMap>({});
+  const [loading, setLoading] = useState(true);
   const [sets, setSets] = useState("3");
   const [reps, setReps] = useState(10);
   const [weightKg, setWeightKg] = useState(0);
   const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState<"reps" | "weight" | null>(null);
   const [saved, setSaved] = useState(false);
-  const muscleScores = useMemo(
-    () => scoresFromExerciseFallback(exercise),
-    [exercise],
-  );
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    getLiveExerciseById(exerciseId)
+      .then(({ data, error }) => {
+        const resolved = !error && data ? normalizeExerciseContent(data) : normalizeExerciseContent(localFallback);
+        if (!mounted) return;
+        setExercise(resolved);
+        setSets(resolved.sets ?? "3");
+        const parsedReps = Number.parseInt(resolved.reps ?? "10", 10);
+        setReps(Number.isFinite(parsedReps) ? parsedReps : 10);
+        return getExerciseMuscleScores(resolved.exerciseId, data ?? localFallback);
+      })
+      .then((scores) => {
+        if (mounted && scores) setMuscleScores(scores);
+      })
+      .catch(async () => {
+        if (!mounted) return;
+        const fallback = normalizeExerciseContent(localFallback);
+        setExercise(fallback);
+        setMuscleScores(await getExerciseMuscleScores(fallback.exerciseId, localFallback));
+      })
+      .finally(() => mounted && setLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, [exerciseId, localFallback]);
+
+  const safetyBadge = getSafetyBadge(exercise);
+  const recoveryPairing = getRecoveryPairing(exercise);
 
   async function saveExerciseLog() {
+    const durationSeconds = Math.max(90, Number(sets || 1) * 90);
     const session = await createWorkoutSession({
-      durationSeconds: Number(sets) * 90,
-      intensity: exercise.difficulty === "beginner" ? "easy" : "moderate",
-      notes: [
-        `${sets} sets x ${reps} reps`,
-        weightKg ? `${weightKg} kg` : "",
-        notes,
-      ]
-        .filter(Boolean)
-        .join(" - "),
+      durationSeconds,
+      intensity: exercise.level.toLowerCase().includes("beginner") ? "easy" : "moderate",
+      notes: [`${sets} sets x ${reps} reps`, weightKg ? `${weightKg} kg` : "", notes].filter(Boolean).join(" - "),
       title: exercise.name,
-      workoutType:
-        exercise.primaryMuscle === "cardio"
-          ? "cardio"
-          : exercise.primaryMuscle === "mobility"
-            ? "mobility"
-            : "strength",
+      workoutType: getWorkoutType(exercise),
     });
     await completeWorkoutSession(session.id, {
-      durationSeconds: Number(sets) * 90,
+      durationSeconds,
       endedAt: new Date().toISOString(),
     });
     setSaved(true);
   }
 
   return (
-    <AppMainLayout subtitle="Exercise Library" title={exercise.name}>
-      {saved ? (
-        <AppCard backgroundColor="#dcfce7">
-          <Text style={styles.successText}>Exercise log saved</Text>
-        </AppCard>
-      ) : null}
+    <AppMainLayout subtitle="Educational movement guidance" title={exercise.name}>
+      {loading ? <AppCard variant="soft"><Text style={{ color: theme.text, fontWeight: "800" }}>Loading exercise details...</Text></AppCard> : null}
+      {saved ? <AppCard variant="success"><Text style={[styles.successText, { color: theme.success }]}>Exercise log saved</Text></AppCard> : null}
 
-      <AppCard style={styles.darkHero}>
-        <View style={styles.mediaPlaceholder}>
-          <AppIcon color="#6ee7c8" decorative name="source" size={30} />
-          <Text style={styles.mediaText}>
-            Exercise image / video placeholder
+      <AppCard style={[styles.hero, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+        <View style={[styles.mediaPlaceholder, { backgroundColor: theme.primarySoft, borderColor: theme.border }]}>
+          <AppIcon color={theme.primary} decorative name="source" size={28} />
+          <Text style={[styles.mediaText, { color: theme.mutedText }]}>
+            {exercise.videoApproved && exercise.videoUrl ? "Approved demo available" : "Demo video coming soon."}
           </Text>
         </View>
-        <Text style={styles.heroTitle}>{exercise.name}</Text>
-        <Text style={styles.darkMuted}>{exercise.description}</Text>
+        <Text style={[styles.heroTitle, { color: theme.text }]}>{exercise.name}</Text>
+        <Text style={[styles.bodyText, { color: theme.mutedText }]}>{exercise.description}</Text>
         <View style={styles.chipRow}>
-          <Pill label={formatWorkoutLabel(exercise.primaryMuscle)} />
-          {exercise.secondaryMuscles.slice(0, 3).map((muscle) => (
-            <Pill key={muscle} label={formatWorkoutLabel(muscle)} />
-          ))}
-          <Pill label={formatWorkoutLabel(exercise.difficulty)} />
+          <Pill label={formatWorkoutLabel(exercise.category)} />
+          <Pill label={formatWorkoutLabel(exercise.level)} />
+          <Pill label={exercise.equipment.map(formatWorkoutLabel).join(" + ") || "No equipment"} />
+          {exercise.durationMinutes ? <Pill label={`${exercise.durationMinutes} min`} /> : null}
+          <Pill label={`${sets} sets`} />
+          <Pill label={`${reps} reps`} />
+        </View>
+        {safetyBadge ? <Text style={[styles.safetyBadge, { color: theme.warning }]}>{safetyBadge}</Text> : null}
+        <View style={styles.actionRow}>
+          <AppButton onPress={saveExerciseLog} title="Start exercise" />
+          <AppButton onPress={() => router.push("/fitness" as Href)} title="Add to workout" variant="secondary" />
+          <AppButton onPress={() => router.push("/fitness/library" as Href)} title="Back to library" variant="ghost" />
         </View>
       </AppCard>
 
-      <MuscleFocusCard
-        mode="exercise"
-        muscleScores={muscleScores}
-        title="Muscles targeted"
-      />
-
-      <AppSection title="Instructions" />
-      <AppCard style={styles.darkCard}>
-        {exercise.instructions.map((instruction, index) => (
-          <Text key={instruction} style={styles.darkMuted}>
-            {index + 1}. {instruction}
-          </Text>
-        ))}
+      <AppSection title="Muscles Worked" subtitle="Primary, secondary and stabilizing areas for this movement." />
+      <MuscleFocusCard mode="exercise" muscleScores={muscleScores} title="Muscles Worked" />
+      <AppCard style={styles.roleCard}>
+        <RoleRow label="Primary" values={exercise.primaryMuscles} />
+        <RoleRow label="Secondary" values={exercise.secondaryMuscles} />
+        <RoleRow label="Stabilizers" values={exercise.stabilizerMuscles} />
       </AppCard>
 
-      <AppSection title="Common mistakes" />
-      <AppCard style={styles.darkCard}>
-        {exercise.commonMistakes.map((mistake) => (
-          <Text key={mistake} style={styles.darkMuted}>
-            - {mistake}
-          </Text>
-        ))}
-      </AppCard>
+      <GuidanceSection items={exercise.instructions} title="How to do it" fallback={["Set up in a stable position.", "Move with control through a comfortable range.", "Pause and reset between repetitions when needed."]} />
+      <GuidanceSection items={exercise.formCues} title="Form cues" fallback={["Keep the movement controlled.", "Use a range that feels stable and repeatable."]} />
+      <GuidanceSection items={exercise.breathing} title="Breathing" fallback={["Breathe steadily and avoid holding your breath through long efforts."]} />
+      <GuidanceSection items={exercise.commonMistakes} title="Common mistakes" fallback={["Moving too quickly to keep control.", "Using a range that feels uncomfortable."]} />
+      <GuidanceSection items={exercise.easierVersion ? [exercise.easierVersion] : []} title="Easier version" fallback={["Reduce the range, load, or duration while keeping the movement comfortable."]} />
+      <GuidanceSection items={exercise.harderVersion ? [exercise.harderVersion] : []} title="Harder version" fallback={["Increase difficulty gradually only after the current version feels controlled."]} />
+      <GuidanceSection items={[...exercise.safetyNotes, STOP_GUIDANCE]} title="Safety notes" fallback={[STOP_GUIDANCE]} warning />
 
-      <AppSection
-        title="Log this exercise"
-        subtitle="Fast presets first, manual entry when needed."
-      />
-      <AppCard style={styles.darkCard}>
-        <Text style={styles.label}>Sets</Text>
-        <TextInput
-          keyboardType="numeric"
-          onChangeText={setSets}
-          placeholder="3"
-          placeholderTextColor="#94a3b8"
-          style={styles.input}
-          value={sets}
-        />
-        <Text style={styles.label}>Reps</Text>
-        <PresetChipGroup
-          onSelect={setReps}
-          presets={[5, 8, 10, 12, 15, 20]}
-          selectedValue={reps}
-        />
-        <Text style={styles.label}>Weight</Text>
-        <PresetChipGroup
-          onSelect={setWeightKg}
-          presets={[0, 5, 10, 15, 20, 25]}
-          selectedValue={weightKg}
-          suffix="kg"
-        />
+      <AppSection title="Log this exercise" subtitle="Use the current workout logging system." />
+      <AppCard style={styles.logCard}>
+        <Text style={[styles.label, { color: theme.mutedText }]}>Sets</Text>
+        <TextInput keyboardType="numeric" onChangeText={setSets} placeholder="3" placeholderTextColor={theme.mutedText} style={[styles.input, { backgroundColor: theme.surfaceSoft ?? theme.background, borderColor: theme.border, color: theme.text }]} value={sets} />
+        <Text style={[styles.label, { color: theme.mutedText }]}>Reps</Text>
+        <PresetChipGroup onSelect={setReps} presets={[5, 8, 10, 12, 15, 20]} selectedValue={reps} />
+        <Text style={[styles.label, { color: theme.mutedText }]}>Weight</Text>
+        <PresetChipGroup onSelect={setWeightKg} presets={[0, 5, 10, 15, 20, 25]} selectedValue={weightKg} suffix="kg" />
         <View style={styles.actionRow}>
-          <AppButton
-            onPress={() => setEditing("reps")}
-            title="Edit reps"
-            variant="secondary"
-          />
-          <AppButton
-            onPress={() => setEditing("weight")}
-            title="Edit weight"
-            variant="secondary"
-          />
+          <AppButton onPress={() => setEditing("reps")} title="Edit reps" variant="secondary" />
+          <AppButton onPress={() => setEditing("weight")} title="Edit weight" variant="secondary" />
         </View>
         <QuickNoteField onChangeText={setNotes} value={notes} />
         <QuickSaveButton onPress={saveExerciseLog} title="Save exercise log" />
       </AppCard>
 
-      <View style={styles.grid}>
-        <Metric label="Rest timer" value="Placeholder" />
-        <Metric label="Personal best" value="Start today" />
-        <Metric label="Notes" value={notes ? "Added" : "Optional"} />
-        <Metric label="Routine" value="Add later" />
-      </View>
-
-      <AppCard backgroundColor="#fff7ed">
-        <Text style={styles.safetyText}>{SAFETY_COPY}</Text>
+      <AppCard style={[styles.recoveryCard, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+        <View style={[styles.recoveryIcon, { backgroundColor: theme.primarySoft }]}>
+          <AppIcon color={theme.warning} decorative name="nutrition" size={23} />
+        </View>
+        <View style={styles.recoveryCopy}>
+          <Text style={[styles.recoveryEyebrow, { color: theme.warning }]}>Nutrition + recovery pairing</Text>
+          <Text style={[styles.recoveryTitle, { color: theme.text }]}>{recoveryPairing}</Text>
+          <Text style={[styles.bodyText, { color: theme.mutedText }]}>Use the existing Food realm to plan or log meals.</Text>
+          <Pressable onPress={() => router.push("/food" as Href)}>
+            <Text style={[styles.foodLink, { color: theme.primary }]}>Open Food realm</Text>
+          </Pressable>
+        </View>
       </AppCard>
 
-      <QuickLogBottomSheet
-        onClose={() => setEditing(null)}
-        title={editing === "weight" ? "Weight picker" : "Reps picker"}
-        visible={Boolean(editing)}
-      >
+      <QuickLogBottomSheet onClose={() => setEditing(null)} title={editing === "weight" ? "Weight picker" : "Reps picker"} visible={Boolean(editing)}>
         {editing === "weight" ? (
-          <NumberWheelPicker
-            max={120}
-            min={0}
-            onChange={setWeightKg}
-            step={2.5}
-            suffix="kg"
-            value={weightKg}
-          />
+          <NumberWheelPicker max={120} min={0} onChange={setWeightKg} step={2.5} suffix="kg" value={weightKg} />
         ) : (
           <NumberWheelPicker max={30} min={1} onChange={setReps} value={reps} />
         )}
@@ -197,129 +190,86 @@ export default function ExerciseDetailScreen() {
   );
 }
 
-function Pill({ label }: { label: string }) {
+function GuidanceSection({ fallback, items, title, warning = false }: { fallback: string[]; items: string[]; title: string; warning?: boolean }) {
+  const { theme } = useAppTheme();
+  const resolved = items.length ? items : fallback;
   return (
-    <View style={styles.pill}>
-      <Text style={styles.pillText}>{label}</Text>
+    <View style={styles.section}>
+      <AppSection title={title} />
+      <AppCard style={warning ? { borderColor: theme.warning, borderWidth: 1 } : undefined}>
+        {resolved.map((item, index) => <Text key={`${title}-${index}`} style={[styles.guidanceText, { color: warning ? theme.warning : theme.mutedText }]}>• {item}</Text>)}
+      </AppCard>
     </View>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function RoleRow({ label, values }: { label: string; values: string[] }) {
+  const { theme } = useAppTheme();
   return (
-    <AppCard style={styles.metricCard}>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricValue}>{value}</Text>
-    </AppCard>
+    <View style={styles.roleRow}>
+      <Text style={[styles.roleLabel, { color: theme.text }]}>{label}</Text>
+      <View style={styles.chipRow}>
+        {(values.length ? values : ["Not specified"]).map((value) => <Pill key={`${label}-${value}`} label={formatWorkoutLabel(value)} />)}
+      </View>
+    </View>
   );
 }
 
+function Pill({ label }: { label: string }) {
+  const { theme } = useAppTheme();
+  return <View style={[styles.pill, { backgroundColor: theme.primarySoft }]}><Text style={[styles.pillText, { color: theme.primary }]}>{label}</Text></View>;
+}
+
+function getSafetyBadge(exercise: FitnessExerciseContent) {
+  const value = [...exercise.audience, exercise.category, exercise.level, ...exercise.safetyNotes].join(" ").toLowerCase();
+  if (value.includes("pregnan")) return "Pregnancy content: general guidance";
+  if (value.includes("postpartum")) return "Postpartum content: general guidance";
+  if (value.includes("child") || value.includes("kid") || value.includes("teen")) return "Age-aware general guidance";
+  if (value.includes("injur")) return "Injury-conscious general guidance";
+  if (value.includes("advanced")) return "Advanced training caution";
+  return undefined;
+}
+
+function getRecoveryPairing(exercise: FitnessExerciseContent) {
+  const value = [exercise.category, ...exercise.goalTags, ...exercise.primaryMuscles].join(" ").toLowerCase();
+  if (value.includes("run") || value.includes("cardio") || value.includes("endurance")) return "Hydration + carbohydrate support";
+  if (value.includes("mobility") || value.includes("yoga") || value.includes("stretch")) return "Light balanced meal + hydration";
+  if (value.includes("weight_loss") || value.includes("weight loss")) return "Calorie-aware meal planning";
+  return "Protein-focused recovery meal";
+}
+
+function getWorkoutType(exercise: FitnessExerciseContent): "cardio" | "mobility" | "running" | "strength" {
+  const value = [exercise.category, ...exercise.goalTags, ...exercise.primaryMuscles].join(" ").toLowerCase();
+  if (value.includes("run")) return "running";
+  if (value.includes("cardio") || value.includes("endurance")) return "cardio";
+  if (value.includes("mobility") || value.includes("yoga") || value.includes("stretch")) return "mobility";
+  return "strength";
+}
+
 const styles = StyleSheet.create({
-  actionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginVertical: 12,
-  },
-  chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12,
-  },
-  darkCard: {
-    backgroundColor: "#111827",
-    borderColor: "rgba(255,255,255,0.12)",
-    borderWidth: 1,
-  },
-  darkHero: {
-    backgroundColor: "#0f172a",
-    borderColor: "#6ee7c8",
-    borderWidth: 1,
-  },
-  darkMuted: {
-    color: "#cbd5e1",
-    lineHeight: 21,
-    marginTop: 6,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  heroTitle: {
-    color: "#f8fafc",
-    fontSize: 30,
-    fontWeight: "900",
-    marginTop: 14,
-  },
-  input: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderColor: "rgba(255,255,255,0.14)",
-    borderRadius: 16,
-    borderWidth: 1,
-    color: "#f8fafc",
-    minHeight: 48,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  label: {
-    color: "#94a3b8",
-    fontSize: 12,
-    fontWeight: "900",
-    marginBottom: 8,
-    marginTop: 12,
-    textTransform: "uppercase",
-  },
-  mediaPlaceholder: {
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderColor: "#6ee7c8",
-    borderRadius: 24,
-    borderWidth: 1,
-    gap: 8,
-    height: 190,
-    justifyContent: "center",
-  },
-  mediaText: {
-    color: "#cbd5e1",
-    fontWeight: "900",
-  },
-  metricCard: {
-    backgroundColor: "#111827",
-    borderColor: "rgba(255,255,255,0.12)",
-    borderWidth: 1,
-    flexBasis: "47%",
-    flexGrow: 1,
-  },
-  metricLabel: {
-    color: "#94a3b8",
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  metricValue: {
-    color: "#f8fafc",
-    fontSize: 18,
-    fontWeight: "900",
-    marginTop: 6,
-  },
-  pill: {
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderRadius: 999,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
-  },
-  pillText: {
-    color: "#e2e8f0",
-    fontSize: 12,
-    fontWeight: "900",
-  },
-  safetyText: {
-    color: "#9a3412",
-    lineHeight: 20,
-  },
-  successText: {
-    color: "#166534",
-    fontWeight: "900",
-  },
+  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 9, marginTop: 14 },
+  bodyText: { fontSize: 13, lineHeight: 20, marginTop: 6 },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, marginTop: 10 },
+  foodLink: { fontSize: 12, fontWeight: "900", marginTop: 9 },
+  guidanceText: { fontSize: 13, lineHeight: 20, marginVertical: 2 },
+  hero: { borderWidth: 1 },
+  heroTitle: { fontSize: 28, fontWeight: "900", lineHeight: 34, marginTop: 16 },
+  input: { borderRadius: 16, borderWidth: 1, minHeight: 48, paddingHorizontal: 14, paddingVertical: 10 },
+  label: { fontSize: 11, fontWeight: "900", marginBottom: 7, marginTop: 12, textTransform: "uppercase" },
+  logCard: { gap: 2 },
+  mediaPlaceholder: { alignItems: "center", borderRadius: 22, borderWidth: 1, gap: 8, height: 145, justifyContent: "center" },
+  mediaText: { fontSize: 12, fontWeight: "800" },
+  pill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 },
+  pillText: { fontSize: 11, fontWeight: "900" },
+  recoveryCard: { alignItems: "flex-start", borderWidth: 1, flexDirection: "row", gap: 12 },
+  recoveryCopy: { flex: 1 },
+  recoveryEyebrow: { fontSize: 10, fontWeight: "900", letterSpacing: 0.7, textTransform: "uppercase" },
+  recoveryIcon: { alignItems: "center", borderRadius: 15, height: 46, justifyContent: "center", width: 46 },
+  recoveryTitle: { fontSize: 16, fontWeight: "900", marginTop: 4 },
+  roleCard: { gap: 12 },
+  roleLabel: { fontSize: 12, fontWeight: "900" },
+  roleRow: { gap: 2 },
+  safetyBadge: { fontSize: 11, fontWeight: "900", marginTop: 12 },
+  section: { gap: 8 },
+  successText: { fontWeight: "900" },
 });

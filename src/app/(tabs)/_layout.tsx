@@ -1,11 +1,8 @@
-import { Tabs, usePathname } from "expo-router";
+import { Tabs } from "expo-router";
 
 import { FloatingAssistantButton, FloatingBottomNav } from "@/components/navigation";
 
 export default function TabsLayout() {
-  const pathname = usePathname();
-  const showAssistant = !pathname.endsWith("/calendar");
-
   return (
     <>
       <Tabs
@@ -29,13 +26,6 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
-          name="scan"
-          options={{
-            title: "Scan",
-          }}
-        />
-
-        <Tabs.Screen
           name="health"
           options={{
             title: "Health",
@@ -43,15 +33,18 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
-          name="circle"
+          name="fitness"
           options={{
-            title: "Circle",
+            title: "Fitness",
           }}
         />
 
+        <Tabs.Screen name="food" options={{ title: "Food" }} />
+        <Tabs.Screen name="scan" options={{ href: null }} />
+        <Tabs.Screen name="circle" options={{ href: null }} />
         <Tabs.Screen name="profile" options={{ href: null }} />
       </Tabs>
-      <FloatingAssistantButton visible={showAssistant} />
+      <FloatingAssistantButton />
     </>
   );
 }

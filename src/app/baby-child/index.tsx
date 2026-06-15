@@ -8,6 +8,7 @@ import { BabyHealthSection } from "@/components/baby-child/BabyHealthSection";
 import { BabyMilestonesSection } from "@/components/baby-child/BabyMilestonesSection";
 import { BabyOverview } from "@/components/baby-child/BabyOverview";
 import { BabyProfileSummary } from "@/components/baby-child/BabyProfileSummary";
+import { BabyRealmOverviewSections } from "@/components/baby-child/BabyRealmOverviewSections";
 import type { BabyQuickLogMode } from "@/components/baby-child/BabyQuickLogGrid";
 import {
   DateWheelPicker,
@@ -298,35 +299,49 @@ export default function BabyChildRealm() {
         ) : null}
 
         {activeTab === "overview" ? (
-          <BabyOverview
-            care={{
-              diaperCount: data.diaperLogs.length,
-              dirtyDiaperCount: data.diaperLogs.filter((log) => log.diaperType === "dirty" || log.diaperType === "mixed").length,
-              feedCount: data.careSummary?.feeding.count ?? 0,
-              feedTotalMl: data.careSummary?.feeding.totalAmountMl ?? 0,
-              growthLatest: data.careSummary?.growth?.weight ? `${data.careSummary.growth.weight} kg` : undefined,
-              lastDiaper: data.careSummary?.diaper,
-              lastFeed: data.careSummary?.feeding.latest ? {
-                amountMl: data.careSummary.feeding.latest.finishedAmountMl,
-                loggedAt: data.careSummary.feeding.latest.loggedAt
-              } : undefined,
-              lastSleep: data.careSummary?.sleep.latest ? {
-                durationMinutes: data.careSummary.sleep.latest.durationMinutes,
-                loggedAt: data.careSummary.sleep.latest.loggedAt
-              } : undefined,
-              medicineDueCount: data.careSummary?.medicineDueCount ?? 0,
-              nextReminder: getNextReminder(data),
-              sleepBlockCount: data.sleepLogs.length,
-              sleepMinutes: data.careSummary?.sleep.totalMinutes ?? 0,
-              wetDiaperCount: data.diaperLogs.filter((log) => log.diaperType === "wet" || log.diaperType === "mixed").length,
-            }}
-            childProfileId={selectedProfile.id}
-            error={loadError}
-            events={data.events}
-            isLoading={isLoading}
-            onRetry={loadRealm}
-            onSheet={setSheetMode}
-          />
+          <>
+            <BabyOverview
+              care={{
+                diaperCount: data.diaperLogs.length,
+                dirtyDiaperCount: data.diaperLogs.filter((log) => log.diaperType === "dirty" || log.diaperType === "mixed").length,
+                feedCount: data.careSummary?.feeding.count ?? 0,
+                feedTotalMl: data.careSummary?.feeding.totalAmountMl ?? 0,
+                growthLatest: data.careSummary?.growth?.weight ? `${data.careSummary.growth.weight} kg` : undefined,
+                lastDiaper: data.careSummary?.diaper,
+                lastFeed: data.careSummary?.feeding.latest ? {
+                  amountMl: data.careSummary.feeding.latest.finishedAmountMl,
+                  loggedAt: data.careSummary.feeding.latest.loggedAt
+                } : undefined,
+                lastSleep: data.careSummary?.sleep.latest ? {
+                  durationMinutes: data.careSummary.sleep.latest.durationMinutes,
+                  loggedAt: data.careSummary.sleep.latest.loggedAt
+                } : undefined,
+                medicineDueCount: data.careSummary?.medicineDueCount ?? 0,
+                nextReminder: getNextReminder(data),
+                sleepBlockCount: data.sleepLogs.length,
+                sleepMinutes: data.careSummary?.sleep.totalMinutes ?? 0,
+                wetDiaperCount: data.diaperLogs.filter((log) => log.diaperType === "wet" || log.diaperType === "mixed").length,
+              }}
+              childProfileId={selectedProfile.id}
+              error={loadError}
+              events={data.events}
+              isLoading={isLoading}
+              onRetry={loadRealm}
+              onSheet={setSheetMode}
+            />
+            <BabyRealmOverviewSections
+              growthLogs={data.growthLogs}
+              milestones={data.milestoneLogs}
+              nextReminder={getNextReminder(data)}
+              onAddGrowth={() => setSheetMode("growth")}
+              onAddVaccine={() => setSheetMode("vaccine")}
+              onOpenGrowth={() => setActiveTab("growth")}
+              onOpenHealth={() => setActiveTab("health")}
+              onOpenMilestones={() => setActiveTab("milestones")}
+              onOpenRecords={() => router.push("/records" as Href)}
+              vaccines={data.vaccineRecords}
+            />
+          </>
         ) : null}
         {activeTab === "growth" ? <GrowthTab data={data} onSheet={setSheetMode} /> : null}
         {activeTab === "milestones" ? <MilestonesTab data={data} onSaved={afterSaved} profile={selectedProfile} /> : null}

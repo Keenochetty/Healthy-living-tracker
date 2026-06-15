@@ -96,7 +96,7 @@ const CYCLE = {
 };
 const QUICK_ACTIONS: QuickAction[] = [
   { accessibilityLabel: "Log period day", available: true, description: "Save period dates privately on this device for now.", icon: "pregnancy_cycle", label: "Log period", type: "period" },
-  { accessibilityLabel: "Add Women's Health symptom", available: false, description: "Symptom logging will be added in a later step.", icon: "vitals", label: "Add symptom", type: "symptom" },
+  { accessibilityLabel: "Add Women's Health symptom", available: true, description: "Use the private symptom chips on this screen.", icon: "vitals", label: "Add symptom", type: "symptom" },
   { accessibilityLabel: "Add flow entry", available: false, description: "Flow-only logging will be added after period logging.", icon: "water", label: "Add flow", type: "flow" },
   { accessibilityLabel: "Add mood entry", available: false, description: "Mood tracking will be added in a later step.", icon: "ai_assistant", label: "Add mood", type: "mood" },
   { accessibilityLabel: "Add private Women's Health note", available: false, description: "Private notes will be added in a later step.", icon: "edit", label: "Add note", type: "note" }
@@ -126,6 +126,7 @@ const WEEKDAYS = [
   { key: "sun", label: "S" }
 ] as const;
 const FLOW_OPTIONS: readonly FlowSummary[] = ["None", "Light", "Medium", "Heavy", "Spotting"];
+const SYMPTOM_CHIPS = ["Cramps", "Headache", "Bloating", "Fatigue", "Mood change", "Sleep change", "Nausea", "Other"] as const;
 
 export function WomensHealthScreen() {
   const { theme } = useAppTheme();
@@ -136,6 +137,7 @@ export function WomensHealthScreen() {
   const [periodSheetOpen, setPeriodSheetOpen] = useState(false);
   const [placeholderMessage, setPlaceholderMessage] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const compactActions = width < 370;
   const loggedDateSet = useMemo(() => new Set(periodEntries.filter((entry) => entry.profileId === PROFILE.id).flatMap((entry) => entry.loggedDates)), [periodEntries]);
   const calendarDays = useMemo(() => CALENDAR_DAYS.map((day) => loggedDateSet.has(day.iso) ? { ...day, marker: "logged-period" as MarkerType } : day), [loggedDateSet]);
@@ -149,6 +151,11 @@ export function WomensHealthScreen() {
       setPlaceholderMessage("");
       setQuickLogOpen(false);
       setPeriodSheetOpen(true);
+      return;
+    }
+    if (type === "symptom") {
+      setQuickLogOpen(false);
+      setPlaceholderMessage("Use the symptom quick log chips below to save private symptom context.");
       return;
     }
     setPlaceholderMessage(`${action?.label ?? "This log type"} will be added in a later Women's Health step.`);
@@ -183,9 +190,18 @@ export function WomensHealthScreen() {
           <>
             {savedMessage ? <InlineStatusMessage tone="success" message={savedMessage} onDismiss={() => setSavedMessage("")} /> : null}
             {placeholderMessage && !quickLogOpen ? <InlineStatusMessage tone="info" message={placeholderMessage} onDismiss={() => setPlaceholderMessage("")} /> : null}
+            <PrivateStatusHero />
             <CycleSummaryCard summary={cycleSummary} />
             <CompactCalendar days={calendarDays} selectedIso={selectedIso} selectedDay={selectedDay} onSelect={setSelectedIso} />
             <QuickLogActions compact={compactActions} onOpenSelector={() => setQuickLogOpen(true)} onQuickAction={handleQuickAction} />
+            <SymptomQuickLog
+              onSave={() => {
+                setSavedMessage(`${selectedSymptoms.length} symptom ${selectedSymptoms.length === 1 ? "entry" : "entries"} saved privately for this session.`);
+                setSelectedSymptoms([]);
+              }}
+              onToggle={(symptom) => setSelectedSymptoms((current) => current.includes(symptom) ? current.filter((item) => item !== symptom) : [...current, symptom])}
+              selected={selectedSymptoms}
+            />
             <TodayContextCard selectedDay={selectedDay} />
             <RecentSymptomsAndNotes />
             <ContraceptionPreviewCard />
@@ -199,6 +215,36 @@ export function WomensHealthScreen() {
         ) : null}
       </HealthScreenContainer>
     </View>
+  );
+}
+
+function PrivateStatusHero() {
+  const { theme } = useAppTheme();
+  return (
+    <AppCard style={[styles.privateHero, { borderColor: `${ACCENT}35` }]}>
+      <View style={styles.privateHeroGlow} />
+      <View style={styles.privateHeroTop}>
+        <View style={styles.privateHeroIcon}><AppIcon color={ACCENT} decorative name="privacy" size={25} /></View>
+        <View style={styles.privateHeroCopy}>
+          <View style={styles.privateBadge}>
+            <AppIcon color={ACCENT} decorative name="privacy" size={13} />
+            <Text style={styles.privateBadgeText}>Private by default</Text>
+          </View>
+          <Text style={[styles.privateHeroTitle, { color: theme.text }]}>Your private health space</Text>
+          <Text style={[styles.privateHeroBody, { color: theme.mutedText }]}>Cycle, pregnancy, contraception, symptoms, and notes stay private unless you explicitly choose to share them.</Text>
+        </View>
+      </View>
+      <View style={styles.privateHeroActions}>
+        <Pressable accessibilityRole="button" onPress={() => router.push("/pregnancy")} style={styles.heroModeButton}>
+          <AppIcon color={ACCENT} decorative name="pregnancy" size={17} />
+          <Text style={styles.heroModeText}>Pregnancy mode</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => router.push("/settings/privacy-center")} style={styles.heroModeButton}>
+          <AppIcon color={ACCENT} decorative name="shared" size={17} />
+          <Text style={styles.heroModeText}>Sharing controls</Text>
+        </Pressable>
+      </View>
+    </AppCard>
   );
 }
 
@@ -240,8 +286,21 @@ function CycleSummaryCard({ summary }: { summary: CycleSummary }) {
         <View style={[styles.haloLarge, { borderColor: `${ACCENT}30` }]} />
         <View style={[styles.haloSmall, { borderColor: `${GOLD}35` }]} />
       </View>
-      <Text style={[styles.eyebrow, { color: ACCENT }]}>Cycle overview</Text>
-      <Text accessibilityLabel={`Cycle overview for ${PROFILE.name}. Cycle day ${summary.cycleDay} of an estimated ${summary.averageLengthDays}-day cycle. Next period estimate ${summary.nextPeriodEstimate.toLowerCase()}.`} style={[styles.heroValue, { color: theme.text }]}>Day {summary.cycleDay} <Text style={styles.heroUnit}>of estimated {summary.averageLengthDays}</Text></Text>
+      <Text style={[styles.eyebrow, { color: ACCENT }]}>Cycle / pregnancy overview</Text>
+      <View style={styles.cycleOrbRow}>
+        <View accessibilityLabel={`Cycle day ${summary.cycleDay} of an estimated ${summary.averageLengthDays}-day cycle`} style={[styles.cycleOrb, { backgroundColor: theme.surface, borderColor: `${ACCENT}38` }]}>
+          <Text style={[styles.cycleOrbLabel, { color: theme.mutedText }]}>Cycle day</Text>
+          <Text style={[styles.cycleOrbValue, { color: theme.text }]}>{summary.cycleDay}</Text>
+          <Text style={[styles.cycleOrbMeta, { color: ACCENT }]}>of est. {summary.averageLengthDays}</Text>
+        </View>
+        <View style={styles.cycleModeCopy}>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Estimated {summary.phase.toLowerCase()} phase</Text>
+          <Text style={[styles.cardBody, { color: theme.mutedText }]}>Cycle estimates may shift as you add private logs.</Text>
+          <Pressable accessibilityRole="button" onPress={() => router.push("/pregnancy")}>
+            <Text style={[styles.inlineAction, { color: ACCENT }]}>Open pregnancy tracking</Text>
+          </Pressable>
+        </View>
+      </View>
       <View style={styles.heroGrid}>
         <HeroStat label="Next period estimate" value={summary.nextPeriodEstimate} />
         <HeroStat label="Last logged" value={summary.lastLogged} />
@@ -249,6 +308,41 @@ function CycleSummaryCard({ summary }: { summary: CycleSummary }) {
       <Text style={[styles.heroSupport, { color: theme.mutedText }]}>{summary.dataStatus}</Text>
       {summary.loggedDayCount > 0 ? <Text style={[styles.heroSupport, { color: theme.mutedText }]}>{summary.loggedDayCount} period {summary.loggedDayCount === 1 ? "day" : "days"} saved locally in this session.</Text> : null}
     </AppCard>
+  );
+}
+
+function SymptomQuickLog({
+  onSave,
+  onToggle,
+  selected
+}: {
+  onSave: () => void;
+  onToggle: (symptom: string) => void;
+  selected: string[];
+}) {
+  const { theme } = useAppTheme();
+  return (
+    <AppSection subtitle="Choose any symptoms you want to remember. No automatic interpretation is added." title="Symptom quick log">
+      <View style={styles.symptomChipGrid}>
+        {SYMPTOM_CHIPS.map((symptom) => {
+          const active = selected.includes(symptom);
+          return (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              key={symptom}
+              onPress={() => onToggle(symptom)}
+              style={[styles.symptomChip, { backgroundColor: active ? `${ACCENT}16` : theme.surface, borderColor: active ? ACCENT : theme.border }]}
+            >
+              <Text style={[styles.symptomChipText, { color: active ? ACCENT : theme.mutedText }]}>{symptom}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Pressable accessibilityRole="button" disabled={!selected.length} onPress={onSave} style={[styles.symptomSave, { opacity: selected.length ? 1 : 0.48 }]}>
+        <Text style={styles.symptomSaveText}>{selected.length ? `Save ${selected.length} privately` : "Choose symptoms to save"}</Text>
+      </Pressable>
+    </AppSection>
   );
 }
 
@@ -414,7 +508,7 @@ function ContraceptionPreviewCard() {
             <Text style={[styles.cardBody, { color: theme.mutedText }]}>Last logged: 08:05 today</Text>
           </View>
         </View>
-        <Pressable accessibilityHint="Contraception setup and reminder scheduling will be built in a separate controlled brick." accessibilityLabel="View contraception tracking" accessibilityRole="button" onPress={() => undefined}>
+        <Pressable accessibilityHint="Opens private contraception tracking." accessibilityLabel="View contraception tracking" accessibilityRole="button" onPress={() => router.push("/cycle?tab=contraception")}>
           <Text style={[styles.inlineAction, { color: TEAL }]}>View tracking</Text>
         </Pressable>
       </AppCard>
@@ -424,7 +518,7 @@ function ContraceptionPreviewCard() {
 
 function UpcomingReminders() {
   return (
-    <AppSection title="Upcoming">
+    <AppSection actionLabel="Open calendar" onActionPress={() => router.push("/calendar")} subtitle="Private notes, estimates, contraception, and appointments." title="Notes and reminders">
       <View style={styles.listStack}>
         {REMINDERS.map((reminder) => <ReminderRow reminder={reminder} key={reminder.id} />)}
       </View>
@@ -456,6 +550,9 @@ function PrivacyCard() {
           <Text style={[styles.cardBody, { color: theme.mutedText }]}>This Women{"'"}s Health information is private to this profile.</Text>
           <Text style={[styles.cardBody, { color: theme.mutedText }]}>Nothing is shared unless permission is explicitly given.</Text>
           <Text style={[styles.statusText, { color: ACCENT }]}>{PROFILE.privacyStatus}</Text>
+          <Pressable accessibilityRole="button" onPress={() => router.push("/settings/privacy-center")}>
+            <Text style={[styles.inlineAction, { color: ACCENT }]}>Review sharing and privacy controls</Text>
+          </Pressable>
         </View>
       </View>
     </AppCard>
@@ -852,6 +949,12 @@ const styles = StyleSheet.create({
   contextRow: { borderTopWidth: 1, gap: 4, marginTop: 8, paddingTop: 12 },
   contextValue: { fontSize: 13, fontWeight: "900", lineHeight: 19 },
   contraceptionTop: { alignItems: "flex-start", flexDirection: "row", gap: 12 },
+  cycleModeCopy: { flex: 1, minWidth: 0 },
+  cycleOrb: { alignItems: "center", borderRadius: 999, borderWidth: 10, height: 128, justifyContent: "center", width: 128 },
+  cycleOrbLabel: { fontSize: 10, fontWeight: "900", textTransform: "uppercase" },
+  cycleOrbMeta: { fontSize: 10, fontWeight: "900", marginTop: 2 },
+  cycleOrbRow: { alignItems: "center", flexDirection: "row", gap: 16 },
+  cycleOrbValue: { fontSize: 34, fontWeight: "900", lineHeight: 39, marginTop: 2 },
   dayCell: { alignItems: "center", aspectRatio: 1, borderRadius: 15, borderWidth: 1, flexBasis: "12.5%", flexGrow: 1, justifyContent: "center", maxWidth: "13.6%", minHeight: 38, minWidth: 38 },
   dayGrid: { flexDirection: "row", flexWrap: "wrap", gap: 5 },
   dayHalo: { bottom: 0, left: 0, position: "absolute", right: 0, top: 0, borderRadius: 15, borderWidth: 2 },
@@ -896,6 +999,16 @@ const styles = StyleSheet.create({
   modal: { flex: 1, justifyContent: "flex-end" },
   phaseText: { fontSize: 15, fontWeight: "900", lineHeight: 21 },
   pressed: { opacity: 0.75 },
+  privateBadge: { alignItems: "center", alignSelf: "flex-start", backgroundColor: `${ACCENT}14`, borderRadius: 999, flexDirection: "row", gap: 5, paddingHorizontal: 10, paddingVertical: 6 },
+  privateBadgeText: { color: ACCENT, fontSize: 11, fontWeight: "900" },
+  privateHero: { backgroundColor: "#fff7fa", borderWidth: 1, overflow: "hidden", padding: 20 },
+  privateHeroActions: { flexDirection: "row", flexWrap: "wrap", gap: 9, marginTop: 18 },
+  privateHeroBody: { fontSize: 13, lineHeight: 20, marginTop: 7 },
+  privateHeroCopy: { flex: 1, minWidth: 0 },
+  privateHeroGlow: { backgroundColor: `${ACCENT}12`, borderRadius: 999, height: 180, position: "absolute", right: -76, top: -94, width: 180 },
+  privateHeroIcon: { alignItems: "center", backgroundColor: `${ACCENT}16`, borderRadius: 18, height: 52, justifyContent: "center", width: 52 },
+  privateHeroTitle: { fontSize: 24, fontWeight: "900", lineHeight: 29, marginTop: 9 },
+  privateHeroTop: { alignItems: "flex-start", flexDirection: "row", gap: 13 },
   previewRow: { alignItems: "flex-start", borderRadius: 20, borderWidth: 1, flexDirection: "row", gap: 12, minHeight: 88, padding: 14 },
   privacyPill: { alignItems: "center", alignSelf: "flex-start", borderRadius: 999, borderWidth: 1, flexDirection: "row", gap: 6, marginTop: 10, paddingHorizontal: 10, paddingVertical: 6 },
   privacyPillText: { fontSize: 12, fontWeight: "900" },
@@ -953,6 +1066,13 @@ const styles = StyleSheet.create({
   stateMessage: { fontSize: 14, lineHeight: 21, maxWidth: 320, textAlign: "center" },
   stateTitle: { fontSize: 20, fontWeight: "900", textAlign: "center" },
   statusText: { fontSize: 12, fontWeight: "900", marginTop: 8 },
+  symptomChip: { borderRadius: 999, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8 },
+  symptomChipGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  symptomChipText: { fontSize: 12, fontWeight: "800" },
+  symptomSave: { alignItems: "center", alignSelf: "flex-start", backgroundColor: ACCENT, borderRadius: 999, marginTop: 12, minHeight: 44, justifyContent: "center", paddingHorizontal: 16 },
+  symptomSaveText: { color: "#ffffff", fontSize: 12, fontWeight: "900" },
+  heroModeButton: { alignItems: "center", backgroundColor: "#ffffff", borderColor: `${ACCENT}35`, borderRadius: 999, borderWidth: 1, flexDirection: "row", gap: 6, minHeight: 43, paddingHorizontal: 13 },
+  heroModeText: { color: ACCENT, fontSize: 11, fontWeight: "900" },
   subtitle: { fontSize: 14, lineHeight: 21, marginTop: 5 },
   title: { fontSize: 28, fontWeight: "900", lineHeight: 34 },
   titleBlock: { alignItems: "flex-start" },

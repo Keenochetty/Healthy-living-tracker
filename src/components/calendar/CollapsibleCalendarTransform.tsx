@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     overflow: "hidden"
   },
   calendarShell: {
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
     justifyContent: "flex-start",
     overflow: "hidden"
   },

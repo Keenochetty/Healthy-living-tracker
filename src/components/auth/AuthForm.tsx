@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { AppCard } from "@/components/ui/AppCard";
+import { AppButton, AppCard, AppFormInput } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AuthFormProps = {
   mode: "login" | "signup";
@@ -11,6 +12,7 @@ type AuthFormProps = {
 
 export function AuthForm({ mode, onSuccess }: AuthFormProps) {
   const { signIn, signUp } = useAuth();
+  const { theme } = useAppTheme();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -56,78 +58,52 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
   }
 
   return (
-    <AppCard>
+    <AppCard radius="xl" style={{ borderColor: theme.border, borderWidth: 1 }}>
       <View style={{ gap: 12 }}>
-        <Text style={{ color: "#0f172a", fontSize: 22, fontWeight: "900" }}>
+        <Text style={{ color: theme.text, fontSize: 22, fontWeight: "900" }}>
           {mode === "signup" ? "Create your private care space." : "Sign in"}
         </Text>
 
         {mode === "signup" ? (
-          <TextInput
+          <AppFormInput
             autoCapitalize="words"
+            label="Display name"
             onChangeText={setDisplayName}
             placeholder="Display name"
-            placeholderTextColor="#94a3b8"
-            style={inputStyle}
             value={displayName}
           />
         ) : null}
 
-        <TextInput
+        <AppFormInput
           autoCapitalize="none"
           keyboardType="email-address"
+          label="Email"
           onChangeText={setEmail}
           placeholder="Email"
-          placeholderTextColor="#94a3b8"
-          style={inputStyle}
           value={email}
         />
-        <TextInput
+        <AppFormInput
+          label="Password"
           onChangeText={setPassword}
           placeholder="Password"
-          placeholderTextColor="#94a3b8"
           secureTextEntry
-          style={inputStyle}
           value={password}
         />
 
         {mode === "signup" ? (
-          <TextInput
+          <AppFormInput
+            label="Confirm password"
             onChangeText={setConfirmPassword}
             placeholder="Confirm password"
-            placeholderTextColor="#94a3b8"
             secureTextEntry
-            style={inputStyle}
             value={confirmPassword}
           />
         ) : null}
 
-        {error ? <Text style={{ color: "#dc2626", lineHeight: 20 }}>{error}</Text> : null}
+        {error ? <Text style={{ color: theme.danger, lineHeight: 20 }}>{error}</Text> : null}
 
-        <TouchableOpacity activeOpacity={0.85} onPress={submit} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
-            {loading ? "Working..." : mode === "signup" ? "Sign up" : "Log in"}
-          </Text>
-        </TouchableOpacity>
+        <AppButton fullWidth loading={loading} onPress={submit} size="lg" title={mode === "signup" ? "Create account" : "Sign in"} />
       </View>
     </AppCard>
   );
 }
-
-const inputStyle = {
-  backgroundColor: "#f8fafc",
-  borderColor: "#e2e8f0",
-  borderRadius: 18,
-  borderWidth: 1,
-  color: "#0f172a",
-  minHeight: 50,
-  paddingHorizontal: 14
-};
-
-const buttonStyle = {
-  alignItems: "center" as const,
-  backgroundColor: "#7c3aed",
-  borderRadius: 18,
-  justifyContent: "center" as const,
-  minHeight: 52
-};

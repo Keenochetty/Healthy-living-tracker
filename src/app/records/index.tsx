@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
+import { RecordsRealmOverview } from "@/components/records/RecordsRealmOverview";
 import { AppButton, AppCard, AppSection } from "@/components/ui";
 import {
   createDoctorVisit,
@@ -143,17 +144,39 @@ export default function RecordsScreen() {
   const noteRecords = useMemo(() => records.filter((record) => record.type === "health_note"), [records]);
   const documentRecords = useMemo(() => records.filter((record) => record.type !== "health_note"), [records]);
 
+  function openCategory(types: HealthRecordType[]) {
+    if (types.includes("vaccine_record")) {
+      setActiveTab("vaccines");
+    } else if (types.includes("lab_result")) {
+      setActiveTab("labs");
+    } else if (types.includes("prescription")) {
+      setActiveTab("prescriptions");
+    } else if (types.includes("health_note")) {
+      setActiveTab("notes");
+    } else {
+      setActiveTab("documents");
+    }
+  }
+
+  function openFilter(filter: "all" | "labs" | "prescriptions" | "vaccines") {
+    setActiveTab(filter === "all" ? "documents" : filter);
+  }
+
   return (
     <AppMainLayout subtitle="Private health documents" title="Records">
-      <AppCard backgroundColor="#f8fafc">
-        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>Document vault</Text>
-        <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-          Store documents, visits, lab results, vaccines, prescriptions and notes in one private place.
-        </Text>
-        <Text style={{ color: "#64748b", fontSize: 12, lineHeight: 18, marginTop: 8 }}>
-          Health records are for personal organization only. Lab results, prescriptions, scans, and medical notes should be reviewed with a healthcare professional.
-        </Text>
-      </AppCard>
+      <RecordsRealmOverview
+        onCategory={openCategory}
+        onFilter={openFilter}
+        onQueryChange={setQuery}
+        onScan={() => {
+          setActiveTab("documents");
+          setAiMessage(AI_PLACEHOLDER);
+        }}
+        onUpload={() => setActiveTab("documents")}
+        query={query}
+        records={records}
+        summary={summary}
+      />
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -4 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}>
         {RECORD_TABS.map((tab) => (
@@ -175,24 +198,10 @@ export default function RecordsScreen() {
         ))}
       </ScrollView>
 
-      <AppCard>
-        <TextInput
-          onChangeText={setQuery}
-          placeholder="Search title, tag, clinic, date, notes"
-          placeholderTextColor="#94a3b8"
-          style={INPUT_STYLE}
-          value={query}
-        />
-        <Text style={{ color: "#94a3b8", fontSize: 12, marginTop: 8 }}>
-          Filters are local-first: pinned, reminder, document type, folder and follow-up fields are stored with each record.
-        </Text>
-      </AppCard>
-
       {activeTab === "overview" ? (
         <OverviewTab
           onAiPlaceholder={() => setAiMessage(AI_PLACEHOLDER)}
           onReload={loadRecords}
-          onSelectTab={setActiveTab}
           reminders={reminders}
           summary={summary}
         />
@@ -235,45 +244,17 @@ const AI_PLACEHOLDER = "AI document extraction will be added later. You can stil
 function OverviewTab({
   onAiPlaceholder,
   onReload,
-  onSelectTab,
   reminders,
   summary
 }: {
   onAiPlaceholder: () => void;
   onReload: () => void;
-  onSelectTab: (tab: RecordsTab) => void;
   reminders: HealthRecordReminder[];
   summary: RecordsOverviewSummary | null;
 }) {
   return (
     <View style={{ gap: 12 }}>
-      <AppSection title="Quick actions">
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          <QuickAction label="Add Document" onPress={() => onSelectTab("documents")} />
-          <QuickAction label="Add Doctor Visit" onPress={() => onSelectTab("visits")} />
-          <QuickAction label="Add Vaccine Record" onPress={() => onSelectTab("vaccines")} />
-          <QuickAction label="Add Lab Result" onPress={() => onSelectTab("labs")} />
-          <QuickAction label="Add Prescription" onPress={() => onSelectTab("prescriptions")} />
-          <QuickAction label="Add Note" onPress={() => onSelectTab("notes")} />
-          <QuickAction label="Create Folder" onPress={() => onSelectTab("folders")} />
-        </View>
-      </AppSection>
-
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-        <MetricCard label="Recent" value={`${summary?.recentRecords.length ?? 0}`} />
-        <MetricCard label="Follow-ups" value={`${summary?.upcomingReminders.length ?? 0}`} />
-        <MetricCard label="Pinned" value={`${summary?.pinnedRecords.length ?? 0}`} />
-        <MetricCard label="Needs attention" value={`${summary?.recordsNeedingAttention ?? 0}`} />
-      </View>
-
       <ReminderList onReload={onReload} reminders={reminders} />
-
-      <ListSection
-        emptyText="No records added yet. Add documents, visits, lab results, vaccines, or notes to keep everything organized."
-        items={summary?.recentRecords ?? []}
-        title="Recent documents"
-        renderItem={(record) => <RecordCard key={record.id} onReload={onReload} record={record} />}
-      />
 
       <ListSection
         emptyText="No visits logged yet. Add a doctor visit to keep notes and follow-ups in one place."
@@ -765,14 +746,6 @@ function ToggleRow({ label, onChange, value }: { label: string; onChange: (value
   );
 }
 
-function QuickAction({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 18, borderWidth: 1, flexGrow: 1, minHeight: 54, minWidth: "45%", padding: 12 }}>
-      <Text style={{ color: "#0f172a", fontWeight: "900" }}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
 function MiniAction({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ backgroundColor: "#ffffff", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9 }}>
@@ -786,15 +759,6 @@ function SecondaryButton({ label, onPress }: { label: string; onPress: () => voi
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, justifyContent: "center", minHeight: 46, paddingHorizontal: 12 }}>
       <Text style={{ color: "#475569", fontWeight: "900" }}>{label}</Text>
     </TouchableOpacity>
-  );
-}
-
-function MetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: 18, borderWidth: 1, flexGrow: 1, minWidth: "45%", padding: 14 }}>
-      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 22, fontWeight: "900", marginTop: 4 }}>{value}</Text>
-    </View>
   );
 }
 

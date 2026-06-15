@@ -35,7 +35,7 @@ export function ReminderCard({
       style={{
         backgroundColor: light ? "#ffffff" : "rgba(255,255,255,0.08)",
         borderColor: light ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.12)",
-        borderRadius: 14,
+        borderRadius: 22,
         borderWidth: 1,
         gap: 12,
         padding: 15

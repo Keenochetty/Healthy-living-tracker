@@ -64,6 +64,7 @@ export type AppIconName =
   | "food"
   | "nutrition"
   | "mens_health"
+  | "ai"
   | "ai_assistant"
   | "medication"
   | "biometrics"
@@ -87,6 +88,7 @@ export type AppIconName =
   | "weight"
   | "add"
   | "save"
+  | "note"
   | "edit"
   | "delete"
   | "search"
@@ -127,6 +129,7 @@ export const appIcons: Record<AppIconName, IconComponent> = {
   food: Salad,
   nutrition: Salad,
   mens_health: ShieldCheck,
+  ai: Sparkles,
   ai_assistant: Sparkles,
   medication: Pill,
   biometrics: Activity,
@@ -150,6 +153,7 @@ export const appIcons: Record<AppIconName, IconComponent> = {
   weight: Scale,
   add: Plus,
   save: Save,
+  note: Pencil,
   edit: Pencil,
   delete: Trash2,
   search: Search,

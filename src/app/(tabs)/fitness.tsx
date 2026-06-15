@@ -25,15 +25,27 @@ import {
 } from "@/components/fitness/muscle-map";
 import {
   FitnessExploreGrid,
+  FitnessDashboardSections,
   FitnessGoalPaths,
   FitnessMuscleBalancePreview,
   FitnessNutritionSupport,
   FitnessSafetyRecoveryCard,
   FitnessStatusRow,
   FitnessTodayHero,
+  FitnessWorkoutPrograms,
 } from "@/components/fitness/realm";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
 import { AppButton, AppCard, AppIcon, AppSection } from "@/components/ui";
+import {
+  FITNESS_EXPLORE_FEATURES,
+  FITNESS_GOAL_FEATURES,
+  FITNESS_PROGRAM_FEATURES,
+} from "@/constants/featurePreferenceConfig";
+import {
+  FITNESS_EXPLORE_CATEGORIES,
+  FITNESS_GOAL_PATHS,
+  FITNESS_WORKOUT_PROGRAMS,
+} from "@/constants/fitnessRealmConfig";
 import {
   EXERCISE_EQUIPMENT,
   EXERCISE_LIBRARY,
@@ -45,6 +57,7 @@ import {
   formatWorkoutLabel,
   getExerciseById,
 } from "@/constants/workoutLibrary";
+import { useActiveProfile } from "@/context/ActiveProfileContext";
 import {
   completeWorkoutSession,
   createWorkoutSession,
@@ -62,6 +75,12 @@ import {
   recordMuscleLoadForExercise,
   scoresFromExerciseFallback,
 } from "@/services/fitnessMuscleMapService";
+import {
+  getUserFeaturePreferences,
+  shouldShowFeature,
+  type UserFeaturePreference,
+} from "@/services/userFeaturePreferencesService";
+import { useAppTheme } from "@/theme/ThemeProvider";
 import type {
   ExerciseEquipment,
   ExerciseLibraryItem,
@@ -113,6 +132,7 @@ const FITNESS_TABS: Array<{ key: FitnessTab; label: string }> = [
 const SAFETY_COPY =
   "Exercise guidance is for general fitness tracking only. If you are unsure, injured, pregnant, or managing a health condition, speak to a qualified professional.";
 export default function FitnessScreen() {
+  const { activeProfile } = useActiveProfile();
   const [activeTab, setActiveTab] = useState<FitnessTab>("today");
   const [summary, setSummary] = useState<FitnessSummary | null>(null);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
@@ -136,6 +156,7 @@ export default function FitnessScreen() {
     useState<FitnessContentPreview | null>(null);
   const [contentError, setContentError] = useState("");
   const [contentLoading, setContentLoading] = useState(true);
+  const [featurePreferences, setFeaturePreferences] = useState<UserFeaturePreference[]>([]);
 
   const loadFitness = useCallback(async () => {
     const [nextSummary, nextSessions] = await Promise.all([
@@ -176,9 +197,43 @@ export default function FitnessScreen() {
   useFocusEffect(
     useCallback(() => {
       Promise.resolve()
-        .then(loadFitness)
+        .then(() =>
+          Promise.all([
+            loadFitness(),
+            getUserFeaturePreferences(activeProfile?.id).then(setFeaturePreferences),
+          ]),
+        )
         .catch(() => undefined);
-    }, [loadFitness]),
+    }, [activeProfile?.id, loadFitness]),
+  );
+
+  const featureContext = useMemo(
+    () => ({
+      preferences: featurePreferences,
+      profileType: activeProfile?.profileType,
+    }),
+    [activeProfile?.profileType, featurePreferences],
+  );
+  const visibleGoals = useMemo(
+    () =>
+      FITNESS_GOAL_PATHS.filter((goal) =>
+        shouldShowFeature(FITNESS_GOAL_FEATURES[goal.id] ?? "fitness", featureContext),
+      ),
+    [featureContext],
+  );
+  const visiblePrograms = useMemo(
+    () =>
+      FITNESS_WORKOUT_PROGRAMS.filter((program) =>
+        shouldShowFeature(FITNESS_PROGRAM_FEATURES[program.id] ?? "fitness", featureContext),
+      ),
+    [featureContext],
+  );
+  const visibleExplore = useMemo(
+    () =>
+      FITNESS_EXPLORE_CATEGORIES.filter((category) =>
+        shouldShowFeature(FITNESS_EXPLORE_FEATURES[category.id] ?? "fitness", featureContext),
+      ),
+    [featureContext],
   );
 
   const completedSetCount = sessionExercises.reduce(
@@ -355,6 +410,11 @@ export default function FitnessScreen() {
           onRoutine={selectRoutine}
           onTab={setActiveTab}
           summary={summary}
+          visibleExplore={visibleExplore}
+          visibleGoals={visibleGoals}
+          visiblePrograms={visiblePrograms}
+          showAiImport={shouldShowFeature("ai_plan_import", featureContext)}
+          showNutrition={shouldShowFeature("nutrition", featureContext)}
         />
       ) : null}
       {activeTab === "start" ? (
@@ -450,6 +510,11 @@ function TodayTab({
   onRoutine,
   onTab,
   summary,
+  showAiImport,
+  showNutrition,
+  visibleExplore,
+  visibleGoals,
+  visiblePrograms,
 }: {
   contentError: string;
   contentLoading: boolean;
@@ -458,11 +523,25 @@ function TodayTab({
   onRoutine: (routine: WorkoutRoutine, tab?: FitnessTab) => void;
   onTab: (tab: FitnessTab) => void;
   summary: FitnessSummary | null;
+  showAiImport: boolean;
+  showNutrition: boolean;
+  visibleExplore: typeof FITNESS_EXPLORE_CATEGORIES;
+  visibleGoals: typeof FITNESS_GOAL_PATHS;
+  visiblePrograms: typeof FITNESS_WORKOUT_PROGRAMS;
 }) {
   const plan = PREBUILT_ROUTINES[0];
+  const { theme } = useAppTheme();
 
   return (
     <View style={styles.realmStack}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push("/fitness/preferences" as Href)}
+        style={styles.customizeRow}
+      >
+        <AppIcon color={theme.primary} decorative name="settings" size={16} />
+        <Text style={[styles.customizeText, { color: theme.primary }]}>Customize</Text>
+      </Pressable>
       {contentLoading ? (
         <ContentState icon="sync" text="Loading live fitness suggestions..." />
       ) : null}
@@ -490,18 +569,59 @@ function TodayTab({
         readiness={
           summary?.activeMinutesToday ? "Recovery mindful" : "Ready today"
         }
+        weeklyProgress={summary?.weeklyGoalProgress ?? 0}
+        workoutsThisWeek={summary?.workoutsThisWeek ?? 0}
       />
 
+      <FitnessDashboardSections latestWorkout={latestWorkout} onTab={onTab} summary={summary} />
+
       <FitnessStatusRow
-        onProgress={() => onTab("progress")}
+        onProgress={() => router.push("/fitness/history" as Href)}
         onReminder={() => onTab("guides")}
         summary={summary}
       />
 
-      <FitnessGoalPaths onSelect={(goal) => onTab(goal.destination)} />
+      <FitnessGoalPaths
+        goals={visibleGoals}
+        onSelect={(goal) => router.push(`/fitness/goal/${goal.id}` as Href)}
+        onViewAll={() => router.push("/fitness/goals" as Href)}
+      />
+
+      <FitnessWorkoutPrograms
+        onSelect={(program) =>
+          router.push(`/fitness/program/${program.id}` as Href)
+        }
+        onViewAll={() => router.push("/fitness/programs" as Href)}
+        programs={visiblePrograms}
+      />
+
+      {showAiImport ? <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push("/fitness/ai-import" as Href)}
+      >
+        <AppCard style={styles.aiImportCard}>
+          <View style={styles.aiImportIcon}>
+            <AppIcon color="#6ee7c8" decorative name="search" size={22} />
+          </View>
+          <View style={styles.aiImportCopy}>
+            <Text style={styles.aiImportKicker}>AI plan import</Text>
+            <Text style={styles.aiImportTitle}>Find or import a plan</Text>
+            <Text style={styles.aiImportBody}>
+              Review workout, nutrition, or wellness guidance before importing
+              an editable draft.
+            </Text>
+          </View>
+          <AppIcon color="#94a3b8" decorative name="add" size={20} />
+        </AppCard>
+      </Pressable> : null}
 
       <FitnessExploreGrid
-        onSelect={(category) => onTab(category.destination)}
+        categories={visibleExplore}
+        onSelect={(category) =>
+          category.destination === "library"
+            ? router.push("/fitness/library" as Href)
+            : onTab(category.destination)
+        }
       />
 
       <FitnessMuscleBalancePreview
@@ -513,10 +633,10 @@ function TodayTab({
         }
       />
 
-      <FitnessNutritionSupport
+      {showNutrition ? <FitnessNutritionSupport
         onOpenFood={() => router.push("/food" as Href)}
         suggestion={contentPreview?.nutritionSuggestion}
-      />
+      /> : null}
 
       <FitnessSafetyRecoveryCard />
 
@@ -767,6 +887,10 @@ function LibraryTab() {
       <AppSection
         title="Exercise Library"
         subtitle="Browse by muscle, equipment, location, difficulty and goal."
+      />
+      <AppButton
+        onPress={() => router.push("/fitness/library" as Href)}
+        title="Open full exercise library"
       />
       <FilterGroup
         label="Muscle group"
@@ -1479,6 +1603,56 @@ function buildSessionExercises(
 }
 
 const styles = StyleSheet.create({
+  aiImportBody: {
+    color: "#94a3b8",
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  aiImportCard: {
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderColor: "rgba(110,231,200,0.28)",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+  },
+  aiImportCopy: {
+    flex: 1,
+  },
+  aiImportIcon: {
+    alignItems: "center",
+    backgroundColor: "rgba(110,231,200,0.12)",
+    borderRadius: 18,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  aiImportKicker: {
+    color: "#6ee7c8",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  aiImportTitle: {
+    color: "#f8fafc",
+    fontSize: 16,
+    fontWeight: "900",
+    marginTop: 2,
+  },
+  customizeRow: {
+    alignItems: "center",
+    alignSelf: "flex-end",
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  customizeText: {
+    fontSize: 11,
+    fontWeight: "900",
+  },
   actionRow: {
     alignItems: "center",
     flexDirection: "row",

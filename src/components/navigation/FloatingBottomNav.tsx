@@ -5,10 +5,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FloatingBottomNavItem } from "@/components/navigation/FloatingBottomNavItem";
 import type { AppIconName } from "@/constants/appIcons";
 import { appShadows, zLayers } from "@/theme/designSystem";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
-const NAV_HEIGHT = 64;
-const NAV_MAX_WIDTH = 360;
-const NAV_SIDE_MARGIN = 20;
+const NAV_HEIGHT = 68;
+const NAV_MAX_WIDTH = 390;
+const NAV_SIDE_MARGIN = 16;
 
 type NavConfig = {
   accessibilityLabel: string;
@@ -45,20 +46,20 @@ const NAV_ITEMS: Record<string, NavConfig> = {
     iconName: "calendar",
     label: "Calendar"
   },
-  scan: {
-    accessibilityLabel: "Open Scan",
-    iconName: "scan",
-    label: "Scan"
-  },
   health: {
     accessibilityLabel: "Open Health",
     iconName: "health",
     label: "Health"
   },
-  circle: {
-    accessibilityLabel: "Open Circle",
-    iconName: "circle",
-    label: "Circle"
+  fitness: {
+    accessibilityLabel: "Open Fitness",
+    iconName: "fitness",
+    label: "Fitness"
+  },
+  food: {
+    accessibilityLabel: "Open Food",
+    iconName: "food",
+    label: "Food"
   }
 };
 
@@ -70,9 +71,9 @@ const STANDALONE_ROUTES = Object.keys(NAV_ITEMS).map((name) => ({ key: `standalo
 
 const NAV_HREFS: Record<string, Href> = {
   calendar: "/(tabs)/calendar" as Href,
-  circle: "/(tabs)/circle" as Href,
+  fitness: "/(tabs)/fitness" as Href,
+  food: "/(tabs)/food" as Href,
   health: "/(tabs)/health" as Href,
-  scan: "/(tabs)/scan" as Href,
   today: "/(tabs)/today" as Href
 };
 
@@ -83,6 +84,7 @@ export function FloatingBottomNav({
   state
 }: FloatingBottomNavProps) {
   const insets = useSafeAreaInsets();
+  const { theme } = useAppTheme();
   const { width: screenWidth } = useWindowDimensions();
   const routes = state?.routes ?? STANDALONE_ROUTES;
   const activeIndex =
@@ -99,7 +101,18 @@ export function FloatingBottomNav({
 
   return (
     <View pointerEvents="box-none" style={styles.overlay}>
-      <View style={[styles.bottomNavWrapper, { bottom: navSafeOffset, width: navWidth }]}>
+      <View
+        style={[
+          styles.bottomNavWrapper,
+          {
+            backgroundColor: theme.nav ?? theme.surface,
+            borderColor: theme.border,
+            bottom: navSafeOffset,
+            shadowColor: theme.background,
+            width: navWidth
+          }
+        ]}
+      >
         <View style={[styles.navContent, compact ? styles.navContentCompact : null]}>
           {visibleRoutes.map((route: TabRoute) => {
             const config = NAV_ITEMS[route.name];
@@ -136,7 +149,6 @@ export function FloatingBottomNav({
             return (
               <FloatingBottomNavItem
                 accessibilityLabel={options.tabBarAccessibilityLabel ?? config.accessibilityLabel}
-                compact={compact}
                 focused={focused}
                 iconName={config.iconName}
                 key={route.key}
@@ -155,8 +167,6 @@ export function FloatingBottomNav({
 const styles = StyleSheet.create({
   bottomNavWrapper: {
     alignItems: "center",
-    backgroundColor: "rgba(13, 13, 15, 0.98)",
-    borderColor: "rgba(255,255,255,0.12)",
     borderRadius: 999,
     borderWidth: 1,
     height: NAV_HEIGHT,

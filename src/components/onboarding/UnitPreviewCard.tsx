@@ -2,6 +2,7 @@ import { Text, View } from "react-native";
 
 import { AppCard } from "@/components/ui/AppCard";
 import type { UnitPreferences } from "@/types/profile";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
 type UnitPreviewCardProps = {
   units: UnitPreferences;
@@ -18,6 +19,7 @@ const UNIT_ROWS: Array<[keyof UnitPreferences, string]> = [
 ];
 
 export function UnitPreviewCard({ units }: UnitPreviewCardProps) {
+  const { theme } = useAppTheme();
   return (
     <AppCard>
       <View style={{ gap: 10 }}>
@@ -30,8 +32,8 @@ export function UnitPreviewCard({ units }: UnitPreviewCardProps) {
               justifyContent: "space-between"
             }}
           >
-            <Text style={{ color: "#64748b" }}>{label}</Text>
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>{units[key]}</Text>
+            <Text style={{ color: theme.mutedText }}>{label}</Text>
+            <Text style={{ color: theme.text, fontWeight: "900" }}>{units[key]}</Text>
           </View>
         ))}
       </View>
