@@ -36,7 +36,7 @@ import {
 import { DayTimeline } from "@/components/calendar/DayTimeline";
 import { ReminderTypeChip } from "@/components/calendar/ReminderTypeChip";
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
-import { AppCard, AppIcon, AppSection } from "@/components/ui";
+import { AppCard, AppChip, AppIcon, AppSection } from "@/components/ui";
 import type { AppIconName } from "@/constants/appIcons";
 import { CORE_MODULE_KEYS } from "@/constants/modules";
 import { lightImpact, successImpact } from "@/lib/haptics";
@@ -177,6 +177,16 @@ const TYPE_ACCENTS: Record<
   work: { color: healthRealmAccents.fitness, icon: "calendar", label: "Work" },
 };
 
+const CALENDAR_REALM_LEGEND = [
+  TYPE_ACCENTS.doctor_visit,
+  TYPE_ACCENTS.fitness,
+  TYPE_ACCENTS.food,
+  TYPE_ACCENTS.medication,
+  TYPE_ACCENTS.child_baby,
+  TYPE_ACCENTS.family,
+  TYPE_ACCENTS.personal,
+];
+
 export default function CalendarScreen() {
   const { theme, themeKey } = useAppTheme();
   const isDarkTheme =
@@ -313,6 +323,22 @@ export default function CalendarScreen() {
       allReminders.filter((reminder) =>
         isSameDay(new Date(reminder.dueAt), selectedDate),
       ),
+    [allReminders, selectedDate],
+  );
+  const upcomingReminders = useMemo(
+    () =>
+      allReminders
+        .filter(
+          (reminder) =>
+            reminder.status === "pending" &&
+            new Date(reminder.dueAt).getTime() > Date.now() &&
+            !isSameDay(new Date(reminder.dueAt), selectedDate),
+        )
+        .sort(
+          (left, right) =>
+            new Date(left.dueAt).getTime() - new Date(right.dueAt).getTime(),
+        )
+        .slice(0, 5),
     [allReminders, selectedDate],
   );
   const expandedAgendaTop =
@@ -628,6 +654,12 @@ export default function CalendarScreen() {
                   reminders={selectedReminders}
                   selectedDate={selectedDate}
                 />
+                <CalendarQuickActions
+                  enabledModules={enabledModules}
+                  onAddEvent={() => openScheduler(selectedDate)}
+                  womensOverlayEnabled={womensOverlayEnabled}
+                />
+                <UpcomingPreview reminders={upcomingReminders} />
               </>
             ) : null}
 
@@ -802,6 +834,27 @@ function MonthGrid({
             selected={isSameDay(day.date, selectedDate)}
           />
         ))}
+      </View>
+      <View style={styles.realmLegend}>
+        {CALENDAR_REALM_LEGEND.map((item) => (
+          <View key={item.label} style={styles.realmLegendItem}>
+            <View style={[styles.dayDot, { backgroundColor: item.color }]} />
+            <Text style={[styles.realmLegendText, { color: theme.mutedText }]}>
+              {item.label}
+            </Text>
+          </View>
+        ))}
+        <View style={styles.realmLegendItem}>
+          <View
+            style={[
+              styles.privateLegendMark,
+              { borderColor: healthRealmAccents.women },
+            ]}
+          />
+          <Text style={[styles.realmLegendText, { color: theme.mutedText }]}>
+            Private overlay
+          </Text>
+        </View>
       </View>
     </AppCard>
   );
@@ -1103,6 +1156,147 @@ function SelectedDayPanel({
         </View>
       </View>
     </View>
+  );
+}
+
+function CalendarQuickActions({
+  enabledModules,
+  onAddEvent,
+  womensOverlayEnabled,
+}: {
+  enabledModules: AppModuleKey[];
+  onAddEvent: () => void;
+  womensOverlayEnabled: boolean;
+}) {
+  const actions: Array<{
+    icon: AppIconName;
+    label: string;
+    onPress: () => void;
+    visible: boolean;
+  }> = [
+    { icon: "add", label: "Add event", onPress: onAddEvent, visible: true },
+    {
+      icon: "medication",
+      label: "Medication",
+      onPress: () => router.push("/medication" as Href),
+      visible: enabledModules.includes("personal_health"),
+    },
+    {
+      icon: "fitness",
+      label: "Workout",
+      onPress: () => router.push("/fitness" as Href),
+      visible: enabledModules.includes("fitness"),
+    },
+    {
+      icon: "food",
+      label: "Meal",
+      onPress: () => router.push("/food" as Href),
+      visible: enabledModules.includes("food"),
+    },
+    {
+      icon: "note",
+      label: "Health note",
+      onPress: () => router.push("/health/general/notes" as Href),
+      visible: enabledModules.includes("personal_health"),
+    },
+    {
+      icon: "caregiver",
+      label: "Family task",
+      onPress: () => router.push("/circle" as Href),
+      visible: enabledModules.includes("circle"),
+    },
+    {
+      icon: "child_baby",
+      label: "Baby log",
+      onPress: () => router.push("/baby-child" as Href),
+      visible: enabledModules.includes("child_baby"),
+    },
+    {
+      icon: "pregnancy_cycle",
+      label: "Women's health",
+      onPress: () => router.push("/cycle" as Href),
+      visible:
+        womensOverlayEnabled && enabledModules.includes("pregnancy_cycle"),
+    },
+  ];
+
+  return (
+    <AppSection subtitle="Add or open a connected realm." title="Quick add">
+      <View style={styles.compactActionRow}>
+        {actions
+          .filter((action) => action.visible)
+          .map((action) => (
+            <AppChip
+              icon={
+                <AppIcon
+                  decorative
+                  name={action.icon}
+                  size={14}
+                  variant="primary"
+                />
+              }
+              key={action.label}
+              label={action.label}
+              onPress={action.onPress}
+            />
+          ))}
+      </View>
+    </AppSection>
+  );
+}
+
+function UpcomingPreview({ reminders }: { reminders: AppReminder[] }) {
+  const { theme } = useAppTheme();
+
+  return (
+    <AppSection
+      subtitle="Your next reminders across connected realms."
+      title="Upcoming"
+    >
+      {reminders.length ? (
+        <View style={styles.upcomingStack}>
+          {reminders.map((reminder) => {
+            const accent = TYPE_ACCENTS[reminder.type];
+            return (
+              <AppCard
+                key={reminder.id}
+                onPress={() => router.push(`/reminders/${reminder.id}` as Href)}
+                padding="sm"
+                style={styles.upcomingCard}
+              >
+                <View
+                  style={[
+                    styles.upcomingAccent,
+                    { backgroundColor: accent.color },
+                  ]}
+                />
+                <View style={styles.upcomingCopy}>
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.upcomingTitle, { color: theme.text }]}
+                  >
+                    {reminder.title}
+                  </Text>
+                  <Text
+                    style={[styles.upcomingMeta, { color: theme.mutedText }]}
+                  >
+                    {formatDateLabel(new Date(reminder.dueAt))} ·{" "}
+                    {formatReminderTime(reminder.dueAt)}
+                  </Text>
+                </View>
+                <ReminderTypeChip type={reminder.type} />
+              </AppCard>
+            );
+          })}
+        </View>
+      ) : (
+        <AppCard padding="sm" variant="soft">
+          <Text style={[styles.upcomingEmpty, { color: theme.mutedText }]}>
+            No upcoming items. Use Add event when you are ready.
+          </Text>
+        </AppCard>
+      )}
+    </AppSection>
   );
 }
 
@@ -2853,6 +3047,11 @@ function toDateKey(date: Date) {
 }
 
 const styles = StyleSheet.create({
+  compactActionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   agendaScrollContent: {
     gap: 8,
     paddingBottom: 210,
@@ -3353,6 +3552,12 @@ const styles = StyleSheet.create({
     opacity: 0.78,
     transform: [{ scale: 0.98 }],
   },
+  privateLegendMark: {
+    borderRadius: 999,
+    borderWidth: 1.5,
+    height: 8,
+    width: 8,
+  },
   privacyNote: {
     alignItems: "flex-start",
     backgroundColor: "rgba(15,23,42,0.94)",
@@ -3804,6 +4009,53 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     padding: 12,
+  },
+  upcomingAccent: {
+    borderRadius: 999,
+    height: 34,
+    width: 4,
+  },
+  upcomingCard: {
+    alignItems: "center",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    minHeight: 58,
+  },
+  upcomingCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  upcomingEmpty: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  upcomingMeta: {
+    fontSize: 11,
+    marginTop: 3,
+  },
+  realmLegend: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9,
+    marginTop: 12,
+    paddingHorizontal: 6,
+  },
+  realmLegendItem: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 4,
+  },
+  realmLegendText: {
+    fontSize: 9,
+    fontWeight: "800",
+  },
+  upcomingStack: {
+    gap: 8,
+  },
+  upcomingTitle: {
+    fontSize: 13,
+    fontWeight: "900",
   },
   timeCard: {
     backgroundColor: "rgba(255,255,255,0.08)",
