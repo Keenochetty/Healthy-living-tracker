@@ -1,4 +1,11 @@
-import { AppState, type AppStateStatus, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  AppState,
+  type AppStateStatus,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import { AppCard } from "@/components/ui";
@@ -10,7 +17,10 @@ export function AppLockGate({ children }: { children: ReactNode }) {
   const { theme } = useAppTheme();
   const [locked, setLocked] = useState(false);
   const [message, setMessage] = useState("");
-  const settingsRef = useRef<AppLockSettings>({ enabled: false, timing: "immediately" });
+  const settingsRef = useRef<AppLockSettings>({
+    enabled: false,
+    timing: "immediately",
+  });
   const backgroundedAtRef = useRef<number | null>(null);
 
   const unlock = useCallback(async () => {
@@ -19,7 +29,11 @@ export function AppLockGate({ children }: { children: ReactNode }) {
       await verifyDeviceOwner();
       setLocked(false);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Device authentication was not completed.");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Device authentication was not completed.",
+      );
     }
   }, []);
 
@@ -62,10 +76,20 @@ export function AppLockGate({ children }: { children: ReactNode }) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <AppCard style={styles.card}>
-        <Text style={[styles.title, { color: theme.text }]}>HealthSync is locked</Text>
-        <Text style={[styles.body, { color: theme.mutedText }]}>Confirm your device authentication to continue.</Text>
-        {message ? <Text style={[styles.body, { color: theme.danger }]}>{message}</Text> : null}
-        <Pressable accessibilityRole="button" onPress={unlock} style={[styles.button, { backgroundColor: theme.primary }]}>
+        <Text style={[styles.title, { color: theme.text }]}>
+          HealthSync is locked
+        </Text>
+        <Text style={[styles.body, { color: theme.mutedText }]}>
+          Confirm your device authentication to continue.
+        </Text>
+        {message ? (
+          <Text style={[styles.body, { color: theme.danger }]}>{message}</Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          onPress={unlock}
+          style={[styles.button, { backgroundColor: theme.primary }]}
+        >
           <Text style={styles.buttonText}>Unlock</Text>
         </Pressable>
       </AppCard>
@@ -81,9 +105,20 @@ function timingMilliseconds(timing: AppLockSettings["timing"]) {
 
 const styles = StyleSheet.create({
   body: { lineHeight: 21, textAlign: "center" },
-  button: { alignItems: "center", borderRadius: 18, minHeight: 52, justifyContent: "center", marginTop: 8 },
+  button: {
+    alignItems: "center",
+    borderRadius: 18,
+    minHeight: 52,
+    justifyContent: "center",
+    marginTop: 8,
+  },
   buttonText: { color: "#ffffff", fontWeight: "900" },
   card: { gap: 12, maxWidth: 420, width: "100%" },
-  screen: { alignItems: "center", flex: 1, justifyContent: "center", padding: 24 },
-  title: { fontSize: 24, fontWeight: "900", textAlign: "center" }
+  screen: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    padding: 24,
+  },
+  title: { fontSize: 24, fontWeight: "900", textAlign: "center" },
 });

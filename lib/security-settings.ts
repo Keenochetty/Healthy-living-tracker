@@ -17,29 +17,42 @@ export const defaultSecurityPreferences: SecurityPreferences = {
   emergencyAccessLoggingEnabled: true,
   hideSensitivePreviews: true,
   lockSensitiveNotifications: true,
-  sessionTimeoutMinutes: 15
+  sessionTimeoutMinutes: 15,
 };
 
 function normalizeSecurityPreferences(value: unknown): SecurityPreferences {
-  const preferences = typeof value === "object" && value !== null ? (value as Partial<SecurityPreferences>) : {};
+  const preferences =
+    typeof value === "object" && value !== null
+      ? (value as Partial<SecurityPreferences>)
+      : {};
 
   return {
     aiAccessPermissionsEnabled:
-      preferences.aiAccessPermissionsEnabled ?? defaultSecurityPreferences.aiAccessPermissionsEnabled,
-    appPinEnabled: preferences.appPinEnabled ?? defaultSecurityPreferences.appPinEnabled,
+      preferences.aiAccessPermissionsEnabled ??
+      defaultSecurityPreferences.aiAccessPermissionsEnabled,
+    appPinEnabled:
+      preferences.appPinEnabled ?? defaultSecurityPreferences.appPinEnabled,
     biometricUnlockEnabled:
-      preferences.biometricUnlockEnabled ?? defaultSecurityPreferences.biometricUnlockEnabled,
+      preferences.biometricUnlockEnabled ??
+      defaultSecurityPreferences.biometricUnlockEnabled,
     emergencyAccessLoggingEnabled:
-      preferences.emergencyAccessLoggingEnabled ?? defaultSecurityPreferences.emergencyAccessLoggingEnabled,
-    hideSensitivePreviews: preferences.hideSensitivePreviews ?? defaultSecurityPreferences.hideSensitivePreviews,
+      preferences.emergencyAccessLoggingEnabled ??
+      defaultSecurityPreferences.emergencyAccessLoggingEnabled,
+    hideSensitivePreviews:
+      preferences.hideSensitivePreviews ??
+      defaultSecurityPreferences.hideSensitivePreviews,
     lockSensitiveNotifications:
-      preferences.lockSensitiveNotifications ?? defaultSecurityPreferences.lockSensitiveNotifications,
+      preferences.lockSensitiveNotifications ??
+      defaultSecurityPreferences.lockSensitiveNotifications,
     sessionTimeoutMinutes:
-      preferences.sessionTimeoutMinutes ?? defaultSecurityPreferences.sessionTimeoutMinutes
+      preferences.sessionTimeoutMinutes ??
+      defaultSecurityPreferences.sessionTimeoutMinutes,
   };
 }
 
-export async function getSecurityPreferences(profileId: string | null | undefined) {
+export async function getSecurityPreferences(
+  profileId: string | null | undefined,
+) {
   if (!profileId) {
     return defaultSecurityPreferences;
   }
@@ -59,7 +72,7 @@ export async function getSecurityPreferences(profileId: string | null | undefine
 
 export async function updateSecurityPreferences(
   profileId: string | null | undefined,
-  preferences: SecurityPreferences
+  preferences: SecurityPreferences,
 ) {
   if (!profileId) {
     throw new Error("Sign in before updating security settings.");
@@ -69,7 +82,7 @@ export async function updateSecurityPreferences(
     .from("user_settings")
     .upsert({
       profile_id: profileId,
-      security_preferences: preferences
+      security_preferences: preferences,
     })
     .select("security_preferences")
     .single();

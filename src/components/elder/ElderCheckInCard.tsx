@@ -4,7 +4,7 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import {
   ELDER_CHECK_IN_STATUS_OPTIONS,
   ELDER_EMERGENCY_DISCLAIMER,
-  ELDER_QUALITY_OPTIONS
+  ELDER_QUALITY_OPTIONS,
 } from "@/constants/elderOptions";
 import { addElderCheckIn } from "@/lib/elderStorage";
 import type { ElderCareQuality, ElderCheckInStatus } from "@/types/elder";
@@ -32,7 +32,7 @@ export function ElderCheckInCard({ elderId, onChange }: ElderCheckInCardProps) {
       mobility,
       mood: mood.trim() || undefined,
       notes,
-      status
+      status,
     });
 
     setMood("");
@@ -56,14 +56,26 @@ export function ElderCheckInCard({ elderId, onChange }: ElderCheckInCardProps) {
           label="Status"
           options={ELDER_CHECK_IN_STATUS_OPTIONS.map((option) => ({
             key: option.key,
-            label: option.label
+            label: option.label,
           }))}
           selected={status}
           onSelect={(value) => setStatus(value as ElderCheckInStatus)}
         />
-        <QualityGroup label="Appetite" selected={appetite} onSelect={setAppetite} />
-        <QualityGroup label="Hydration" selected={hydration} onSelect={setHydration} />
-        <QualityGroup label="Mobility" selected={mobility} onSelect={setMobility} />
+        <QualityGroup
+          label="Appetite"
+          selected={appetite}
+          onSelect={setAppetite}
+        />
+        <QualityGroup
+          label="Hydration"
+          selected={hydration}
+          onSelect={setHydration}
+        />
+        <QualityGroup
+          label="Mobility"
+          selected={mobility}
+          onSelect={setMobility}
+        />
 
         <TextInput
           onChangeText={setMood}
@@ -87,8 +99,14 @@ export function ElderCheckInCard({ elderId, onChange }: ElderCheckInCardProps) {
           </Text>
         ) : null}
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save check-in</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save check-in
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -98,7 +116,7 @@ export function ElderCheckInCard({ elderId, onChange }: ElderCheckInCardProps) {
 function QualityGroup({
   label,
   onSelect,
-  selected
+  selected,
 }: {
   label: string;
   onSelect: (value: ElderCareQuality) => void;
@@ -118,7 +136,7 @@ function ChipGroup({
   label,
   onSelect,
   options,
-  selected
+  selected,
 }: {
   label: string;
   onSelect: (value: string) => void;
@@ -149,7 +167,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -157,5 +175,5 @@ const buttonStyle = {
   backgroundColor: "#059669",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

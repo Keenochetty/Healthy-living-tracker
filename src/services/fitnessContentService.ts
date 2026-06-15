@@ -52,8 +52,10 @@ export async function getExercises(filters?: ExerciseFilters) {
   if (filters?.audience) query = query.eq("audience", filters.audience);
   if (filters?.level) query = query.eq("level", filters.level);
   if (filters?.category) query = query.eq("category", filters.category);
-  if (filters?.equipment) query = query.ilike("equipment", `%${filters.equipment}%`);
-  if (filters?.muscle) query = query.ilike("primary_muscles", `%${filters.muscle}%`);
+  if (filters?.equipment)
+    query = query.ilike("equipment", `%${filters.equipment}%`);
+  if (filters?.muscle)
+    query = query.ilike("primary_muscles", `%${filters.muscle}%`);
 
   return query;
 }
@@ -99,9 +101,7 @@ export function normalizeExerciseContent(
       stringValue(source.level ?? source.difficulty ?? local.difficulty) ??
       "beginner",
     location: stringList(source.location ?? local.location),
-    name:
-      stringValue(source.title ?? source.name ?? local.name) ??
-      "Exercise",
+    name: stringValue(source.title ?? source.name ?? local.name) ?? "Exercise",
     primaryMuscles: stringList(
       source.primary_muscles ?? source.primaryMuscle ?? local.primaryMuscle,
     ),
@@ -204,35 +204,53 @@ export type FitnessProgramDayContent = {
   setsReps?: string;
 };
 
-export function normalizeProgramContent(row: Record<string, unknown>): FitnessProgramContent {
+export function normalizeProgramContent(
+  row: Record<string, unknown>,
+): FitnessProgramContent {
   return {
     audience: stringList(row.audience ?? row.audiences),
-    averageMinutes: numberValue(row.average_minutes ?? row.estimated_minutes) ?? 30,
+    averageMinutes:
+      numberValue(row.average_minutes ?? row.estimated_minutes) ?? 30,
     days: numberValue(row.days ?? row.duration_days) ?? 7,
-    daysPerWeek: numberValue(row.days_per_week ?? row.training_days_per_week) ?? 3,
-    description: stringValue(row.description ?? row.subtitle) ?? "A guided fitness plan with balanced progression and recovery.",
+    daysPerWeek:
+      numberValue(row.days_per_week ?? row.training_days_per_week) ?? 3,
+    description:
+      stringValue(row.description ?? row.subtitle) ??
+      "A guided fitness plan with balanced progression and recovery.",
     equipment: stringList(row.equipment),
     focus: stringList(row.focus ?? row.focus_muscles ?? row.target_muscles),
     goal: stringValue(row.goal ?? row.category) ?? "General fitness",
     level: stringValue(row.level ?? row.difficulty) ?? "Beginner",
-    programId: stringValue(row.program_id ?? row.plan_id ?? row.id) ?? "program",
-    recoveryDays: stringValue(row.recovery_days ?? row.rest_days) ?? "Include lighter or rest days",
+    programId:
+      stringValue(row.program_id ?? row.plan_id ?? row.id) ?? "program",
+    recoveryDays:
+      stringValue(row.recovery_days ?? row.rest_days) ??
+      "Include lighter or rest days",
     title: stringValue(row.title ?? row.name) ?? "Workout program",
   };
 }
 
-export function normalizeProgramDayContent(row: Record<string, unknown>): FitnessProgramDayContent {
+export function normalizeProgramDayContent(
+  row: Record<string, unknown>,
+): FitnessProgramDayContent {
   return {
     dayNumber: numberValue(row.day_number ?? row.day) ?? 1,
-    durationMinutes: numberValue(row.estimated_minutes ?? row.duration_minutes) ?? 30,
-    exercises: stringList(row.exercises ?? row.exercise_ids ?? row.exercise_names),
+    durationMinutes:
+      numberValue(row.estimated_minutes ?? row.duration_minutes) ?? 30,
+    exercises: stringList(
+      row.exercises ?? row.exercise_ids ?? row.exercise_names,
+    ),
     focus: stringValue(row.focus ?? row.title ?? row.name) ?? "Guided session",
     safetyNote: stringValue(row.safety_note ?? row.safety_notes),
-    setsReps: stringValue(row.sets_reps ?? row.prescription ?? row.instructions),
+    setsReps: stringValue(
+      row.sets_reps ?? row.prescription ?? row.instructions,
+    ),
   };
 }
 
-export async function getNutritionTemplates(filters?: NutritionTemplateFilters) {
+export async function getNutritionTemplates(
+  filters?: NutritionTemplateFilters,
+) {
   let query = supabase
     .from("fitness_nutrition_templates")
     .select("*")

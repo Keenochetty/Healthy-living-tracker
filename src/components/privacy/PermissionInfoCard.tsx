@@ -8,11 +8,18 @@ type PermissionInfoCardProps = {
   title?: string;
 };
 
-export function PermissionInfoCard({ body, title = "Privacy first" }: PermissionInfoCardProps) {
+export function PermissionInfoCard({
+  body,
+  title = "Privacy first",
+}: PermissionInfoCardProps) {
   return (
     <AppCard variant="soft" style={{ gap: appSpacing.sm }}>
-      <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
-      <Text style={[typography.body, { color: appColors.textSecondary }]}>{body}</Text>
+      <Text style={[typography.cardTitle, { color: appColors.text }]}>
+        {title}
+      </Text>
+      <Text style={[typography.body, { color: appColors.textSecondary }]}>
+        {body}
+      </Text>
     </AppCard>
   );
 }

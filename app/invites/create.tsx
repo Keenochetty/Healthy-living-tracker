@@ -1,36 +1,57 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { InviteCard } from "@/components/invites/InviteCard";
 import { InviteMethodCard } from "@/components/invites/InviteMethodCard";
 import { InvitePermissionPresetCard } from "@/components/invites/InvitePermissionPresetCard";
-import { AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, WidgetCard } from "@/components/ui";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  QuickActionButton,
+  StatusPill,
+  WidgetCard,
+} from "@/components/ui";
 import {
   CIRCLE_MEMBER_ROLES,
   CIRCLE_RELATIONSHIPS,
   CIRCLE_PERMISSIONS,
   circlePermissionLabels,
   circleRelationshipLabels,
-  circleRoleLabels
+  circleRoleLabels,
 } from "@/constants/circles";
-import {
-  INVITE_METHODS,
-  INVITE_PERMISSION_PRESETS
-} from "@/constants/invites";
+import { INVITE_METHODS, INVITE_PERMISSION_PRESETS } from "@/constants/invites";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 import { getCircleById, listMyCirclesFromContext } from "@/lib/circles";
-import { buildPlaceholderCircleInvite, getDefaultPermissionsForInvitePreset } from "@/lib/invites";
+import {
+  buildPlaceholderCircleInvite,
+  getDefaultPermissionsForInvitePreset,
+} from "@/lib/invites";
 import { useProfileContext } from "@/lib/profile-context";
 import type { CirclePermission, CircleRelationship } from "@/types/circles";
-import type { CircleInvite, InviteMethod, InvitePermissionPreset, InviteRole } from "@/types/invites";
+import type {
+  CircleInvite,
+  InviteMethod,
+  InvitePermissionPreset,
+  InviteRole,
+} from "@/types/invites";
 
 function openRoute(route: string) {
   router.push(route as Parameters<typeof router.push>[0]);
 }
 
-const inviteRoles = CIRCLE_MEMBER_ROLES.filter((item): item is InviteRole => item !== "owner");
+const inviteRoles = CIRCLE_MEMBER_ROLES.filter(
+  (item): item is InviteRole => item !== "owner",
+);
 
 export default function CreateInviteScreen() {
   const { circleId } = useLocalSearchParams();
@@ -40,20 +61,25 @@ export default function CreateInviteScreen() {
   const [method, setMethod] = useState<InviteMethod>("share_link");
   const [relationship, setRelationship] = useState<CircleRelationship>("other");
   const [role, setRole] = useState<InviteRole>("member");
-  const [permissionPreset, setPermissionPreset] = useState<InvitePermissionPreset>("adult_family_member");
+  const [permissionPreset, setPermissionPreset] =
+    useState<InvitePermissionPreset>("adult_family_member");
   const [recipientLabel, setRecipientLabel] = useState("");
   const [invitedEmail, setInvitedEmail] = useState("");
   const [invitedPhone, setInvitedPhone] = useState("");
-  const [defaultPermissions, setDefaultPermissions] = useState<CirclePermission[]>(getDefaultPermissionsForInvitePreset("adult_family_member"));
+  const [defaultPermissions, setDefaultPermissions] = useState<
+    CirclePermission[]
+  >(getDefaultPermissionsForInvitePreset("adult_family_member"));
   const [invite, setInvite] = useState<CircleInvite | null>(null);
-  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(null);
+  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(
+    null,
+  );
   const backRoute = circle ? `/circles/${circle.id}` : "/circles";
 
   function togglePermission(permission: CirclePermission) {
     setDefaultPermissions((current) =>
       current.includes(permission)
         ? current.filter((item) => item !== permission)
-        : [...current, permission]
+        : [...current, permission],
     );
   }
 
@@ -73,22 +99,27 @@ export default function CreateInviteScreen() {
       return;
     }
 
-    setInvite(buildPlaceholderCircleInvite({
-      circleId: circle.id,
-      createdBy: profile?.display_name || profile?.full_name || "Circle admin",
-      defaultPermissions,
-      invitedEmail,
-      invitedPhone,
-      method,
-      recipientLabel,
-      permissionPreset,
-      relationship,
-      role
-    }));
+    setInvite(
+      buildPlaceholderCircleInvite({
+        circleId: circle.id,
+        createdBy:
+          profile?.display_name || profile?.full_name || "Circle admin",
+        defaultPermissions,
+        invitedEmail,
+        invitedPhone,
+        method,
+        recipientLabel,
+        permissionPreset,
+        relationship,
+        role,
+      }),
+    );
   }
 
   function handlePlaceholderShare(action: string) {
-    setPlaceholderMessage(`${action} is a placeholder for now. The invite token is ready for future copy/share integration.`);
+    setPlaceholderMessage(
+      `${action} is a placeholder for now. The invite token is ready for future copy/share integration.`,
+    );
   }
 
   if (!circle) {
@@ -96,7 +127,13 @@ export default function CreateInviteScreen() {
       <View style={styles.root}>
         <AppScreen>
           <AppHeader
-            action={<QuickActionButton label="Back" onPress={() => openRoute("/circles")} toneColor={colors.brand.primary} />}
+            action={
+              <QuickActionButton
+                label="Back"
+                onPress={() => openRoute("/circles")}
+                toneColor={colors.brand.primary}
+              />
+            }
             eyebrow="Invite"
             subtitle="Choose a circle before creating an invite."
             title="Circle not found"
@@ -110,7 +147,13 @@ export default function CreateInviteScreen() {
     <View style={styles.root}>
       <AppScreen>
         <AppHeader
-          action={<QuickActionButton label="Back" onPress={() => openRoute(backRoute)} toneColor={colors.text.muted} />}
+          action={
+            <QuickActionButton
+              label="Back"
+              onPress={() => openRoute(backRoute)}
+              toneColor={colors.text.muted}
+            />
+          }
           eyebrow="Circle Invite"
           subtitle={`Create a placeholder invite for ${circle.name}. Recipient acceptance and backend delivery come later.`}
           title="Create invite"
@@ -151,7 +194,12 @@ export default function CreateInviteScreen() {
             <Text style={styles.groupTitle}>Invite method</Text>
             <View style={styles.methodGrid}>
               {INVITE_METHODS.map((item) => (
-                <InviteMethodCard key={item} method={item} onPress={setMethod} selected={method === item} />
+                <InviteMethodCard
+                  key={item}
+                  method={item}
+                  onPress={setMethod}
+                  selected={method === item}
+                />
               ))}
             </View>
 
@@ -160,10 +208,22 @@ export default function CreateInviteScreen() {
               {CIRCLE_RELATIONSHIPS.map((item) => (
                 <QuickActionButton
                   key={item}
-                  icon={relationship === item ? <AppIcon color={colors.brand.primary} name="sync" size={18} /> : undefined}
+                  icon={
+                    relationship === item ? (
+                      <AppIcon
+                        color={colors.brand.primary}
+                        name="sync"
+                        size={18}
+                      />
+                    ) : undefined
+                  }
                   label={circleRelationshipLabels[item]}
                   onPress={() => setRelationship(item)}
-                  toneColor={relationship === item ? colors.brand.primary : colors.text.muted}
+                  toneColor={
+                    relationship === item
+                      ? colors.brand.primary
+                      : colors.text.muted
+                  }
                 />
               ))}
             </View>
@@ -173,10 +233,20 @@ export default function CreateInviteScreen() {
               {inviteRoles.map((item) => (
                 <QuickActionButton
                   key={item}
-                  icon={role === item ? <AppIcon color={colors.status.success} name="sync" size={18} /> : undefined}
+                  icon={
+                    role === item ? (
+                      <AppIcon
+                        color={colors.status.success}
+                        name="sync"
+                        size={18}
+                      />
+                    ) : undefined
+                  }
                   label={circleRoleLabels[item]}
                   onPress={() => setRole(item)}
-                  toneColor={role === item ? colors.status.success : colors.text.muted}
+                  toneColor={
+                    role === item ? colors.status.success : colors.text.muted
+                  }
                 />
               ))}
             </View>
@@ -198,16 +268,31 @@ export default function CreateInviteScreen() {
               {CIRCLE_PERMISSIONS.map((permission) => (
                 <QuickActionButton
                   key={permission}
-                  icon={defaultPermissions.includes(permission) ? <AppIcon color={colors.status.ai} name="sync" size={18} /> : undefined}
+                  icon={
+                    defaultPermissions.includes(permission) ? (
+                      <AppIcon color={colors.status.ai} name="sync" size={18} />
+                    ) : undefined
+                  }
                   label={circlePermissionLabels[permission]}
                   onPress={() => togglePermission(permission)}
-                  toneColor={defaultPermissions.includes(permission) ? colors.status.ai : colors.text.muted}
+                  toneColor={
+                    defaultPermissions.includes(permission)
+                      ? colors.status.ai
+                      : colors.text.muted
+                  }
                 />
               ))}
             </View>
 
             <QuickActionButton
-              icon={<AppIcon color={colors.brand.primary} name="family" size={20} variant="filled" />}
+              icon={
+                <AppIcon
+                  color={colors.brand.primary}
+                  name="family"
+                  size={20}
+                  variant="filled"
+                />
+              }
               label="Generate invite link"
               onPress={handleGenerateInvite}
               toneColor={colors.brand.primary}
@@ -244,12 +329,23 @@ export default function CreateInviteScreen() {
           </WidgetCard>
         ) : null}
 
-        <Modal transparent visible={Boolean(placeholderMessage)} animationType="fade">
-          <Pressable style={styles.modalBackdrop} onPress={() => setPlaceholderMessage(null)}>
+        <Modal
+          transparent
+          visible={Boolean(placeholderMessage)}
+          animationType="fade"
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setPlaceholderMessage(null)}
+          >
             <View style={styles.modalCard}>
               <Text style={styles.modalTitle}>Coming next</Text>
               <Text style={styles.modalText}>{placeholderMessage}</Text>
-              <QuickActionButton label="Close" onPress={() => setPlaceholderMessage(null)} toneColor={colors.brand.primary} />
+              <QuickActionButton
+                label="Close"
+                onPress={() => setPlaceholderMessage(null)}
+                toneColor={colors.brand.primary}
+              />
             </View>
           </Pressable>
         </Modal>
@@ -260,12 +356,12 @@ export default function CreateInviteScreen() {
 
 const styles = StyleSheet.create({
   form: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   groupTitle: {
     color: colors.text.primary,
     fontSize: 15,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   input: {
     backgroundColor: colors.card.background,
@@ -275,17 +371,17 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontSize: 16,
     minHeight: 52,
-    padding: spacing.md
+    padding: spacing.md,
   },
   methodGrid: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   modalBackdrop: {
     alignItems: "center",
     backgroundColor: "rgba(15, 23, 42, 0.32)",
     flex: 1,
     justifyContent: "center",
-    padding: spacing.xl
+    padding: spacing.xl,
   },
   modalCard: {
     backgroundColor: colors.card.background,
@@ -295,28 +391,28 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     maxWidth: 420,
     padding: spacing.xl,
-    width: "100%"
+    width: "100%",
   },
   modalText: {
     color: colors.text.secondary,
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
   },
   modalTitle: {
     color: colors.text.primary,
     fontSize: 22,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   muted: {
     color: colors.text.muted,
     fontSize: 14,
     lineHeight: 20,
-    textAlign: "center"
+    textAlign: "center",
   },
   pillGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   qrPlaceholder: {
     alignItems: "center",
@@ -326,15 +422,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.sm,
     height: 180,
-    justifyContent: "center"
+    justifyContent: "center",
   },
   qrText: {
     color: colors.status.ai,
     fontSize: 44,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
-  }
+    flex: 1,
+  },
 });

@@ -33,7 +33,7 @@ export function MemberCard({ member, onPress }: MemberCardProps) {
         borderWidth: 1,
         flexDirection: "row",
         gap: 12,
-        padding: 15
+        padding: 15,
       }}
     >
       <View
@@ -43,7 +43,7 @@ export function MemberCard({ member, onPress }: MemberCardProps) {
           borderRadius: 18,
           height: 48,
           justifyContent: "center",
-          width: 48
+          width: 48,
         }}
       >
         <Text style={{ color: "#7c3aed", fontSize: 15, fontWeight: "900" }}>
@@ -78,18 +78,20 @@ function StatusChip({ label }: { label: string }) {
   return (
     <View
       style={{
-        backgroundColor: label === "active" || label === "Admin" ? "#dcfce7" : "#fef3c7",
+        backgroundColor:
+          label === "active" || label === "Admin" ? "#dcfce7" : "#fef3c7",
         borderRadius: 999,
         paddingHorizontal: 8,
-        paddingVertical: 3
+        paddingVertical: 3,
       }}
     >
       <Text
         style={{
-          color: label === "active" || label === "Admin" ? "#166534" : "#92400e",
+          color:
+            label === "active" || label === "Admin" ? "#166534" : "#92400e",
           fontSize: 11,
           fontWeight: "800",
-          textTransform: "capitalize"
+          textTransform: "capitalize",
         }}
       >
         {label}

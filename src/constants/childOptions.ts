@@ -3,7 +3,7 @@ import type {
   DiaperType,
   FeedType,
   MilestoneCategory,
-  VaccinationStatus
+  VaccinationStatus,
 } from "@/types/child";
 
 export const CHILD_PROFILE_TYPE_OPTIONS: Array<{
@@ -14,16 +14,20 @@ export const CHILD_PROFILE_TYPE_OPTIONS: Array<{
   { emoji: "Baby", key: "baby", label: "Baby" },
   { emoji: "Toddler", key: "toddler", label: "Toddler" },
   { emoji: "Child", key: "child", label: "Child" },
-  { emoji: "Teen", key: "teen", label: "Teen" }
+  { emoji: "Teen", key: "teen", label: "Teen" },
 ];
 
-export const FEED_TYPE_OPTIONS: Array<{ emoji: string; key: FeedType; label: string }> = [
+export const FEED_TYPE_OPTIONS: Array<{
+  emoji: string;
+  key: FeedType;
+  label: string;
+}> = [
   { emoji: "Milk", key: "formula", label: "Formula" },
   { emoji: "Breast", key: "breast", label: "Breast" },
   { emoji: "Bottle", key: "expressed_milk", label: "Expressed milk" },
   { emoji: "Food", key: "solids", label: "Solids" },
   { emoji: "Water", key: "water", label: "Water" },
-  { emoji: "Other", key: "other", label: "Other" }
+  { emoji: "Other", key: "other", label: "Other" },
 ];
 
 export const QUICK_FEED_AMOUNTS = [30, 60, 90, 120, 150, 180];
@@ -33,7 +37,7 @@ export const DIAPER_OPTIONS: Array<{ key: DiaperType; label: string }> = [
   { key: "dirty", label: "Dirty" },
   { key: "mixed", label: "Mixed" },
   { key: "dry", label: "Dry" },
-  { key: "other", label: "Other" }
+  { key: "other", label: "Other" },
 ];
 
 export const MILESTONE_SUGGESTIONS = [
@@ -45,7 +49,7 @@ export const MILESTONE_SUGGESTIONS = [
   "First steps",
   "First word",
   "Started solids",
-  "Slept longer stretch"
+  "Slept longer stretch",
 ];
 
 export const MILESTONE_CATEGORIES: MilestoneCategory[] = [
@@ -55,7 +59,7 @@ export const MILESTONE_CATEGORIES: MilestoneCategory[] = [
   "feeding",
   "sleep",
   "firsts",
-  "custom"
+  "custom",
 ];
 
 export const VACCINATION_STATUSES: VaccinationStatus[] = [
@@ -63,7 +67,7 @@ export const VACCINATION_STATUSES: VaccinationStatus[] = [
   "completed",
   "postponed",
   "skipped",
-  "not_sure"
+  "not_sure",
 ];
 
 export const CHILD_SAFETY_DISCLAIMER =
@@ -77,11 +81,13 @@ export const FEEDING_DISCLAIMER =
 
 export function getChildProfileTypeLabel(profileType: ChildProfileType) {
   return (
-    CHILD_PROFILE_TYPE_OPTIONS.find((option) => option.key === profileType)?.label ??
-    "Child"
+    CHILD_PROFILE_TYPE_OPTIONS.find((option) => option.key === profileType)
+      ?.label ?? "Child"
   );
 }
 
 export function getFeedTypeLabel(feedType: FeedType) {
-  return FEED_TYPE_OPTIONS.find((option) => option.key === feedType)?.label ?? "Feed";
+  return (
+    FEED_TYPE_OPTIONS.find((option) => option.key === feedType)?.label ?? "Feed"
+  );
 }

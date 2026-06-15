@@ -1,4 +1,4 @@
 export const ROUTES = {
   signIn: "/auth/sign-in",
-  home: "/tabs/home"
+  home: "/tabs/home",
 } as const;

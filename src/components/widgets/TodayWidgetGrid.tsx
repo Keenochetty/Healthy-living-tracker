@@ -28,7 +28,7 @@ export function TodayWidgetGrid({
   enabledModules,
   fitnessSummary,
   nutritionSummary,
-  pendingAiJobs = []
+  pendingAiJobs = [],
 }: TodayWidgetGridProps) {
   const hasModule = (moduleKey: AppModuleKey) =>
     enabledModules.includes(moduleKey);
@@ -179,7 +179,10 @@ export function TodayWidgetGrid({
       {hasModule("caregiver") ? (
         <WidgetCard
           title="Caregiver"
-          value={caregiverSummary?.latestCheckIn?.status ?? (caregiverSummary ? "Check in" : "Set up care help")}
+          value={
+            caregiverSummary?.latestCheckIn?.status ??
+            (caregiverSummary ? "Check in" : "Set up care help")
+          }
           helper={
             caregiverSummary
               ? `${caregiverSummary.caregiver.displayName} - ${caregiverSummary.latestBooking?.status ?? "no booking"}`
@@ -193,7 +196,11 @@ export function TodayWidgetGrid({
       {hasModule("ai_assistant") ? (
         <WidgetCard
           title="AI Helper"
-          value={pendingAiJobs.length ? `${pendingAiJobs.length} drafts` : "No drafts"}
+          value={
+            pendingAiJobs.length
+              ? `${pendingAiJobs.length} drafts`
+              : "No drafts"
+          }
           helper="review drafts before saving"
           variant="purple"
           iconName="ai_assistant"

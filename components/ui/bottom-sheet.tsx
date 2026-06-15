@@ -12,11 +12,26 @@ type BottomSheetProps = PropsWithChildren<{
   visible: boolean;
 }>;
 
-export function BottomSheet({ children, footer, onClose, title, visible }: BottomSheetProps) {
+export function BottomSheet({
+  children,
+  footer,
+  onClose,
+  title,
+  visible,
+}: BottomSheetProps) {
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+    <Modal
+      animationType="slide"
+      onRequestClose={onClose}
+      transparent
+      visible={visible}
+    >
       <View style={styles.overlay}>
-        <Pressable accessibilityRole="button" onPress={onClose} style={styles.backdrop} />
+        <Pressable
+          accessibilityRole="button"
+          onPress={onClose}
+          style={styles.backdrop}
+        />
         <View style={styles.sheet}>
           <View style={styles.handle} />
           {title ? <Text style={styles.title}>{title}</Text> : null}
@@ -34,15 +49,15 @@ const styles = StyleSheet.create({
     left: 0,
     position: "absolute",
     right: 0,
-    top: 0
+    top: 0,
   },
   content: {
-    gap: spacing.lg
+    gap: spacing.lg,
   },
   footer: {
     borderTopColor: colors.border.soft,
     borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: spacing.lg
+    paddingTop: spacing.lg,
   },
   handle: {
     alignSelf: "center",
@@ -50,12 +65,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     height: 5,
     marginBottom: spacing.lg,
-    width: layoutSpacing.bottomSheetHandleWidth
+    width: layoutSpacing.bottomSheetHandleWidth,
   },
   overlay: {
     backgroundColor: "rgba(15, 23, 42, 0.28)",
     flex: 1,
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
   },
   sheet: {
     backgroundColor: colors.background.warm,
@@ -64,11 +79,11 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     maxHeight: "86%",
     padding: layoutSpacing.screenPadding,
-    ...shadows.card
+    ...shadows.card,
   },
   title: {
     color: colors.text.primary,
     fontSize: 22,
-    fontWeight: "800"
-  }
+    fontWeight: "800",
+  },
 });

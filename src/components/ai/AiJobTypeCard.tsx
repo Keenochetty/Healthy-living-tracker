@@ -17,7 +17,7 @@ export function AiJobTypeCard({
   label,
   onSelect,
   selected,
-  value
+  value,
 }: AiJobTypeCardProps) {
   return (
     <TouchableOpacity
@@ -30,7 +30,7 @@ export function AiJobTypeCard({
         borderWidth: 1,
         flexDirection: "row",
         gap: 12,
-        padding: 14
+        padding: 14,
       }}
     >
       <View
@@ -40,7 +40,7 @@ export function AiJobTypeCard({
           borderRadius: 16,
           height: 42,
           justifyContent: "center",
-          width: 42
+          width: 42,
         }}
       >
         <Text style={{ color: "#7c3aed", fontWeight: "900" }}>{emoji}</Text>

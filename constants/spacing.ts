@@ -10,7 +10,7 @@ export const spacing = {
   "2xl": 24,
   "3xl": 32,
   "4xl": 40,
-  "5xl": 48
+  "5xl": 48,
 } as const;
 
 export const layoutSpacing = {
@@ -19,5 +19,5 @@ export const layoutSpacing = {
   cardGap: spacing.lg,
   chipGap: spacing.sm,
   touchTarget: layout.minTapTarget,
-  bottomSheetHandleWidth: 44
+  bottomSheetHandleWidth: 44,
 } as const;

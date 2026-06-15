@@ -6,6 +6,7 @@ Deno.serve(async (req) => {
 
   return jsonResponse({
     status: "placeholder",
-    message: "Document extraction must be draft-only, permission checked, and avoid diagnosis or lab interpretation."
+    message:
+      "Document extraction must be draft-only, permission checked, and avoid diagnosis or lab interpretation.",
   });
 });

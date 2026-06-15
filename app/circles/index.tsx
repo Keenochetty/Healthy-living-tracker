@@ -4,7 +4,14 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { CircleCard } from "@/components/circles/CircleCard";
 import { CircleSwitcher } from "@/components/circles/CircleSwitcher";
-import { AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, WidgetCard } from "@/components/ui";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  QuickActionButton,
+  StatusPill,
+  WidgetCard,
+} from "@/components/ui";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 import { listMyCirclesFromContext } from "@/lib/circles";
@@ -15,7 +22,8 @@ function openRoute(route: string) {
 }
 
 export default function CirclesScreen() {
-  const { families, isLoading, selectedFamily, switchFamily } = useProfileContext();
+  const { families, isLoading, selectedFamily, switchFamily } =
+    useProfileContext();
   const [isSwitching, setIsSwitching] = useState(false);
   const circles = useMemo(() => listMyCirclesFromContext(families), [families]);
   const selectedCircleId = selectedFamily?.id ?? circles[0]?.id ?? null;
@@ -43,7 +51,14 @@ export default function CirclesScreen() {
         <AppHeader
           action={
             <QuickActionButton
-              icon={<AppIcon color={colors.brand.primary} name="family" size={20} variant="filled" />}
+              icon={
+                <AppIcon
+                  color={colors.brand.primary}
+                  name="family"
+                  size={20}
+                  variant="filled"
+                />
+              }
               label="Create"
               onPress={() => openRoute("/circles/create")}
               toneColor={colors.brand.primary}
@@ -58,16 +73,26 @@ export default function CirclesScreen() {
 
         <CircleSwitcher
           circles={circles}
-          onManage={() => openRoute(selectedCircleId ? `/circles/${selectedCircleId}` : "/circles/create")}
+          onManage={() =>
+            openRoute(
+              selectedCircleId
+                ? `/circles/${selectedCircleId}`
+                : "/circles/create",
+            )
+          }
           onSelectCircle={handleSelectCircle}
           selectedCircleId={selectedCircleId}
         />
 
-        {isSwitching ? <Text style={styles.muted}>Switching selected circle...</Text> : null}
+        {isSwitching ? (
+          <Text style={styles.muted}>Switching selected circle...</Text>
+        ) : null}
 
         <WidgetCard
           accentColor={colors.brand.primary}
-          action={<StatusPill label={`${circles.length} circles`} tone="success" />}
+          action={
+            <StatusPill label={`${circles.length} circles`} tone="success" />
+          }
           subtitle="Database tables can keep the family naming while the app uses Family Circle language."
           title="Circle list"
         >
@@ -105,20 +130,20 @@ export default function CirclesScreen() {
 
 const styles = StyleSheet.create({
   list: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   muted: {
     color: colors.text.muted,
     fontSize: 14,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   pillRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
-  }
+    flex: 1,
+  },
 });

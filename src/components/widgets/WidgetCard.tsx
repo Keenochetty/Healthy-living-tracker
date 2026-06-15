@@ -9,7 +9,15 @@ type WidgetCardProps = {
   icon?: ReactNode;
   iconName?: AppIconName;
   backgroundColor?: string;
-  variant?: "pink" | "blue" | "green" | "purple" | "orange" | "yellow" | "neutral" | "dark";
+  variant?:
+    | "pink"
+    | "blue"
+    | "green"
+    | "purple"
+    | "orange"
+    | "yellow"
+    | "neutral"
+    | "dark";
 };
 
 export function WidgetCard({
@@ -18,7 +26,16 @@ export function WidgetCard({
   helper,
   icon,
   iconName,
-  variant = "neutral"
+  variant = "neutral",
 }: WidgetCardProps) {
-  return <AppWidgetCard helper={helper} icon={icon} iconName={iconName} title={title} value={value} variant={variant} />;
+  return (
+    <AppWidgetCard
+      helper={helper}
+      icon={icon}
+      iconName={iconName}
+      title={title}
+      value={value}
+      variant={variant}
+    />
+  );
 }

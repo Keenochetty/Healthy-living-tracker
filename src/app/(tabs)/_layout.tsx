@@ -1,13 +1,16 @@
 import { Tabs } from "expo-router";
 
-import { FloatingAssistantButton, FloatingBottomNav } from "@/components/navigation";
+import {
+  FloatingAssistantButton,
+  FloatingBottomNav,
+} from "@/components/navigation";
 
 export default function TabsLayout() {
   return (
     <>
       <Tabs
         screenOptions={{
-          headerShown: false
+          headerShown: false,
         }}
         tabBar={(props) => <FloatingBottomNav {...props} />}
       >

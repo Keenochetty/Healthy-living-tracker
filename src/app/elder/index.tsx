@@ -19,7 +19,7 @@ export default function ElderIndexScreen() {
   const loadElderScreen = useCallback(async () => {
     const [preferences, nextSummaries] = await Promise.all([
       getUserPreferences(),
-      getAllElderSummaries()
+      getAllElderSummaries(),
     ]);
 
     setModuleEnabled(preferences.enabledModules.includes("elder_care"));
@@ -29,14 +29,16 @@ export default function ElderIndexScreen() {
   useFocusEffect(
     useCallback(() => {
       loadElderScreen();
-    }, [loadElderScreen])
+    }, [loadElderScreen]),
   );
 
   if (!moduleEnabled) {
     return (
       <ScreenWrapper>
         <View style={{ gap: 4 }}>
-          <Text style={{ color: "#64748b", fontSize: 14 }}>Optional module</Text>
+          <Text style={{ color: "#64748b", fontSize: 14 }}>
+            Optional module
+          </Text>
           <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
             Elder Care
           </Text>
@@ -56,7 +58,9 @@ export default function ElderIndexScreen() {
   return (
     <ScreenWrapper>
       <View style={{ gap: 4 }}>
-        <Text style={{ color: "#64748b", fontSize: 14 }}>Consent-first care</Text>
+        <Text style={{ color: "#64748b", fontSize: 14 }}>
+          Consent-first care
+        </Text>
         <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
           Elder Care
         </Text>

@@ -2,7 +2,10 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { AppCard } from "@/components/ui/AppCard";
-import { INTENSITY_OPTIONS, WORKOUT_TYPE_OPTIONS } from "@/constants/fitnessOptions";
+import {
+  INTENSITY_OPTIONS,
+  WORKOUT_TYPE_OPTIONS,
+} from "@/constants/fitnessOptions";
 import { createWorkoutPlan } from "@/lib/fitnessStorage";
 import type { WorkoutIntensity, WorkoutType } from "@/types/fitness";
 
@@ -27,7 +30,7 @@ export function AddWorkoutPlanCard({ onSaved }: AddWorkoutPlanCardProps) {
       targetMinutes: Number(targetMinutes) || undefined,
       targetSteps: Number(targetSteps) || undefined,
       title,
-      workoutType
+      workoutType,
     });
     setTitle("");
     setTargetMinutes("");
@@ -44,7 +47,8 @@ export function AddWorkoutPlanCard({ onSaved }: AddWorkoutPlanCardProps) {
             Add workout plan
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Keep it simple. You can start with a walk, stretch, or short gym session.
+            Keep it simple. You can start with a walk, stretch, or short gym
+            session.
           </Text>
         </View>
 
@@ -115,7 +119,7 @@ export function AddWorkoutPlanCard({ onSaved }: AddWorkoutPlanCardProps) {
             borderRadius: 18,
             justifyContent: "center",
             minHeight: 52,
-            opacity: title.trim() ? 1 : 0.55
+            opacity: title.trim() ? 1 : 0.55,
           }}
         >
           <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
@@ -134,13 +138,13 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 function ChoicePill({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
@@ -154,10 +158,12 @@ function ChoicePill({
         backgroundColor: selected ? "#22c55e" : "#f8fafc",
         borderRadius: 999,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}>
+      <Text
+        style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

@@ -9,49 +9,79 @@ import {
   StyleSheet,
   Text,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppFormInput, AppIcon } from "@/components/ui";
-import type { GeneralHealthLogDraft, GeneralHealthLogType } from "@/lib/generalHealthMockData";
+import type {
+  GeneralHealthLogDraft,
+  GeneralHealthLogType,
+} from "@/lib/generalHealthMockData";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 const ACCENT = "#0f766e";
-const NOTE_CATEGORIES = ["General", "Symptom", "Energy", "Sleep", "Medication", "Appointment"] as const;
-const TEMPERATURE_METHODS = ["Oral", "Ear", "Forehead", "Underarm", "Other"] as const;
+const NOTE_CATEGORIES = [
+  "General",
+  "Symptom",
+  "Energy",
+  "Sleep",
+  "Medication",
+  "Appointment",
+] as const;
+const TEMPERATURE_METHODS = [
+  "Oral",
+  "Ear",
+  "Forehead",
+  "Underarm",
+  "Other",
+] as const;
 
-type FieldErrors = Partial<Record<"bloodPressure" | "heartRate" | "noteTitle" | "oxygen" | "temperature" | "vitals" | "weight", string>>;
+type FieldErrors = Partial<
+  Record<
+    | "bloodPressure"
+    | "heartRate"
+    | "noteTitle"
+    | "oxygen"
+    | "temperature"
+    | "vitals"
+    | "weight",
+    string
+  >
+>;
 type SheetConfig = { helper: string; subtitle: string; title: string };
 
 const SHEET_CONFIG: Record<GeneralHealthLogType, SheetConfig> = {
   note: {
     helper: "Notes help you remember context. They are not medical findings.",
     subtitle: "Record anything useful about how you feel or what happened.",
-    title: "Add health note"
+    title: "Add health note",
   },
   temperature: {
-    helper: "Temperature readings can vary by method. Contact a healthcare professional if you are worried.",
+    helper:
+      "Temperature readings can vary by method. Contact a healthcare professional if you are worried.",
     subtitle: "Save a temperature reading.",
-    title: "Add temperature"
+    title: "Add temperature",
   },
   vitals: {
-    helper: "Save readings for your own records. Contact a healthcare professional if you are worried about symptoms or readings.",
+    helper:
+      "Save readings for your own records. Contact a healthcare professional if you are worried about symptoms or readings.",
     subtitle: "Log the readings you want to keep.",
-    title: "Add vitals"
+    title: "Add vitals",
   },
   weight: {
-    helper: "This entry is for tracking only. The app does not judge or diagnose body measurements.",
+    helper:
+      "This entry is for tracking only. The app does not judge or diagnose body measurements.",
     subtitle: "Track body changes over time.",
-    title: "Add weight"
-  }
+    title: "Add weight",
+  },
 };
 
 export function GeneralHealthLogSheet({
   logType,
   onCancel,
   profileName = "You",
-  onSave
+  onSave,
 }: {
   logType: GeneralHealthLogType | null;
   onCancel: () => void;
@@ -73,11 +103,16 @@ export function GeneralHealthLogSheet({
   const [notes, setNotes] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
   const [noteDetails, setNoteDetails] = useState("");
-  const [category, setCategory] = useState<(typeof NOTE_CATEGORIES)[number]>("General");
-  const [method, setMethod] = useState<(typeof TEMPERATURE_METHODS)[number]>("Oral");
+  const [category, setCategory] =
+    useState<(typeof NOTE_CATEGORIES)[number]>("General");
+  const [method, setMethod] =
+    useState<(typeof TEMPERATURE_METHODS)[number]>("Oral");
   const [recordedAt] = useState(() => new Date().toISOString());
 
-  const readingTime = useMemo(() => recordedAt ? formatReadingTime(recordedAt) : "Now", [recordedAt]);
+  const readingTime = useMemo(
+    () => (recordedAt ? formatReadingTime(recordedAt) : "Now"),
+    [recordedAt],
+  );
 
   function cancel() {
     Keyboard.dismiss();
@@ -85,13 +120,23 @@ export function GeneralHealthLogSheet({
   }
 
   function clearError(field: keyof FieldErrors) {
-    setErrors((current) => current[field] ? { ...current, [field]: undefined } : current);
+    setErrors((current) =>
+      current[field] ? { ...current, [field]: undefined } : current,
+    );
   }
 
   function save() {
     if (!logType) return;
     Keyboard.dismiss();
-    const nextErrors = validate(logType, { diastolic, heartRate, noteTitle, oxygen, systolic, temperature, weight });
+    const nextErrors = validate(logType, {
+      diastolic,
+      heartRate,
+      noteTitle,
+      oxygen,
+      systolic,
+      temperature,
+      weight,
+    });
     setErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) return;
 
@@ -109,15 +154,30 @@ export function GeneralHealthLogSheet({
       recordedAt: recordedAt || new Date().toISOString(),
       systolic: systolic.trim(),
       temperature: temperature.trim(),
-      weight: weight.trim()
+      weight: weight.trim(),
     });
   }
 
   return (
-    <Modal animationType="slide" onRequestClose={cancel} statusBarTranslucent transparent visible={Boolean(logType)}>
+    <Modal
+      animationType="slide"
+      onRequestClose={cancel}
+      statusBarTranslucent
+      transparent
+      visible={Boolean(logType)}
+    >
       <View style={styles.modal}>
-        <Pressable accessibilityLabel={`Cancel ${actionNoun}`} accessibilityRole="button" onPress={cancel} style={styles.scrim} />
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} pointerEvents="box-none" style={styles.keyboard}>
+        <Pressable
+          accessibilityLabel={`Cancel ${actionNoun}`}
+          accessibilityRole="button"
+          onPress={cancel}
+          style={styles.scrim}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          pointerEvents="box-none"
+          style={styles.keyboard}
+        >
           <View
             accessibilityViewIsModal
             style={[
@@ -126,16 +186,22 @@ export function GeneralHealthLogSheet({
                 backgroundColor: theme.surface,
                 borderColor: theme.border,
                 maxHeight: height - Math.max(insets.top, 16),
-                width: Math.min(width, 480)
-              }
+                width: Math.min(width, 480),
+              },
             ]}
           >
             <View style={[styles.handle, { backgroundColor: theme.border }]} />
-            <HealthLogSheetHeader profileName={profileName} subtitle={config.subtitle} title={config.title} />
+            <HealthLogSheetHeader
+              profileName={profileName}
+              subtitle={config.subtitle}
+              title={config.title}
+            />
 
             <ScrollView
               contentContainerStyle={styles.body}
-              keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+              keyboardDismissMode={
+                Platform.OS === "ios" ? "interactive" : "on-drag"
+              }
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
@@ -146,11 +212,27 @@ export function GeneralHealthLogSheet({
                   heartRate={heartRate}
                   notes={notes}
                   oxygen={oxygen}
-                  setDiastolic={(value) => { setDiastolic(value); clearError("bloodPressure"); clearError("vitals"); }}
-                  setHeartRate={(value) => { setHeartRate(value); clearError("heartRate"); clearError("vitals"); }}
+                  setDiastolic={(value) => {
+                    setDiastolic(value);
+                    clearError("bloodPressure");
+                    clearError("vitals");
+                  }}
+                  setHeartRate={(value) => {
+                    setHeartRate(value);
+                    clearError("heartRate");
+                    clearError("vitals");
+                  }}
                   setNotes={setNotes}
-                  setOxygen={(value) => { setOxygen(value); clearError("oxygen"); clearError("vitals"); }}
-                  setSystolic={(value) => { setSystolic(value); clearError("bloodPressure"); clearError("vitals"); }}
+                  setOxygen={(value) => {
+                    setOxygen(value);
+                    clearError("oxygen");
+                    clearError("vitals");
+                  }}
+                  setSystolic={(value) => {
+                    setSystolic(value);
+                    clearError("bloodPressure");
+                    clearError("vitals");
+                  }}
                   systolic={systolic}
                 />
               ) : null}
@@ -159,7 +241,10 @@ export function GeneralHealthLogSheet({
                   error={errors.weight}
                   notes={notes}
                   setNotes={setNotes}
-                  setWeight={(value) => { setWeight(value); clearError("weight"); }}
+                  setWeight={(value) => {
+                    setWeight(value);
+                    clearError("weight");
+                  }}
                   weight={weight}
                 />
               ) : null}
@@ -170,7 +255,10 @@ export function GeneralHealthLogSheet({
                   error={errors.noteTitle}
                   setCategory={setCategory}
                   setDetails={setNoteDetails}
-                  setTitle={(value) => { setNoteTitle(value); clearError("noteTitle"); }}
+                  setTitle={(value) => {
+                    setNoteTitle(value);
+                    clearError("noteTitle");
+                  }}
                   title={noteTitle}
                 />
               ) : null}
@@ -181,22 +269,72 @@ export function GeneralHealthLogSheet({
                   notes={notes}
                   setMethod={setMethod}
                   setNotes={setNotes}
-                  setTemperature={(value) => { setTemperature(value); clearError("temperature"); }}
+                  setTemperature={(value) => {
+                    setTemperature(value);
+                    clearError("temperature");
+                  }}
                   temperature={temperature}
                 />
               ) : null}
-              <ReadingTime label={logType === "note" || logType === "weight" ? "Date and time" : "Reading time"} value={readingTime} />
-              <View style={[styles.helper, { backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }]}>
+              <ReadingTime
+                label={
+                  logType === "note" || logType === "weight"
+                    ? "Date and time"
+                    : "Reading time"
+                }
+                value={readingTime}
+              />
+              <View
+                style={[
+                  styles.helper,
+                  {
+                    backgroundColor: `${ACCENT}0D`,
+                    borderColor: `${ACCENT}30`,
+                  },
+                ]}
+              >
                 <AppIcon color={ACCENT} decorative name="health" size={17} />
-                <Text style={[styles.helperText, { color: theme.mutedText }]}>{config.helper}</Text>
+                <Text style={[styles.helperText, { color: theme.mutedText }]}>
+                  {config.helper}
+                </Text>
               </View>
             </ScrollView>
 
-            <View style={[styles.footer, { backgroundColor: theme.surface, borderTopColor: theme.border, paddingBottom: Math.max(insets.bottom, 12) + 8 }]}>
-              <Pressable accessibilityLabel={`Cancel ${actionNoun}`} accessibilityRole="button" onPress={cancel} style={({ pressed }) => [styles.cancel, { borderColor: theme.border }, pressed ? styles.pressed : null]}>
-                <Text style={[styles.cancelText, { color: theme.text }]}>Cancel</Text>
+            <View
+              style={[
+                styles.footer,
+                {
+                  backgroundColor: theme.surface,
+                  borderTopColor: theme.border,
+                  paddingBottom: Math.max(insets.bottom, 12) + 8,
+                },
+              ]}
+            >
+              <Pressable
+                accessibilityLabel={`Cancel ${actionNoun}`}
+                accessibilityRole="button"
+                onPress={cancel}
+                style={({ pressed }) => [
+                  styles.cancel,
+                  { borderColor: theme.border },
+                  pressed ? styles.pressed : null,
+                ]}
+              >
+                <Text style={[styles.cancelText, { color: theme.text }]}>
+                  Cancel
+                </Text>
               </Pressable>
-              <Pressable accessibilityHint="Validates required fields and saves this entry locally" accessibilityLabel={`Save ${actionNoun}`} accessibilityRole="button" onPress={save} style={({ pressed }) => [styles.save, { backgroundColor: theme.primary }, pressed ? styles.pressed : null]}>
+              <Pressable
+                accessibilityHint="Validates required fields and saves this entry locally"
+                accessibilityLabel={`Save ${actionNoun}`}
+                accessibilityRole="button"
+                onPress={save}
+                style={({ pressed }) => [
+                  styles.save,
+                  { backgroundColor: theme.primary },
+                  pressed ? styles.pressed : null,
+                ]}
+              >
                 <Text style={styles.saveText}>Save</Text>
               </Pressable>
             </View>
@@ -207,19 +345,45 @@ export function GeneralHealthLogSheet({
   );
 }
 
-function HealthLogSheetHeader({ profileName, subtitle, title }: { profileName: string; subtitle: string; title: string }) {
+function HealthLogSheetHeader({
+  profileName,
+  subtitle,
+  title,
+}: {
+  profileName: string;
+  subtitle: string;
+  title: string;
+}) {
   const { theme } = useAppTheme();
   return (
     <View style={[styles.header, { borderBottomColor: theme.border }]}>
-      <Text accessibilityRole="header" style={[styles.title, { color: theme.text }]}>{title}</Text>
-      <Text style={[styles.subtitle, { color: theme.mutedText }]}>{subtitle}</Text>
-      <View accessibilityLabel={`Active profile, ${profileName}, personal health log`} accessible style={[styles.profile, { backgroundColor: theme.primarySoft, borderColor: theme.border }]}>
+      <Text
+        accessibilityRole="header"
+        style={[styles.title, { color: theme.text }]}
+      >
+        {title}
+      </Text>
+      <Text style={[styles.subtitle, { color: theme.mutedText }]}>
+        {subtitle}
+      </Text>
+      <View
+        accessibilityLabel={`Active profile, ${profileName}, personal health log`}
+        accessible
+        style={[
+          styles.profile,
+          { backgroundColor: theme.primarySoft, borderColor: theme.border },
+        ]}
+      >
         <View style={[styles.profileIcon, { backgroundColor: theme.surface }]}>
           <AppIcon color={ACCENT} decorative name="profile" size={17} />
         </View>
         <View style={styles.profileCopy}>
-          <Text style={[styles.profileName, { color: theme.text }]}>{profileName}</Text>
-          <Text style={[styles.profileMeta, { color: theme.mutedText }]}>Personal health log</Text>
+          <Text style={[styles.profileName, { color: theme.text }]}>
+            {profileName}
+          </Text>
+          <Text style={[styles.profileMeta, { color: theme.mutedText }]}>
+            Personal health log
+          </Text>
         </View>
       </View>
     </View>
@@ -241,32 +405,114 @@ function VitalsForm(props: {
 }) {
   return (
     <View style={styles.form}>
-      {props.errors.vitals ? <InlineValidation message={props.errors.vitals} /> : null}
-      <UnitInput accessibilityHint="Enter beats per minute" accessibilityLabel="Heart rate input, beats per minute" errorText={props.errors.heartRate} label="Heart rate" onChangeText={props.setHeartRate} placeholder="Optional" unit="bpm" value={props.heartRate} />
+      {props.errors.vitals ? (
+        <InlineValidation message={props.errors.vitals} />
+      ) : null}
+      <UnitInput
+        accessibilityHint="Enter beats per minute"
+        accessibilityLabel="Heart rate input, beats per minute"
+        errorText={props.errors.heartRate}
+        label="Heart rate"
+        onChangeText={props.setHeartRate}
+        placeholder="Optional"
+        unit="bpm"
+        value={props.heartRate}
+      />
       <FieldGroup label="Blood pressure">
         <View style={styles.split}>
-          <AppFormInput accessibilityLabel="Systolic blood pressure input" containerStyle={styles.splitInput} errorText={props.errors.bloodPressure} keyboardType="number-pad" label="Systolic" onChangeText={props.setSystolic} placeholder="Optional" value={props.systolic} />
-          <AppFormInput accessibilityLabel="Diastolic blood pressure input" containerStyle={styles.splitInput} keyboardType="number-pad" label="Diastolic" onChangeText={props.setDiastolic} placeholder="Optional" value={props.diastolic} />
+          <AppFormInput
+            accessibilityLabel="Systolic blood pressure input"
+            containerStyle={styles.splitInput}
+            errorText={props.errors.bloodPressure}
+            keyboardType="number-pad"
+            label="Systolic"
+            onChangeText={props.setSystolic}
+            placeholder="Optional"
+            value={props.systolic}
+          />
+          <AppFormInput
+            accessibilityLabel="Diastolic blood pressure input"
+            containerStyle={styles.splitInput}
+            keyboardType="number-pad"
+            label="Diastolic"
+            onChangeText={props.setDiastolic}
+            placeholder="Optional"
+            value={props.diastolic}
+          />
         </View>
         <Text style={styles.unitNote}>mmHg</Text>
       </FieldGroup>
-      <UnitInput accessibilityHint="Enter oxygen percentage" accessibilityLabel="Oxygen level input, percent" errorText={props.errors.oxygen} label="Oxygen level" onChangeText={props.setOxygen} placeholder="Optional" unit="%" value={props.oxygen} />
-      <AppFormInput accessibilityLabel="Vitals notes" label="Notes (optional)" multiline onChangeText={props.setNotes} placeholder="Add context for your records" returnKeyType="default" value={props.notes} />
+      <UnitInput
+        accessibilityHint="Enter oxygen percentage"
+        accessibilityLabel="Oxygen level input, percent"
+        errorText={props.errors.oxygen}
+        label="Oxygen level"
+        onChangeText={props.setOxygen}
+        placeholder="Optional"
+        unit="%"
+        value={props.oxygen}
+      />
+      <AppFormInput
+        accessibilityLabel="Vitals notes"
+        label="Notes (optional)"
+        multiline
+        onChangeText={props.setNotes}
+        placeholder="Add context for your records"
+        returnKeyType="default"
+        value={props.notes}
+      />
     </View>
   );
 }
 
-function WeightForm({ error, notes, setNotes, setWeight, weight }: { error?: string; notes: string; setNotes: (value: string) => void; setWeight: (value: string) => void; weight: string }) {
+function WeightForm({
+  error,
+  notes,
+  setNotes,
+  setWeight,
+  weight,
+}: {
+  error?: string;
+  notes: string;
+  setNotes: (value: string) => void;
+  setWeight: (value: string) => void;
+  weight: string;
+}) {
   return (
     <View style={styles.form}>
-      <UnitInput accessibilityHint="Enter weight in kilograms" accessibilityLabel="Weight input, kilograms" errorText={error} label="Weight (required)" onChangeText={setWeight} placeholder="Enter weight" unit="kg" value={weight} />
+      <UnitInput
+        accessibilityHint="Enter weight in kilograms"
+        accessibilityLabel="Weight input, kilograms"
+        errorText={error}
+        label="Weight (required)"
+        onChangeText={setWeight}
+        placeholder="Enter weight"
+        unit="kg"
+        value={weight}
+      />
       {/* TODO: Use profile unit settings for kg and lb support. */}
-      <AppFormInput accessibilityLabel="Weight notes" label="Notes (optional)" multiline onChangeText={setNotes} placeholder="Add context for this entry" returnKeyType="default" value={notes} />
+      <AppFormInput
+        accessibilityLabel="Weight notes"
+        label="Notes (optional)"
+        multiline
+        onChangeText={setNotes}
+        placeholder="Add context for this entry"
+        returnKeyType="default"
+        value={notes}
+      />
     </View>
   );
 }
 
-function NoteForm({ category, details, error, setCategory, setDetails, setTitle, title }: {
+function NoteForm({
+  category,
+  details,
+  error,
+  setCategory,
+  setDetails,
+  setTitle,
+  title,
+}: {
   category: (typeof NOTE_CATEGORIES)[number];
   details: string;
   error?: string;
@@ -277,14 +523,44 @@ function NoteForm({ category, details, error, setCategory, setDetails, setTitle,
 }) {
   return (
     <View style={styles.form}>
-      <AppFormInput accessibilityLabel="Health note title" errorText={error} label="Note title (required)" onChangeText={setTitle} placeholder="What would you like to remember?" returnKeyType="next" value={title} />
-      <AppFormInput accessibilityLabel="Health note details" label="Details (optional)" multiline onChangeText={setDetails} placeholder="Add useful context" returnKeyType="default" style={styles.detailsInput} value={details} />
-      <ChipSelector label="Category" onSelect={setCategory} options={NOTE_CATEGORIES} selected={category} />
+      <AppFormInput
+        accessibilityLabel="Health note title"
+        errorText={error}
+        label="Note title (required)"
+        onChangeText={setTitle}
+        placeholder="What would you like to remember?"
+        returnKeyType="next"
+        value={title}
+      />
+      <AppFormInput
+        accessibilityLabel="Health note details"
+        label="Details (optional)"
+        multiline
+        onChangeText={setDetails}
+        placeholder="Add useful context"
+        returnKeyType="default"
+        style={styles.detailsInput}
+        value={details}
+      />
+      <ChipSelector
+        label="Category"
+        onSelect={setCategory}
+        options={NOTE_CATEGORIES}
+        selected={category}
+      />
     </View>
   );
 }
 
-function TemperatureForm({ error, method, notes, setMethod, setNotes, setTemperature, temperature }: {
+function TemperatureForm({
+  error,
+  method,
+  notes,
+  setMethod,
+  setNotes,
+  setTemperature,
+  temperature,
+}: {
   error?: string;
   method: (typeof TEMPERATURE_METHODS)[number];
   notes: string;
@@ -295,15 +571,46 @@ function TemperatureForm({ error, method, notes, setMethod, setNotes, setTempera
 }) {
   return (
     <View style={styles.form}>
-      <UnitInput accessibilityHint="Enter degrees Celsius" accessibilityLabel="Temperature input, degrees Celsius" errorText={error} label="Temperature (required)" onChangeText={setTemperature} placeholder="Enter temperature" unit="\u00B0C" value={temperature} />
+      <UnitInput
+        accessibilityHint="Enter degrees Celsius"
+        accessibilityLabel="Temperature input, degrees Celsius"
+        errorText={error}
+        label="Temperature (required)"
+        onChangeText={setTemperature}
+        placeholder="Enter temperature"
+        unit="\u00B0C"
+        value={temperature}
+      />
       {/* TODO: Use profile unit settings for Celsius and Fahrenheit support. */}
-      <ChipSelector label="Reading method" onSelect={setMethod} options={TEMPERATURE_METHODS} selected={method} />
-      <AppFormInput accessibilityLabel="Temperature notes" label="Notes (optional)" multiline onChangeText={setNotes} placeholder="Add context for this reading" returnKeyType="default" value={notes} />
+      <ChipSelector
+        label="Reading method"
+        onSelect={setMethod}
+        options={TEMPERATURE_METHODS}
+        selected={method}
+      />
+      <AppFormInput
+        accessibilityLabel="Temperature notes"
+        label="Notes (optional)"
+        multiline
+        onChangeText={setNotes}
+        placeholder="Add context for this reading"
+        returnKeyType="default"
+        value={notes}
+      />
     </View>
   );
 }
 
-function UnitInput({ accessibilityHint, accessibilityLabel, errorText, label, onChangeText, placeholder, unit, value }: {
+function UnitInput({
+  accessibilityHint,
+  accessibilityLabel,
+  errorText,
+  label,
+  onChangeText,
+  placeholder,
+  unit,
+  value,
+}: {
   accessibilityHint: string;
   accessibilityLabel: string;
   errorText?: string;
@@ -316,13 +623,38 @@ function UnitInput({ accessibilityHint, accessibilityLabel, errorText, label, on
   const { theme } = useAppTheme();
   return (
     <View style={styles.unitField}>
-      <AppFormInput accessibilityHint={accessibilityHint} accessibilityLabel={accessibilityLabel} errorText={errorText} keyboardType="decimal-pad" label={label} onChangeText={onChangeText} placeholder={placeholder} style={styles.unitInput} value={value} />
-      <View pointerEvents="none" style={[styles.unit, { backgroundColor: theme.primarySoft }]}><Text style={[styles.unitText, { color: theme.primary }]}>{unit}</Text></View>
+      <AppFormInput
+        accessibilityHint={accessibilityHint}
+        accessibilityLabel={accessibilityLabel}
+        errorText={errorText}
+        keyboardType="decimal-pad"
+        label={label}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        style={styles.unitInput}
+        value={value}
+      />
+      <View
+        pointerEvents="none"
+        style={[styles.unit, { backgroundColor: theme.primarySoft }]}
+      >
+        <Text style={[styles.unitText, { color: theme.primary }]}>{unit}</Text>
+      </View>
     </View>
   );
 }
 
-function ChipSelector<T extends string>({ label, onSelect, options, selected }: { label: string; onSelect: (value: T) => void; options: readonly T[]; selected: T }) {
+function ChipSelector<T extends string>({
+  label,
+  onSelect,
+  options,
+  selected,
+}: {
+  label: string;
+  onSelect: (value: T) => void;
+  options: readonly T[];
+  selected: T;
+}) {
   const { theme } = useAppTheme();
   return (
     <FieldGroup label={label}>
@@ -336,10 +668,31 @@ function ChipSelector<T extends string>({ label, onSelect, options, selected }: 
               accessibilityState={{ selected: active }}
               key={option}
               onPress={() => onSelect(option)}
-              style={({ pressed }) => [styles.chip, { backgroundColor: active ? theme.primarySoft : theme.surface, borderColor: active ? theme.primary : theme.border }, pressed ? styles.pressed : null]}
+              style={({ pressed }) => [
+                styles.chip,
+                {
+                  backgroundColor: active ? theme.primarySoft : theme.surface,
+                  borderColor: active ? theme.primary : theme.border,
+                },
+                pressed ? styles.pressed : null,
+              ]}
             >
-              <Text style={[styles.chipMark, { color: active ? theme.primary : theme.mutedText }]}>{active ? "Selected" : "-"}</Text>
-              <Text style={[styles.chipText, { color: active ? theme.primary : theme.text }]}>{option}</Text>
+              <Text
+                style={[
+                  styles.chipMark,
+                  { color: active ? theme.primary : theme.mutedText },
+                ]}
+              >
+                {active ? "Selected" : "-"}
+              </Text>
+              <Text
+                style={[
+                  styles.chipText,
+                  { color: active ? theme.primary : theme.text },
+                ]}
+              >
+                {option}
+              </Text>
             </Pressable>
           );
         })}
@@ -352,10 +705,19 @@ function ReadingTime({ label, value }: { label: string; value: string }) {
   const { theme } = useAppTheme();
   return (
     <FieldGroup label={label}>
-      <View accessibilityLabel={`${label}, ${value}`} accessible style={[styles.time, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      <View
+        accessibilityLabel={`${label}, ${value}`}
+        accessible
+        style={[
+          styles.time,
+          { backgroundColor: theme.surface, borderColor: theme.border },
+        ]}
+      >
         <AppIcon color={ACCENT} decorative name="calendar_timeline" size={18} />
         <Text style={[styles.timeText, { color: theme.text }]}>{value}</Text>
-        <Text style={[styles.timeMeta, { color: theme.mutedText }]}>Current time</Text>
+        <Text style={[styles.timeMeta, { color: theme.mutedText }]}>
+          Current time
+        </Text>
       </View>
     </FieldGroup>
   );
@@ -363,29 +725,69 @@ function ReadingTime({ label, value }: { label: string; value: string }) {
 
 function InlineValidation({ message }: { message: string }) {
   const { theme } = useAppTheme();
-  return <Text accessibilityLiveRegion="polite" style={[styles.validation, { color: theme.warning }]}>{message}</Text>;
+  return (
+    <Text
+      accessibilityLiveRegion="polite"
+      style={[styles.validation, { color: theme.warning }]}
+    >
+      {message}
+    </Text>
+  );
 }
 
-function FieldGroup({ children, label }: { children: ReactNode; label: string }) {
+function FieldGroup({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: string;
+}) {
   const { theme } = useAppTheme();
-  return <View style={styles.group}><Text style={[styles.groupLabel, { color: theme.text }]}>{label}</Text>{children}</View>;
+  return (
+    <View style={styles.group}>
+      <Text style={[styles.groupLabel, { color: theme.text }]}>{label}</Text>
+      {children}
+    </View>
+  );
 }
 
-function validate(logType: GeneralHealthLogType, values: Record<string, string>): FieldErrors {
+function validate(
+  logType: GeneralHealthLogType,
+  values: Record<string, string>,
+): FieldErrors {
   const errors: FieldErrors = {};
   if (logType === "vitals") {
-    const readings = [values.heartRate, values.systolic, values.diastolic, values.oxygen].filter((value) => value.trim());
-    if (!readings.length) errors.vitals = "Add at least one reading before saving.";
-    if (values.heartRate.trim() && !isPositive(values.heartRate)) errors.heartRate = "Enter a valid number.";
-    if (values.oxygen.trim() && !isPositive(values.oxygen)) errors.oxygen = "Enter a valid number.";
-    if (Boolean(values.systolic.trim()) !== Boolean(values.diastolic.trim())) errors.bloodPressure = "Complete both blood pressure fields.";
-    if (values.systolic.trim() && values.diastolic.trim() && (!isPositive(values.systolic) || !isPositive(values.diastolic))) errors.bloodPressure = "Enter valid numbers for both fields.";
+    const readings = [
+      values.heartRate,
+      values.systolic,
+      values.diastolic,
+      values.oxygen,
+    ].filter((value) => value.trim());
+    if (!readings.length)
+      errors.vitals = "Add at least one reading before saving.";
+    if (values.heartRate.trim() && !isPositive(values.heartRate))
+      errors.heartRate = "Enter a valid number.";
+    if (values.oxygen.trim() && !isPositive(values.oxygen))
+      errors.oxygen = "Enter a valid number.";
+    if (Boolean(values.systolic.trim()) !== Boolean(values.diastolic.trim()))
+      errors.bloodPressure = "Complete both blood pressure fields.";
+    if (
+      values.systolic.trim() &&
+      values.diastolic.trim() &&
+      (!isPositive(values.systolic) || !isPositive(values.diastolic))
+    )
+      errors.bloodPressure = "Enter valid numbers for both fields.";
   }
-  if (logType === "weight" && !values.weight.trim()) errors.weight = "Enter a value before saving.";
-  else if (logType === "weight" && !isPositive(values.weight)) errors.weight = "Enter a valid positive number.";
-  if (logType === "temperature" && !values.temperature.trim()) errors.temperature = "Enter a value before saving.";
-  else if (logType === "temperature" && !isPositive(values.temperature)) errors.temperature = "Enter a valid positive number.";
-  if (logType === "note" && !values.noteTitle.trim()) errors.noteTitle = "Add a short title for this note.";
+  if (logType === "weight" && !values.weight.trim())
+    errors.weight = "Enter a value before saving.";
+  else if (logType === "weight" && !isPositive(values.weight))
+    errors.weight = "Enter a valid positive number.";
+  if (logType === "temperature" && !values.temperature.trim())
+    errors.temperature = "Enter a value before saving.";
+  else if (logType === "temperature" && !isPositive(values.temperature))
+    errors.temperature = "Enter a valid positive number.";
+  if (logType === "note" && !values.noteTitle.trim())
+    errors.noteTitle = "Add a short title for this note.";
   return errors;
 }
 
@@ -396,7 +798,12 @@ function isPositive(value: string) {
 
 function formatReadingTime(value: string) {
   const date = new Date(value);
-  return date.toLocaleString(undefined, { day: "numeric", hour: "numeric", minute: "2-digit", month: "short" });
+  return date.toLocaleString(undefined, {
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    month: "short",
+  });
 }
 
 function getActionNoun(logType: GeneralHealthLogType) {
@@ -408,44 +815,128 @@ function getActionNoun(logType: GeneralHealthLogType) {
 
 const styles = StyleSheet.create({
   body: { gap: 20, paddingBottom: 24, paddingHorizontal: 20, paddingTop: 20 },
-  cancel: { alignItems: "center", borderRadius: 16, borderWidth: 1, flex: 1, justifyContent: "center", minHeight: 52 },
+  cancel: {
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 52,
+  },
   cancelText: { fontWeight: "900" },
-  chip: { alignItems: "center", borderRadius: 18, borderWidth: 1, flexDirection: "row", gap: 6, minHeight: 44, paddingHorizontal: 12, paddingVertical: 10 },
+  chip: {
+    alignItems: "center",
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
   chipMark: { fontSize: 13, fontWeight: "900" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chipText: { fontSize: 13, fontWeight: "900" },
   detailsInput: { minHeight: 120 },
-  footer: { borderTopWidth: 1, flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 12 },
+  footer: {
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
   form: { gap: 18 },
   group: { gap: 8 },
   groupLabel: { fontSize: 14, fontWeight: "900" },
-  handle: { alignSelf: "center", borderRadius: 999, height: 4, marginTop: 10, width: 46 },
-  header: { borderBottomWidth: 1, paddingBottom: 18, paddingHorizontal: 20, paddingTop: 14 },
-  helper: { alignItems: "flex-start", borderRadius: 18, borderWidth: 1, flexDirection: "row", gap: 10, padding: 13 },
+  handle: {
+    alignSelf: "center",
+    borderRadius: 999,
+    height: 4,
+    marginTop: 10,
+    width: 46,
+  },
+  header: {
+    borderBottomWidth: 1,
+    paddingBottom: 18,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+  },
+  helper: {
+    alignItems: "flex-start",
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    padding: 13,
+  },
   helperText: { flex: 1, fontSize: 12, lineHeight: 19 },
   keyboard: { flex: 1, justifyContent: "flex-end" },
   modal: { flex: 1, justifyContent: "flex-end" },
   pressed: { opacity: 0.74 },
-  profile: { alignItems: "center", borderRadius: 18, borderWidth: 1, flexDirection: "row", gap: 10, marginTop: 16, minHeight: 58, paddingHorizontal: 12, paddingVertical: 9 },
+  profile: {
+    alignItems: "center",
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+    minHeight: 58,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
   profileCopy: { flex: 1 },
-  profileIcon: { alignItems: "center", borderRadius: 14, height: 38, justifyContent: "center", width: 38 },
+  profileIcon: {
+    alignItems: "center",
+    borderRadius: 14,
+    height: 38,
+    justifyContent: "center",
+    width: 38,
+  },
   profileMeta: { fontSize: 12, marginTop: 2 },
   profileName: { fontSize: 14, fontWeight: "900" },
-  save: { alignItems: "center", borderRadius: 16, flex: 1.4, justifyContent: "center", minHeight: 52 },
+  save: {
+    alignItems: "center",
+    borderRadius: 16,
+    flex: 1.4,
+    justifyContent: "center",
+    minHeight: 52,
+  },
   saveText: { color: "#ffffff", fontWeight: "900" },
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(15,23,42,0.58)" },
-  sheet: { alignSelf: "center", borderTopLeftRadius: 28, borderTopRightRadius: 28, borderWidth: 1, overflow: "hidden" },
+  sheet: {
+    alignSelf: "center",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
   split: { flexDirection: "row", gap: 10 },
   splitInput: { flex: 1, minWidth: 0 },
   subtitle: { lineHeight: 20, marginTop: 5 },
-  time: { alignItems: "center", borderRadius: 16, borderWidth: 1, flexDirection: "row", gap: 10, minHeight: 54, paddingHorizontal: 14 },
+  time: {
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    minHeight: 54,
+    paddingHorizontal: 14,
+  },
   timeMeta: { fontSize: 11, marginLeft: "auto" },
   timeText: { flexShrink: 1, fontSize: 13, fontWeight: "900" },
   title: { fontSize: 21, fontWeight: "900" },
-  unit: { borderRadius: 12, minWidth: 48, paddingHorizontal: 9, paddingVertical: 8, position: "absolute", right: 8, top: 38 },
+  unit: {
+    borderRadius: 12,
+    minWidth: 48,
+    paddingHorizontal: 9,
+    paddingVertical: 8,
+    position: "absolute",
+    right: 8,
+    top: 38,
+  },
   unitField: { position: "relative" },
   unitInput: { paddingRight: 70 },
   unitNote: { color: "#64748b", fontSize: 12, lineHeight: 18 },
   unitText: { fontSize: 12, fontWeight: "900", textAlign: "center" },
-  validation: { fontSize: 12, fontWeight: "800", lineHeight: 18 }
+  validation: { fontSize: 12, fontWeight: "800", lineHeight: 18 },
 });

@@ -9,7 +9,11 @@ type SegmentedControlProps<T extends string> = {
   value: T;
 };
 
-export function SegmentedControl<T extends string>({ onChange, options, value }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  onChange,
+  options,
+  value,
+}: SegmentedControlProps<T>) {
   return (
     <View
       style={{
@@ -20,11 +24,16 @@ export function SegmentedControl<T extends string>({ onChange, options, value }:
         flexDirection: "row",
         flexWrap: "wrap",
         gap: appSpacing.xs,
-        padding: appSpacing.xs
+        padding: appSpacing.xs,
       }}
     >
       {options.map((option) => (
-        <TabPill active={value === option.value} key={option.value} label={option.label} onPress={() => onChange(option.value)} />
+        <TabPill
+          active={value === option.value}
+          key={option.value}
+          label={option.label}
+          onPress={() => onChange(option.value)}
+        />
       ))}
     </View>
   );

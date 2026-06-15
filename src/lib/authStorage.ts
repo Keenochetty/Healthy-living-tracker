@@ -24,9 +24,14 @@ export async function getLocalOnboardingBackup() {
 
 export async function saveLocalOnboardingBackup(preferences: UserPreferences) {
   const { saveUserPreferences } = await import("@/lib/userPreferences");
-  const saved = await saveUserPreferences(preferences, { skipRemoteSync: true });
+  const saved = await saveUserPreferences(preferences, {
+    skipRemoteSync: true,
+  });
 
-  await AsyncStorage.setItem(LOCAL_ONBOARDING_BACKUP_KEY, JSON.stringify(saved));
+  await AsyncStorage.setItem(
+    LOCAL_ONBOARDING_BACKUP_KEY,
+    JSON.stringify(saved),
+  );
 
   return saved;
 }

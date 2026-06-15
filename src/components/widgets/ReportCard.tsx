@@ -12,8 +12,14 @@ type ReportCardProps = {
 export function ReportCard({ children, subtitle, title }: ReportCardProps) {
   return (
     <AppCard style={{ gap: appSpacing.md }}>
-      <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
-      {subtitle ? <Text style={[typography.body, { color: appColors.textSecondary }]}>{subtitle}</Text> : null}
+      <Text style={[typography.cardTitle, { color: appColors.text }]}>
+        {title}
+      </Text>
+      {subtitle ? (
+        <Text style={[typography.body, { color: appColors.textSecondary }]}>
+          {subtitle}
+        </Text>
+      ) : null}
       {children}
     </AppCard>
   );

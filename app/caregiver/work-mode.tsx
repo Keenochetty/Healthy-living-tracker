@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import {
   AppHeader,
@@ -9,7 +15,7 @@ import {
   EmergencyButton,
   QuickActionButton,
   StatusPill,
-  WidgetCard
+  WidgetCard,
 } from "@/components/ui";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
@@ -20,26 +26,77 @@ import {
   getChildFullName,
   listAssignedCaregiverChildren,
   openChildProfile,
-  type AssignedCaregiverChild
+  type AssignedCaregiverChild,
 } from "@/lib/children";
 
 type CareQuickAction = {
   activityType: ActivityType;
   label: string;
-  notificationType: "blue_calendar_activity" | "green_normal_update" | "orange_important_health" | "purple_ai_suggestion" | "red_emergency" | "yellow_attention";
+  notificationType:
+    | "blue_calendar_activity"
+    | "green_normal_update"
+    | "orange_important_health"
+    | "purple_ai_suggestion"
+    | "red_emergency"
+    | "yellow_attention";
   toneColor: string;
 };
 
 const quickActions: CareQuickAction[] = [
-  { activityType: "feed", label: "Feed", notificationType: "green_normal_update", toneColor: colors.status.success },
-  { activityType: "nap", label: "Nap", notificationType: "green_normal_update", toneColor: colors.status.success },
-  { activityType: "medication", label: "Medication", notificationType: "orange_important_health", toneColor: colors.accent.coral },
-  { activityType: "mood", label: "Mood", notificationType: "yellow_attention", toneColor: colors.status.warning },
-  { activityType: "activity", label: "Activity", notificationType: "green_normal_update", toneColor: colors.status.success },
-  { activityType: "incident", label: "Incident", notificationType: "orange_important_health", toneColor: colors.accent.coral },
-  { activityType: "photo_update", label: "Photo", notificationType: "purple_ai_suggestion", toneColor: colors.status.ai },
-  { activityType: "note", label: "Note", notificationType: "blue_calendar_activity", toneColor: colors.brand.primary },
-  { activityType: "emergency", label: "Emergency", notificationType: "red_emergency", toneColor: colors.status.emergency }
+  {
+    activityType: "feed",
+    label: "Feed",
+    notificationType: "green_normal_update",
+    toneColor: colors.status.success,
+  },
+  {
+    activityType: "nap",
+    label: "Nap",
+    notificationType: "green_normal_update",
+    toneColor: colors.status.success,
+  },
+  {
+    activityType: "medication",
+    label: "Medication",
+    notificationType: "orange_important_health",
+    toneColor: colors.accent.coral,
+  },
+  {
+    activityType: "mood",
+    label: "Mood",
+    notificationType: "yellow_attention",
+    toneColor: colors.status.warning,
+  },
+  {
+    activityType: "activity",
+    label: "Activity",
+    notificationType: "green_normal_update",
+    toneColor: colors.status.success,
+  },
+  {
+    activityType: "incident",
+    label: "Incident",
+    notificationType: "orange_important_health",
+    toneColor: colors.accent.coral,
+  },
+  {
+    activityType: "photo_update",
+    label: "Photo",
+    notificationType: "purple_ai_suggestion",
+    toneColor: colors.status.ai,
+  },
+  {
+    activityType: "note",
+    label: "Note",
+    notificationType: "blue_calendar_activity",
+    toneColor: colors.brand.primary,
+  },
+  {
+    activityType: "emergency",
+    label: "Emergency",
+    notificationType: "red_emergency",
+    toneColor: colors.status.emergency,
+  },
 ];
 
 function getAssignmentStatus(assignment: AssignedCaregiverChild) {
@@ -55,13 +112,21 @@ function getAssignmentStatus(assignment: AssignedCaregiverChild) {
 }
 
 function getActionByType(activityType: ActivityType) {
-  return quickActions.find((action) => action.activityType === activityType) ?? quickActions[4];
+  return (
+    quickActions.find((action) => action.activityType === activityType) ??
+    quickActions[4]
+  );
 }
 
 export default function CaregiverWorkModeScreen() {
-  const [assignedChildren, setAssignedChildren] = useState<AssignedCaregiverChild[]>([]);
-  const [selectedAssignment, setSelectedAssignment] = useState<AssignedCaregiverChild | null>(null);
-  const [selectedAction, setSelectedAction] = useState<CareQuickAction | null>(null);
+  const [assignedChildren, setAssignedChildren] = useState<
+    AssignedCaregiverChild[]
+  >([]);
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<AssignedCaregiverChild | null>(null);
+  const [selectedAction, setSelectedAction] = useState<CareQuickAction | null>(
+    null,
+  );
   const [activityNote, setActivityNote] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -76,7 +141,9 @@ export default function CaregiverWorkModeScreen() {
       const nextChildren = await listAssignedCaregiverChildren();
       setAssignedChildren(nextChildren);
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "Unable to load caregiver assignments."));
+      setErrorMessage(
+        getErrorMessage(error, "Unable to load caregiver assignments."),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -92,9 +159,17 @@ export default function CaregiverWorkModeScreen() {
     };
   }, [loadAssignedChildren]);
 
-  function openLogSheet(assignment: AssignedCaregiverChild, action: CareQuickAction) {
-    if (!assignment.access.can_log_activity && action.activityType !== "emergency") {
-      setErrorMessage("You do not have permission to log activity for this child.");
+  function openLogSheet(
+    assignment: AssignedCaregiverChild,
+    action: CareQuickAction,
+  ) {
+    if (
+      !assignment.access.can_log_activity &&
+      action.activityType !== "emergency"
+    ) {
+      setErrorMessage(
+        "You do not have permission to log activity for this child.",
+      );
       return;
     }
 
@@ -110,8 +185,13 @@ export default function CaregiverWorkModeScreen() {
       return;
     }
 
-    if (!selectedAssignment.access.can_log_activity && selectedAction.activityType !== "emergency") {
-      setErrorMessage("You do not have permission to log activity for this child.");
+    if (
+      !selectedAssignment.access.can_log_activity &&
+      selectedAction.activityType !== "emergency"
+    ) {
+      setErrorMessage(
+        "You do not have permission to log activity for this child.",
+      );
       return;
     }
 
@@ -128,7 +208,7 @@ export default function CaregiverWorkModeScreen() {
         isSharedWithParents: true,
         note: activityNote,
         notificationType: selectedAction.notificationType,
-        title: `${selectedAction.label} update`
+        title: `${selectedAction.label} update`,
       });
       setNotice(`${selectedAction.label} update sent to parents/guardians.`);
       setSelectedAction(null);
@@ -154,8 +234,14 @@ export default function CaregiverWorkModeScreen() {
       {isLoading ? <ActivityIndicator /> : null}
 
       {!isLoading && assignedChildren.length === 0 ? (
-        <WidgetCard title="No assigned children" subtitle="Parents or guardians can grant child access by caregiver email.">
-          <Text style={styles.muted}>Assigned children will appear here with schedule and care permissions.</Text>
+        <WidgetCard
+          title="No assigned children"
+          subtitle="Parents or guardians can grant child access by caregiver email."
+        >
+          <Text style={styles.muted}>
+            Assigned children will appear here with schedule and care
+            permissions.
+          </Text>
         </WidgetCard>
       ) : null}
 
@@ -167,29 +253,52 @@ export default function CaregiverWorkModeScreen() {
 
           return (
             <WidgetCard
-              accentColor={status.tone === "success" ? colors.status.success : colors.status.warning}
+              accentColor={
+                status.tone === "success"
+                  ? colors.status.success
+                  : colors.status.warning
+              }
               key={child.id}
               onPress={() => openChildProfile(child.id, "caregiver")}
             >
               <View style={styles.cardHeader}>
-                <ChildAvatar name={childName} size={64} subtitle={getChildAge(child.date_of_birth)} />
+                <ChildAvatar
+                  name={childName}
+                  size={64}
+                  subtitle={getChildAge(child.date_of_birth)}
+                />
                 <StatusPill label={status.label} tone={status.tone} />
               </View>
 
               <View style={styles.highlightRow}>
                 <StatusPill label="Condition highlights" tone="default" />
-                <StatusPill label={access.can_view_care_instructions ? "Allergy badge" : "Allergies hidden"} tone="warning" />
+                <StatusPill
+                  label={
+                    access.can_view_care_instructions
+                      ? "Allergy badge"
+                      : "Allergies hidden"
+                  }
+                  tone="warning"
+                />
                 <StatusPill label="Schedule" tone="default" />
               </View>
 
               <View style={styles.detailPanel}>
                 <Text style={styles.detailLabel}>Today schedule</Text>
-                <Text style={styles.detailText}>{access.can_view_schedule ? "No schedule added yet" : "Schedule hidden"}</Text>
+                <Text style={styles.detailText}>
+                  {access.can_view_schedule
+                    ? "No schedule added yet"
+                    : "Schedule hidden"}
+                </Text>
                 <Text style={styles.detailLabel}>Last update</Text>
-                <Text style={styles.detailText}>No caregiver update logged yet</Text>
+                <Text style={styles.detailText}>
+                  No caregiver update logged yet
+                </Text>
                 <Text style={styles.detailLabel}>Care instruction</Text>
                 <Text style={styles.detailText}>
-                  {access.can_view_care_instructions ? "Quick care instruction placeholder" : "Care instructions hidden"}
+                  {access.can_view_care_instructions
+                    ? "Quick care instruction placeholder"
+                    : "Care instructions hidden"}
                 </Text>
               </View>
 
@@ -207,11 +316,15 @@ export default function CaregiverWorkModeScreen() {
               <View style={styles.primaryActions}>
                 <EmergencyButton
                   label="Emergency"
-                  onPress={() => openLogSheet(assignment, getActionByType("emergency"))}
+                  onPress={() =>
+                    openLogSheet(assignment, getActionByType("emergency"))
+                  }
                 />
                 <QuickActionButton
                   label="Log activity"
-                  onPress={() => openLogSheet(assignment, getActionByType("activity"))}
+                  onPress={() =>
+                    openLogSheet(assignment, getActionByType("activity"))
+                  }
                   toneColor={colors.status.success}
                 />
               </View>
@@ -220,7 +333,11 @@ export default function CaregiverWorkModeScreen() {
         })}
       </View>
 
-      <QuickActionButton label="Refresh assignments" onPress={loadAssignedChildren} toneColor={colors.brand.primary} />
+      <QuickActionButton
+        label="Refresh assignments"
+        onPress={loadAssignedChildren}
+        toneColor={colors.brand.primary}
+      />
 
       <BottomSheet
         footer={
@@ -255,9 +372,11 @@ export default function CaregiverWorkModeScreen() {
                   ? "red = emergency"
                   : selectedAction.notificationType === "yellow_attention"
                     ? "yellow = needs attention"
-                    : selectedAction.notificationType === "orange_important_health"
+                    : selectedAction.notificationType ===
+                        "orange_important_health"
                       ? "orange = important"
-                      : selectedAction.notificationType === "blue_calendar_activity"
+                      : selectedAction.notificationType ===
+                          "blue_calendar_activity"
                         ? "blue = schedule"
                         : "green = all good"
               }
@@ -266,7 +385,8 @@ export default function CaregiverWorkModeScreen() {
                   ? "emergency"
                   : selectedAction.notificationType === "yellow_attention"
                     ? "warning"
-                    : selectedAction.notificationType === "orange_important_health"
+                    : selectedAction.notificationType ===
+                        "orange_important_health"
                       ? "warning"
                       : "success"
               }
@@ -291,15 +411,15 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     flexDirection: "row",
     gap: spacing.md,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   cards: {
-    gap: spacing.lg
+    gap: spacing.lg,
   },
   detailLabel: {
     color: colors.text.primary,
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   detailPanel: {
     backgroundColor: colors.background.mist,
@@ -307,23 +427,23 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     gap: spacing.xs,
-    padding: spacing.lg
+    padding: spacing.lg,
   },
   detailText: {
     color: colors.text.secondary,
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: spacing.sm
+    marginBottom: spacing.sm,
   },
   error: {
     color: colors.status.emergency,
     fontSize: 14,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   highlightRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   input: {
     backgroundColor: colors.card.background,
@@ -333,27 +453,27 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     minHeight: 120,
     padding: spacing.lg,
-    textAlignVertical: "top"
+    textAlignVertical: "top",
   },
   muted: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   notice: {
     color: colors.status.success,
     fontSize: 14,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   primaryActions: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   quickActions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   sheetContent: {
-    gap: spacing.lg
-  }
+    gap: spacing.lg,
+  },
 });

@@ -23,7 +23,9 @@ export function EventFilterChips({ filter, onChange }: EventFilterChipsProps) {
           key={key}
           label={calendarFilterLabels[key]}
           onPress={() => selectFilter(key)}
-          toneColor={filter.key === key ? colors.brand.primary : colors.text.muted}
+          toneColor={
+            filter.key === key ? colors.brand.primary : colors.text.muted
+          }
         />
       ))}
     </View>
@@ -34,6 +36,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
-  }
+    gap: spacing.sm,
+  },
 });

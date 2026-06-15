@@ -6,7 +6,7 @@ import { AppCard } from "@/components/ui/AppCard";
 import { useAuth } from "@/context/AuthContext";
 import {
   syncLocalPreferencesToCloud,
-  syncRemotePreferencesToLocal
+  syncRemotePreferencesToLocal,
 } from "@/lib/profileSync";
 
 type AuthStatusCardProps = {
@@ -14,7 +14,13 @@ type AuthStatusCardProps = {
 };
 
 export function AuthStatusCard({ onSynced }: AuthStatusCardProps) {
-  const { initialized, isAuthenticated, localMode, logout: signOut, user } = useAuth();
+  const {
+    initialized,
+    isAuthenticated,
+    localMode,
+    logout: signOut,
+    user,
+  } = useAuth();
   const [message, setMessage] = useState("");
 
   async function syncToCloud() {
@@ -24,7 +30,9 @@ export function AuthStatusCard({ onSynced }: AuthStatusCardProps) {
     const result = await syncLocalPreferencesToCloud(user.id);
 
     if (result.error) {
-      setMessage("Could not sync right now. Your local settings are still saved.");
+      setMessage(
+        "Could not sync right now. Your local settings are still saved.",
+      );
       return;
     }
 
@@ -38,7 +46,9 @@ export function AuthStatusCard({ onSynced }: AuthStatusCardProps) {
       await syncRemotePreferencesToLocal();
       setMessage("Cloud settings pulled.");
     } catch {
-      setMessage("Could not sync right now. Your local settings are still saved.");
+      setMessage(
+        "Could not sync right now. Your local settings are still saved.",
+      );
     }
     onSynced?.();
   }
@@ -60,8 +70,8 @@ export function AuthStatusCard({ onSynced }: AuthStatusCardProps) {
             {localMode ? "Local testing mode" : "Not signed in"}
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            You can keep testing locally. Log in when you want to sync profile setup,
-            modules, widgets, theme, country and units.
+            You can keep testing locally. Log in when you want to sync profile
+            setup, modules, widgets, theme, country and units.
           </Text>
           <View style={{ flexDirection: "row", gap: 10 }}>
             <AuthButton
@@ -86,10 +96,12 @@ export function AuthStatusCard({ onSynced }: AuthStatusCardProps) {
           Signed in
         </Text>
         <Text style={{ color: "#64748b", lineHeight: 21 }}>
-          {user?.email}. Setup sync is enabled. Health, child, caregiver, cycle, food
-          and elder records are not synced in this step.
+          {user?.email}. Setup sync is enabled. Health, child, caregiver, cycle,
+          food and elder records are not synced in this step.
         </Text>
-        {message ? <Text style={{ color: "#475569", lineHeight: 20 }}>{message}</Text> : null}
+        {message ? (
+          <Text style={{ color: "#475569", lineHeight: 20 }}>{message}</Text>
+        ) : null}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
           <AuthButton label="Sync to cloud" onPress={syncToCloud} primary />
           <AuthButton label="Pull cloud" onPress={syncFromCloud} />
@@ -104,7 +116,7 @@ function AuthButton({
   danger = false,
   label,
   onPress,
-  primary = false
+  primary = false,
 }: {
   danger?: boolean;
   label: string;
@@ -122,13 +134,13 @@ function AuthButton({
         flexGrow: 1,
         justifyContent: "center",
         minHeight: 46,
-        paddingHorizontal: 12
+        paddingHorizontal: 12,
       }}
     >
       <Text
         style={{
           color: danger ? "#dc2626" : primary ? "#ffffff" : "#7c3aed",
-          fontWeight: "900"
+          fontWeight: "900",
         }}
       >
         {label}

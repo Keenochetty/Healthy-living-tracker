@@ -1,7 +1,10 @@
 import { Linking, Platform } from "react-native";
 
 import { supabase } from "@/lib/supabase";
-import type { SubscriptionEntitlement, SubscriptionPlatform } from "@/types/subscription";
+import type {
+  SubscriptionEntitlement,
+  SubscriptionPlatform,
+} from "@/types/subscription";
 
 type SubscriptionRow = {
   cancel_at_period_end: boolean | null;
@@ -19,18 +22,22 @@ type SubscriptionRow = {
 
 const MANAGE_URLS: Partial<Record<SubscriptionPlatform, string>> = {
   android: "https://play.google.com/store/account/subscriptions",
-  ios: "https://apps.apple.com/account/subscriptions"
+  ios: "https://apps.apple.com/account/subscriptions",
 };
 
 const SUPPORT_URLS: Partial<Record<SubscriptionPlatform, string>> = {
   android: "https://support.google.com/googleplay/topic/3365267",
-  ios: "https://support.apple.com/billing"
+  ios: "https://support.apple.com/billing",
 };
 
-export async function getSubscriptionEntitlement(userId: string): Promise<SubscriptionEntitlement | null> {
+export async function getSubscriptionEntitlement(
+  userId: string,
+): Promise<SubscriptionEntitlement | null> {
   const result = await supabase
     .from("subscriptions")
-    .select("family_id,plan,status,current_period_end,platform,product_id,entitlement_tier,trial_end,will_renew,cancel_at_period_end,last_verified_at")
+    .select(
+      "family_id,plan,status,current_period_end,platform,product_id,entitlement_tier,trial_end,will_renew,cancel_at_period_end,last_verified_at",
+    )
     .eq("user_id", userId)
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -51,7 +58,7 @@ export async function getSubscriptionEntitlement(userId: string): Promise<Subscr
     productId: row.product_id,
     status: row.status ?? "unknown",
     trialEnd: row.trial_end,
-    willRenew: row.will_renew
+    willRenew: row.will_renew,
   };
 }
 
@@ -63,23 +70,31 @@ export function canManageSubscription(platform: SubscriptionPlatform) {
   return Boolean(MANAGE_URLS[platform]);
 }
 
-export async function openSubscriptionManagement(platform: SubscriptionPlatform) {
+export async function openSubscriptionManagement(
+  platform: SubscriptionPlatform,
+) {
   const url = MANAGE_URLS[platform];
-  if (!url) throw new Error("Subscription management is not configured for this platform.");
+  if (!url)
+    throw new Error(
+      "Subscription management is not configured for this platform.",
+    );
   await openExternalUrl(url);
 }
 
 export async function openBillingSupport(platform: SubscriptionPlatform) {
-  const effectivePlatform = platform === "unknown" ? currentPlatform() : platform;
+  const effectivePlatform =
+    platform === "unknown" ? currentPlatform() : platform;
   const url = SUPPORT_URLS[effectivePlatform];
-  if (!url) throw new Error("Billing support is not configured for this platform.");
+  if (!url)
+    throw new Error("Billing support is not configured for this platform.");
   await openExternalUrl(url);
 }
 
 export function restorePurchasesAvailability() {
   return {
     available: false,
-    message: "Restore purchases requires a native purchase SDK and server-side receipt verification. It is not configured yet."
+    message:
+      "Restore purchases requires a native purchase SDK and server-side receipt verification. It is not configured yet.",
   };
 }
 
@@ -90,6 +105,7 @@ function normalizePlatform(value: string | null): SubscriptionPlatform {
 
 async function openExternalUrl(url: string) {
   const supported = await Linking.canOpenURL(url);
-  if (!supported) throw new Error("This management link could not be opened on this device.");
+  if (!supported)
+    throw new Error("This management link could not be opened on this device.");
   await Linking.openURL(url);
 }

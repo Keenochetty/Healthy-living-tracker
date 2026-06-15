@@ -13,7 +13,14 @@ type AppIconProps = {
   name: AppIconName;
   size?: number;
   strokeWidth?: number;
-  variant?: "default" | "primary" | "muted" | "success" | "warning" | "danger" | "private";
+  variant?:
+    | "default"
+    | "primary"
+    | "muted"
+    | "success"
+    | "warning"
+    | "danger"
+    | "private";
 };
 
 export function AppIcon({
@@ -25,14 +32,15 @@ export function AppIcon({
   name,
   size = 22,
   strokeWidth = 2.2,
-  variant = "default"
+  variant = "default",
 }: AppIconProps) {
   const { theme } = useAppTheme();
   const Icon = appIcons[name];
   const iconColor = color ?? getIconColor(variant, theme);
-  const accessibilityProps = accessibilityLabel && !decorative
-    ? { accessibilityLabel, accessibilityRole: "image" as const }
-    : { accessible: false };
+  const accessibilityProps =
+    accessibilityLabel && !decorative
+      ? { accessibilityLabel, accessibilityRole: "image" as const }
+      : { accessible: false };
 
   if (!container) {
     return (
@@ -51,15 +59,22 @@ export function AppIcon({
         borderRadius: radius.lg,
         height: size + 24,
         justifyContent: "center",
-        width: size + 24
+        width: size + 24,
       }}
     >
-      <Icon color={containerVariant === "primary" ? "#ffffff" : iconColor} size={size} strokeWidth={strokeWidth} />
+      <Icon
+        color={containerVariant === "primary" ? "#ffffff" : iconColor}
+        size={size}
+        strokeWidth={strokeWidth}
+      />
     </View>
   );
 }
 
-function getIconColor(variant: NonNullable<AppIconProps["variant"]>, theme: ReturnType<typeof useAppTheme>["theme"]) {
+function getIconColor(
+  variant: NonNullable<AppIconProps["variant"]>,
+  theme: ReturnType<typeof useAppTheme>["theme"],
+) {
   switch (variant) {
     case "primary":
       return theme.primary;
@@ -78,7 +93,10 @@ function getIconColor(variant: NonNullable<AppIconProps["variant"]>, theme: Retu
   }
 }
 
-function getContainerColor(containerVariant: NonNullable<AppIconProps["containerVariant"]>, theme: ReturnType<typeof useAppTheme>["theme"]) {
+function getContainerColor(
+  containerVariant: NonNullable<AppIconProps["containerVariant"]>,
+  theme: ReturnType<typeof useAppTheme>["theme"],
+) {
   switch (containerVariant) {
     case "primary":
       return theme.primary;

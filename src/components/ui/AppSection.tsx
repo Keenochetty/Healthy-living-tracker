@@ -15,17 +15,53 @@ type AppSectionProps = {
   title: string;
 };
 
-export function AppSection({ actionAccessibilityHint, actionAccessibilityLabel, actionLabel, children, onActionPress, subtitle, title }: AppSectionProps) {
+export function AppSection({
+  actionAccessibilityHint,
+  actionAccessibilityLabel,
+  actionLabel,
+  children,
+  onActionPress,
+  subtitle,
+  title,
+}: AppSectionProps) {
   const { theme } = useAppTheme();
 
   return (
     <View style={{ gap: spacing.md }}>
-      <View style={{ alignItems: "center", flexDirection: "row", justifyContent: "space-between" }}>
+      <View
+        style={{
+          alignItems: "center",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
         <View style={{ flex: 1, paddingRight: spacing.md }}>
-          <Text style={{ color: theme.text, fontSize: fontSizes.lg, fontWeight: "900" }}>{title}</Text>
-          {subtitle ? <Text style={{ color: theme.mutedText, lineHeight: 20, marginTop: 3 }}>{subtitle}</Text> : null}
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: fontSizes.lg,
+              fontWeight: "900",
+            }}
+          >
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text
+              style={{ color: theme.mutedText, lineHeight: 20, marginTop: 3 }}
+            >
+              {subtitle}
+            </Text>
+          ) : null}
         </View>
-        {actionLabel ? <AppChip accessibilityHint={actionAccessibilityHint} accessibilityLabel={actionAccessibilityLabel} label={actionLabel} onPress={onActionPress} variant="primary" /> : null}
+        {actionLabel ? (
+          <AppChip
+            accessibilityHint={actionAccessibilityHint}
+            accessibilityLabel={actionAccessibilityLabel}
+            label={actionLabel}
+            onPress={onActionPress}
+            variant="primary"
+          />
+        ) : null}
       </View>
       {children}
     </View>

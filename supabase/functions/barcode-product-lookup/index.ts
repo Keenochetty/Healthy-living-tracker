@@ -7,6 +7,7 @@ Deno.serve(async (req) => {
   return jsonResponse({
     product: null,
     status: "placeholder",
-    message: "Barcode lookups may cache centrally only after validating the user and avoiding sensitive payload logs."
+    message:
+      "Barcode lookups may cache centrally only after validating the user and avoiding sensitive payload logs.",
   });
 });

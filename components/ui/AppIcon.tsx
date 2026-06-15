@@ -8,7 +8,10 @@ export const appIconNames = {
   calendar: { filled: "calendar", outline: "calendar-outline" },
   camera: { filled: "camera", outline: "camera-outline" },
   care: { filled: "shield-checkmark", outline: "shield-checkmark-outline" },
-  caregiver: { filled: "shield-checkmark", outline: "shield-checkmark-outline" },
+  caregiver: {
+    filled: "shield-checkmark",
+    outline: "shield-checkmark-outline",
+  },
   chevron: { filled: "chevron-forward", outline: "chevron-forward" },
   child: { filled: "person-circle", outline: "person-circle-outline" },
   close: { filled: "close", outline: "close-outline" },
@@ -32,7 +35,7 @@ export const appIconNames = {
   sleep: { filled: "moon", outline: "moon-outline" },
   sync: { filled: "sync", outline: "sync-outline" },
   units: { filled: "scale", outline: "scale-outline" },
-  voice: { filled: "mic", outline: "mic-outline" }
+  voice: { filled: "mic", outline: "mic-outline" },
 } as const satisfies Record<string, Record<AppIconVariant, IoniconName>>;
 
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
@@ -47,6 +50,13 @@ type AppIconProps = {
   variant?: AppIconVariant;
 };
 
-export function AppIcon({ color, name, size = 22, variant = "outline" }: AppIconProps) {
-  return <Ionicons color={color} name={appIconNames[name][variant]} size={size} />;
+export function AppIcon({
+  color,
+  name,
+  size = 22,
+  variant = "outline",
+}: AppIconProps) {
+  return (
+    <Ionicons color={color} name={appIconNames[name][variant]} size={size} />
+  );
 }

@@ -5,6 +5,7 @@ Prepared for legal review. Apple requires developers to disclose data collected 
 Source checked: Apple Developer App Privacy Details, https://developer.apple.com/app-store/app-privacy-details/
 
 ## Likely Data Categories
+
 - Contact Info: account email/name if account sync is enabled.
 - Health and Fitness: nutrition, workouts, biometrics, medication/supplements, records, cycle, contraception, pregnancy, baby/child, men’s health, device sync samples.
 - Sensitive Info: health, family, pregnancy, child, contraception, medication, and biometric data.
@@ -14,6 +15,7 @@ Source checked: Apple Developer App Privacy Details, https://developer.apple.com
 - Diagnostics: only if crash reporting is added later.
 
 ## Disclosure Questions
+
 - Is this data collected?
 - Is this data linked to the user?
 - Is this data used for tracking?
@@ -24,6 +26,7 @@ Source checked: Apple Developer App Privacy Details, https://developer.apple.com
 - Is the data optional or required for app functionality?
 
 ## Current Phase 23 Position
+
 - Do not sell health data.
 - Do not use health data for ads.
 - Do not share health data without explicit permission.

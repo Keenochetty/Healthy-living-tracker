@@ -6,24 +6,29 @@ import "./globals.css";
 export const metadata: Metadata = {
   applicationName: "Family Health",
   title: "Family Health",
-  description: "A private family health dashboard for records, reminders, and care tracking.",
+  description:
+    "A private family health dashboard for records, reminders, and care tracking.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Family Health"
+    title: "Family Health",
   },
   icons: {
     icon: "/icon.svg",
-    apple: "/icon.svg"
+    apple: "/icon.svg",
   },
-  manifest: "/manifest.webmanifest"
+  manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0ea5e9"
+  themeColor: "#0ea5e9",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>

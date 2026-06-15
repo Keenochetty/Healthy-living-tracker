@@ -19,7 +19,7 @@ export default function CaregiverIndexScreen() {
   const loadCaregivers = useCallback(async () => {
     const [preferences, nextSummaries] = await Promise.all([
       getUserPreferences(),
-      getAllCaregiverSummaries()
+      getAllCaregiverSummaries(),
     ]);
     setModuleEnabled(preferences.enabledModules.includes("caregiver"));
     setSummaries(nextSummaries);
@@ -28,7 +28,7 @@ export default function CaregiverIndexScreen() {
   useFocusEffect(
     useCallback(() => {
       loadCaregivers();
-    }, [loadCaregivers])
+    }, [loadCaregivers]),
   );
 
   if (!moduleEnabled) {
@@ -42,7 +42,8 @@ export default function CaregiverIndexScreen() {
             This module is turned off
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-            Enable Caregiver in Profile modules only if it helps your care circle.
+            Enable Caregiver in Profile modules only if it helps your care
+            circle.
           </Text>
         </AppCard>
       </ScreenWrapper>
@@ -57,7 +58,8 @@ export default function CaregiverIndexScreen() {
           Caregiver
         </Text>
         <Text style={{ color: "#64748b", lineHeight: 20 }}>
-          Create caregiver cards, manage care requests and keep families updated.
+          Create caregiver cards, manage care requests and keep families
+          updated.
         </Text>
       </View>
 
@@ -72,9 +74,15 @@ export default function CaregiverIndexScreen() {
           {summaries.map((summary) => (
             <CaregiverProfileCard
               key={summary.caregiver.id}
-              onBook={() => router.push(`/caregiver/${summary.caregiver.id}` as Href)}
-              onInvite={() => router.push(`/caregiver/${summary.caregiver.id}` as Href)}
-              onOpen={() => router.push(`/caregiver/${summary.caregiver.id}` as Href)}
+              onBook={() =>
+                router.push(`/caregiver/${summary.caregiver.id}` as Href)
+              }
+              onInvite={() =>
+                router.push(`/caregiver/${summary.caregiver.id}` as Href)
+              }
+              onOpen={() =>
+                router.push(`/caregiver/${summary.caregiver.id}` as Href)
+              }
               summary={summary}
             />
           ))}
@@ -85,7 +93,8 @@ export default function CaregiverIndexScreen() {
             No caregiver profile yet
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-            Add one only if this helps your care circle. No caregiver gets access automatically.
+            Add one only if this helps your care circle. No caregiver gets
+            access automatically.
           </Text>
         </AppCard>
       )}

@@ -24,7 +24,7 @@ export function RoleCard({ onSelect, role, selected }: RoleCardProps) {
         borderWidth: 1,
         flexDirection: "row",
         gap: 12,
-        padding: 14
+        padding: 14,
       }}
     >
       <View
@@ -34,7 +34,7 @@ export function RoleCard({ onSelect, role, selected }: RoleCardProps) {
           borderRadius: 16,
           height: 42,
           justifyContent: "center",
-          width: 42
+          width: 42,
         }}
       >
         <Text style={{ fontSize: 22 }}>{role.emoji}</Text>
@@ -44,7 +44,14 @@ export function RoleCard({ onSelect, role, selected }: RoleCardProps) {
         <Text style={{ color: "#0f172a", fontSize: 15, fontWeight: "800" }}>
           {role.label}
         </Text>
-        <Text style={{ color: "#64748b", fontSize: 12, lineHeight: 17, marginTop: 3 }}>
+        <Text
+          style={{
+            color: "#64748b",
+            fontSize: 12,
+            lineHeight: 17,
+            marginTop: 3,
+          }}
+        >
           {role.description}
         </Text>
       </View>
@@ -56,7 +63,7 @@ export function RoleCard({ onSelect, role, selected }: RoleCardProps) {
           borderRadius: 13,
           height: 26,
           justifyContent: "center",
-          width: 26
+          width: 26,
         }}
       >
         {selected ? <Check color="#ffffff" size={16} /> : null}

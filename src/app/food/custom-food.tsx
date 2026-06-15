@@ -7,7 +7,7 @@ import { AppCard } from "@/components/ui/AppCard";
 import {
   createCustomFood,
   getCustomFoodById,
-  updateCustomFood
+  updateCustomFood,
 } from "@/lib/nutritionStorage";
 
 const INPUT_STYLE = {
@@ -17,7 +17,7 @@ const INPUT_STYLE = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 type NumberField =
@@ -36,7 +36,11 @@ type NumberField =
   | "vitaminCMg"
   | "vitaminDMcg";
 
-const NUMBER_FIELDS: Array<{ key: NumberField; label: string; required?: boolean }> = [
+const NUMBER_FIELDS: Array<{
+  key: NumberField;
+  label: string;
+  required?: boolean;
+}> = [
   { key: "calories", label: "Calories", required: true },
   { key: "proteinG", label: "Protein grams", required: true },
   { key: "carbsG", label: "Carbs grams", required: true },
@@ -49,7 +53,7 @@ const NUMBER_FIELDS: Array<{ key: NumberField; label: string; required?: boolean
   { key: "ironMg", label: "Iron mg" },
   { key: "vitaminAMcg", label: "Vitamin A mcg" },
   { key: "vitaminCMg", label: "Vitamin C mg" },
-  { key: "vitaminDMcg", label: "Vitamin D mcg" }
+  { key: "vitaminDMcg", label: "Vitamin D mcg" },
 ];
 
 export default function CustomFoodScreen() {
@@ -75,7 +79,7 @@ export default function CustomFoodScreen() {
     sugarG: "",
     vitaminAMcg: "",
     vitaminCMg: "",
-    vitaminDMcg: ""
+    vitaminDMcg: "",
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -109,7 +113,7 @@ export default function CustomFoodScreen() {
           sugarG: toInput(customFood.sugarG),
           vitaminAMcg: toInput(customFood.vitaminAMcg),
           vitaminCMg: toInput(customFood.vitaminCMg),
-          vitaminDMcg: toInput(customFood.vitaminDMcg)
+          vitaminDMcg: toInput(customFood.vitaminDMcg),
         });
       })
       .catch(() => undefined);
@@ -149,7 +153,7 @@ export default function CustomFoodScreen() {
       sugarG: optionalNumber(numbers.sugarG),
       vitaminAMcg: optionalNumber(numbers.vitaminAMcg),
       vitaminCMg: optionalNumber(numbers.vitaminCMg),
-      vitaminDMcg: optionalNumber(numbers.vitaminDMcg)
+      vitaminDMcg: optionalNumber(numbers.vitaminDMcg),
     };
 
     if (params.id) {
@@ -171,18 +175,50 @@ export default function CustomFoodScreen() {
           {params.id ? "Edit Custom Food" : "Create Custom Food"}
         </Text>
         <Text style={{ color: "#64748b", lineHeight: 20 }}>
-          Nutrition values are estimates and may vary by ingredients, preparation, and serving size.
+          Nutrition values are estimates and may vary by ingredients,
+          preparation, and serving size.
         </Text>
       </View>
 
       <AppCard>
         <View style={{ gap: 12 }}>
-          <TextInput onChangeText={setName} placeholder="Food name" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={name} />
-          <TextInput onChangeText={setBrand} placeholder="Brand optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={brand} />
-          <TextInput onChangeText={setBarcode} placeholder="Barcode optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={barcode} />
+          <TextInput
+            onChangeText={setName}
+            placeholder="Food name"
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={name}
+          />
+          <TextInput
+            onChangeText={setBrand}
+            placeholder="Brand optional"
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={brand}
+          />
+          <TextInput
+            onChangeText={setBarcode}
+            placeholder="Barcode optional"
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={barcode}
+          />
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <TextInput keyboardType="numeric" onChangeText={(value) => updateNumber("servingSize", value)} placeholder="Serving size" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={numbers.servingSize} />
-            <TextInput onChangeText={setServingUnit} placeholder="Serving unit" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={servingUnit} />
+            <TextInput
+              keyboardType="numeric"
+              onChangeText={(value) => updateNumber("servingSize", value)}
+              placeholder="Serving size"
+              placeholderTextColor="#94a3b8"
+              style={{ ...INPUT_STYLE, flex: 1 }}
+              value={numbers.servingSize}
+            />
+            <TextInput
+              onChangeText={setServingUnit}
+              placeholder="Serving unit"
+              placeholderTextColor="#94a3b8"
+              style={{ ...INPUT_STYLE, flex: 1 }}
+              value={servingUnit}
+            />
           </View>
 
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
@@ -199,25 +235,63 @@ export default function CustomFoodScreen() {
             ))}
           </View>
 
-          <TextInput multiline onChangeText={setNotes} placeholder="Notes" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, minHeight: 82, paddingTop: 13 }} value={notes} />
-          <TextInput onChangeText={setImageUrl} placeholder="Food photo placeholder optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={imageUrl} />
+          <TextInput
+            multiline
+            onChangeText={setNotes}
+            placeholder="Notes"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, minHeight: 82, paddingTop: 13 }}
+            value={notes}
+          />
+          <TextInput
+            onChangeText={setImageUrl}
+            placeholder="Food photo placeholder optional"
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={imageUrl}
+          />
 
-          <View style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 18, flexDirection: "row", justifyContent: "space-between", padding: 14 }}>
+          <View
+            style={{
+              alignItems: "center",
+              backgroundColor: "#f8fafc",
+              borderRadius: 18,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 14,
+            }}
+          >
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#0f172a", fontWeight: "900" }}>Share with family</Text>
-              <Text style={{ color: "#64748b", marginTop: 3 }}>Prepared for later permissions.</Text>
+              <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+                Share with family
+              </Text>
+              <Text style={{ color: "#64748b", marginTop: 3 }}>
+                Prepared for later permissions.
+              </Text>
             </View>
-            <Switch disabled onValueChange={setIsSharedWithFamily} value={isSharedWithFamily} />
+            <Switch
+              disabled
+              onValueChange={setIsSharedWithFamily}
+              value={isSharedWithFamily}
+            />
           </View>
 
           {errorMessage ? (
-            <Text style={{ color: "#dc2626", fontWeight: "800" }}>{errorMessage}</Text>
+            <Text style={{ color: "#dc2626", fontWeight: "800" }}>
+              {errorMessage}
+            </Text>
           ) : null}
 
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={saveCustomFood}
-            style={{ alignItems: "center", backgroundColor: "#f59e0b", borderRadius: 18, justifyContent: "center", minHeight: 52 }}
+            style={{
+              alignItems: "center",
+              backgroundColor: "#f59e0b",
+              borderRadius: 18,
+              justifyContent: "center",
+              minHeight: 52,
+            }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
               Save Custom Food

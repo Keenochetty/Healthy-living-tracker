@@ -15,12 +15,12 @@ export default function TabsLayout() {
           tabBarInactiveTintColor: colors.text.muted,
           tabBarLabelStyle: {
             fontSize: 12,
-            fontWeight: "700"
+            fontWeight: "700",
           },
           tabBarItemStyle: {
             borderRadius: 18,
             marginHorizontal: 2,
-            paddingVertical: 2
+            paddingVertical: 2,
           },
           tabBarActiveBackgroundColor: colors.brand.primarySoft,
           tabBarStyle: {
@@ -32,8 +32,8 @@ export default function TabsLayout() {
             height: layout.tabBarHeight,
             paddingBottom: 10,
             paddingTop: 8,
-            ...shadows.soft
-          }
+            ...shadows.soft,
+          },
         }}
       >
         <Tabs.Screen
@@ -41,8 +41,13 @@ export default function TabsLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color, focused, size }) => (
-              <AppIcon color={color} name="home" size={size} variant={focused ? "filled" : "outline"} />
-            )
+              <AppIcon
+                color={color}
+                name="home"
+                size={size}
+                variant={focused ? "filled" : "outline"}
+              />
+            ),
           }}
         />
         <Tabs.Screen
@@ -50,8 +55,13 @@ export default function TabsLayout() {
           options={{
             title: "Calendar",
             tabBarIcon: ({ color, focused, size }) => (
-              <AppIcon color={color} name="calendar" size={size} variant={focused ? "filled" : "outline"} />
-            )
+              <AppIcon
+                color={color}
+                name="calendar"
+                size={size}
+                variant={focused ? "filled" : "outline"}
+              />
+            ),
           }}
         />
         <Tabs.Screen
@@ -60,10 +70,17 @@ export default function TabsLayout() {
             title: "Scan",
             tabBarIconStyle: styles.scanIconSlot,
             tabBarIcon: ({ color, focused, size }) => (
-              <View style={[styles.scanIcon, focused && styles.scanIconFocused]}>
-                <AppIcon color={focused ? colors.card.background : color} name="camera" size={size + 3} variant="filled" />
+              <View
+                style={[styles.scanIcon, focused && styles.scanIconFocused]}
+              >
+                <AppIcon
+                  color={focused ? colors.card.background : color}
+                  name="camera"
+                  size={size + 3}
+                  variant="filled"
+                />
               </View>
-            )
+            ),
           }}
         />
         <Tabs.Screen
@@ -71,8 +88,13 @@ export default function TabsLayout() {
           options={{
             title: "Health",
             tabBarIcon: ({ color, focused, size }) => (
-              <AppIcon color={color} name="activity" size={size} variant={focused ? "filled" : "outline"} />
-            )
+              <AppIcon
+                color={color}
+                name="activity"
+                size={size}
+                variant={focused ? "filled" : "outline"}
+              />
+            ),
           }}
         />
         <Tabs.Screen
@@ -80,8 +102,13 @@ export default function TabsLayout() {
           options={{
             title: "Circle",
             tabBarIcon: ({ color, focused, size }) => (
-              <AppIcon color={color} name="family" size={size} variant={focused ? "filled" : "outline"} />
-            )
+              <AppIcon
+                color={color}
+                name="family"
+                size={size}
+                variant={focused ? "filled" : "outline"}
+              />
+            ),
           }}
         />
         <Tabs.Screen name="profiles" options={{ href: null }} />
@@ -94,7 +121,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1
+    flex: 1,
   },
   scanIcon: {
     alignItems: "center",
@@ -105,12 +132,12 @@ const styles = StyleSheet.create({
     height: 52,
     justifyContent: "center",
     width: 52,
-    ...shadows.soft
+    ...shadows.soft,
   },
   scanIconFocused: {
-    backgroundColor: colors.brand.primary
+    backgroundColor: colors.brand.primary,
   },
   scanIconSlot: {
-    marginTop: -18
-  }
+    marginTop: -18,
+  },
 });

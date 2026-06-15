@@ -7,6 +7,7 @@ Deno.serve(async (req) => {
   return jsonResponse({
     results: [],
     status: "placeholder",
-    message: "Food API keys must stay server-side. Return normalized food results only after request validation."
+    message:
+      "Food API keys must stay server-side. Return normalized food results only after request validation.",
   });
 });

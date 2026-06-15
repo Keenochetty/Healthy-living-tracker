@@ -9,7 +9,11 @@ type ThemeOptionCardProps = {
   theme: UserThemeOption;
 };
 
-export function ThemeOptionCard({ onPress, selected, theme }: ThemeOptionCardProps) {
+export function ThemeOptionCard({
+  onPress,
+  selected,
+  theme,
+}: ThemeOptionCardProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -22,7 +26,7 @@ export function ThemeOptionCard({ onPress, selected, theme }: ThemeOptionCardPro
         borderWidth: 1,
         flexDirection: "row",
         gap: 14,
-        padding: 16
+        padding: 16,
       }}
     >
       <View style={{ flexDirection: "row", gap: 5 }}>
@@ -31,7 +35,7 @@ export function ThemeOptionCard({ onPress, selected, theme }: ThemeOptionCardPro
             backgroundColor: theme.primary,
             borderRadius: 10,
             height: 20,
-            width: 20
+            width: 20,
           }}
         />
         <View
@@ -41,7 +45,7 @@ export function ThemeOptionCard({ onPress, selected, theme }: ThemeOptionCardPro
             borderRadius: 10,
             borderWidth: 1,
             height: 20,
-            width: 20
+            width: 20,
           }}
         />
         <View
@@ -49,7 +53,7 @@ export function ThemeOptionCard({ onPress, selected, theme }: ThemeOptionCardPro
             backgroundColor: theme.soft,
             borderRadius: 10,
             height: 20,
-            width: 20
+            width: 20,
           }}
         />
       </View>
@@ -58,7 +62,9 @@ export function ThemeOptionCard({ onPress, selected, theme }: ThemeOptionCardPro
         <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900" }}>
           {theme.name}
         </Text>
-        <Text style={{ color: "#64748b", marginTop: 4 }}>{theme.description}</Text>
+        <Text style={{ color: "#64748b", marginTop: 4 }}>
+          {theme.description}
+        </Text>
       </View>
 
       <View
@@ -68,7 +74,7 @@ export function ThemeOptionCard({ onPress, selected, theme }: ThemeOptionCardPro
           borderRadius: 13,
           height: 26,
           justifyContent: "center",
-          width: 26
+          width: 26,
         }}
       >
         {selected ? <Check color="#ffffff" size={16} /> : null}

@@ -89,7 +89,8 @@ export default function FitnessPreferencesScreen() {
             Keep Fitness relevant
           </Text>
           <Text style={[styles.body, { color: theme.mutedText }]}>
-            These are app goals, not medical identity. You can change this anytime.
+            These are app goals, not medical identity. You can change this
+            anytime.
           </Text>
         </View>
       </AppCard>
@@ -106,12 +107,16 @@ export default function FitnessPreferencesScreen() {
               style={[
                 styles.pill,
                 {
-                  backgroundColor: enabled ? theme.primarySoft : theme.card ?? theme.surface,
+                  backgroundColor: enabled
+                    ? theme.primarySoft
+                    : (theme.card ?? theme.surface),
                   borderColor: enabled ? theme.primary : theme.border,
                 },
               ]}
             >
-              <Text style={[styles.pillTitle, { color: theme.text }]}>{option.label}</Text>
+              <Text style={[styles.pillTitle, { color: theme.text }]}>
+                {option.label}
+              </Text>
               {option.safetyLevel !== "standard" ? (
                 <Text style={[styles.badge, { color: theme.warning }]}>
                   {option.safetyLevel.replace("-", " ")}
@@ -122,17 +127,27 @@ export default function FitnessPreferencesScreen() {
         })}
       </View>
 
-      {message ? <Text style={[styles.message, { color: theme.primary }]}>{message}</Text> : null}
+      {message ? (
+        <Text style={[styles.message, { color: theme.primary }]}>
+          {message}
+        </Text>
+      ) : null}
       <View style={styles.actions}>
         <AppButton
           onPress={() => router.back()}
           title="Skip for now"
           variant="secondary"
         />
-        <AppButton disabled={saving} onPress={save} title={saving ? "Saving..." : "Save"} />
+        <AppButton
+          disabled={saving}
+          onPress={save}
+          title={saving ? "Saving..." : "Save"}
+        />
       </View>
       <Pressable onPress={() => router.push("/fitness" as Href)}>
-        <Text style={[styles.link, { color: theme.mutedText }]}>Return to Fitness</Text>
+        <Text style={[styles.link, { color: theme.mutedText }]}>
+          Return to Fitness
+        </Text>
       </Pressable>
     </AppMainLayout>
   );
@@ -140,15 +155,37 @@ export default function FitnessPreferencesScreen() {
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: 10 },
-  badge: { fontSize: 8, fontWeight: "900", marginTop: 5, textTransform: "uppercase" },
+  badge: {
+    fontSize: 8,
+    fontWeight: "900",
+    marginTop: 5,
+    textTransform: "uppercase",
+  },
   body: { fontSize: 12, lineHeight: 18, marginTop: 3 },
   copy: { flex: 1 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  icon: { alignItems: "center", borderRadius: 16, height: 46, justifyContent: "center", width: 46 },
-  intro: { alignItems: "flex-start", borderWidth: 1, flexDirection: "row", gap: 12 },
+  icon: {
+    alignItems: "center",
+    borderRadius: 16,
+    height: 46,
+    justifyContent: "center",
+    width: 46,
+  },
+  intro: {
+    alignItems: "flex-start",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+  },
   introTitle: { fontSize: 17, fontWeight: "900" },
   link: { fontSize: 11, fontWeight: "800", textAlign: "center" },
   message: { fontSize: 12, fontWeight: "800" },
-  pill: { borderRadius: 18, borderWidth: 1, minHeight: 66, padding: 13, width: "47%" },
+  pill: {
+    borderRadius: 18,
+    borderWidth: 1,
+    minHeight: 66,
+    padding: 13,
+    width: "47%",
+  },
   pillTitle: { fontSize: 13, fontWeight: "900", lineHeight: 17 },
 });

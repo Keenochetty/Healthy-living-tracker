@@ -10,38 +10,39 @@ type CollapsibleCalendarTransformProps = {
 
 export const CALENDAR_EXPANDED_HEIGHT = 378;
 export const CALENDAR_COLLAPSED_HEIGHT = 96;
-export const CALENDAR_COLLAPSE_DISTANCE = CALENDAR_EXPANDED_HEIGHT - CALENDAR_COLLAPSED_HEIGHT;
+export const CALENDAR_COLLAPSE_DISTANCE =
+  CALENDAR_EXPANDED_HEIGHT - CALENDAR_COLLAPSED_HEIGHT;
 
 export function CollapsibleCalendarTransform({
   collapsed,
   collapsedWeek,
   expandedMonth,
-  scrollY
+  scrollY,
 }: CollapsibleCalendarTransformProps) {
   const calendarHeight = scrollY.interpolate({
     extrapolate: "clamp",
     inputRange: [0, CALENDAR_COLLAPSE_DISTANCE],
-    outputRange: [CALENDAR_EXPANDED_HEIGHT, CALENDAR_COLLAPSED_HEIGHT]
+    outputRange: [CALENDAR_EXPANDED_HEIGHT, CALENDAR_COLLAPSED_HEIGHT],
   });
   const monthOpacity = scrollY.interpolate({
     extrapolate: "clamp",
     inputRange: [0, CALENDAR_COLLAPSE_DISTANCE * 0.6],
-    outputRange: [1, 0]
+    outputRange: [1, 0],
   });
   const monthTranslateY = scrollY.interpolate({
     extrapolate: "clamp",
     inputRange: [0, CALENDAR_COLLAPSE_DISTANCE],
-    outputRange: [0, -18]
+    outputRange: [0, -18],
   });
   const weekOpacity = scrollY.interpolate({
     extrapolate: "clamp",
     inputRange: [CALENDAR_COLLAPSE_DISTANCE * 0.35, CALENDAR_COLLAPSE_DISTANCE],
-    outputRange: [0, 1]
+    outputRange: [0, 1],
   });
   const weekTranslateY = scrollY.interpolate({
     extrapolate: "clamp",
     inputRange: [0, CALENDAR_COLLAPSE_DISTANCE],
-    outputRange: [12, 0]
+    outputRange: [12, 0],
   });
 
   return (
@@ -52,8 +53,8 @@ export function CollapsibleCalendarTransform({
           styles.calendarLayer,
           {
             opacity: monthOpacity,
-            transform: [{ translateY: monthTranslateY }]
-          }
+            transform: [{ translateY: monthTranslateY }],
+          },
         ]}
       >
         {expandedMonth}
@@ -65,8 +66,8 @@ export function CollapsibleCalendarTransform({
           styles.weekLayer,
           {
             opacity: weekOpacity,
-            transform: [{ translateY: weekTranslateY }]
-          }
+            transform: [{ translateY: weekTranslateY }],
+          },
         ]}
       >
         {collapsedWeek}
@@ -77,18 +78,18 @@ export function CollapsibleCalendarTransform({
 
 const styles = StyleSheet.create({
   calendarLayer: {
-    overflow: "hidden"
+    overflow: "hidden",
   },
   calendarShell: {
     borderBottomLeftRadius: 22,
     borderBottomRightRadius: 22,
     justifyContent: "flex-start",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   weekLayer: {
     left: 0,
     position: "absolute",
     right: 0,
-    top: 0
-  }
+    top: 0,
+  },
 });

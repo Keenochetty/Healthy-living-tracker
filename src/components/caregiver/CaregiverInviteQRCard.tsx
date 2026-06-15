@@ -8,9 +8,14 @@ import { AppCard } from "@/components/ui/AppCard";
 
 type CaregiverInviteQRCardProps = { caregiverId: string };
 
-export function CaregiverInviteQRCard({ caregiverId }: CaregiverInviteQRCardProps) {
+export function CaregiverInviteQRCard({
+  caregiverId,
+}: CaregiverInviteQRCardProps) {
   const [copied, setCopied] = useState(false);
-  const payload = useMemo(() => createCaregiverQrPayload(caregiverId), [caregiverId]);
+  const payload = useMemo(
+    () => createCaregiverQrPayload(caregiverId),
+    [caregiverId],
+  );
 
   async function copyLink() {
     await Clipboard.setStringAsync(payload.link);
@@ -20,14 +25,25 @@ export function CaregiverInviteQRCard({ caregiverId }: CaregiverInviteQRCardProp
   return (
     <AppCard>
       <View style={{ alignItems: "center", gap: 14 }}>
-        <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900", alignSelf: "stretch" }}>
+        <Text
+          style={{
+            color: "#0f172a",
+            fontSize: 20,
+            fontWeight: "900",
+            alignSelf: "stretch",
+          }}
+        >
           Invite QR
         </Text>
         <QRCode size={170} value={payload.link} />
         <Text style={{ color: "#64748b", lineHeight: 20, textAlign: "center" }}>
           {payload.link}
         </Text>
-        <TouchableOpacity activeOpacity={0.85} onPress={copyLink} style={buttonStyle}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={copyLink}
+          style={buttonStyle}
+        >
           <Text style={{ color: "#ffffff", fontWeight: "900" }}>
             {copied ? "Copied" : "Copy invite link"}
           </Text>
@@ -40,4 +56,12 @@ export function CaregiverInviteQRCard({ caregiverId }: CaregiverInviteQRCardProp
   );
 }
 
-const buttonStyle = { alignItems: "center" as const, backgroundColor: "#4f46e5", borderRadius: 18, justifyContent: "center" as const, minHeight: 52, paddingHorizontal: 18, width: "100%" as const };
+const buttonStyle = {
+  alignItems: "center" as const,
+  backgroundColor: "#4f46e5",
+  borderRadius: 18,
+  justifyContent: "center" as const,
+  minHeight: 52,
+  paddingHorizontal: 18,
+  width: "100%" as const,
+};

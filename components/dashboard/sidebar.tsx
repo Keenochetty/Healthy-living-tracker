@@ -25,9 +25,17 @@ export function Sidebar() {
         </div>
         <AnimatePresence initial={false}>
           {!collapsed ? (
-            <motion.div animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} initial={{ opacity: 0, x: -8 }}>
-              <p className="whitespace-nowrap text-sm font-semibold text-white">Family Health</p>
-              <p className="whitespace-nowrap text-xs text-slate-400">AI care dashboard</p>
+            <motion.div
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              initial={{ opacity: 0, x: -8 }}
+            >
+              <p className="whitespace-nowrap text-sm font-semibold text-white">
+                Family Health
+              </p>
+              <p className="whitespace-nowrap text-xs text-slate-400">
+                AI care dashboard
+              </p>
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -42,21 +50,36 @@ export function Sidebar() {
               className={cn(
                 "group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-slate-400 transition duration-300 hover:bg-white/10 hover:text-white",
                 collapsed && "justify-center",
-                active && "bg-sky-400/15 text-white shadow-[0_12px_34px_rgba(14,165,233,0.16)]"
+                active &&
+                  "bg-sky-400/15 text-white shadow-[0_12px_34px_rgba(14,165,233,0.16)]",
               )}
               href={item.href}
               key={item.href}
               title={collapsed ? item.label : undefined}
             >
-              <Icon className={cn("h-4 w-4 shrink-0", active && "text-sky-300")} />
-              {!collapsed ? <span className="truncate">{item.label}</span> : null}
+              <Icon
+                className={cn("h-4 w-4 shrink-0", active && "text-sky-300")}
+              />
+              {!collapsed ? (
+                <span className="truncate">{item.label}</span>
+              ) : null}
             </Link>
           );
         })}
       </nav>
       <div className="absolute bottom-5 left-3 right-3">
-        <Button className={cn("w-full", collapsed && "px-0")} size={collapsed ? "icon" : "default"} type="button" variant="outline" onClick={() => setCollapsed((value) => !value)}>
-          {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        <Button
+          className={cn("w-full", collapsed && "px-0")}
+          size={collapsed ? "icon" : "default"}
+          type="button"
+          variant="outline"
+          onClick={() => setCollapsed((value) => !value)}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="h-4 w-4" />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" />
+          )}
           {!collapsed ? "Collapse" : null}
         </Button>
       </div>

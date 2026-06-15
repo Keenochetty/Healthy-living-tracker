@@ -6,6 +6,7 @@ Deno.serve(async (req) => {
 
   return jsonResponse({
     status: "placeholder",
-    message: "Private signed URL generation must validate JWT, profile permissions, record access, and audit metadata before using service-role storage access."
+    message:
+      "Private signed URL generation must validate JWT, profile permissions, record access, and audit metadata before using service-role storage access.",
   });
 });

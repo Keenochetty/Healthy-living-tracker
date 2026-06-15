@@ -13,5 +13,7 @@ export function lightImpact() {
 }
 
 export function successImpact() {
-  void runHaptic(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
+  void runHaptic(() =>
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
+  );
 }

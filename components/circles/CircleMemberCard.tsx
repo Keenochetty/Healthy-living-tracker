@@ -5,7 +5,7 @@ import {
   canManageCircleMembers,
   circleRelationshipLabels,
   circleRoleLabels,
-  getCircleRoleTone
+  getCircleRoleTone,
 } from "@/constants/circles";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
@@ -18,7 +18,12 @@ type CircleMemberCardProps = {
   onView?: (member: CircleMember) => void;
 };
 
-export function CircleMemberCard({ currentUserRole, member, onManage, onView }: CircleMemberCardProps) {
+export function CircleMemberCard({
+  currentUserRole,
+  member,
+  onManage,
+  onView,
+}: CircleMemberCardProps) {
   const canManage = canManageCircleMembers(currentUserRole);
   const initials = member.displayName
     .split(" ")
@@ -28,7 +33,11 @@ export function CircleMemberCard({ currentUserRole, member, onManage, onView }: 
     .join("");
 
   return (
-    <Pressable accessibilityRole="button" onPress={() => onView?.(member)} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => onView?.(member)}
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+    >
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>{initials || "M"}</Text>
       </View>
@@ -36,26 +45,44 @@ export function CircleMemberCard({ currentUserRole, member, onManage, onView }: 
       <View style={styles.copy}>
         <View style={styles.titleRow}>
           <Text style={styles.name}>{member.displayName}</Text>
-          {member.isCurrentUser ? <StatusPill label="You" tone="success" /> : null}
+          {member.isCurrentUser ? (
+            <StatusPill label="You" tone="success" />
+          ) : null}
         </View>
-        <Text style={styles.meta}>{member.email ?? member.notes ?? "Circle member"}</Text>
+        <Text style={styles.meta}>
+          {member.email ?? member.notes ?? "Circle member"}
+        </Text>
         <View style={styles.badges}>
-          <StatusPill label={circleRoleLabels[member.role]} tone={getCircleRoleTone(member.role)} />
+          <StatusPill
+            label={circleRoleLabels[member.role]}
+            tone={getCircleRoleTone(member.role)}
+          />
           <StatusPill label={circleRelationshipLabels[member.relationship]} />
-          {member.status !== "active" ? <StatusPill label={member.status === "pending" ? "Pending" : "Mock"} tone="warning" /> : null}
+          {member.status !== "active" ? (
+            <StatusPill
+              label={member.status === "pending" ? "Pending" : "Mock"}
+              tone="warning"
+            />
+          ) : null}
         </View>
       </View>
 
       <View style={styles.actions}>
         {canManage ? (
           <QuickActionButton
-            icon={<AppIcon color={colors.brand.primary} name="settings" size={18} />}
+            icon={
+              <AppIcon color={colors.brand.primary} name="settings" size={18} />
+            }
             label="Manage"
             onPress={() => onManage?.(member)}
             toneColor={colors.brand.primary}
           />
         ) : (
-          <QuickActionButton label="View" onPress={() => onView?.(member)} toneColor={colors.text.muted} />
+          <QuickActionButton
+            label="View"
+            onPress={() => onView?.(member)}
+            toneColor={colors.text.muted}
+          />
         )}
       </View>
     </Pressable>
@@ -64,7 +91,7 @@ export function CircleMemberCard({ currentUserRole, member, onManage, onView }: 
 
 const styles = StyleSheet.create({
   actions: {
-    alignItems: "flex-start"
+    alignItems: "flex-start",
   },
   avatar: {
     alignItems: "center",
@@ -72,18 +99,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     height: 50,
     justifyContent: "center",
-    width: 50
+    width: 50,
   },
   avatarText: {
     color: colors.brand.primary,
     fontSize: 17,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   badges: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
-    marginTop: spacing.xs
+    marginTop: spacing.xs,
   },
   card: {
     alignItems: "center",
@@ -94,32 +121,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.md,
-    padding: spacing.md
+    padding: spacing.md,
   },
   copy: {
     flex: 1,
     gap: spacing.xs,
-    minWidth: 190
+    minWidth: 190,
   },
   meta: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   name: {
     color: colors.text.primary,
     flex: 1,
     fontSize: 17,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   pressed: {
     opacity: 0.84,
-    transform: [{ scale: 0.99 }]
+    transform: [{ scale: 0.99 }],
   },
   titleRow: {
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
-  }
+    gap: spacing.sm,
+  },
 });

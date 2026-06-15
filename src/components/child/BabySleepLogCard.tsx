@@ -15,12 +15,17 @@ const QUALITY_OPTIONS: Array<NonNullable<BabySleepLog["quality"]>> = [
   "poor",
   "okay",
   "good",
-  "great"
+  "great",
 ];
 
-export function BabySleepLogCard({ childId, latestSleep, onChange }: BabySleepLogCardProps) {
+export function BabySleepLogCard({
+  childId,
+  latestSleep,
+  onChange,
+}: BabySleepLogCardProps) {
   const [durationMinutes, setDurationMinutes] = useState("45");
-  const [quality, setQuality] = useState<NonNullable<BabySleepLog["quality"]>>("good");
+  const [quality, setQuality] =
+    useState<NonNullable<BabySleepLog["quality"]>>("good");
   const [notes, setNotes] = useState("");
 
   async function handleSave() {
@@ -32,7 +37,7 @@ export function BabySleepLogCard({ childId, latestSleep, onChange }: BabySleepLo
       childId,
       durationMinutes: parsedDuration,
       notes,
-      quality
+      quality,
     });
 
     setNotes("");
@@ -47,7 +52,10 @@ export function BabySleepLogCard({ childId, latestSleep, onChange }: BabySleepLo
             Sleep log
           </Text>
           <Text style={{ color: "#64748b", marginTop: 4 }}>
-            Latest: {latestSleep ? `${latestSleep.durationMinutes} minutes` : "No sleep logs yet"}
+            Latest:{" "}
+            {latestSleep
+              ? `${latestSleep.durationMinutes} minutes`
+              : "No sleep logs yet"}
           </Text>
         </View>
 
@@ -79,8 +87,14 @@ export function BabySleepLogCard({ childId, latestSleep, onChange }: BabySleepLo
           value={notes}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save sleep</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save sleep
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -90,7 +104,7 @@ export function BabySleepLogCard({ childId, latestSleep, onChange }: BabySleepLo
 function Pill({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
@@ -106,10 +120,12 @@ function Pill({
         borderRadius: 999,
         borderWidth: 1,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#0369a1" : "#475569", fontWeight: "800" }}>
+      <Text
+        style={{ color: selected ? "#0369a1" : "#475569", fontWeight: "800" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -123,7 +139,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -131,5 +147,5 @@ const buttonStyle = {
   backgroundColor: "#0284c7",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 50
+  minHeight: 50,
 };

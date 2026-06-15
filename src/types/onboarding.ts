@@ -37,7 +37,10 @@ export type HomeLayoutPreference =
   | "medication_focused"
   | "custom";
 
-export type NotificationOnboardingChoice = "not_now" | "in_app_only" | "device_notifications";
+export type NotificationOnboardingChoice =
+  | "not_now"
+  | "in_app_only"
+  | "device_notifications";
 
 export type MainHealthGoal =
   | "general_health"

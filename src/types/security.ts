@@ -1,4 +1,7 @@
-export type AppLockTiming = "immediately" | "after_1_minute" | "after_5_minutes";
+export type AppLockTiming =
+  | "immediately"
+  | "after_1_minute"
+  | "after_5_minutes";
 
 export type AppLockSettings = {
   enabled: boolean;

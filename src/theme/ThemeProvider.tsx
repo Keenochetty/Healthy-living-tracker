@@ -1,10 +1,18 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { defaultThemeKey, getTheme, type AppTheme } from "@/theme/tokens";
 import {
   getUserPreferences,
   subscribeToUserPreferences,
-  updateUserPreferences
+  updateUserPreferences,
 } from "@/lib/userPreferences";
 import type { UserThemeKey } from "@/types/profile";
 
@@ -17,7 +25,8 @@ type AppThemeContextValue = {
 const AppThemeContext = createContext<AppThemeContextValue | null>(null);
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
-  const [themeKeyState, setThemeKeyState] = useState<UserThemeKey>(defaultThemeKey);
+  const [themeKeyState, setThemeKeyState] =
+    useState<UserThemeKey>(defaultThemeKey);
 
   useEffect(() => {
     let isActive = true;
@@ -58,12 +67,16 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
     () => ({
       setThemeKey,
       theme: getTheme(themeKeyState),
-      themeKey: themeKeyState
+      themeKey: themeKeyState,
     }),
-    [setThemeKey, themeKeyState]
+    [setThemeKey, themeKeyState],
   );
 
-  return <AppThemeContext.Provider value={value}>{children}</AppThemeContext.Provider>;
+  return (
+    <AppThemeContext.Provider value={value}>
+      {children}
+    </AppThemeContext.Provider>
+  );
 }
 
 export function useAppTheme() {
@@ -73,7 +86,7 @@ export function useAppTheme() {
     return {
       setThemeKey: async () => undefined,
       theme: getTheme(defaultThemeKey),
-      themeKey: defaultThemeKey
+      themeKey: defaultThemeKey,
     };
   }
 

@@ -2,10 +2,24 @@ import * as KeepAwake from "expo-keep-awake";
 import { useEffect, useRef, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
-import { INTENSITY_OPTIONS, WORKOUT_TYPE_OPTIONS } from "@/constants/fitnessOptions";
-import { completeWorkoutSession, createWorkoutSession } from "@/lib/fitnessStorage";
-import { lightFeedback, successFeedback, warningFeedback } from "@/lib/workoutFeedback";
-import type { WorkoutIntensity, WorkoutSession, WorkoutType } from "@/types/fitness";
+import {
+  INTENSITY_OPTIONS,
+  WORKOUT_TYPE_OPTIONS,
+} from "@/constants/fitnessOptions";
+import {
+  completeWorkoutSession,
+  createWorkoutSession,
+} from "@/lib/fitnessStorage";
+import {
+  lightFeedback,
+  successFeedback,
+  warningFeedback,
+} from "@/lib/workoutFeedback";
+import type {
+  WorkoutIntensity,
+  WorkoutSession,
+  WorkoutType,
+} from "@/types/fitness";
 
 type ActiveWorkoutTimerProps = {
   onCompleted: (session: WorkoutSession) => void;
@@ -77,11 +91,11 @@ export function ActiveWorkoutTimer({ onCompleted }: ActiveWorkoutTimerProps) {
       notes,
       startedAt: startedAt ?? new Date().toISOString(),
       title,
-      workoutType
+      workoutType,
     });
     const completedSession = await completeWorkoutSession(session.id, {
       durationSeconds: elapsedSeconds,
-      endedAt: new Date().toISOString()
+      endedAt: new Date().toISOString(),
     });
 
     if (completedSession) {
@@ -92,10 +106,26 @@ export function ActiveWorkoutTimer({ onCompleted }: ActiveWorkoutTimerProps) {
   }
 
   return (
-    <View style={{ backgroundColor: "#0f172a", borderRadius: 28, gap: 14, padding: 18 }}>
+    <View
+      style={{
+        backgroundColor: "#0f172a",
+        borderRadius: 28,
+        gap: 14,
+        padding: 18,
+      }}
+    >
       <View>
-        <Text style={{ color: "#cbd5e1", fontWeight: "800" }}>Active workout</Text>
-        <Text style={{ color: "#ffffff", fontSize: 52, fontWeight: "900", marginTop: 8 }}>
+        <Text style={{ color: "#cbd5e1", fontWeight: "800" }}>
+          Active workout
+        </Text>
+        <Text
+          style={{
+            color: "#ffffff",
+            fontSize: 52,
+            fontWeight: "900",
+            marginTop: 8,
+          }}
+        >
           {formatElapsed(elapsedSeconds)}
         </Text>
       </View>
@@ -148,7 +178,9 @@ export function ActiveWorkoutTimer({ onCompleted }: ActiveWorkoutTimerProps) {
           <TimerButton label="Start" onPress={startTimer} primary />
         ) : null}
         {running ? <TimerButton label="Pause" onPress={pauseTimer} /> : null}
-        {!running && startedAt ? <TimerButton label="Resume" onPress={startTimer} primary /> : null}
+        {!running && startedAt ? (
+          <TimerButton label="Resume" onPress={startTimer} primary />
+        ) : null}
         <TimerButton label="Stop" onPress={stopTimer} danger />
         <TimerButton label="Complete" onPress={completeTimer} primary />
       </View>
@@ -161,13 +193,13 @@ const inputStyle = {
   borderRadius: 16,
   color: "#ffffff",
   minHeight: 48,
-  paddingHorizontal: 12
+  paddingHorizontal: 12,
 };
 
 function ChoicePill({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
@@ -181,10 +213,12 @@ function ChoicePill({
         backgroundColor: selected ? "#22c55e" : "#1e293b",
         borderRadius: 999,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#ffffff" : "#cbd5e1", fontWeight: "900" }}>
+      <Text
+        style={{ color: selected ? "#ffffff" : "#cbd5e1", fontWeight: "900" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -195,7 +229,7 @@ function TimerButton({
   danger = false,
   label,
   onPress,
-  primary = false
+  primary = false,
 }: {
   danger?: boolean;
   label: string;
@@ -213,7 +247,7 @@ function TimerButton({
         flexGrow: 1,
         justifyContent: "center",
         minHeight: 48,
-        paddingHorizontal: 14
+        paddingHorizontal: 14,
       }}
     >
       <Text style={{ color: "#ffffff", fontWeight: "900" }}>{label}</Text>

@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View
+  View,
 } from "react-native";
 
 import { AppButton, AppIcon } from "@/components/ui";
@@ -18,7 +18,7 @@ export function PresetChipGroup({
   onSelect,
   presets,
   selectedValue,
-  suffix = ""
+  suffix = "",
 }: {
   onSelect: (value: number) => void;
   presets: number[];
@@ -35,9 +35,17 @@ export function PresetChipGroup({
             lightImpact();
             onSelect(preset);
           }}
-          style={[styles.presetChip, selectedValue === preset ? styles.presetChipSelected : null]}
+          style={[
+            styles.presetChip,
+            selectedValue === preset ? styles.presetChipSelected : null,
+          ]}
         >
-          <Text style={[styles.presetText, selectedValue === preset ? styles.presetTextSelected : null]}>
+          <Text
+            style={[
+              styles.presetText,
+              selectedValue === preset ? styles.presetTextSelected : null,
+            ]}
+          >
             {preset}
             {suffix}
           </Text>
@@ -49,15 +57,21 @@ export function PresetChipGroup({
 
 export function ManualEntryToggle({
   enabled,
-  onToggle
+  onToggle,
 }: {
   enabled: boolean;
   onToggle: () => void;
 }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onToggle} style={styles.manualToggle}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onToggle}
+      style={styles.manualToggle}
+    >
       <AppIcon color="#6ee7c8" decorative name="edit" size={18} />
-      <Text style={styles.manualToggleText}>{enabled ? "Use presets" : "Manual entry"}</Text>
+      <Text style={styles.manualToggleText}>
+        {enabled ? "Use presets" : "Manual entry"}
+      </Text>
     </Pressable>
   );
 }
@@ -68,7 +82,7 @@ export function NumberWheelPicker({
   onChange,
   step = 1,
   suffix = "",
-  value
+  value,
 }: {
   max?: number;
   min?: number;
@@ -86,7 +100,11 @@ export function NumberWheelPicker({
   }, [max, min, step]);
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.wheelRow}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.wheelRow}
+    >
       {values.map((item) => (
         <Pressable
           accessibilityRole="button"
@@ -95,9 +113,17 @@ export function NumberWheelPicker({
             lightImpact();
             onChange(item);
           }}
-          style={[styles.wheelItem, value === item ? styles.wheelItemSelected : null]}
+          style={[
+            styles.wheelItem,
+            value === item ? styles.wheelItemSelected : null,
+          ]}
         >
-          <Text style={[styles.wheelText, value === item ? styles.wheelTextSelected : null]}>
+          <Text
+            style={[
+              styles.wheelText,
+              value === item ? styles.wheelTextSelected : null,
+            ]}
+          >
             {item}
             {suffix}
           </Text>
@@ -109,7 +135,7 @@ export function NumberWheelPicker({
 
 export function TimeWheelPicker({
   onChange,
-  valueMinutes
+  valueMinutes,
 }: {
   onChange: (value: number) => void;
   valueMinutes: number;
@@ -128,7 +154,7 @@ export function TimeWheelPicker({
 
 export function DateWheelPicker({
   onChange,
-  value
+  value,
 }: {
   onChange: (value: string) => void;
   value: string;
@@ -146,7 +172,7 @@ export function DateWheelPicker({
 
 export function QuickNoteField({
   onChangeText,
-  value
+  value,
 }: {
   onChangeText: (value: string) => void;
   value: string;
@@ -165,7 +191,7 @@ export function QuickNoteField({
 
 export function QuickSaveButton({
   onPress,
-  title = "Save"
+  title = "Save",
 }: {
   onPress: () => void;
   title?: string;
@@ -185,7 +211,7 @@ export function QuickLogBottomSheet({
   children,
   onClose,
   title,
-  visible
+  visible,
 }: {
   children: React.ReactNode;
   onClose: () => void;
@@ -193,14 +219,31 @@ export function QuickLogBottomSheet({
   visible: boolean;
 }) {
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalRoot}>
-        <Pressable accessibilityRole="button" onPress={onClose} style={styles.scrim} />
+    <Modal
+      animationType="slide"
+      onRequestClose={onClose}
+      transparent
+      visible={visible}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.modalRoot}
+      >
+        <Pressable
+          accessibilityRole="button"
+          onPress={onClose}
+          style={styles.scrim}
+        />
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>{title}</Text>
-            <Pressable accessibilityLabel="Close quick input" accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
+            <Pressable
+              accessibilityLabel="Close quick input"
+              accessibilityRole="button"
+              onPress={onClose}
+              style={styles.closeButton}
+            >
               <Text style={styles.closeText}>x</Text>
             </Pressable>
           </View>
@@ -215,18 +258,18 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8
+    gap: 8,
   },
   closeButton: {
     alignItems: "center",
     height: 44,
     justifyContent: "center",
-    width: 44
+    width: 44,
   },
   closeText: {
     color: "#cbd5e1",
     fontSize: 18,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   input: {
     backgroundColor: "rgba(255,255,255,0.08)",
@@ -236,26 +279,26 @@ const styles = StyleSheet.create({
     color: "#f8fafc",
     minHeight: 48,
     paddingHorizontal: 14,
-    paddingVertical: 10
+    paddingVertical: 10,
   },
   manualToggle: {
     alignItems: "center",
     alignSelf: "flex-start",
     flexDirection: "row",
     gap: 8,
-    minHeight: 44
+    minHeight: 44,
   },
   manualToggleText: {
     color: "#6ee7c8",
-    fontWeight: "900"
+    fontWeight: "900",
   },
   modalRoot: {
     flex: 1,
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
   },
   noteInput: {
     minHeight: 82,
-    textAlignVertical: "top"
+    textAlignVertical: "top",
   },
   presetChip: {
     backgroundColor: "rgba(255,255,255,0.08)",
@@ -264,22 +307,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 42,
     paddingHorizontal: 14,
-    paddingVertical: 10
+    paddingVertical: 10,
   },
   presetChipSelected: {
     backgroundColor: "#6ee7c8",
-    borderColor: "#6ee7c8"
+    borderColor: "#6ee7c8",
   },
   presetText: {
     color: "#e2e8f0",
-    fontWeight: "900"
+    fontWeight: "900",
   },
   presetTextSelected: {
-    color: "#10201d"
+    color: "#10201d",
   },
   scrim: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(2,6,23,0.56)"
+    backgroundColor: "rgba(2,6,23,0.56)",
   },
   sheet: {
     backgroundColor: "#111827",
@@ -287,11 +330,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderWidth: 1,
-    padding: 18
+    padding: 18,
   },
   sheetBody: {
     gap: 14,
-    paddingBottom: 12
+    paddingBottom: 12,
   },
   sheetHandle: {
     alignSelf: "center",
@@ -299,18 +342,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     height: 4,
     marginBottom: 12,
-    width: 46
+    width: 46,
   },
   sheetHeader: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10
+    marginBottom: 10,
   },
   sheetTitle: {
     color: "#f8fafc",
     fontSize: 20,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   wheelItem: {
     alignItems: "center",
@@ -319,20 +362,20 @@ const styles = StyleSheet.create({
     height: 52,
     justifyContent: "center",
     minWidth: 64,
-    paddingHorizontal: 12
+    paddingHorizontal: 12,
   },
   wheelItemSelected: {
-    backgroundColor: "#fed7aa"
+    backgroundColor: "#fed7aa",
   },
   wheelRow: {
     gap: 8,
-    paddingVertical: 4
+    paddingVertical: 4,
   },
   wheelText: {
     color: "#e2e8f0",
-    fontWeight: "900"
+    fontWeight: "900",
   },
   wheelTextSelected: {
-    color: "#431407"
-  }
+    color: "#431407",
+  },
 });

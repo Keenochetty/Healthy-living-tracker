@@ -12,7 +12,15 @@ type AppChipProps = {
   label: string;
   onPress?: () => void;
   selected?: boolean;
-  variant?: "default" | "primary" | "success" | "warning" | "danger" | "info" | "private" | "muted";
+  variant?:
+    | "default"
+    | "primary"
+    | "success"
+    | "warning"
+    | "danger"
+    | "info"
+    | "private"
+    | "muted";
 };
 
 export function AppChip({
@@ -23,14 +31,16 @@ export function AppChip({
   label,
   onPress,
   selected = false,
-  variant = "default"
+  variant = "default",
 }: AppChipProps) {
   const { theme } = useAppTheme();
   const colors = getChipColors(variant, selected, theme);
   const content = (
     <>
       {emoji ? <Text>{emoji}</Text> : icon}
-      <Text style={{ color: colors.text, fontSize: 13, fontWeight: "800" }}>{label}</Text>
+      <Text style={{ color: colors.text, fontSize: 13, fontWeight: "800" }}>
+        {label}
+      </Text>
     </>
   );
   const style = {
@@ -42,12 +52,18 @@ export function AppChip({
     flexDirection: "row" as const,
     gap: spacing.xs,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm
+    paddingVertical: spacing.sm,
   };
 
   if (onPress) {
     return (
-      <Pressable accessibilityHint={accessibilityHint} accessibilityLabel={accessibilityLabel ?? label} accessibilityRole="button" onPress={onPress} style={({ pressed }) => [style, pressed && { opacity: 0.82 }]}>
+      <Pressable
+        accessibilityHint={accessibilityHint}
+        accessibilityLabel={accessibilityLabel ?? label}
+        accessibilityRole="button"
+        onPress={onPress}
+        style={({ pressed }) => [style, pressed && { opacity: 0.82 }]}
+      >
         {content}
       </Pressable>
     );
@@ -56,9 +72,17 @@ export function AppChip({
   return <View style={style}>{content}</View>;
 }
 
-function getChipColors(variant: NonNullable<AppChipProps["variant"]>, selected: boolean, theme: ReturnType<typeof useAppTheme>["theme"]) {
+function getChipColors(
+  variant: NonNullable<AppChipProps["variant"]>,
+  selected: boolean,
+  theme: ReturnType<typeof useAppTheme>["theme"],
+) {
   if (selected) {
-    return { background: theme.primary, border: theme.primary, text: "#ffffff" };
+    return {
+      background: theme.primary,
+      border: theme.primary,
+      text: "#ffffff",
+    };
   }
 
   const map = {
@@ -69,7 +93,7 @@ function getChipColors(variant: NonNullable<AppChipProps["variant"]>, selected: 
     primary: [theme.primarySoft, theme.primarySoft, theme.primary],
     private: ["#f5f3ff", "#ddd6fe", "#7c3aed"],
     success: ["#dcfce7", "#bbf7d0", theme.success],
-    warning: ["#fef3c7", "#fde68a", theme.warning]
+    warning: ["#fef3c7", "#fde68a", theme.warning],
   } as const;
 
   const [background, border, text] = map[variant];

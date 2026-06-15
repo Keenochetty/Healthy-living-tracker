@@ -12,10 +12,23 @@ type QuickActionButtonProps = {
   toneColor?: string;
 };
 
-export function QuickActionButton({ icon, label, onPress, toneColor = colors.brand.primary }: QuickActionButtonProps) {
+export function QuickActionButton({
+  icon,
+  label,
+  onPress,
+  toneColor = colors.brand.primary,
+}: QuickActionButtonProps) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
-      {icon ? <View style={styles.icon}>{icon}</View> : <View style={[styles.iconDot, { backgroundColor: toneColor }]} />}
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+    >
+      {icon ? (
+        <View style={styles.icon}>{icon}</View>
+      ) : (
+        <View style={[styles.iconDot, { backgroundColor: toneColor }]} />
+      )}
       <Text style={styles.label}>{label}</Text>
     </Pressable>
   );
@@ -31,25 +44,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
     minHeight: layoutSpacing.touchTarget,
-    paddingHorizontal: spacing.lg
+    paddingHorizontal: spacing.lg,
   },
   icon: {
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   iconDot: {
     borderRadius: 999,
     height: 10,
-    width: 10
+    width: 10,
   },
   label: {
     color: colors.text.primary,
     fontSize: 15,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   pressed: {
     backgroundColor: colors.background.mist,
     opacity: 0.9,
-    transform: [{ scale: 0.97 }, { translateY: 1 }]
-  }
+    transform: [{ scale: 0.97 }, { translateY: 1 }],
+  },
 });

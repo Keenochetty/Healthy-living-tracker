@@ -29,8 +29,17 @@ export type FamilyMember = {
   created_at: string;
 };
 
-export type PrivacyLevel = "private" | "family_shared" | "partner_shared" | "caregiver_shared";
-export type NotificationUrgency = "normal" | "schedule" | "attention" | "important" | "emergency";
+export type PrivacyLevel =
+  | "private"
+  | "family_shared"
+  | "partner_shared"
+  | "caregiver_shared";
+export type NotificationUrgency =
+  | "normal"
+  | "schedule"
+  | "attention"
+  | "important"
+  | "emergency";
 export type CaregiverActivityType =
   | "feed"
   | "nap"

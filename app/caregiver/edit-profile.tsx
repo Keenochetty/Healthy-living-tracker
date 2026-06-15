@@ -2,7 +2,14 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, WidgetCard } from "@/components/ui";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  QuickActionButton,
+  StatusPill,
+  WidgetCard,
+} from "@/components/ui";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 import type { CaregiverCareType } from "@/types/caregiver";
@@ -14,7 +21,7 @@ function openRoute(route: string) {
 const careTypeLabels = {
   adults: "Adults",
   both: "Children and adults",
-  children: "Children"
+  children: "Children",
 } as const satisfies Record<CaregiverCareType, string>;
 
 export default function EditCaregiverProfileScreen() {
@@ -24,16 +31,24 @@ export default function EditCaregiverProfileScreen() {
   const [age, setAge] = useState("34");
   const [email, setEmail] = useState("caregiver@example.com");
   const [cellNumber, setCellNumber] = useState("+1 555 014 2700");
-  const [serviceArea, setServiceArea] = useState("North side and nearby suburbs");
+  const [serviceArea, setServiceArea] = useState(
+    "North side and nearby suburbs",
+  );
   const [yearsOfExperience, setYearsOfExperience] = useState("8");
   const [careType, setCareType] = useState<CaregiverCareType>("both");
-  const [experienceSummary, setExperienceSummary] = useState("Experienced caregiver focused on calm routines and safe handoffs.");
-  const [availabilityDays, setAvailabilityDays] = useState("Monday, Tuesday, Wednesday, Thursday, Friday");
+  const [experienceSummary, setExperienceSummary] = useState(
+    "Experienced caregiver focused on calm routines and safe handoffs.",
+  );
+  const [availabilityDays, setAvailabilityDays] = useState(
+    "Monday, Tuesday, Wednesday, Thursday, Friday",
+  );
   const [availableFromTime, setAvailableFromTime] = useState("08:00");
   const [availableToTime, setAvailableToTime] = useState("17:00");
   const [hourlyRate, setHourlyRate] = useState("24");
   const [dailyRate, setDailyRate] = useState("180");
-  const [rateNotes, setRateNotes] = useState("Rates vary by weekend coverage and overnight care.");
+  const [rateNotes, setRateNotes] = useState(
+    "Rates vary by weekend coverage and overnight care.",
+  );
 
   function handleSavePlaceholder() {
     openRoute("/caregiver/profile");
@@ -43,7 +58,13 @@ export default function EditCaregiverProfileScreen() {
     <View style={styles.root}>
       <AppScreen>
         <AppHeader
-          action={<QuickActionButton label="Cancel" onPress={() => openRoute("/caregiver/profile")} toneColor={colors.text.muted} />}
+          action={
+            <QuickActionButton
+              label="Cancel"
+              onPress={() => openRoute("/caregiver/profile")}
+              toneColor={colors.text.muted}
+            />
+          }
           eyebrow="Caregiver"
           subtitle="Edit caregiver profile fields locally for now. Persistence comes later."
           title="Edit caregiver profile"
@@ -60,17 +81,63 @@ export default function EditCaregiverProfileScreen() {
               <AppIcon color={colors.brand.primary} name="camera" size={26} />
               <Text style={styles.muted}>Profile photo placeholder</Text>
             </View>
-            <TextInput onChangeText={setFirstName} placeholder="First name" placeholderTextColor={colors.text.muted} style={styles.input} value={firstName} />
-            <TextInput onChangeText={setMiddleName} placeholder="Middle name optional" placeholderTextColor={colors.text.muted} style={styles.input} value={middleName} />
-            <TextInput onChangeText={setLastName} placeholder="Last name" placeholderTextColor={colors.text.muted} style={styles.input} value={lastName} />
-            <TextInput onChangeText={setAge} placeholder="Age or date of birth optional" placeholderTextColor={colors.text.muted} style={styles.input} value={age} />
-            <TextInput onChangeText={setEmail} placeholder="Email" placeholderTextColor={colors.text.muted} style={styles.input} value={email} />
-            <TextInput onChangeText={setCellNumber} placeholder="Cell number" placeholderTextColor={colors.text.muted} style={styles.input} value={cellNumber} />
-            <TextInput onChangeText={setServiceArea} placeholder="Address / service area" placeholderTextColor={colors.text.muted} style={styles.input} value={serviceArea} />
+            <TextInput
+              onChangeText={setFirstName}
+              placeholder="First name"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={firstName}
+            />
+            <TextInput
+              onChangeText={setMiddleName}
+              placeholder="Middle name optional"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={middleName}
+            />
+            <TextInput
+              onChangeText={setLastName}
+              placeholder="Last name"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={lastName}
+            />
+            <TextInput
+              onChangeText={setAge}
+              placeholder="Age or date of birth optional"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={age}
+            />
+            <TextInput
+              onChangeText={setEmail}
+              placeholder="Email"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={email}
+            />
+            <TextInput
+              onChangeText={setCellNumber}
+              placeholder="Cell number"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={cellNumber}
+            />
+            <TextInput
+              onChangeText={setServiceArea}
+              placeholder="Address / service area"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={serviceArea}
+            />
           </View>
         </WidgetCard>
 
-        <WidgetCard accentColor={colors.status.ai} subtitle="Experience, care type, availability, and rates." title="Caregiver work details">
+        <WidgetCard
+          accentColor={colors.status.ai}
+          subtitle="Experience, care type, availability, and rates."
+          title="Caregiver work details"
+        >
           <View style={styles.form}>
             <TextInput
               onChangeText={setYearsOfExperience}
@@ -83,10 +150,16 @@ export default function EditCaregiverProfileScreen() {
               {(["children", "adults", "both"] as const).map((type) => (
                 <QuickActionButton
                   key={type}
-                  icon={careType === type ? <AppIcon color={colors.status.ai} name="sync" size={18} /> : undefined}
+                  icon={
+                    careType === type ? (
+                      <AppIcon color={colors.status.ai} name="sync" size={18} />
+                    ) : undefined
+                  }
                   label={careTypeLabels[type]}
                   onPress={() => setCareType(type)}
-                  toneColor={careType === type ? colors.status.ai : colors.text.muted}
+                  toneColor={
+                    careType === type ? colors.status.ai : colors.text.muted
+                  }
                 />
               ))}
             </View>
@@ -98,14 +171,57 @@ export default function EditCaregiverProfileScreen() {
               style={[styles.input, styles.textArea]}
               value={experienceSummary}
             />
-            <TextInput onChangeText={setAvailabilityDays} placeholder="Availability days" placeholderTextColor={colors.text.muted} style={styles.input} value={availabilityDays} />
-            <TextInput onChangeText={setAvailableFromTime} placeholder="Available from time" placeholderTextColor={colors.text.muted} style={styles.input} value={availableFromTime} />
-            <TextInput onChangeText={setAvailableToTime} placeholder="Available to time" placeholderTextColor={colors.text.muted} style={styles.input} value={availableToTime} />
-            <TextInput onChangeText={setHourlyRate} placeholder="Hourly rate" placeholderTextColor={colors.text.muted} style={styles.input} value={hourlyRate} />
-            <TextInput onChangeText={setDailyRate} placeholder="Daily rate" placeholderTextColor={colors.text.muted} style={styles.input} value={dailyRate} />
-            <TextInput multiline onChangeText={setRateNotes} placeholder="Rate notes" placeholderTextColor={colors.text.muted} style={[styles.input, styles.textArea]} value={rateNotes} />
+            <TextInput
+              onChangeText={setAvailabilityDays}
+              placeholder="Availability days"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={availabilityDays}
+            />
+            <TextInput
+              onChangeText={setAvailableFromTime}
+              placeholder="Available from time"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={availableFromTime}
+            />
+            <TextInput
+              onChangeText={setAvailableToTime}
+              placeholder="Available to time"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={availableToTime}
+            />
+            <TextInput
+              onChangeText={setHourlyRate}
+              placeholder="Hourly rate"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={hourlyRate}
+            />
+            <TextInput
+              onChangeText={setDailyRate}
+              placeholder="Daily rate"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={dailyRate}
+            />
+            <TextInput
+              multiline
+              onChangeText={setRateNotes}
+              placeholder="Rate notes"
+              placeholderTextColor={colors.text.muted}
+              style={[styles.input, styles.textArea]}
+              value={rateNotes}
+            />
             <QuickActionButton
-              icon={<AppIcon color={colors.brand.primary} name="settings" size={20} />}
+              icon={
+                <AppIcon
+                  color={colors.brand.primary}
+                  name="settings"
+                  size={20}
+                />
+              }
               label="Save placeholder"
               onPress={handleSavePlaceholder}
               toneColor={colors.brand.primary}
@@ -119,7 +235,7 @@ export default function EditCaregiverProfileScreen() {
 
 const styles = StyleSheet.create({
   form: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   input: {
     backgroundColor: colors.card.background,
@@ -129,12 +245,12 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontSize: 16,
     minHeight: 50,
-    padding: spacing.md
+    padding: spacing.md,
   },
   muted: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   photoPlaceholder: {
     alignItems: "center",
@@ -145,19 +261,19 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     justifyContent: "center",
     minHeight: 120,
-    padding: spacing.lg
+    padding: spacing.lg,
   },
   pillRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
+    flex: 1,
   },
   textArea: {
     minHeight: 96,
-    textAlignVertical: "top"
-  }
+    textAlignVertical: "top",
+  },
 });

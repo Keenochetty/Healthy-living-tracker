@@ -3,6 +3,7 @@
 You are working in the existing health app codebase. Implement the fitness/nutrition content system using the seed pack files.
 
 Goals:
+
 1. Add database support for YouTube video metadata, exercise/diet taxonomies, imported user plans, calendar activation and history.
 2. Never download, cache, rehost or strip YouTube videos. Store only video metadata and IDs. Play videos using the official YouTube embedded player.
 3. Add AI plan import flow: search -> normalize -> safety/license gate -> preview -> user edit -> import -> activate to calendar -> history.
@@ -10,9 +11,10 @@ Goals:
 5. Support diet types such as omnivore, vegetarian, vegan, pescatarian, keto, low-carb, Mediterranean, paleo, carnivore, halal, kosher, gluten-free, dairy-free, DASH, diabetes-aware, pregnancy balanced, postpartum recovery and child/teen templates.
 
 Implementation steps:
+
 - Run sql/supabase_fitness_schema.sql if not already applied.
 - Run sql/002_youtube_ai_import_schema.sql.
-- Import data/*.csv or data/*.json into the matching tables.
+- Import data/_.csv or data/_.json into the matching tables.
 - Build server-side YouTube search service from code/supabase_edge_function_youtube_search_pseudocode.ts.
 - Build admin review screen for video candidates: approve/reject, check audience safety, pregnancy/kid flags and attribution.
 - Build exercise detail UI: app-owned instructions + muscle-map + safety notes + optional YouTube embed.
@@ -28,6 +30,7 @@ Implementation steps:
 - Add history screen with completed sessions, skipped sessions, imports, edits, warnings shown, nutrition logs and AI searches.
 
 Acceptance criteria:
+
 - A user can browse DB exercises and filter by audience, level, equipment, type, muscle and safety.
 - An exercise can show its own instructions, muscle map, warnings and optional YouTube video.
 - A YouTube video is always embedded, never downloaded or rehosted.

@@ -9,40 +9,55 @@ type AppTextProps = TextProps & {
   variant?: AppTextVariant;
 };
 
-export function AppText({ color, style, variant = "body", ...props }: AppTextProps) {
-  return <Text style={[styles.base, styles[variant], color ? { color } : undefined, style]} {...props} />;
+export function AppText({
+  color,
+  style,
+  variant = "body",
+  ...props
+}: AppTextProps) {
+  return (
+    <Text
+      style={[
+        styles.base,
+        styles[variant],
+        color ? { color } : undefined,
+        style,
+      ]}
+      {...props}
+    />
+  );
 }
 
 const variants: Record<AppTextVariant, TextStyle> = {
   body: {
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
   },
   caption: {
     fontSize: 13,
-    lineHeight: 18
+    lineHeight: 18,
   },
   eyebrow: {
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 0.8,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   heading: {
     fontSize: 20,
     fontWeight: "800",
-    lineHeight: 26
+    lineHeight: 26,
   },
   title: {
     fontSize: 30,
     fontWeight: "800",
-    lineHeight: 36
-  }
+    lineHeight: 36,
+  },
 };
 
 const styles = StyleSheet.create({
   base: {
-    color: theme.colors.text
+    color: theme.colors.text,
   },
-  ...variants
+  ...variants,
 });

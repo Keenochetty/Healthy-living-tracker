@@ -13,7 +13,13 @@ type SettingsRowProps = {
   subtitle?: string;
 };
 
-export function SettingsRow({ accessory, icon, label, onPress, subtitle }: SettingsRowProps) {
+export function SettingsRow({
+  accessory,
+  icon,
+  label,
+  onPress,
+  subtitle,
+}: SettingsRowProps) {
   return (
     <Pressable
       accessibilityRole={onPress ? "button" : undefined}
@@ -34,7 +40,7 @@ export function SettingsRow({ accessory, icon, label, onPress, subtitle }: Setti
 const styles = StyleSheet.create({
   copy: {
     flex: 1,
-    gap: spacing.xs
+    gap: spacing.xs,
   },
   icon: {
     alignItems: "center",
@@ -42,15 +48,15 @@ const styles = StyleSheet.create({
     borderRadius: componentRadius.chip,
     height: 36,
     justifyContent: "center",
-    width: 36
+    width: 36,
   },
   label: {
     color: colors.text.primary,
     fontSize: 16,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   pressed: {
-    opacity: 0.78
+    opacity: 0.78,
   },
   row: {
     alignItems: "center",
@@ -61,11 +67,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     minHeight: layoutSpacing.touchTarget + 12,
-    padding: spacing.lg
+    padding: spacing.lg,
   },
   subtitle: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
-  }
+    lineHeight: 20,
+  },
 });

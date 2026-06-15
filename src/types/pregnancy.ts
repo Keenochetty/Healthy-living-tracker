@@ -1,6 +1,10 @@
 import type { WidgetKey } from "@/types/app";
 
-export type PregnancyStatus = "disabled" | "active" | "shared_view_only" | "ended";
+export type PregnancyStatus =
+  | "disabled"
+  | "active"
+  | "shared_view_only"
+  | "ended";
 export type PregnancyDateBasis =
   | "last_menstrual_period"
   | "estimated_due_date"

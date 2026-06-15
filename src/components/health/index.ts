@@ -4,15 +4,21 @@ export { HealthQuickWidget } from "./HealthQuickWidget";
 export {
   AVAILABLE_HEALTH_WIDGETS,
   DEFAULT_SELECTED_HEALTH_WIDGET_IDS,
-  HealthWidgetCustomizerSheet
+  HealthWidgetCustomizerSheet,
 } from "./HealthWidgetCustomizerSheet";
-export type { HealthWidgetId, HealthWidgetOption } from "./HealthWidgetCustomizerSheet";
+export type {
+  HealthWidgetId,
+  HealthWidgetOption,
+} from "./HealthWidgetCustomizerSheet";
 export { HealthRealmPlaceholderScreen } from "./HealthRealmPlaceholderScreen";
 export { GeneralHealthScreen } from "./GeneralHealthScreen";
 export { GeneralHealthLogSheet } from "./GeneralHealthLogSheet";
 export { GeneralHealthActivityTimeline } from "./GeneralHealthActivityTimeline";
 export { GeneralHealthActivityDetailSheet } from "./GeneralHealthActivityDetailSheet";
-export { GeneralHealthActivityProvider, useGeneralHealthActivity } from "./GeneralHealthActivityProvider";
+export {
+  GeneralHealthActivityProvider,
+  useGeneralHealthActivity,
+} from "./GeneralHealthActivityProvider";
 export { GeneralHealthHistoryScreen } from "./GeneralHealthHistoryScreen";
 export { HealthNotesScreen } from "./HealthNotesScreen";
 export { HeartRateDetailScreen } from "./HeartRateDetailScreen";

@@ -8,7 +8,7 @@ export const healthRealmAccents = {
   baby: "hsl(198, 82%, 62%)",
   family: "hsl(39, 88%, 56%)",
   records: "hsl(262, 64%, 58%)",
-  meds: "hsl(252, 72%, 64%)"
+  meds: "hsl(252, 72%, 64%)",
 } as const;
 
 export const healthLightTheme = {
@@ -33,7 +33,7 @@ export const healthLightTheme = {
   ring: "hsl(174, 58%, 34%)",
   surfaceSoft: "hsl(42, 48%, 96%)",
   surfaceRaised: "#ffffff",
-  surfaceGlass: "rgba(255, 255, 255, 0.74)"
+  surfaceGlass: "rgba(255, 255, 255, 0.74)",
 } as const;
 
 export const healthDarkTheme = {
@@ -58,7 +58,7 @@ export const healthDarkTheme = {
   ring: "hsl(174, 62%, 48%)",
   surfaceSoft: "hsl(222, 38%, 7%)",
   surfaceRaised: "hsl(222, 32%, 10%)",
-  surfaceGlass: "rgba(18, 23, 34, 0.76)"
+  surfaceGlass: "rgba(18, 23, 34, 0.76)",
 } as const;
 
 export type HealthColorTheme = {
@@ -68,7 +68,7 @@ export type HealthColorTheme = {
 export const healthRadius = {
   card: 22,
   panel: 28,
-  pill: 999
+  pill: 999,
 } as const;
 
 export const healthShadows = {
@@ -77,22 +77,22 @@ export const healthShadows = {
     shadowColor: "#0f172a",
     shadowOffset: { width: 0, height: 18 },
     shadowOpacity: 0.08,
-    shadowRadius: 23
+    shadowRadius: 23,
   } satisfies ViewStyle,
   card: {
     elevation: 3,
     shadowColor: "#0f172a",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.07,
-    shadowRadius: 15
+    shadowRadius: 15,
   } satisfies ViewStyle,
   floating: {
     elevation: 10,
     shadowColor: "#0f172a",
     shadowOffset: { width: 0, height: 24 },
     shadowOpacity: 0.14,
-    shadowRadius: 33
-  } satisfies ViewStyle
+    shadowRadius: 33,
+  } satisfies ViewStyle,
 } as const;
 
 export const healthDarkShadows = {
@@ -101,25 +101,28 @@ export const healthDarkShadows = {
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 18 },
     shadowOpacity: 0.28,
-    shadowRadius: 23
+    shadowRadius: 23,
   } satisfies ViewStyle,
   card: {
     elevation: 3,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.24,
-    shadowRadius: 15
+    shadowRadius: 15,
   } satisfies ViewStyle,
   floating: {
     elevation: 10,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 24 },
     shadowOpacity: 0.34,
-    shadowRadius: 33
-  } satisfies ViewStyle
+    shadowRadius: 33,
+  } satisfies ViewStyle,
 } as const;
 
-export function realmAccentWithOpacity(accent: keyof typeof healthRealmAccents, opacity = 0.12) {
+export function realmAccentWithOpacity(
+  accent: keyof typeof healthRealmAccents,
+  opacity = 0.12,
+) {
   const hsl = healthRealmAccents[accent].replace("hsl(", "").replace(")", "");
   return `hsla(${hsl}, ${opacity})`;
 }

@@ -17,10 +17,14 @@ const moods: Array<{ emoji: string; key: MoodKey; label: string }> = [
   { emoji: "😐", key: "okay", label: "Okay" },
   { emoji: "😴", key: "tired", label: "Tired" },
   { emoji: "😔", key: "low", label: "Low" },
-  { emoji: "😣", key: "stressed", label: "Stressed" }
+  { emoji: "😣", key: "stressed", label: "Stressed" },
 ];
 
-export function MoodEmojiSelector({ compact = false, onSelect, selectedMood }: MoodEmojiSelectorProps) {
+export function MoodEmojiSelector({
+  compact = false,
+  onSelect,
+  selectedMood,
+}: MoodEmojiSelectorProps) {
   const { theme } = useAppTheme();
 
   return (
@@ -34,7 +38,9 @@ export function MoodEmojiSelector({ compact = false, onSelect, selectedMood }: M
             onPress={() => onSelect(mood.key)}
             style={({ pressed }) => ({
               alignItems: "center",
-              backgroundColor: selected ? theme.primary : theme.surfaceSoft ?? theme.surface,
+              backgroundColor: selected
+                ? theme.primary
+                : (theme.surfaceSoft ?? theme.surface),
               borderColor: selected ? theme.primary : theme.border,
               borderRadius: radius.full,
               borderWidth: 1,
@@ -47,12 +53,18 @@ export function MoodEmojiSelector({ compact = false, onSelect, selectedMood }: M
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 6 },
               shadowOpacity: selected ? 0.16 : 0,
-              shadowRadius: 12
+              shadowRadius: 12,
             })}
           >
             <Text style={{ fontSize: compact ? 20 : 24 }}>{mood.emoji}</Text>
             {!compact ? (
-              <Text style={{ color: selected ? "#171b22" : theme.mutedText, fontSize: 11, fontWeight: "900" }}>
+              <Text
+                style={{
+                  color: selected ? "#171b22" : theme.mutedText,
+                  fontSize: 11,
+                  fontWeight: "900",
+                }}
+              >
                 {mood.label}
               </Text>
             ) : null}

@@ -14,7 +14,7 @@ type PendingRequestCardProps = {
 export function PendingRequestCard({
   onApprove,
   onDecline,
-  request
+  request,
 }: PendingRequestCardProps) {
   const role = getCircleRoleDefinition(request.role);
 
@@ -26,7 +26,7 @@ export function PendingRequestCard({
         borderRadius: 24,
         borderWidth: 1,
         gap: 12,
-        padding: 15
+        padding: 15,
       }}
     >
       <View style={{ alignItems: "center", flexDirection: "row", gap: 12 }}>
@@ -37,7 +37,7 @@ export function PendingRequestCard({
             borderRadius: 18,
             height: 48,
             justifyContent: "center",
-            width: 48
+            width: 48,
           }}
         >
           <Text style={{ color: "#7c3aed", fontSize: 15, fontWeight: "900" }}>
@@ -49,12 +49,16 @@ export function PendingRequestCard({
           <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900" }}>
             {request.displayName}
           </Text>
-          <Text style={{ color: "#64748b", marginTop: 3 }}>Requested as {role.label}</Text>
+          <Text style={{ color: "#64748b", marginTop: 3 }}>
+            Requested as {role.label}
+          </Text>
         </View>
       </View>
 
       {request.message ? (
-        <Text style={{ color: "#64748b", lineHeight: 20 }}>{request.message}</Text>
+        <Text style={{ color: "#64748b", lineHeight: 20 }}>
+          {request.message}
+        </Text>
       ) : null}
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
@@ -88,7 +92,7 @@ function RequestButton({
   icon,
   label,
   onPress,
-  primary = false
+  primary = false,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -107,11 +111,13 @@ function RequestButton({
         flexDirection: "row",
         gap: 7,
         justifyContent: "center",
-        minHeight: 44
+        minHeight: 44,
       }}
     >
       {icon}
-      <Text style={{ color: primary ? "#ffffff" : "#6d28d9", fontWeight: "900" }}>
+      <Text
+        style={{ color: primary ? "#ffffff" : "#6d28d9", fontWeight: "900" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

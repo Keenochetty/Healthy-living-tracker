@@ -13,7 +13,8 @@ export function CycleDisclaimerCard() {
         {CYCLE_DISCLAIMER}
       </Text>
       <Text style={{ color: "#9a3412", lineHeight: 21, marginTop: 6 }}>
-        This app does not diagnose pregnancy, fertility issues or medical conditions.
+        This app does not diagnose pregnancy, fertility issues or medical
+        conditions.
       </Text>
     </AppCard>
   );

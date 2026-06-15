@@ -16,7 +16,7 @@ export function PermissionChip({ permission }: PermissionChipProps) {
         borderRadius: 999,
         borderWidth: 1,
         paddingHorizontal: 10,
-        paddingVertical: 6
+        paddingVertical: 6,
       }}
     >
       <Text style={{ color: "#6d28d9", fontSize: 12, fontWeight: "700" }}>

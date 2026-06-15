@@ -13,7 +13,7 @@ export default function Index() {
           alignItems: "center",
           backgroundColor: "#fbf8ff",
           flex: 1,
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <ActivityIndicator color="#7c3aed" />
@@ -26,8 +26,6 @@ export default function Index() {
   }
 
   return (
-    <Redirect
-      href={(isOnboarded ? "/(tabs)/today" : "/onboarding") as Href}
-    />
+    <Redirect href={(isOnboarded ? "/(tabs)/today" : "/onboarding") as Href} />
   );
 }

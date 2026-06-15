@@ -9,7 +9,11 @@ type CalendarHaloProps = {
   type?: CalendarIndicatorType;
 };
 
-export function CalendarHalo({ color, size = 42, type = "halo" }: CalendarHaloProps) {
+export function CalendarHalo({
+  color,
+  size = 42,
+  type = "halo",
+}: CalendarHaloProps) {
   const borderWidth = type === "double_halo" ? 3 : 2;
   return (
     <View
@@ -21,7 +25,7 @@ export function CalendarHalo({ color, size = 42, type = "halo" }: CalendarHaloPr
         borderWidth,
         height: size,
         position: "absolute",
-        width: size
+        width: size,
       }}
     />
   );

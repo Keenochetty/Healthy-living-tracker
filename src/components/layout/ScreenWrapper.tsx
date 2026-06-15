@@ -7,6 +7,9 @@ type ScreenWrapperProps = {
   children: ReactNode;
 };
 
-export function ScreenWrapper({ backgroundColor, children }: ScreenWrapperProps) {
+export function ScreenWrapper({
+  backgroundColor,
+  children,
+}: ScreenWrapperProps) {
   return <AppScreen backgroundColor={backgroundColor}>{children}</AppScreen>;
 }

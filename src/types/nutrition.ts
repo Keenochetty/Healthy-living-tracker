@@ -29,12 +29,7 @@ export type NutritionGoalType =
   | "workout_recovery"
   | "custom";
 
-export type ActivityLevel =
-  | "low"
-  | "light"
-  | "moderate"
-  | "high"
-  | "athlete";
+export type ActivityLevel = "low" | "light" | "moderate" | "high" | "athlete";
 
 export type NutritionDayAdjustment = {
   caloriesAdjustmentPercent?: number;
@@ -99,8 +94,18 @@ export type NutritionDiaryEntry = {
   calories: number;
   carbsG: number;
   createdAt: string;
-  confirmationSource?: "manual_review" | "edited_suggestion" | "accepted_suggestion";
-  entrySource?: "manual" | "food_details" | "custom_food" | "saved_meal" | "recipe" | "barcode_scan" | "smart_log";
+  confirmationSource?:
+    | "manual_review"
+    | "edited_suggestion"
+    | "accepted_suggestion";
+  entrySource?:
+    | "manual"
+    | "food_details"
+    | "custom_food"
+    | "saved_meal"
+    | "recipe"
+    | "barcode_scan"
+    | "smart_log";
   entryDate: string;
   fatG: number;
   fiberG?: number;
@@ -144,7 +149,14 @@ export type NutritionDailyNote = {
 };
 
 export type HealthQuickWidget = {
-  category: "nutrition" | "fitness" | "medication" | "biometrics" | "device_sync" | "wellness" | "custom";
+  category:
+    | "nutrition"
+    | "fitness"
+    | "medication"
+    | "biometrics"
+    | "device_sync"
+    | "wellness"
+    | "custom";
   id: string;
   isPinned: boolean;
   orderIndex: number;
@@ -156,7 +168,11 @@ export type HealthQuickWidget = {
 
 export type FoodSource = "local" | "custom" | "usda" | "open_food_facts";
 
-export type FoodDataQuality = "verified" | "community" | "estimated" | "unknown";
+export type FoodDataQuality =
+  | "verified"
+  | "community"
+  | "estimated"
+  | "unknown";
 
 export type ServingOption = {
   gramsEquivalent?: number;
@@ -544,7 +560,15 @@ export type NutritionInsight = {
   message: string;
   severity: "info" | "positive" | "gentle_warning";
   title: string;
-  type: "protein" | "water" | "calories" | "fiber" | "logging" | "workout_food" | "goal" | "general";
+  type:
+    | "protein"
+    | "water"
+    | "calories"
+    | "fiber"
+    | "logging"
+    | "workout_food"
+    | "goal"
+    | "general";
 };
 
 export type MostLoggedFood = {

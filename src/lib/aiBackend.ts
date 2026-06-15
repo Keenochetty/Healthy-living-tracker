@@ -23,7 +23,7 @@ export async function callAiExtractFunction(input: AiExtractFunctionInput) {
   const { data, error } = await supabase.functions.invoke<
     AiExtractFunctionResponse | { error: string; ok: false }
   >("ai-extract", {
-    body: input
+    body: input,
   });
 
   if (error) {
@@ -59,7 +59,7 @@ export async function callAssistantFunction(input: AssistantFunctionInput) {
   const { data, error } = await supabase.functions.invoke<
     AssistantFunctionResponse | { error: string; ok: false }
   >("health-assistant", {
-    body: input
+    body: input,
   });
 
   if (error) {

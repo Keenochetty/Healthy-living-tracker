@@ -18,12 +18,15 @@ type AiInputPickerCardProps = {
   selection: AiInputSelection;
 };
 
-export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProps) {
+export function AiInputPickerCard({
+  onChange,
+  selection,
+}: AiInputPickerCardProps) {
   async function takePhoto() {
     if (!(await ensureImagePickerPermission("camera"))) return;
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: false,
-      quality: 0.7
+      quality: 0.7,
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -32,7 +35,7 @@ export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProp
         fileName: asset.fileName ?? "camera-photo.jpg",
         inputType: "image",
         localUri: asset.uri,
-        mimeType: asset.mimeType
+        mimeType: asset.mimeType,
       });
     }
   }
@@ -41,7 +44,7 @@ export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProp
     if (!(await ensureImagePickerPermission("photos"))) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: false,
-      quality: 0.7
+      quality: 0.7,
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -50,13 +53,15 @@ export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProp
         fileName: asset.fileName ?? "photo.jpg",
         inputType: "image",
         localUri: asset.uri,
-        mimeType: asset.mimeType
+        mimeType: asset.mimeType,
       });
     }
   }
 
   async function chooseDocument() {
-    const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true });
+    const result = await DocumentPicker.getDocumentAsync({
+      copyToCacheDirectory: true,
+    });
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
@@ -64,7 +69,7 @@ export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProp
         fileName: asset.name,
         inputType: "document",
         localUri: asset.uri,
-        mimeType: asset.mimeType
+        mimeType: asset.mimeType,
       });
     }
   }
@@ -91,7 +96,7 @@ export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProp
           minHeight: 82,
           paddingHorizontal: 14,
           paddingVertical: 12,
-          textAlignVertical: "top"
+          textAlignVertical: "top",
         }}
         value={selection.textInput ?? ""}
       />
@@ -105,7 +110,13 @@ export function AiInputPickerCard({ onChange, selection }: AiInputPickerCardProp
   );
 }
 
-function PickerButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PickerButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -114,7 +125,7 @@ function PickerButton({ label, onPress }: { label: string; onPress: () => void }
         backgroundColor: "#ede9fe",
         borderRadius: 999,
         paddingHorizontal: 12,
-        paddingVertical: 10
+        paddingVertical: 10,
       }}
     >
       <Text style={{ color: "#7c3aed", fontWeight: "900" }}>{label}</Text>

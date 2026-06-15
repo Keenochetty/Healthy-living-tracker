@@ -10,7 +10,7 @@ type ProtectedRouteProps = {
 
 export function ProtectedRoute({
   children,
-  fallbackHref = "/auth" as Href
+  fallbackHref = "/auth" as Href,
 }: ProtectedRouteProps) {
   const { initialized, isAuthenticated } = useAuth();
 
@@ -21,7 +21,7 @@ export function ProtectedRoute({
           alignItems: "center",
           backgroundColor: "#fbf8ff",
           flex: 1,
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <ActivityIndicator color="#7c3aed" />

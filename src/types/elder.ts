@@ -1,4 +1,8 @@
-export type ElderConsentStatus = "not_requested" | "requested" | "granted" | "declined";
+export type ElderConsentStatus =
+  | "not_requested"
+  | "requested"
+  | "granted"
+  | "declined";
 
 export type ElderProfile = {
   allergies?: string[];

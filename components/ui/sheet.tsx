@@ -19,7 +19,7 @@ export function SheetContent({
       <DialogPrimitive.Content
         className={cn(
           "fixed inset-y-0 right-0 z-50 w-full max-w-xl overflow-y-auto border-l border-white/10 bg-slate-950/90 p-5 text-white shadow-2xl backdrop-blur-2xl",
-          className
+          className,
         )}
         {...props}
       >
@@ -33,7 +33,10 @@ export function SheetContent({
   );
 }
 
-export const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+export const SheetHeader = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("mb-4 space-y-1.5 pr-8", className)} {...props} />
 );
 

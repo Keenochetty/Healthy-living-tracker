@@ -57,7 +57,12 @@ export interface PrivacyPolicyVersion {
   version: string;
   title: string;
   content: string;
-  status: "draft" | "legal_review_needed" | "approved" | "published" | "archived";
+  status:
+    | "draft"
+    | "legal_review_needed"
+    | "approved"
+    | "published"
+    | "archived";
   effectiveDate?: string;
   createdAt: string;
   updatedAt: string;
@@ -99,7 +104,13 @@ export interface DataDeletionRequest {
     | "records"
     | "full_account";
   categories?: string[];
-  status: "requested" | "confirmed" | "processing" | "completed" | "cancelled" | "failed";
+  status:
+    | "requested"
+    | "confirmed"
+    | "processing"
+    | "completed"
+    | "cancelled"
+    | "failed";
   requestedAt: string;
   confirmedAt?: string;
   completedAt?: string;

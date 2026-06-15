@@ -6,8 +6,18 @@ import { CaregiverPermissionCard } from "@/components/privacy/CaregiverPermissio
 import { PermissionToggleGroup } from "@/components/privacy/PermissionToggleGroup";
 import { PrivacySummaryCard } from "@/components/privacy/PrivacySummaryCard";
 import { TeenTransitionCard } from "@/components/privacy/TeenTransitionCard";
-import { AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, WidgetCard } from "@/components/ui";
-import { PERMISSION_CATEGORIES, PERMISSION_PRESETS } from "@/constants/permissions";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  QuickActionButton,
+  StatusPill,
+  WidgetCard,
+} from "@/components/ui";
+import {
+  PERMISSION_CATEGORIES,
+  PERMISSION_PRESETS,
+} from "@/constants/permissions";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 import {
@@ -17,16 +27,21 @@ import {
   canViewAdultPrivateData,
   createPermissionAuditPlaceholder,
   getSafePreview,
-  toPermissionGrants
+  toPermissionGrants,
 } from "@/lib/permissions";
-import type { PermissionAuditEvent, PermissionCategory } from "@/types/permissions";
+import type {
+  PermissionAuditEvent,
+  PermissionCategory,
+} from "@/types/permissions";
 
 export default function PermissionsScreen() {
-  const [enabledPermissions, setEnabledPermissions] = useState<PermissionCategory[]>([
+  const [enabledPermissions, setEnabledPermissions] = useState<
+    PermissionCategory[]
+  >([
     "view_calendar",
     "view_health_summary",
     "view_emergency_info",
-    "view_care_notes"
+    "view_care_notes",
   ]);
   const [auditEvents, setAuditEvents] = useState<PermissionAuditEvent[]>([]);
   const summary = useMemo(
@@ -36,16 +51,23 @@ export default function PermissionsScreen() {
         currentUserRole: "admin",
         isAssignedCaregiver: false,
         isSelfManagedAdult: false,
-        privacyLevel: "private"
+        privacyLevel: "private",
       }),
-    []
+    [],
   );
-  const grants = toPermissionGrants(enabledPermissions, ["view_emergency_info"]);
-  const presets = PERMISSION_PRESETS.map((preset) => buildPermissionPreset(preset));
+  const grants = toPermissionGrants(enabledPermissions, [
+    "view_emergency_info",
+  ]);
+  const presets = PERMISSION_PRESETS.map((preset) =>
+    buildPermissionPreset(preset),
+  );
   const adultPrivateDataVisible = canViewAdultPrivateData(enabledPermissions);
   const canAdminManageCircle = canManageCircle("admin");
 
-  function handlePermissionChange(category: PermissionCategory, enabled: boolean) {
+  function handlePermissionChange(
+    category: PermissionCategory,
+    enabled: boolean,
+  ) {
     setEnabledPermissions((current) => {
       if (enabled) {
         return Array.from(new Set([...current, category]));
@@ -53,7 +75,12 @@ export default function PermissionsScreen() {
 
       return current.filter((item) => item !== category);
     });
-    setAuditEvents((current) => [createPermissionAuditPlaceholder(category, enabled), ...current].slice(0, 4));
+    setAuditEvents((current) =>
+      [createPermissionAuditPlaceholder(category, enabled), ...current].slice(
+        0,
+        4,
+      ),
+    );
   }
 
   return (
@@ -66,7 +93,10 @@ export default function PermissionsScreen() {
           title="Permissions"
         />
 
-        <PrivacySummaryCard summary={summary} title="Adult private profile rules" />
+        <PrivacySummaryCard
+          summary={summary}
+          title="Adult private profile rules"
+        />
 
         <WidgetCard
           accentColor={colors.status.ai}
@@ -79,7 +109,10 @@ export default function PermissionsScreen() {
               <View key={preset.name} style={styles.presetCard}>
                 <View style={styles.presetTitleRow}>
                   <Text style={styles.presetTitle}>{preset.title}</Text>
-                  <StatusPill label={`${preset.grants.length} permissions`} tone={preset.name === "custom" ? "warning" : "default"} />
+                  <StatusPill
+                    label={`${preset.grants.length} permissions`}
+                    tone={preset.name === "custom" ? "warning" : "default"}
+                  />
                 </View>
                 <Text style={styles.muted}>{preset.description}</Text>
               </View>
@@ -89,16 +122,34 @@ export default function PermissionsScreen() {
 
         <WidgetCard
           accentColor={colors.brand.primary}
-          action={<StatusPill label={`${PERMISSION_CATEGORIES.length} permissions`} tone="success" />}
+          action={
+            <StatusPill
+              label={`${PERMISSION_CATEGORIES.length} permissions`}
+              tone="success"
+            />
+          }
           subtitle="These toggles are local placeholders for future persistence and policy enforcement."
           title="Permission settings"
         >
-          <PermissionToggleGroup grants={grants} onChange={handlePermissionChange} />
+          <PermissionToggleGroup
+            grants={grants}
+            onChange={handlePermissionChange}
+          />
         </WidgetCard>
 
-        <AdultConsentCard onRequestConsent={() => handlePermissionChange("manage_privacy", true)} />
-        <TeenTransitionCard onOpenSettings={() => handlePermissionChange("view_health_summary", true)} />
-        <CaregiverPermissionCard onConfigure={() => handlePermissionChange("assign_caregivers", true)} />
+        <AdultConsentCard
+          onRequestConsent={() =>
+            handlePermissionChange("manage_privacy", true)
+          }
+        />
+        <TeenTransitionCard
+          onOpenSettings={() =>
+            handlePermissionChange("view_health_summary", true)
+          }
+        />
+        <CaregiverPermissionCard
+          onConfigure={() => handlePermissionChange("assign_caregivers", true)}
+        />
 
         <WidgetCard
           accentColor={colors.status.success}
@@ -107,24 +158,35 @@ export default function PermissionsScreen() {
           title="Sensitive data preview"
         >
           <Text style={styles.previewText}>
-            {getSafePreview("Medication: private adult health note hidden from dashboard cards.", adultPrivateDataVisible)}
+            {getSafePreview(
+              "Medication: private adult health note hidden from dashboard cards.",
+              adultPrivateDataVisible,
+            )}
           </Text>
           <Text style={styles.muted}>
-            Admin circle management is {canAdminManageCircle ? "allowed" : "blocked"}, but adult private health access still needs consent.
+            Admin circle management is{" "}
+            {canAdminManageCircle ? "allowed" : "blocked"}, but adult private
+            health access still needs consent.
           </Text>
         </WidgetCard>
 
         <WidgetCard
           accentColor={colors.status.warning}
-          action={<StatusPill label={`${auditEvents.length} local`} tone="warning" />}
+          action={
+            <StatusPill label={`${auditEvents.length} local`} tone="warning" />
+          }
           subtitle="Permission changes create a local audit placeholder only. No backend audit table is written yet."
           title="Audit log placeholder"
         >
           {auditEvents.length > 0 ? (
             <View style={styles.auditList}>
               {auditEvents.map((event) => (
-                <Text key={`${event.createdAt}-${event.category}`} style={styles.muted}>
-                  {event.category} {event.enabled ? "enabled" : "disabled"} at {new Date(event.createdAt).toLocaleTimeString()}
+                <Text
+                  key={`${event.createdAt}-${event.category}`}
+                  style={styles.muted}
+                >
+                  {event.category} {event.enabled ? "enabled" : "disabled"} at{" "}
+                  {new Date(event.createdAt).toLocaleTimeString()}
                 </Text>
               ))}
             </View>
@@ -133,13 +195,17 @@ export default function PermissionsScreen() {
           )}
           <View style={styles.placeholderList}>
             <QuickActionButton
-              icon={<AppIcon color={colors.status.warning} name="lock" size={20} />}
+              icon={
+                <AppIcon color={colors.status.warning} name="lock" size={20} />
+              }
               label="Write audit placeholder"
               onPress={() => handlePermissionChange("view_activity_logs", true)}
               toneColor={colors.status.warning}
             />
           </View>
-          <Text style={styles.muted}>No database policies are created in this foundation step.</Text>
+          <Text style={styles.muted}>
+            No database policies are created in this foundation step.
+          </Text>
         </WidgetCard>
       </AppScreen>
     </View>
@@ -148,17 +214,17 @@ export default function PermissionsScreen() {
 
 const styles = StyleSheet.create({
   auditList: {
-    gap: spacing.xs
+    gap: spacing.xs,
   },
   muted: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   placeholderList: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   presetCard: {
     backgroundColor: colors.background.warm,
@@ -166,31 +232,31 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     gap: spacing.sm,
-    padding: spacing.md
+    padding: spacing.md,
   },
   presetList: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   presetTitle: {
     color: colors.text.primary,
     flex: 1,
     fontSize: 16,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   presetTitleRow: {
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   previewText: {
     color: colors.text.primary,
     fontSize: 16,
     fontWeight: "800",
-    lineHeight: 22
+    lineHeight: 22,
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
-  }
+    flex: 1,
+  },
 });

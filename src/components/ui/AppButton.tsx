@@ -1,4 +1,10 @@
-import { ActivityIndicator, Pressable, Text, View, type PressableProps } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  View,
+  type PressableProps,
+} from "react-native";
 
 import { radius, spacing } from "@/theme/tokens";
 import { useAppTheme } from "@/theme/ThemeProvider";
@@ -14,7 +20,13 @@ type AppButtonProps = PressableProps & {
   size?: "sm" | "md" | "lg";
   title?: string;
   tone?: "primary" | "secondary";
-  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger" | "success";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "ghost"
+    | "outline"
+    | "danger"
+    | "success";
 };
 
 export function AppButton({
@@ -54,15 +66,25 @@ export function AppButton({
           minHeight,
           opacity: disabled ? 0.55 : 1,
           paddingHorizontal: size === "sm" ? spacing.md : spacing.xl,
-          paddingVertical: size === "sm" ? spacing.sm : spacing.md
+          paddingVertical: size === "sm" ? spacing.sm : spacing.md,
         },
         state.pressed && { opacity: 0.82 },
-        typeof style === "function" ? style(state) : style
+        typeof style === "function" ? style(state) : style,
       ]}
       {...props}
     >
-      {loading ? <ActivityIndicator color={colors.color} size="small" /> : iconLeft}
-      <Text style={{ color: colors.color, fontSize: size === "sm" ? 13 : 16, fontWeight: "900" }}>
+      {loading ? (
+        <ActivityIndicator color={colors.color} size="small" />
+      ) : (
+        iconLeft
+      )}
+      <Text
+        style={{
+          color: colors.color,
+          fontSize: size === "sm" ? 13 : 16,
+          fontWeight: "900",
+        }}
+      >
         {buttonTitle}
       </Text>
       {!loading ? iconRight : null}
@@ -70,19 +92,46 @@ export function AppButton({
   );
 }
 
-function getButtonColors(variant: NonNullable<AppButtonProps["variant"]>, theme: ReturnType<typeof useAppTheme>["theme"]) {
+function getButtonColors(
+  variant: NonNullable<AppButtonProps["variant"]>,
+  theme: ReturnType<typeof useAppTheme>["theme"],
+) {
   switch (variant) {
     case "secondary":
-      return { backgroundColor: theme.primarySoft, borderColor: theme.primarySoft, color: theme.primary };
+      return {
+        backgroundColor: theme.primarySoft,
+        borderColor: theme.primarySoft,
+        color: theme.primary,
+      };
     case "ghost":
-      return { backgroundColor: "transparent", borderColor: "transparent", color: theme.primary };
+      return {
+        backgroundColor: "transparent",
+        borderColor: "transparent",
+        color: theme.primary,
+      };
     case "outline":
-      return { backgroundColor: "transparent", borderColor: theme.border, color: theme.primary };
+      return {
+        backgroundColor: "transparent",
+        borderColor: theme.border,
+        color: theme.primary,
+      };
     case "danger":
-      return { backgroundColor: theme.danger, borderColor: theme.danger, color: "#ffffff" };
+      return {
+        backgroundColor: theme.danger,
+        borderColor: theme.danger,
+        color: "#ffffff",
+      };
     case "success":
-      return { backgroundColor: theme.success, borderColor: theme.success, color: "#ffffff" };
+      return {
+        backgroundColor: theme.success,
+        borderColor: theme.success,
+        color: "#ffffff",
+      };
     default:
-      return { backgroundColor: theme.primary, borderColor: theme.primary, color: "#ffffff" };
+      return {
+        backgroundColor: theme.primary,
+        borderColor: theme.primary,
+        color: "#ffffff",
+      };
   }
 }

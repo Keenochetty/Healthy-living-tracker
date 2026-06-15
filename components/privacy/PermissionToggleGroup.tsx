@@ -5,7 +5,7 @@ import {
   permissionCategoryDescriptions,
   permissionCategoryLabels,
   permissionGroupLabels,
-  permissionGroups
+  permissionGroups,
 } from "@/constants/permissions";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
@@ -16,13 +16,20 @@ type PermissionToggleGroupProps = {
   onChange: (category: PermissionGrant["category"], enabled: boolean) => void;
 };
 
-export function PermissionToggleGroup({ grants, onChange }: PermissionToggleGroupProps) {
-  const grantsByCategory = new Map(grants.map((grant) => [grant.category, grant]));
+export function PermissionToggleGroup({
+  grants,
+  onChange,
+}: PermissionToggleGroupProps) {
+  const grantsByCategory = new Map(
+    grants.map((grant) => [grant.category, grant]),
+  );
 
   return (
     <View style={styles.container}>
       {Object.entries(permissionGroups).map(([group, categories]) => {
-        const groupGrants = categories.map((category) => grantsByCategory.get(category)).filter((grant): grant is PermissionGrant => Boolean(grant));
+        const groupGrants = categories
+          .map((category) => grantsByCategory.get(category))
+          .filter((grant): grant is PermissionGrant => Boolean(grant));
 
         if (groupGrants.length === 0) {
           return null;
@@ -30,7 +37,13 @@ export function PermissionToggleGroup({ grants, onChange }: PermissionToggleGrou
 
         return (
           <View key={group} style={styles.group}>
-            <Text style={styles.groupTitle}>{permissionGroupLabels[group as keyof typeof permissionGroupLabels]}</Text>
+            <Text style={styles.groupTitle}>
+              {
+                permissionGroupLabels[
+                  group as keyof typeof permissionGroupLabels
+                ]
+              }
+            </Text>
             <View style={styles.groupBody}>
               {groupGrants.map((grant) => (
                 <ToggleRow
@@ -38,7 +51,9 @@ export function PermissionToggleGroup({ grants, onChange }: PermissionToggleGrou
                   key={grant.category}
                   label={permissionCategoryLabels[grant.category]}
                   onValueChange={(enabled) => onChange(grant.category, enabled)}
-                  subtitle={grant.note ?? permissionCategoryDescriptions[grant.category]}
+                  subtitle={
+                    grant.note ?? permissionCategoryDescriptions[grant.category]
+                  }
                   value={grant.enabled}
                 />
               ))}
@@ -52,17 +67,17 @@ export function PermissionToggleGroup({ grants, onChange }: PermissionToggleGrou
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.lg
+    gap: spacing.lg,
   },
   group: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   groupBody: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   groupTitle: {
     color: colors.text.primary,
     fontSize: 15,
-    fontWeight: "900"
-  }
+    fontWeight: "900",
+  },
 });

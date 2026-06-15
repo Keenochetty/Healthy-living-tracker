@@ -12,7 +12,10 @@ type ElderCareNotesCardProps = {
   onChange?: () => void;
 };
 
-export function ElderCareNotesCard({ elderId, onChange }: ElderCareNotesCardProps) {
+export function ElderCareNotesCard({
+  elderId,
+  onChange,
+}: ElderCareNotesCardProps) {
   const [note, setNote] = useState("");
   const [noteType, setNoteType] = useState<ElderCareNoteType>("general");
   const [notes, setNotes] = useState<ElderCareNote[]>([]);
@@ -43,7 +46,7 @@ export function ElderCareNotesCard({ elderId, onChange }: ElderCareNotesCardProp
       elderId,
       note,
       noteType,
-      title
+      title,
     });
 
     setNote("");
@@ -70,17 +73,45 @@ export function ElderCareNotesCard({ elderId, onChange }: ElderCareNotesCardProp
           ))}
         </View>
 
-        <TextInput onChangeText={setTitle} placeholder="Title" placeholderTextColor="#94a3b8" style={inputStyle} value={title} />
-        <TextInput multiline onChangeText={setNote} placeholder="Note" placeholderTextColor="#94a3b8" style={[inputStyle, { minHeight: 84, textAlignVertical: "top" }]} value={note} />
+        <TextInput
+          onChangeText={setTitle}
+          placeholder="Title"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={title}
+        />
+        <TextInput
+          multiline
+          onChangeText={setNote}
+          placeholder="Note"
+          placeholderTextColor="#94a3b8"
+          style={[inputStyle, { minHeight: 84, textAlignVertical: "top" }]}
+          value={note}
+        />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
           <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save note</Text>
         </TouchableOpacity>
 
         {notes.slice(0, 4).map((item) => (
-          <View key={item.id} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>{item.title}</Text>
-            <Text style={{ color: "#64748b", marginTop: 3 }}>{item.noteType}</Text>
+          <View
+            key={item.id}
+            style={{
+              backgroundColor: "#f8fafc",
+              borderRadius: 16,
+              padding: 12,
+            }}
+          >
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+              {item.title}
+            </Text>
+            <Text style={{ color: "#64748b", marginTop: 3 }}>
+              {item.noteType}
+            </Text>
           </View>
         ))}
       </View>
@@ -95,7 +126,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -103,5 +134,5 @@ const buttonStyle = {
   backgroundColor: "#0f766e",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

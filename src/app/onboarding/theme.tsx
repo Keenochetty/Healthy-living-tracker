@@ -6,7 +6,10 @@ import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 import { ThemeOptionCard } from "@/components/onboarding/ThemeOptionCard";
 import { USER_THEMES, getUserTheme } from "@/constants/themes";
-import { getUserPreferences, updateUserPreferences } from "@/lib/userPreferences";
+import {
+  getUserPreferences,
+  updateUserPreferences,
+} from "@/lib/userPreferences";
 import { useAppTheme } from "@/theme/ThemeProvider";
 import type { UserThemeKey } from "@/types/profile";
 
@@ -16,7 +19,9 @@ export default function OnboardingThemeScreen() {
   const theme = getUserTheme(themeKey);
 
   useEffect(() => {
-    getUserPreferences().then((preferences) => setThemeKey(preferences.themeKey));
+    getUserPreferences().then((preferences) =>
+      setThemeKey(preferences.themeKey),
+    );
   }, []);
 
   async function continueToUnits() {
@@ -31,7 +36,11 @@ export default function OnboardingThemeScreen() {
 
   return (
     <ScreenWrapper>
-      <OnboardingProgress primaryColor={theme.primary} step={4} totalSteps={5} />
+      <OnboardingProgress
+        primaryColor={theme.primary}
+        step={4}
+        totalSteps={5}
+      />
 
       <View style={{ gap: 5 }}>
         <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
@@ -53,7 +62,11 @@ export default function OnboardingThemeScreen() {
         ))}
       </View>
 
-      <PrimaryButton color={theme.primary} label="Continue" onPress={continueToUnits} />
+      <PrimaryButton
+        color={theme.primary}
+        label="Continue"
+        onPress={continueToUnits}
+      />
     </ScreenWrapper>
   );
 }
@@ -61,7 +74,7 @@ export default function OnboardingThemeScreen() {
 function PrimaryButton({
   color,
   label,
-  onPress
+  onPress,
 }: {
   color: string;
   label: string;
@@ -76,10 +89,12 @@ function PrimaryButton({
         backgroundColor: color,
         borderRadius: 18,
         justifyContent: "center",
-        minHeight: 54
+        minHeight: 54,
       }}
     >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }

@@ -12,24 +12,37 @@ export type CircleRoleDefinition = {
 
 export { CIRCLE_PERMISSION_LABELS };
 
-const scheduleSharing: CirclePermissionKey[] = ["view_profile", "view_schedule"];
+const scheduleSharing: CirclePermissionKey[] = [
+  "view_profile",
+  "view_schedule",
+];
 
 export const CIRCLE_ROLES: CircleRoleDefinition[] = [
   {
-    defaultPermissions: [...scheduleSharing, "add_schedule", "view_emergency_contacts"],
+    defaultPermissions: [
+      ...scheduleSharing,
+      "add_schedule",
+      "view_emergency_contacts",
+    ],
     description: "A trusted partner with shared planning access.",
     emoji: "💜",
     key: "partner",
     label: "Partner",
-    privacyNote: "Health records stay private unless you explicitly share them."
+    privacyNote:
+      "Health records stay private unless you explicitly share them.",
   },
   {
-    defaultPermissions: [...scheduleSharing, "add_schedule", "view_emergency_contacts"],
+    defaultPermissions: [
+      ...scheduleSharing,
+      "add_schedule",
+      "view_emergency_contacts",
+    ],
     description: "A spouse with shared planning access.",
     emoji: "💍",
     key: "spouse",
     label: "Spouse",
-    privacyNote: "Health records stay private unless you explicitly share them."
+    privacyNote:
+      "Health records stay private unless you explicitly share them.",
   },
   {
     defaultPermissions: [...scheduleSharing],
@@ -37,7 +50,7 @@ export const CIRCLE_ROLES: CircleRoleDefinition[] = [
     emoji: "🤗",
     key: "close_friend",
     label: "Close friend",
-    privacyNote: "Only the schedule and profile basics are shared by default."
+    privacyNote: "Only the schedule and profile basics are shared by default.",
   },
   {
     defaultPermissions: [...scheduleSharing, "view_emergency_contacts"],
@@ -45,15 +58,18 @@ export const CIRCLE_ROLES: CircleRoleDefinition[] = [
     emoji: "🌱",
     key: "parent",
     label: "Parent",
-    privacyNote: "Child profile access remains parent-controlled and must be granted separately."
+    privacyNote:
+      "Child profile access remains parent-controlled and must be granted separately.",
   },
   {
     defaultPermissions: [...scheduleSharing],
-    description: "A grandparent with access to selected family planning details.",
+    description:
+      "A grandparent with access to selected family planning details.",
     emoji: "🌼",
     key: "grandparent",
     label: "Grandparent",
-    privacyNote: "Private health and child-care details are not shared by default."
+    privacyNote:
+      "Private health and child-care details are not shared by default.",
   },
   {
     defaultPermissions: ["view_profile"],
@@ -61,7 +77,7 @@ export const CIRCLE_ROLES: CircleRoleDefinition[] = [
     emoji: "🧒",
     key: "child",
     label: "Child",
-    privacyNote: "A parent or guardian controls child profile permissions."
+    privacyNote: "A parent or guardian controls child profile permissions.",
   },
   {
     defaultPermissions: [...scheduleSharing],
@@ -69,15 +85,16 @@ export const CIRCLE_ROLES: CircleRoleDefinition[] = [
     emoji: "🌿",
     key: "adult_child",
     label: "Adult child",
-    privacyNote: "Health and elder-care records require explicit permission."
+    privacyNote: "Health and elder-care records require explicit permission.",
   },
   {
     defaultPermissions: ["view_profile", "view_schedule", "add_care_notes"],
-    description: "A caregiver who can work only with assigned care information.",
+    description:
+      "A caregiver who can work only with assigned care information.",
     emoji: "🤝",
     key: "caregiver",
     label: "Caregiver",
-    privacyNote: "Caregiver access is limited to assigned care information."
+    privacyNote: "Caregiver access is limited to assigned care information.",
   },
   {
     defaultPermissions: [...scheduleSharing],
@@ -85,7 +102,8 @@ export const CIRCLE_ROLES: CircleRoleDefinition[] = [
     emoji: "🌳",
     key: "elder",
     label: "Elder",
-    privacyNote: "Health and care details remain private unless explicitly shared."
+    privacyNote:
+      "Health and care details remain private unless explicitly shared.",
   },
   {
     defaultPermissions: [...scheduleSharing],
@@ -93,10 +111,14 @@ export const CIRCLE_ROLES: CircleRoleDefinition[] = [
     emoji: "🏡",
     key: "other_family",
     label: "Other family",
-    privacyNote: "Health records stay private unless you explicitly share them."
-  }
+    privacyNote:
+      "Health records stay private unless you explicitly share them.",
+  },
 ];
 
 export function getCircleRoleDefinition(role: CircleRole) {
-  return CIRCLE_ROLES.find((definition) => definition.key === role) ?? CIRCLE_ROLES[0];
+  return (
+    CIRCLE_ROLES.find((definition) => definition.key === role) ??
+    CIRCLE_ROLES[0]
+  );
 }

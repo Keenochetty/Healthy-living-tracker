@@ -14,7 +14,7 @@ type GrowthMeasurementCardProps = {
 export function GrowthMeasurementCard({
   childId,
   latestGrowth,
-  onChange
+  onChange,
 }: GrowthMeasurementCardProps) {
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -30,7 +30,7 @@ export function GrowthMeasurementCard({
       heightUnit: "cm",
       notes,
       weight: toNumber(weight),
-      weightUnit: "kg"
+      weightUnit: "kg",
     });
 
     setWeight("");
@@ -48,13 +48,15 @@ export function GrowthMeasurementCard({
             Growth measurements
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Store measurements only. This app does not interpret growth or diagnose concerns.
+            Store measurements only. This app does not interpret growth or
+            diagnose concerns.
           </Text>
         </View>
 
         {latestGrowth ? (
           <Text style={{ color: "#64748b" }}>
-            Latest: {latestGrowth.weight ?? "-"} kg, {latestGrowth.height ?? "-"} cm
+            Latest: {latestGrowth.weight ?? "-"} kg,{" "}
+            {latestGrowth.height ?? "-"} cm
           </Text>
         ) : null}
 
@@ -90,8 +92,14 @@ export function GrowthMeasurementCard({
           value={notes}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save measurement</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save measurement
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -111,7 +119,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -119,5 +127,5 @@ const buttonStyle = {
   backgroundColor: "#7c3aed",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 50
+  minHeight: 50,
 };

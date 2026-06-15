@@ -7,7 +7,7 @@ import type {
   WorkoutIntensity,
   WorkoutPlan,
   WorkoutSession,
-  WorkoutType
+  WorkoutType,
 } from "@/types/fitness";
 import { getTodayStepCount } from "./pedometer";
 
@@ -95,7 +95,7 @@ function startOfWeek(date: Date) {
 function sortSessions(sessions: WorkoutSession[]) {
   return [...sessions].sort(
     (left, right) =>
-      new Date(right.startedAt).getTime() - new Date(left.startedAt).getTime()
+      new Date(right.startedAt).getTime() - new Date(left.startedAt).getTime(),
   );
 }
 
@@ -116,7 +116,7 @@ export async function createWorkoutPlan(input: CreateWorkoutPlanInput) {
     targetSteps: input.targetSteps,
     title: input.title.trim(),
     updatedAt: now,
-    workoutType: input.workoutType
+    workoutType: input.workoutType,
   };
   const plans = await getWorkoutPlans();
 
@@ -127,11 +127,13 @@ export async function createWorkoutPlan(input: CreateWorkoutPlanInput) {
 
 export async function updateWorkoutPlan(
   id: string,
-  partial: Partial<Omit<WorkoutPlan, "id" | "createdAt">>
+  partial: Partial<Omit<WorkoutPlan, "id" | "createdAt">>,
 ) {
   const plans = await getWorkoutPlans();
   const updatedPlans = plans.map((plan) =>
-    plan.id === id ? { ...plan, ...partial, updatedAt: new Date().toISOString() } : plan
+    plan.id === id
+      ? { ...plan, ...partial, updatedAt: new Date().toISOString() }
+      : plan,
   );
 
   await writeJsonArray(WORKOUT_PLANS_STORAGE_KEY, updatedPlans);
@@ -143,13 +145,18 @@ export async function deleteWorkoutPlan(id: string) {
   const plans = await getWorkoutPlans();
   const plan = plans.find((item) => item.id === id) ?? null;
 
-  await writeJsonArray(WORKOUT_PLANS_STORAGE_KEY, plans.filter((item) => item.id !== id));
+  await writeJsonArray(
+    WORKOUT_PLANS_STORAGE_KEY,
+    plans.filter((item) => item.id !== id),
+  );
 
   return plan;
 }
 
 export async function getWorkoutSessions() {
-  const sessions = await readJsonArray<WorkoutSession>(WORKOUT_SESSIONS_STORAGE_KEY);
+  const sessions = await readJsonArray<WorkoutSession>(
+    WORKOUT_SESSIONS_STORAGE_KEY,
+  );
 
   return sortSessions(sessions);
 }
@@ -170,7 +177,7 @@ export async function createWorkoutSession(input: CreateWorkoutSessionInput) {
     steps: input.steps,
     title: input.title.trim(),
     updatedAt: now,
-    workoutType: input.workoutType
+    workoutType: input.workoutType,
   };
   const sessions = await getWorkoutSessions();
 
@@ -181,13 +188,13 @@ export async function createWorkoutSession(input: CreateWorkoutSessionInput) {
 
 export async function updateWorkoutSession(
   id: string,
-  partial: Partial<Omit<WorkoutSession, "id" | "createdAt">>
+  partial: Partial<Omit<WorkoutSession, "id" | "createdAt">>,
 ) {
   const sessions = await getWorkoutSessions();
   const updatedSessions = sessions.map((session) =>
     session.id === id
       ? { ...session, ...partial, updatedAt: new Date().toISOString() }
-      : session
+      : session,
   );
 
   await writeJsonArray(WORKOUT_SESSIONS_STORAGE_KEY, updatedSessions);
@@ -197,12 +204,12 @@ export async function updateWorkoutSession(
 
 export async function completeWorkoutSession(
   id: string,
-  data: Partial<Omit<WorkoutSession, "id" | "createdAt" | "completed">>
+  data: Partial<Omit<WorkoutSession, "id" | "createdAt" | "completed">>,
 ) {
   return updateWorkoutSession(id, {
     ...data,
     completed: true,
-    endedAt: data.endedAt ?? new Date().toISOString()
+    endedAt: data.endedAt ?? new Date().toISOString(),
   });
 }
 
@@ -212,7 +219,7 @@ export async function deleteWorkoutSession(id: string) {
 
   await writeJsonArray(
     WORKOUT_SESSIONS_STORAGE_KEY,
-    sessions.filter((item) => item.id !== id)
+    sessions.filter((item) => item.id !== id),
   );
 
   return session;
@@ -221,7 +228,7 @@ export async function deleteWorkoutSession(id: string) {
 export async function getIntervalPresets() {
   const presets = await readJsonArray<IntervalTimerPreset>(
     INTERVAL_PRESETS_STORAGE_KEY,
-    DEFAULT_TIMER_PRESETS
+    DEFAULT_TIMER_PRESETS,
   );
 
   if (!presets.length) {
@@ -233,14 +240,14 @@ export async function getIntervalPresets() {
 }
 
 export async function createIntervalPreset(
-  input: Omit<IntervalTimerPreset, "id" | "createdAt" | "updatedAt">
+  input: Omit<IntervalTimerPreset, "id" | "createdAt" | "updatedAt">,
 ) {
   const now = new Date().toISOString();
   const preset: IntervalTimerPreset = {
     ...input,
     createdAt: now,
     id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    updatedAt: now
+    updatedAt: now,
   };
   const presets = await getIntervalPresets();
 
@@ -251,13 +258,13 @@ export async function createIntervalPreset(
 
 export async function updateIntervalPreset(
   id: string,
-  partial: Partial<Omit<IntervalTimerPreset, "id" | "createdAt">>
+  partial: Partial<Omit<IntervalTimerPreset, "id" | "createdAt">>,
 ) {
   const presets = await getIntervalPresets();
   const updatedPresets = presets.map((preset) =>
     preset.id === id
       ? { ...preset, ...partial, updatedAt: new Date().toISOString() }
-      : preset
+      : preset,
   );
 
   await writeJsonArray(INTERVAL_PRESETS_STORAGE_KEY, updatedPresets);
@@ -271,7 +278,7 @@ export async function deleteIntervalPreset(id: string) {
 
   await writeJsonArray(
     INTERVAL_PRESETS_STORAGE_KEY,
-    presets.filter((item) => item.id !== id)
+    presets.filter((item) => item.id !== id),
   );
 
   return preset;
@@ -284,8 +291,12 @@ export async function getLatestWorkout() {
 }
 
 export async function getCurrentStreakDays() {
-  const sessions = (await getWorkoutSessions()).filter((session) => session.completed);
-  const workoutDays = new Set(sessions.map((session) => toDateKey(new Date(session.startedAt))));
+  const sessions = (await getWorkoutSessions()).filter(
+    (session) => session.completed,
+  );
+  const workoutDays = new Set(
+    sessions.map((session) => toDateKey(new Date(session.startedAt))),
+  );
   let streak = 0;
   const currentDate = new Date();
 
@@ -305,18 +316,28 @@ export async function getWeeklyFitnessSummary() {
 }
 
 export async function getTodayFitnessSummary(): Promise<FitnessSummary> {
-  const [sessions, stepsToday, latestWorkout, currentStreakDays, weeklySessions] =
-    await Promise.all([
-      getWorkoutSessions(),
-      getTodayStepCount(),
-      getLatestWorkout(),
-      getCurrentStreakDays(),
-      getWeeklyFitnessSummary()
-    ]);
+  const [
+    sessions,
+    stepsToday,
+    latestWorkout,
+    currentStreakDays,
+    weeklySessions,
+  ] = await Promise.all([
+    getWorkoutSessions(),
+    getTodayStepCount(),
+    getLatestWorkout(),
+    getCurrentStreakDays(),
+    getWeeklyFitnessSummary(),
+  ]);
   const todayKey = toDateKey(new Date());
-  const todaySessions = sessions.filter((session) => toDateKey(new Date(session.startedAt)) === todayKey);
+  const todaySessions = sessions.filter(
+    (session) => toDateKey(new Date(session.startedAt)) === todayKey,
+  );
   const activeMinutesToday = Math.round(
-    todaySessions.reduce((total, session) => total + session.durationSeconds, 0) / 60
+    todaySessions.reduce(
+      (total, session) => total + session.durationSeconds,
+      0,
+    ) / 60,
   );
   const weeklyGoalProgress = Math.min(100, (weeklySessions.length / 3) * 100);
 
@@ -326,6 +347,6 @@ export async function getTodayFitnessSummary(): Promise<FitnessSummary> {
     latestWorkout,
     stepsToday,
     weeklyGoalProgress,
-    workoutsThisWeek: weeklySessions.length
+    workoutsThisWeek: weeklySessions.length,
   };
 }

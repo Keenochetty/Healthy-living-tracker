@@ -20,7 +20,7 @@ export function FoodLogCard({ foodLog, onDelete, onEdit }: FoodLogCardProps) {
         borderRadius: 24,
         borderWidth: 1,
         gap: 12,
-        padding: 14
+        padding: 14,
       }}
     >
       <View style={{ alignItems: "center", flexDirection: "row", gap: 12 }}>
@@ -39,10 +39,12 @@ export function FoodLogCard({ foodLog, onDelete, onEdit }: FoodLogCardProps) {
               borderRadius: 16,
               height: 52,
               justifyContent: "center",
-              width: 52
+              width: 52,
             }}
           >
-            <Text style={{ color: mealType.colour, fontWeight: "900" }}>{mealType.emoji}</Text>
+            <Text style={{ color: mealType.colour, fontWeight: "900" }}>
+              {mealType.emoji}
+            </Text>
           </View>
         )}
 
@@ -52,7 +54,9 @@ export function FoodLogCard({ foodLog, onDelete, onEdit }: FoodLogCardProps) {
           </Text>
           <Text style={{ color: "#64748b", marginTop: 3 }}>
             {mealType.label}
-            {foodLog.portionDescription ? ` - ${foodLog.portionDescription}` : ""}
+            {foodLog.portionDescription
+              ? ` - ${foodLog.portionDescription}`
+              : ""}
           </Text>
           {foodLog.nutrition.calories ? (
             <Text style={{ color: "#64748b", marginTop: 3 }}>
@@ -62,7 +66,14 @@ export function FoodLogCard({ foodLog, onDelete, onEdit }: FoodLogCardProps) {
         </View>
 
         {foodLog.estimateOnly ? (
-          <View style={{ backgroundColor: "#fef3c7", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 5 }}>
+          <View
+            style={{
+              backgroundColor: "#fef3c7",
+              borderRadius: 999,
+              paddingHorizontal: 8,
+              paddingVertical: 5,
+            }}
+          >
             <Text style={{ color: "#92400e", fontSize: 11, fontWeight: "900" }}>
               Estimate
             </Text>
@@ -71,7 +82,9 @@ export function FoodLogCard({ foodLog, onDelete, onEdit }: FoodLogCardProps) {
       </View>
 
       {foodLog.notes ? (
-        <Text style={{ color: "#64748b", lineHeight: 20 }}>{foodLog.notes}</Text>
+        <Text style={{ color: "#64748b", lineHeight: 20 }}>
+          {foodLog.notes}
+        </Text>
       ) : null}
 
       <View style={{ flexDirection: "row", gap: 10 }}>
@@ -85,7 +98,7 @@ export function FoodLogCard({ foodLog, onDelete, onEdit }: FoodLogCardProps) {
 function ActionButton({
   danger = false,
   label,
-  onPress
+  onPress,
 }: {
   danger?: boolean;
   label: string;
@@ -101,10 +114,12 @@ function ActionButton({
         borderRadius: 14,
         flex: 1,
         justifyContent: "center",
-        minHeight: 42
+        minHeight: 42,
       }}
     >
-      <Text style={{ color: danger ? "#dc2626" : "#6d28d9", fontWeight: "900" }}>
+      <Text
+        style={{ color: danger ? "#dc2626" : "#6d28d9", fontWeight: "900" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

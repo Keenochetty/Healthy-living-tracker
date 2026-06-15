@@ -37,7 +37,7 @@ export function AddChildProfileCard({ onCreated }: AddChildProfileCardProps) {
       dateOfBirth: dateOfBirth.trim() || undefined,
       displayName: trimmedName,
       medicalNotes,
-      profileType
+      profileType,
     });
 
     setDisplayName("");
@@ -56,7 +56,8 @@ export function AddChildProfileCard({ onCreated }: AddChildProfileCardProps) {
             Add a child profile
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Only add this if it is useful for your family. Child access stays parent-controlled.
+            Only add this if it is useful for your family. Child access stays
+            parent-controlled.
           </Text>
         </View>
 
@@ -83,10 +84,15 @@ export function AddChildProfileCard({ onCreated }: AddChildProfileCardProps) {
                   borderRadius: 999,
                   borderWidth: 1,
                   paddingHorizontal: 12,
-                  paddingVertical: 9
+                  paddingVertical: 9,
                 }}
               >
-                <Text style={{ color: selected ? "#6d28d9" : "#475569", fontWeight: "800" }}>
+                <Text
+                  style={{
+                    color: selected ? "#6d28d9" : "#475569",
+                    fontWeight: "800",
+                  }}
+                >
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -109,10 +115,12 @@ export function AddChildProfileCard({ onCreated }: AddChildProfileCardProps) {
                   borderRadius: 16,
                   borderWidth: 1,
                   paddingHorizontal: 12,
-                  paddingVertical: 10
+                  paddingVertical: 10,
                 }}
               >
-                <Text style={{ color: "#0f172a", fontWeight: "800" }}>{option}</Text>
+                <Text style={{ color: "#0f172a", fontWeight: "800" }}>
+                  {option}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -151,7 +159,7 @@ export function AddChildProfileCard({ onCreated }: AddChildProfileCardProps) {
             backgroundColor: displayName.trim() ? "#7c3aed" : "#cbd5e1",
             borderRadius: 18,
             minHeight: 52,
-            justifyContent: "center"
+            justifyContent: "center",
           }}
         >
           <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
@@ -172,5 +180,5 @@ const inputStyle = {
   fontSize: 15,
   minHeight: 50,
   paddingHorizontal: 14,
-  paddingVertical: 12
+  paddingVertical: 12,
 };

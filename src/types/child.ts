@@ -1,6 +1,20 @@
-export type ChildProfileType = "newborn" | "infant" | "toddler" | "preschool" | "child" | "baby" | "teen";
+export type ChildProfileType =
+  | "newborn"
+  | "infant"
+  | "toddler"
+  | "preschool"
+  | "child"
+  | "baby"
+  | "teen";
 
-export type ChildGender = "boy" | "girl" | "female" | "male" | "intersex" | "other" | "prefer_not_to_say";
+export type ChildGender =
+  | "boy"
+  | "girl"
+  | "female"
+  | "male"
+  | "intersex"
+  | "other"
+  | "prefer_not_to_say";
 
 export type BabyFeedingType =
   | "breastfeeding"
@@ -11,12 +25,7 @@ export type BabyFeedingType =
   | "solids"
   | "other";
 
-export type DiaperType =
-  | "wet"
-  | "dirty"
-  | "mixed"
-  | "dry"
-  | "other";
+export type DiaperType = "wet" | "dirty" | "mixed" | "dry" | "other";
 
 export type MilestoneCategory =
   | "social_emotional"
@@ -31,11 +40,7 @@ export type MilestoneCategory =
   | "firsts"
   | "custom";
 
-export type MilestoneStatus =
-  | "observed"
-  | "not_yet"
-  | "unsure"
-  | "ask_doctor";
+export type MilestoneStatus = "observed" | "not_yet" | "unsure" | "ask_doctor";
 
 export type BabyCalendarEventType =
   | "feeding"
@@ -217,8 +222,19 @@ export type VaccinationRecord = {
   id: string;
   nextDoseDate?: string;
   notes?: string;
-  recordSource?: "clinic_card" | "healthcare_provider" | "parent_note" | "unknown";
-  routeOrSite?: "left_upper_arm" | "right_upper_arm" | "left_thigh" | "right_thigh" | "oral" | "other" | "not_sure";
+  recordSource?:
+    | "clinic_card"
+    | "healthcare_provider"
+    | "parent_note"
+    | "unknown";
+  routeOrSite?:
+    | "left_upper_arm"
+    | "right_upper_arm"
+    | "left_thigh"
+    | "right_thigh"
+    | "oral"
+    | "other"
+    | "not_sure";
   scheduledDate?: string;
   status: VaccinationStatus;
   updatedAt: string;
@@ -298,7 +314,16 @@ export interface BabyMedicineLog {
 export type BabyVaccineRecord = VaccinationRecord;
 
 export interface BabyLearnCard {
-  category: "safe_sleep" | "milestones" | "growth" | "feeding" | "solids" | "allergens" | "vaccines" | "care" | "emergency";
+  category:
+    | "safe_sleep"
+    | "milestones"
+    | "growth"
+    | "feeding"
+    | "solids"
+    | "allergens"
+    | "vaccines"
+    | "care"
+    | "emergency";
   disclaimer: string;
   id: string;
   lastCheckedAt: string;

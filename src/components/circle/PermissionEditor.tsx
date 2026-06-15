@@ -18,28 +18,31 @@ type PermissionGroup = {
 const PERMISSION_GROUPS: PermissionGroup[] = [
   {
     keys: ["view_profile", "view_schedule", "add_schedule"],
-    title: "Basic"
+    title: "Basic",
   },
   {
     keys: [
       "view_health_summary",
       "view_medications",
       "view_allergies",
-      "view_emergency_contacts"
+      "view_emergency_contacts",
     ],
-    title: "Health"
+    title: "Health",
   },
   {
     keys: ["add_care_notes", "add_health_updates", "upload_documents"],
-    title: "Care"
+    title: "Care",
   },
   {
     keys: ["manage_child_profile", "manage_elder_profile", "emergency_access"],
-    title: "Management"
-  }
+    title: "Management",
+  },
 ];
 
-export function PermissionEditor({ onChange, permissions }: PermissionEditorProps) {
+export function PermissionEditor({
+  onChange,
+  permissions,
+}: PermissionEditorProps) {
   function togglePermission(permission: CirclePermissionKey, enabled: boolean) {
     const nextPermissions = enabled
       ? Array.from(new Set([...permissions, permission]))
@@ -57,7 +60,7 @@ export function PermissionEditor({ onChange, permissions }: PermissionEditorProp
           borderRadius: 18,
           flexDirection: "row",
           gap: 10,
-          padding: 13
+          padding: 13,
         }}
       >
         <ShieldAlert color="#ea580c" size={19} />
@@ -76,7 +79,7 @@ export function PermissionEditor({ onChange, permissions }: PermissionEditorProp
             borderWidth: 1,
             overflow: "hidden",
             paddingHorizontal: 14,
-            paddingTop: 14
+            paddingTop: 14,
           }}
         >
           <Text style={{ color: "#0f172a", fontSize: 17, fontWeight: "900" }}>

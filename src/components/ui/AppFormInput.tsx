@@ -1,9 +1,20 @@
-import { Text, TextInput, type KeyboardTypeOptions, type StyleProp, type TextInputProps, View, type ViewStyle } from "react-native";
+import {
+  Text,
+  TextInput,
+  type KeyboardTypeOptions,
+  type StyleProp,
+  type TextInputProps,
+  View,
+  type ViewStyle,
+} from "react-native";
 
 import { radius, spacing } from "@/theme/tokens";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
-type AppFormInputProps = Omit<TextInputProps, "placeholder" | "value" | "onChangeText"> & {
+type AppFormInputProps = Omit<
+  TextInputProps,
+  "placeholder" | "value" | "onChangeText"
+> & {
   containerStyle?: StyleProp<ViewStyle>;
   errorText?: string;
   helperText?: string;
@@ -14,12 +25,22 @@ type AppFormInputProps = Omit<TextInputProps, "placeholder" | "value" | "onChang
   value: string;
 };
 
-export function AppFormInput({ containerStyle, errorText, helperText, label, multiline, style, ...props }: AppFormInputProps) {
+export function AppFormInput({
+  containerStyle,
+  errorText,
+  helperText,
+  label,
+  multiline,
+  style,
+  ...props
+}: AppFormInputProps) {
   const { theme } = useAppTheme();
 
   return (
     <View style={[{ gap: spacing.xs }, containerStyle]}>
-      {label ? <Text style={{ color: theme.text, fontWeight: "900" }}>{label}</Text> : null}
+      {label ? (
+        <Text style={{ color: theme.text, fontWeight: "900" }}>{label}</Text>
+      ) : null}
       <TextInput
         multiline={multiline}
         placeholderTextColor="#94a3b8"
@@ -34,14 +55,20 @@ export function AppFormInput({ containerStyle, errorText, helperText, label, mul
             minHeight: multiline ? 82 : 52,
             paddingHorizontal: spacing.lg,
             paddingTop: multiline ? spacing.md : undefined,
-            textAlignVertical: multiline ? "top" : "center"
+            textAlignVertical: multiline ? "top" : "center",
           },
-          style
+          style,
         ]}
         {...props}
       />
-      {errorText ? <Text style={{ color: theme.danger, fontSize: 12 }}>{errorText}</Text> : null}
-      {!errorText && helperText ? <Text style={{ color: theme.mutedText, fontSize: 12 }}>{helperText}</Text> : null}
+      {errorText ? (
+        <Text style={{ color: theme.danger, fontSize: 12 }}>{errorText}</Text>
+      ) : null}
+      {!errorText && helperText ? (
+        <Text style={{ color: theme.mutedText, fontSize: 12 }}>
+          {helperText}
+        </Text>
+      ) : null}
     </View>
   );
 }

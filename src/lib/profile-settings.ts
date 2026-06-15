@@ -1,17 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { APP_MODULES, CORE_MODULE_KEYS } from "@/constants/modules";
-import { getEnabledModules, saveEnabledModules } from "@/lib/profilePreferences";
+import {
+  getEnabledModules,
+  saveEnabledModules,
+} from "@/lib/profilePreferences";
 import type { AppModuleKey, LocalProfileSettings } from "@/types/app";
 
 const PROFILE_SETTINGS_STORAGE_KEY = "@healthy-living-tracker/profile-settings";
-const moduleKeys = new Set<AppModuleKey>(APP_MODULES.map((module) => module.key));
+const moduleKeys = new Set<AppModuleKey>(
+  APP_MODULES.map((module) => module.key),
+);
 
 export const defaultProfileSettings: LocalProfileSettings = {
   displayName: "",
   schemaVersion: 1,
   selectedModuleIds: CORE_MODULE_KEYS,
-  updatedAt: null
+  updatedAt: null,
 };
 
 function isAppModuleKey(value: unknown): value is AppModuleKey {
@@ -30,10 +35,11 @@ function parseStoredSettings(value: string | null): LocalProfileSettings {
       : defaultProfileSettings.selectedModuleIds;
 
     return {
-      displayName: typeof stored.displayName === "string" ? stored.displayName : "",
+      displayName:
+        typeof stored.displayName === "string" ? stored.displayName : "",
       schemaVersion: 1,
       selectedModuleIds,
-      updatedAt: typeof stored.updatedAt === "string" ? stored.updatedAt : null
+      updatedAt: typeof stored.updatedAt === "string" ? stored.updatedAt : null,
     };
   } catch {
     return defaultProfileSettings;
@@ -41,33 +47,38 @@ function parseStoredSettings(value: string | null): LocalProfileSettings {
 }
 
 export async function readLocalProfileSettings() {
-  const storedProfileSettings = await AsyncStorage.getItem(PROFILE_SETTINGS_STORAGE_KEY);
+  const storedProfileSettings = await AsyncStorage.getItem(
+    PROFILE_SETTINGS_STORAGE_KEY,
+  );
   const parsedProfileSettings = parseStoredSettings(storedProfileSettings);
   const selectedModuleIds = await getEnabledModules();
   const migratedModuleIds = Array.from(
-    new Set([...selectedModuleIds, ...parsedProfileSettings.selectedModuleIds])
+    new Set([...selectedModuleIds, ...parsedProfileSettings.selectedModuleIds]),
   ).filter(isAppModuleKey);
 
   return {
     ...parsedProfileSettings,
-    selectedModuleIds: await saveEnabledModules(migratedModuleIds)
+    selectedModuleIds: await saveEnabledModules(migratedModuleIds),
   };
 }
 
 export async function writeLocalProfileSettings(
-  settings: Pick<LocalProfileSettings, "displayName" | "selectedModuleIds">
+  settings: Pick<LocalProfileSettings, "displayName" | "selectedModuleIds">,
 ) {
   const selectedModuleIds = await saveEnabledModules(
-    settings.selectedModuleIds.filter(isAppModuleKey)
+    settings.selectedModuleIds.filter(isAppModuleKey),
   );
   const nextSettings: LocalProfileSettings = {
     displayName: settings.displayName.trim(),
     schemaVersion: 1,
     selectedModuleIds,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 
-  await AsyncStorage.setItem(PROFILE_SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
+  await AsyncStorage.setItem(
+    PROFILE_SETTINGS_STORAGE_KEY,
+    JSON.stringify(nextSettings),
+  );
 
   return nextSettings;
 }

@@ -1,18 +1,22 @@
 import {
   getCommonFoods,
   getLocalFoodDetails,
-  toSearchResult
+  toSearchResult,
 } from "@/services/nutrition/localFoodProvider";
 import { getStoredFoodDetails, searchLocalFoods } from "@/lib/nutritionStorage";
 import {
   getOpenFoodFactsFoodDetails,
-  searchOpenFoodFactsFoods
+  searchOpenFoodFactsFoods,
 } from "@/services/nutrition/openFoodFactsProvider";
 import {
   getUsdaFoodDetails,
-  searchUsdaFoods
+  searchUsdaFoods,
 } from "@/services/nutrition/usdaFoodProvider";
-import type { FoodDetails, FoodSearchResult, FoodSource } from "@/types/nutrition";
+import type {
+  FoodDetails,
+  FoodSearchResult,
+  FoodSource,
+} from "@/types/nutrition";
 
 export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
   const trimmedQuery = query.trim();
@@ -24,13 +28,13 @@ export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
   const [localResults, usdaResults, openFoodFactsResults] = await Promise.all([
     searchLocalFoods(trimmedQuery),
     searchUsdaFoods(trimmedQuery),
-    searchOpenFoodFactsFoods(trimmedQuery)
+    searchOpenFoodFactsFoods(trimmedQuery),
   ]);
 
   return dedupeResults([
     ...localResults,
     ...usdaResults,
-    ...openFoodFactsResults
+    ...openFoodFactsResults,
   ]);
 }
 
@@ -49,7 +53,10 @@ export async function getFoodDetails(source: FoodSource, sourceFoodId: string) {
   }
 }
 
-export function normalizeFoodResult(raw: unknown, source: FoodSource): FoodSearchResult {
+export function normalizeFoodResult(
+  raw: unknown,
+  source: FoodSource,
+): FoodSearchResult {
   if (isFoodSearchResult(raw)) {
     return raw;
   }
@@ -62,11 +69,14 @@ export function normalizeFoodResult(raw: unknown, source: FoodSource): FoodSearc
     id: `${source}-unknown`,
     name: "Unknown food",
     source,
-    sourceFoodId: "unknown"
+    sourceFoodId: "unknown",
   };
 }
 
-export function normalizeFoodDetails(raw: unknown, source: FoodSource): FoodDetails {
+export function normalizeFoodDetails(
+  raw: unknown,
+  source: FoodSource,
+): FoodDetails {
   if (isFoodDetails(raw)) {
     return raw;
   }
@@ -83,7 +93,7 @@ export function normalizeFoodDetails(raw: unknown, source: FoodSource): FoodDeta
     proteinG: 0,
     servingOptions: [{ label: "1 serving", quantity: 1, unit: "serving" }],
     source,
-    sourceFoodId: "unknown"
+    sourceFoodId: "unknown",
   };
 }
 
@@ -105,19 +115,19 @@ function dedupeResults(results: FoodSearchResult[]) {
 function isFoodSearchResult(value: unknown): value is FoodSearchResult {
   return Boolean(
     value &&
-      typeof value === "object" &&
-      "source" in value &&
-      "sourceFoodId" in value &&
-      "name" in value
+    typeof value === "object" &&
+    "source" in value &&
+    "sourceFoodId" in value &&
+    "name" in value,
   );
 }
 
 function isFoodDetails(value: unknown): value is FoodDetails {
   return Boolean(
     value &&
-      typeof value === "object" &&
-      "servingOptions" in value &&
-      "calories" in value &&
-      "proteinG" in value
+    typeof value === "object" &&
+    "servingOptions" in value &&
+    "calories" in value &&
+    "proteinG" in value,
   );
 }

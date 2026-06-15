@@ -7,7 +7,9 @@ export function createCaregiverToken(caregiverId: string) {
 }
 
 export function buildCaregiverInviteLink(token: string) {
-  return Linking.createURL(`/caregiver/join/${token}`, { scheme: "familyhealth" });
+  return Linking.createURL(`/caregiver/join/${token}`, {
+    scheme: "familyhealth",
+  });
 }
 
 export async function getCaregiverFromToken(token: string) {
@@ -20,6 +22,6 @@ export function createCaregiverQrPayload(caregiverId: string) {
 
   return {
     link: buildCaregiverInviteLink(token),
-    token
+    token,
   };
 }

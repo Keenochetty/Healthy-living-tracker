@@ -5,7 +5,7 @@ import type {
   ReminderLinkedEntityType,
   ReminderPriority,
   ReminderStatus,
-  ReminderType
+  ReminderType,
 } from "@/types/reminders";
 
 const REMINDERS_STORAGE_KEY = "family_health_reminders";
@@ -24,7 +24,9 @@ type CreateReminderInput = {
   type: ReminderType;
 };
 
-export function subscribeToReminders(listener: (reminders: AppReminder[]) => void) {
+export function subscribeToReminders(
+  listener: (reminders: AppReminder[]) => void,
+) {
   reminderListeners.add(listener);
 
   return () => {
@@ -47,7 +49,7 @@ function toStartOfDay(date: Date) {
 export function formatReminderTime(isoDate: string) {
   return new Intl.DateTimeFormat(undefined, {
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   }).format(new Date(isoDate));
 }
 
@@ -55,7 +57,7 @@ export function formatReminderDate(isoDate: string) {
   return new Intl.DateTimeFormat(undefined, {
     day: "2-digit",
     month: "short",
-    year: "numeric"
+    year: "numeric",
   }).format(new Date(isoDate));
 }
 
@@ -63,7 +65,7 @@ export function formatDateLabel(date: Date) {
   return new Intl.DateTimeFormat(undefined, {
     day: "2-digit",
     month: "short",
-    weekday: "short"
+    weekday: "short",
   }).format(date);
 }
 
@@ -76,7 +78,8 @@ function isSameDay(isoDate: string, date: Date) {
 
 function sortReminders(reminders: AppReminder[]) {
   return [...reminders].sort(
-    (left, right) => new Date(left.dueAt).getTime() - new Date(right.dueAt).getTime()
+    (left, right) =>
+      new Date(left.dueAt).getTime() - new Date(right.dueAt).getTime(),
   );
 }
 
@@ -85,7 +88,7 @@ function createStarterReminder({
   minutes,
   priority,
   title,
-  type
+  type,
 }: {
   hours: number;
   minutes: number;
@@ -107,7 +110,7 @@ function createStarterReminder({
     status: "pending",
     title,
     type,
-    updatedAt: now
+    updatedAt: now,
   };
 }
 
@@ -118,22 +121,22 @@ function getStarterReminders() {
       minutes: 30,
       priority: "important",
       title: "Doctor appointment",
-      type: "doctor_visit"
+      type: "doctor_visit",
     }),
     createStarterReminder({
       hours: 14,
       minutes: 0,
       priority: "normal",
       title: "Team meeting",
-      type: "work"
+      type: "work",
     }),
     createStarterReminder({
       hours: 18,
       minutes: 0,
       priority: "important",
       title: "Medication reminder",
-      type: "medication"
-    })
+      type: "medication",
+    }),
   ];
 }
 
@@ -172,7 +175,10 @@ export async function getReminderById(id: string) {
 export async function saveReminders(reminders: AppReminder[]) {
   const sortedReminders = sortReminders(reminders);
 
-  await AsyncStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(sortedReminders));
+  await AsyncStorage.setItem(
+    REMINDERS_STORAGE_KEY,
+    JSON.stringify(sortedReminders),
+  );
   notifyReminderListeners(sortedReminders);
 
   return sortedReminders;
@@ -194,7 +200,7 @@ export async function createReminder(input: CreateReminderInput) {
     status: "pending",
     title: input.title.trim(),
     type: input.type,
-    updatedAt: now
+    updatedAt: now,
   };
   const reminders = await getReminders();
 
@@ -210,7 +216,7 @@ export async function createMedicationReminder({
   medicationId,
   medicationName,
   notificationId,
-  notify = false
+  notify = false,
 }: {
   dosage?: string;
   dueAt: string;
@@ -223,7 +229,7 @@ export async function createMedicationReminder({
   const notes = [
     dosage ? `Dosage: ${dosage}` : null,
     instructions ? `Instructions: ${instructions}` : null,
-    "Follow your healthcare professional's instructions."
+    "Follow your healthcare professional's instructions.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -233,20 +239,20 @@ export async function createMedicationReminder({
     linkedEntityId: medicationId,
     linkedEntityType: "medication",
     metadata: {
-      medicationName
+      medicationName,
     },
     notes,
     notificationId,
     notify,
     priority: "important",
     title: `Medication: ${medicationName}`,
-    type: "medication"
+    type: "medication",
   });
 }
 
 export async function updateReminder(
   id: string,
-  partial: Partial<Omit<AppReminder, "id" | "createdAt">>
+  partial: Partial<Omit<AppReminder, "id" | "createdAt">>,
 ) {
   const reminders = await getReminders();
   const updatedReminders = reminders.map((reminder) =>
@@ -254,9 +260,9 @@ export async function updateReminder(
       ? {
           ...reminder,
           ...partial,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : reminder
+      : reminder,
   );
 
   await saveReminders(updatedReminders);
@@ -287,20 +293,21 @@ export async function deleteReminder(id: string) {
 
 export async function getRemindersByLinkedEntity(
   type: ReminderLinkedEntityType,
-  id: string
+  id: string,
 ) {
   const reminders = await getReminders();
 
   return sortReminders(
     reminders.filter(
-      (reminder) => reminder.linkedEntityType === type && reminder.linkedEntityId === id
-    )
+      (reminder) =>
+        reminder.linkedEntityType === type && reminder.linkedEntityId === id,
+    ),
   );
 }
 
 export async function cancelRemindersByLinkedEntity(
   type: ReminderLinkedEntityType,
-  id: string
+  id: string,
 ) {
   const reminders = await getReminders();
   const updatedReminders = reminders.map((reminder) =>
@@ -308,9 +315,9 @@ export async function cancelRemindersByLinkedEntity(
       ? {
           ...reminder,
           status: "cancelled" as ReminderStatus,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : reminder
+      : reminder,
   );
 
   return saveReminders(updatedReminders);
@@ -327,13 +334,16 @@ export async function getUpcomingReminders() {
   return sortReminders(
     reminders.filter(
       (reminder) =>
-        reminder.status === "pending" && new Date(reminder.dueAt).getTime() >= now
-    )
+        reminder.status === "pending" &&
+        new Date(reminder.dueAt).getTime() >= now,
+    ),
   );
 }
 
 export async function getRemindersByDate(date: Date) {
   const reminders = await getReminders();
 
-  return sortReminders(reminders.filter((reminder) => isSameDay(reminder.dueAt, date)));
+  return sortReminders(
+    reminders.filter((reminder) => isSameDay(reminder.dueAt, date)),
+  );
 }

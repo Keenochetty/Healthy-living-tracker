@@ -1,7 +1,7 @@
 import type {
   AgeAccessStage,
   CareProfilePrivacyStatus,
-  CareProfileType
+  CareProfileType,
 } from "@/types/care-profiles";
 
 export const CARE_PROFILE_TYPES = [
@@ -9,20 +9,20 @@ export const CARE_PROFILE_TYPES = [
   "teen",
   "adult_member",
   "adult_dependent",
-  "elderly_dependent"
+  "elderly_dependent",
 ] as const satisfies readonly CareProfileType[];
 
 export const AGE_ACCESS_STAGES = [
   "parent_managed",
   "teen_transition",
-  "adult_controlled"
+  "adult_controlled",
 ] as const satisfies readonly AgeAccessStage[];
 
 export const CARE_PROFILE_PRIVACY_STATUSES = [
   "parent_managed",
   "teen_limited",
   "adult_private",
-  "shared_with_circle"
+  "shared_with_circle",
 ] as const satisfies readonly CareProfilePrivacyStatus[];
 
 export const careProfileTypeLabels = {
@@ -30,20 +30,20 @@ export const careProfileTypeLabels = {
   adult_member: "Adult member",
   child: "Child",
   elderly_dependent: "Elderly dependent",
-  teen: "Teen"
+  teen: "Teen",
 } as const satisfies Record<CareProfileType, string>;
 
 export const ageAccessStageLabels = {
   adult_controlled: "Adult controlled",
   parent_managed: "Parent managed",
-  teen_transition: "Teen transition"
+  teen_transition: "Teen transition",
 } as const satisfies Record<AgeAccessStage, string>;
 
 export const careProfilePrivacyLabels = {
   adult_private: "Adult private",
   parent_managed: "Parent managed",
   shared_with_circle: "Shared with circle",
-  teen_limited: "Teen limited"
+  teen_limited: "Teen limited",
 } as const satisfies Record<CareProfilePrivacyStatus, string>;
 
 export function getDefaultAgeAccessStage(age: number | null): AgeAccessStage {
@@ -58,7 +58,9 @@ export function getDefaultAgeAccessStage(age: number | null): AgeAccessStage {
   return "adult_controlled";
 }
 
-export function getDefaultPrivacyStatus(ageAccessStage: AgeAccessStage): CareProfilePrivacyStatus {
+export function getDefaultPrivacyStatus(
+  ageAccessStage: AgeAccessStage,
+): CareProfilePrivacyStatus {
   if (ageAccessStage === "adult_controlled") {
     return "adult_private";
   }

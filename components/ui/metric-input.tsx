@@ -1,4 +1,10 @@
-import { StyleSheet, Text, TextInput, View, type KeyboardTypeOptions } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type KeyboardTypeOptions,
+} from "react-native";
 
 import { componentRadius } from "@/constants/radius";
 import { layoutSpacing, spacing } from "@/constants/spacing";
@@ -19,7 +25,7 @@ export function MetricInput({
   onChangeText,
   placeholder,
   unit,
-  value
+  value,
 }: MetricInputProps) {
   return (
     <View style={styles.container}>
@@ -41,14 +47,14 @@ export function MetricInput({
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   input: {
     color: colors.text.primary,
     flex: 1,
     fontSize: 20,
     fontWeight: "800",
-    minHeight: layoutSpacing.touchTarget
+    minHeight: layoutSpacing.touchTarget,
   },
   inputRow: {
     alignItems: "center",
@@ -58,16 +64,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.sm,
-    paddingHorizontal: spacing.lg
+    paddingHorizontal: spacing.lg,
   },
   label: {
     color: colors.text.secondary,
     fontSize: 14,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   unit: {
     color: colors.text.muted,
     fontSize: 15,
-    fontWeight: "700"
-  }
+    fontWeight: "700",
+  },
 });

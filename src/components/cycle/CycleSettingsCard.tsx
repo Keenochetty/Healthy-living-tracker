@@ -65,7 +65,9 @@ export function CycleSettingsCard({ onChange }: CycleSettingsCardProps) {
         />
         <LabelledInput
           label="Last period start date"
-          onBlur={(value) => updateField({ lastPeriodStartDate: value.trim() || undefined })}
+          onBlur={(value) =>
+            updateField({ lastPeriodStartDate: value.trim() || undefined })
+          }
           placeholder="YYYY-MM-DD"
           value={settings.lastPeriodStartDate ?? ""}
         />
@@ -75,8 +77,14 @@ export function CycleSettingsCard({ onChange }: CycleSettingsCardProps) {
           onChange={(value) => updateField({ predictionEnabled: value })}
           value={settings.predictionEnabled}
         />
-        <ToggleRow label="Private mode locked on" value={settings.privateMode} />
-        <ToggleRow label="Partner sharing off" value={settings.partnerSharingEnabled} />
+        <ToggleRow
+          label="Private mode locked on"
+          value={settings.privateMode}
+        />
+        <ToggleRow
+          label="Partner sharing off"
+          value={settings.partnerSharingEnabled}
+        />
 
         <Text style={{ color: "#94a3b8", lineHeight: 20 }}>
           Sharing controls will come later and are always off by default.
@@ -91,7 +99,7 @@ function LabelledInput({
   onBlur,
   placeholder,
   suffix,
-  value
+  value,
 }: {
   label: string;
   onBlur: (value: string) => void;
@@ -102,7 +110,8 @@ function LabelledInput({
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ color: "#64748b", fontWeight: "800" }}>
-        {label}{suffix ? ` (${suffix})` : ""}
+        {label}
+        {suffix ? ` (${suffix})` : ""}
       </Text>
       <TextInput
         defaultValue={value}
@@ -118,7 +127,7 @@ function LabelledInput({
 function ToggleRow({
   label,
   onChange,
-  value
+  value,
 }: {
   label: string;
   onChange?: (value: boolean) => void;
@@ -129,7 +138,7 @@ function ToggleRow({
       style={{
         alignItems: "center",
         flexDirection: "row",
-        justifyContent: "space-between"
+        justifyContent: "space-between",
       }}
     >
       <Text style={{ color: "#0f172a", fontWeight: "800" }}>{label}</Text>
@@ -151,5 +160,5 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };

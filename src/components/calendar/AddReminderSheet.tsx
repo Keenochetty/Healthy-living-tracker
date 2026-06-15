@@ -1,19 +1,24 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { X } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-  Modal,
-  ScrollView,
-  Text,
-  View
-} from "react-native";
+import { Modal, ScrollView, Text, View } from "react-native";
 
-import { AppButton, AppChip, AppFormInput, AppIconButton, AppToggleRow } from "@/components/ui";
+import {
+  AppButton,
+  AppChip,
+  AppFormInput,
+  AppIconButton,
+  AppToggleRow,
+} from "@/components/ui";
 import { REMINDER_TYPES, PRIORITY_LABELS } from "@/constants/reminderTypes";
 import { createReminder, updateReminder } from "@/lib/reminderStorage";
 import { scheduleReminderNotification } from "@/lib/notifications";
 import type { AppModuleKey } from "@/types/app";
-import type { AppReminder, ReminderPriority, ReminderType } from "@/types/reminders";
+import type {
+  AppReminder,
+  ReminderPriority,
+  ReminderType,
+} from "@/types/reminders";
 
 type AddReminderSheetProps = {
   enabledModules: AppModuleKey[];
@@ -28,7 +33,7 @@ export function AddReminderSheet({
   enabledModules,
   onClose,
   onSaved,
-  visible
+  visible,
 }: AddReminderSheetProps) {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
@@ -41,9 +46,10 @@ export function AddReminderSheet({
     () =>
       REMINDER_TYPES.filter(
         (reminderType) =>
-          !reminderType.moduleKey || enabledModules.includes(reminderType.moduleKey)
+          !reminderType.moduleKey ||
+          enabledModules.includes(reminderType.moduleKey),
       ),
-    [enabledModules]
+    [enabledModules],
   );
 
   async function saveReminder() {
@@ -62,14 +68,14 @@ export function AddReminderSheet({
         notify: false,
         priority,
         title: trimmedTitle,
-        type
+        type,
       });
       const notificationId = notify
         ? await scheduleReminderNotification({ ...reminder, notify: true })
         : null;
       const savedReminder = await updateReminder(reminder.id, {
         notificationId: notificationId ?? undefined,
-        notify: Boolean(notificationId)
+        notify: Boolean(notificationId),
       });
 
       onSaved(savedReminder ?? reminder);
@@ -95,7 +101,7 @@ export function AddReminderSheet({
         style={{
           backgroundColor: "rgba(15,23,42,0.35)",
           flex: 1,
-          justifyContent: "flex-end"
+          justifyContent: "flex-end",
         }}
       >
         <View
@@ -105,18 +111,20 @@ export function AddReminderSheet({
             borderTopRightRadius: 30,
             gap: 14,
             maxHeight: "92%",
-            padding: 20
+            padding: 20,
           }}
         >
           <View
             style={{
               alignItems: "center",
               flexDirection: "row",
-              justifyContent: "space-between"
+              justifyContent: "space-between",
             }}
           >
             <View>
-              <Text style={{ color: "#0f172a", fontSize: 24, fontWeight: "900" }}>
+              <Text
+                style={{ color: "#0f172a", fontSize: 24, fontWeight: "900" }}
+              >
                 Add reminder
               </Text>
               <Text style={{ color: "#64748b", marginTop: 3 }}>
@@ -176,7 +184,7 @@ export function AddReminderSheet({
                       nextDate.setFullYear(
                         selectedDate.getFullYear(),
                         selectedDate.getMonth(),
-                        selectedDate.getDate()
+                        selectedDate.getDate(),
                       );
                       setDate(nextDate);
                     }
@@ -194,7 +202,12 @@ export function AddReminderSheet({
                     if (selectedDate) {
                       const nextDate = new Date(date);
 
-                      nextDate.setHours(selectedDate.getHours(), selectedDate.getMinutes(), 0, 0);
+                      nextDate.setHours(
+                        selectedDate.getHours(),
+                        selectedDate.getMinutes(),
+                        0,
+                        0,
+                      );
                       setDate(nextDate);
                     }
                   }}
@@ -212,8 +225,8 @@ export function AddReminderSheet({
 
             {type === "medication" ? (
               <Text style={{ color: "#9a3412", fontSize: 12, lineHeight: 18 }}>
-                Medication reminders will say: Follow your healthcare professional
-                instructions.
+                Medication reminders will say: Follow your healthcare
+                professional instructions.
               </Text>
             ) : null}
 
@@ -233,12 +246,12 @@ export function AddReminderSheet({
 const labelStyle = {
   color: "#0f172a",
   fontWeight: "900" as const,
-  marginBottom: 6
+  marginBottom: 6,
 };
 
 function ChoiceSection({
   children,
-  title
+  title,
 }: {
   children: React.ReactNode;
   title: string;
@@ -246,7 +259,9 @@ function ChoiceSection({
   return (
     <View style={{ gap: 8 }}>
       <Text style={{ color: "#0f172a", fontWeight: "900" }}>{title}</Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>{children}</View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {children}
+      </View>
     </View>
   );
 }
@@ -254,13 +269,18 @@ function ChoiceSection({
 function ChoicePill({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
   selected: boolean;
 }) {
   return (
-    <AppChip label={label} onPress={onPress} selected={selected} variant="primary" />
+    <AppChip
+      label={label}
+      onPress={onPress}
+      selected={selected}
+      variant="primary"
+    />
   );
 }

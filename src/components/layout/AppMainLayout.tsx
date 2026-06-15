@@ -4,7 +4,11 @@ import { View, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AiFloatingQuickBar } from "@/components/ai/AiFloatingQuickBar";
-import { getInitials, PeopleAccountSheet, formatRelationship } from "@/components/identity";
+import {
+  getInitials,
+  PeopleAccountSheet,
+  formatRelationship,
+} from "@/components/identity";
 import { AppScreen } from "@/components/ui";
 import { useActiveProfile } from "@/context/ActiveProfileContext";
 import { AppTopProfileHeader } from "./AppTopProfileHeader";
@@ -30,9 +34,10 @@ export function AppMainLayout({
   showAi = false,
   showHeader = true,
   subtitle,
-  title
+  title,
 }: AppMainLayoutProps) {
-  const { activeProfile, permittedProfiles, refreshProfiles, selectProfile } = useActiveProfile();
+  const { activeProfile, permittedProfiles, refreshProfiles, selectProfile } =
+    useActiveProfile();
   const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
   const [peopleAccountVisible, setPeopleAccountVisible] = useState(false);
@@ -42,7 +47,7 @@ export function AppMainLayout({
   useFocusEffect(
     useCallback(() => {
       refreshProfiles();
-    }, [refreshProfiles])
+    }, [refreshProfiles]),
   );
 
   function openProfile(profile = activeProfile) {
@@ -71,7 +76,7 @@ export function AppMainLayout({
             paddingTop: insets.top + spacing.md,
             width: "100%",
             maxWidth: 430,
-            zIndex: 20
+            zIndex: 20,
           }}
         >
           <AppTopProfileHeader
@@ -81,15 +86,24 @@ export function AppMainLayout({
             onOpenPeopleAccount={() => setPeopleAccountVisible(true)}
             onOpenProfile={() => openProfile()}
             onQuickActionPress={() => router.push("/calendar" as Href)}
-            relationship={activeProfile ? formatRelationship(activeProfile) : "Me"}
+            relationship={
+              activeProfile ? formatRelationship(activeProfile) : "Me"
+            }
             userName={displayName}
           />
         </View>
       ) : null}
-      <AppScreen safeBottom={safeBottom} safeTop={!showHeader} scroll={scroll} style={screenStyle}>
+      <AppScreen
+        safeBottom={safeBottom}
+        safeTop={!showHeader}
+        scroll={scroll}
+        style={screenStyle}
+      >
         {children}
       </AppScreen>
-      {showAi ? <AiFloatingQuickBar onScanPress={() => router.push("/ai" as Href)} /> : null}
+      {showAi ? (
+        <AiFloatingQuickBar onScanPress={() => router.push("/ai" as Href)} />
+      ) : null}
       <PeopleAccountSheet
         activeProfile={activeProfile}
         onClose={() => setPeopleAccountVisible(false)}

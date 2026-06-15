@@ -5,7 +5,7 @@ export const USER_ROLES = {
   man: "man",
   child: "child",
   baby: "baby",
-  elderlyDependent: "elderly_dependent"
+  elderlyDependent: "elderly_dependent",
 } as const;
 
 export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];

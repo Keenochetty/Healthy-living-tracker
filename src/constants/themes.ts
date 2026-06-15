@@ -19,7 +19,7 @@ export const USER_THEMES: UserThemeOption[] = [
     name: "Soft Lavender",
     primary: themes.soft_lavender.primary,
     soft: themes.soft_lavender.primarySoft,
-    textOnPrimary: "#ffffff"
+    textOnPrimary: "#ffffff",
   },
   {
     background: themes.zest_green.background,
@@ -28,7 +28,7 @@ export const USER_THEMES: UserThemeOption[] = [
     name: "Zest Green",
     primary: themes.zest_green.primary,
     soft: themes.zest_green.primarySoft,
-    textOnPrimary: "#ffffff"
+    textOnPrimary: "#ffffff",
   },
   {
     background: themes.peach_parenting.background,
@@ -37,7 +37,7 @@ export const USER_THEMES: UserThemeOption[] = [
     name: "Peach Parenting",
     primary: themes.peach_parenting.primary,
     soft: themes.peach_parenting.primarySoft,
-    textOnPrimary: "#ffffff"
+    textOnPrimary: "#ffffff",
   },
   {
     background: themes.clean_blue.background,
@@ -46,7 +46,7 @@ export const USER_THEMES: UserThemeOption[] = [
     name: "Clean Blue",
     primary: themes.clean_blue.primary,
     soft: themes.clean_blue.primarySoft,
-    textOnPrimary: "#ffffff"
+    textOnPrimary: "#ffffff",
   },
   {
     background: themes.calm_dark.background,
@@ -55,7 +55,7 @@ export const USER_THEMES: UserThemeOption[] = [
     name: "Calm Dark",
     primary: themes.calm_dark.primary,
     soft: themes.calm_dark.primarySoft,
-    textOnPrimary: "#0f172a"
+    textOnPrimary: "#0f172a",
   },
   {
     background: themes.premium_dark_health.background,
@@ -64,8 +64,8 @@ export const USER_THEMES: UserThemeOption[] = [
     name: "Premium Dark Health",
     primary: themes.premium_dark_health.primary,
     soft: themes.premium_dark_health.primarySoft,
-    textOnPrimary: "#171b22"
-  }
+    textOnPrimary: "#171b22",
+  },
 ];
 
 export function getUserTheme(themeKey: UserThemeKey) {
@@ -83,26 +83,26 @@ export const theme = {
     secondary: getTheme("soft_lavender").secondary,
     text: getTheme("soft_lavender").text,
     warning: getTheme("soft_lavender").warning,
-    warningSoft: "#fff7ed"
+    warningSoft: "#fff7ed",
   },
   radius: {
     button: radius.md,
     card: radius.xl,
-    pill: radius.full
+    pill: radius.full,
   },
   spacing: {
     lg: spacing.lg,
     md: spacing.md,
     sm: spacing.sm,
     xl: spacing["2xl"],
-    xs: spacing.xs
+    xs: spacing.xs,
   },
   fontSizes: {
-    ...fontSizes
-  }
+    ...fontSizes,
+  },
 };
 
 export const themeDirection = {
   description: "Soft, rounded, personal, and adaptable across life stages.",
-  name: "Dribbble-inspired care"
+  name: "Dribbble-inspired care",
 } as const;

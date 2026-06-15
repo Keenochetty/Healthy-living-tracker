@@ -10,7 +10,13 @@ export function LoadingState({ label = "Loading" }: { label?: string }) {
   );
 }
 
-export function EmptyState({ title, message }: { title: string; message: string }) {
+export function EmptyState({
+  title,
+  message,
+}: {
+  title: string;
+  message: string;
+}) {
   return (
     <div className="glass-panel flex min-h-48 flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-white/10 px-6 py-10 text-center">
       <Inbox className="h-8 w-8 text-slate-400" />
@@ -25,7 +31,7 @@ export function EmptyState({ title, message }: { title: string; message: string 
 export function ErrorState({
   title = "Something went wrong",
   message,
-  actionLabel
+  actionLabel,
 }: {
   title?: string;
   message: string;

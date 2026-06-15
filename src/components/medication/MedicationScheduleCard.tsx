@@ -3,12 +3,15 @@ import { Plus, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-import { createDefaultScheduleForMedication, saveMedicationSchedule } from "@/lib/medicationStorage";
+import {
+  createDefaultScheduleForMedication,
+  saveMedicationSchedule,
+} from "@/lib/medicationStorage";
 import type {
   MedicationFrequency,
   MedicationItem,
   MedicationReminderTime,
-  MedicationSchedule
+  MedicationSchedule,
 } from "@/types/medication";
 
 type MedicationScheduleCardProps = {
@@ -22,7 +25,7 @@ const FREQUENCY_OPTIONS: Array<{ key: MedicationFrequency; label: string }> = [
   { key: "daily", label: "Daily" },
   { key: "twice_daily", label: "Twice daily" },
   { key: "three_times_daily", label: "Three times daily" },
-  { key: "custom", label: "Custom" }
+  { key: "custom", label: "Custom" },
 ];
 
 function defaultTimes(frequency: MedicationFrequency) {
@@ -44,7 +47,10 @@ function dateToTime(date: Date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-function buildTimes(frequency: MedicationFrequency, currentTimes: MedicationReminderTime[]) {
+function buildTimes(
+  frequency: MedicationFrequency,
+  currentTimes: MedicationReminderTime[],
+) {
   if (frequency === "custom") {
     return currentTimes.length ? currentTimes : createTimes(["08:00"]);
   }
@@ -56,27 +62,32 @@ function createTimes(times: string[]): MedicationReminderTime[] {
   return times.map((time, index) => ({
     enabled: true,
     id: `time-${index}-${time}`,
-    time
+    time,
   }));
 }
 
 export function MedicationScheduleCard({
   medication,
   onSaved,
-  schedule
+  schedule,
 }: MedicationScheduleCardProps) {
   const [localSchedule, setLocalSchedule] = useState<MedicationSchedule | null>(
-    schedule ?? null
+    schedule ?? null,
   );
   const [isSaving, setIsSaving] = useState(false);
-  const currentSchedule = useMemo(() => localSchedule ?? schedule, [localSchedule, schedule]);
+  const currentSchedule = useMemo(
+    () => localSchedule ?? schedule,
+    [localSchedule, schedule],
+  );
 
   async function ensureSchedule() {
     if (currentSchedule) {
       return currentSchedule;
     }
 
-    const defaultSchedule = await createDefaultScheduleForMedication(medication.id);
+    const defaultSchedule = await createDefaultScheduleForMedication(
+      medication.id,
+    );
 
     setLocalSchedule(defaultSchedule);
 
@@ -89,7 +100,7 @@ export function MedicationScheduleCard({
     setLocalSchedule({
       ...nextSchedule,
       frequency,
-      reminderTimes: buildTimes(frequency, nextSchedule.reminderTimes)
+      reminderTimes: buildTimes(frequency, nextSchedule.reminderTimes),
     });
   }
 
@@ -98,7 +109,7 @@ export function MedicationScheduleCard({
 
     setLocalSchedule({
       ...nextSchedule,
-      ...partial
+      ...partial,
     });
   }
 
@@ -120,7 +131,14 @@ export function MedicationScheduleCard({
   const visibleSchedule = currentSchedule;
 
   return (
-    <View style={{ backgroundColor: "#ffffff", borderRadius: 24, gap: 14, padding: 16 }}>
+    <View
+      style={{
+        backgroundColor: "#ffffff",
+        borderRadius: 24,
+        gap: 14,
+        padding: 16,
+      }}
+    >
       <View>
         <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
           Medication schedule
@@ -137,16 +155,22 @@ export function MedicationScheduleCard({
             key={option.key}
             onPress={() => updateFrequency(option.key)}
             style={{
-              backgroundColor: visibleSchedule?.frequency === option.key ? "#7c3aed" : "#f8fafc",
+              backgroundColor:
+                visibleSchedule?.frequency === option.key
+                  ? "#7c3aed"
+                  : "#f8fafc",
               borderRadius: 999,
               paddingHorizontal: 12,
-              paddingVertical: 9
+              paddingVertical: 9,
             }}
           >
             <Text
               style={{
-                color: visibleSchedule?.frequency === option.key ? "#ffffff" : "#475569",
-                fontWeight: "900"
+                color:
+                  visibleSchedule?.frequency === option.key
+                    ? "#ffffff"
+                    : "#475569",
+                fontWeight: "900",
               }}
             >
               {option.label}
@@ -164,7 +188,7 @@ export function MedicationScheduleCard({
             borderRadius: 18,
             flexDirection: "row",
             gap: 10,
-            padding: 12
+            padding: 12,
           }}
         >
           <Switch
@@ -177,7 +201,9 @@ export function MedicationScheduleCard({
             value={reminderTime.enabled}
           />
           <View style={{ flex: 1 }}>
-            <Text style={{ color: "#64748b", fontWeight: "800" }}>Reminder time</Text>
+            <Text style={{ color: "#64748b", fontWeight: "800" }}>
+              Reminder time
+            </Text>
             <DateTimePicker
               is24Hour
               mode="time"
@@ -188,7 +214,7 @@ export function MedicationScheduleCard({
 
                 reminderTimes[index] = {
                   ...reminderTime,
-                  time: dateToTime(selectedDate)
+                  time: dateToTime(selectedDate),
                 };
                 updateSchedule({ reminderTimes });
               }}
@@ -199,9 +225,9 @@ export function MedicationScheduleCard({
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => {
-                const reminderTimes = (visibleSchedule?.reminderTimes ?? []).filter(
-                  (time) => time.id !== reminderTime.id
-                );
+                const reminderTimes = (
+                  visibleSchedule?.reminderTimes ?? []
+                ).filter((time) => time.id !== reminderTime.id);
 
                 updateSchedule({ reminderTimes });
               }}
@@ -222,9 +248,9 @@ export function MedicationScheduleCard({
                 {
                   enabled: true,
                   id: `custom-${Date.now()}`,
-                  time: "08:00"
-                }
-              ]
+                  time: "08:00",
+                },
+              ],
             })
           }
           style={{
@@ -234,7 +260,7 @@ export function MedicationScheduleCard({
             flexDirection: "row",
             gap: 8,
             justifyContent: "center",
-            minHeight: 44
+            minHeight: 44,
           }}
         >
           <Plus color="#7c3aed" size={17} />
@@ -263,7 +289,7 @@ export function MedicationScheduleCard({
           borderRadius: 18,
           color: "#0f172a",
           minHeight: 80,
-          padding: 14
+          padding: 14,
         }}
         value={visibleSchedule?.instructions ?? ""}
       />
@@ -278,7 +304,7 @@ export function MedicationScheduleCard({
           borderRadius: 18,
           justifyContent: "center",
           minHeight: 52,
-          opacity: isSaving ? 0.6 : 1
+          opacity: isSaving ? 0.6 : 1,
         }}
       >
         <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
@@ -292,7 +318,7 @@ export function MedicationScheduleCard({
 function ToggleRow({
   label,
   onValueChange,
-  value
+  value,
 }: {
   label: string;
   onValueChange: (value: boolean) => void;
@@ -306,7 +332,7 @@ function ToggleRow({
         borderRadius: 18,
         flexDirection: "row",
         justifyContent: "space-between",
-        padding: 14
+        padding: 14,
       }}
     >
       <Text style={{ color: "#0f172a", fontWeight: "900" }}>{label}</Text>

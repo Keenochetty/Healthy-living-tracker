@@ -4,7 +4,7 @@ import type {
   CalendarEventColour,
   CalendarEventSource,
   CalendarEventType,
-  CalendarFilterKey
+  CalendarFilterKey,
 } from "@/types/calendar";
 
 export const calendarViewModes = ["week", "month"] as const;
@@ -23,7 +23,7 @@ export const calendarEventTypes = [
   "emergency",
   "ai_suggestion",
   "synced",
-  "other"
+  "other",
 ] as const satisfies readonly CalendarEventType[];
 
 export const calendarEventSources = [
@@ -34,7 +34,7 @@ export const calendarEventSources = [
   "ai",
   "google_sync_placeholder",
   "apple_sync_placeholder",
-  "system"
+  "system",
 ] as const satisfies readonly CalendarEventSource[];
 
 export const calendarFilters = [
@@ -44,7 +44,7 @@ export const calendarFilters = [
   "care_profiles",
   "medical",
   "caregiver",
-  "private"
+  "private",
 ] as const satisfies readonly CalendarFilterKey[];
 
 export const calendarApprovalStatuses = [
@@ -52,7 +52,7 @@ export const calendarApprovalStatuses = [
   "approved",
   "declined",
   "postponed",
-  "none"
+  "none",
 ] as const satisfies readonly CalendarApprovalStatus[];
 
 export const calendarSourceLabels = {
@@ -63,7 +63,7 @@ export const calendarSourceLabels = {
   manual: "Manual",
   parent: "Parent",
   profile_owner: "Profile owner",
-  system: "System"
+  system: "System",
 } as const satisfies Record<CalendarEventSource, string>;
 
 export const calendarEventTypeLabels = {
@@ -80,7 +80,7 @@ export const calendarEventTypeLabels = {
   school: "School",
   sport: "Sport",
   synced: "Synced",
-  women_health: "Women's health"
+  women_health: "Women's health",
 } as const satisfies Record<CalendarEventType, string>;
 
 export const calendarFilterLabels = {
@@ -90,7 +90,7 @@ export const calendarFilterLabels = {
   circle: "Circle",
   medical: "Medical",
   personal: "Personal",
-  private: "Private"
+  private: "Private",
 } as const satisfies Record<CalendarFilterKey, string>;
 
 export const calendarApprovalStatusLabels = {
@@ -98,7 +98,7 @@ export const calendarApprovalStatusLabels = {
   declined: "Declined",
   none: "No approval",
   pending: "Pending",
-  postponed: "Postponed"
+  postponed: "Postponed",
 } as const satisfies Record<CalendarApprovalStatus, string>;
 
 export const calendarColorLabels = {
@@ -111,7 +111,7 @@ export const calendarColorLabels = {
   pink: "Women's health private",
   purple: "AI-created/suggested",
   red: "Emergency",
-  teal: "Baby/child care"
+  teal: "Baby/child care",
 } as const satisfies Record<CalendarEventColour, string>;
 
 export const calendarColorTokens = {
@@ -124,7 +124,7 @@ export const calendarColorTokens = {
   pink: colors.accent.coral,
   purple: colors.status.ai,
   red: colors.status.emergency,
-  teal: colors.brand.secondary
+  teal: colors.brand.secondary,
 } as const satisfies Record<CalendarEventColour, string>;
 
 export const calendarColorSoftTokens = {
@@ -137,5 +137,5 @@ export const calendarColorSoftTokens = {
   pink: colors.accent.peach,
   purple: colors.status.aiSoft,
   red: colors.status.emergencySoft,
-  teal: "#CCFBF1"
+  teal: "#CCFBF1",
 } as const satisfies Record<CalendarEventColour, string>;

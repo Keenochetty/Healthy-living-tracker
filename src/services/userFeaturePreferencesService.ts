@@ -31,7 +31,9 @@ export async function getUserFeaturePreferences(profileId?: string) {
         .from("user_feature_preferences")
         .select("feature_key,enabled,profile_id,source")
         .eq("user_id", user.id);
-      query = profileId ? query.eq("profile_id", profileId) : query.is("profile_id", null);
+      query = profileId
+        ? query.eq("profile_id", profileId)
+        : query.is("profile_id", null);
       const { data, error } = await query;
       if (!error) {
         const preferences = (data ?? []).map(mapRow);
@@ -77,7 +79,9 @@ export async function setManyUserFeaturePreferences(
       .delete()
       .eq("user_id", user.id)
       .in("feature_key", [...changed]);
-    deletion = profileId ? deletion.eq("profile_id", profileId) : deletion.is("profile_id", null);
+    deletion = profileId
+      ? deletion.eq("profile_id", profileId)
+      : deletion.is("profile_id", null);
     const { error: deleteError } = await deletion;
     if (deleteError) return normalized;
     await supabase.from("user_feature_preferences").insert(
@@ -96,22 +100,26 @@ export async function setManyUserFeaturePreferences(
 }
 
 export function getVisibleFitnessFeatures(context: FeatureVisibilityContext) {
-  return (Object.keys(FEATURE_PREFERENCE_CONFIG) as FeaturePreferenceKey[]).filter(
-    (featureKey) => shouldShowFeature(featureKey, context),
-  );
+  return (
+    Object.keys(FEATURE_PREFERENCE_CONFIG) as FeaturePreferenceKey[]
+  ).filter((featureKey) => shouldShowFeature(featureKey, context));
 }
 
 export function shouldShowFeature(
   featureKey: FeaturePreferenceKey,
   context: FeatureVisibilityContext,
 ) {
-  const explicit = context.preferences?.find((item) => item.featureKey === featureKey);
+  const explicit = context.preferences?.find(
+    (item) => item.featureKey === featureKey,
+  );
   if (explicit) return explicit.enabled;
   if (isProfileRelevantForFeature(featureKey, context.profileType)) return true;
   if (featureKey === "injury_conscious") {
-    return context.preferences?.some(
-      (item) => item.featureKey === "recovery" && item.enabled,
-    ) ?? false;
+    return (
+      context.preferences?.some(
+        (item) => item.featureKey === "recovery" && item.enabled,
+      ) ?? false
+    );
   }
   return DEFAULT_FITNESS_FEATURES.includes(featureKey);
 }
@@ -135,9 +143,13 @@ function mapRow(row: {
   };
 }
 
-async function getLocalPreferences(profileId?: string): Promise<UserFeaturePreference[]> {
+async function getLocalPreferences(
+  profileId?: string,
+): Promise<UserFeaturePreference[]> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
-  const stored = raw ? (JSON.parse(raw) as Record<string, UserFeaturePreference[]>) : {};
+  const stored = raw
+    ? (JSON.parse(raw) as Record<string, UserFeaturePreference[]>)
+    : {};
   return stored[profileId ?? "user"] ?? [];
 }
 
@@ -146,7 +158,9 @@ async function saveLocalPreferences(
   profileId?: string,
 ) {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
-  const stored = raw ? (JSON.parse(raw) as Record<string, UserFeaturePreference[]>) : {};
+  const stored = raw
+    ? (JSON.parse(raw) as Record<string, UserFeaturePreference[]>)
+    : {};
   stored[profileId ?? "user"] = preferences;
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 }

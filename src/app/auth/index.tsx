@@ -16,8 +16,14 @@ export default function AuthLandingScreen() {
   }
 
   return (
-    <AuthShell subtitle="Sign in to keep your health and care settings synced, or continue privately on this device." title="Welcome">
-      <AppCard variant="soft" style={{ borderColor: theme.border, borderWidth: 1 }}>
+    <AuthShell
+      subtitle="Sign in to keep your health and care settings synced, or continue privately on this device."
+      title="Welcome"
+    >
+      <AppCard
+        variant="soft"
+        style={{ borderColor: theme.border, borderWidth: 1 }}
+      >
         <Text style={{ color: theme.text, fontSize: 18, fontWeight: "900" }}>
           Local testing mode
         </Text>
@@ -26,9 +32,24 @@ export default function AuthLandingScreen() {
         </Text>
       </AppCard>
 
-      <AppButton fullWidth onPress={() => router.push("/auth/sign-in" as Href)} size="lg" title="Sign in" />
-      <AppButton fullWidth onPress={() => router.push("/auth/sign-up" as Href)} title="Create account" variant="outline" />
-      <AppButton fullWidth onPress={continueLocalMode} title="Continue local/testing mode" variant="ghost" />
+      <AppButton
+        fullWidth
+        onPress={() => router.push("/auth/sign-in" as Href)}
+        size="lg"
+        title="Sign in"
+      />
+      <AppButton
+        fullWidth
+        onPress={() => router.push("/auth/sign-up" as Href)}
+        title="Create account"
+        variant="outline"
+      />
+      <AppButton
+        fullWidth
+        onPress={continueLocalMode}
+        title="Continue local/testing mode"
+        variant="ghost"
+      />
     </AuthShell>
   );
 }

@@ -8,12 +8,17 @@ import { UnitPreviewCard } from "@/components/onboarding/UnitPreviewCard";
 import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { AppFormInput } from "@/components/ui";
 import { COUNTRY_OPTIONS, getCountryByName } from "@/constants/countries";
-import { getUserPreferences, updateUserPreferences } from "@/lib/userPreferences";
+import {
+  getUserPreferences,
+  updateUserPreferences,
+} from "@/lib/userPreferences";
 import type { UserPreferences } from "@/types/profile";
 
 export default function OnboardingProfileScreen() {
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
-  const selectedCountry = getCountryByName(preferences?.country ?? "South Africa");
+  const selectedCountry = getCountryByName(
+    preferences?.country ?? "South Africa",
+  );
 
   useEffect(() => {
     getUserPreferences().then(setPreferences);
@@ -29,7 +34,7 @@ export default function OnboardingProfileScreen() {
       country: country.country,
       currency: country.currency,
       timezone: country.timezone,
-      units: country.defaultUnits
+      units: country.defaultUnits,
     });
 
     setPreferences(nextPreferences);
@@ -40,7 +45,9 @@ export default function OnboardingProfileScreen() {
       return;
     }
 
-    await updateUserPreferences({ displayName: preferences.displayName.trim() });
+    await updateUserPreferences({
+      displayName: preferences.displayName.trim(),
+    });
     router.push("/onboarding/modules" as Href);
   }
 
@@ -64,7 +71,9 @@ export default function OnboardingProfileScreen() {
       <AppFormInput
         label="Display name"
         onChangeText={(displayName) =>
-          setPreferences((current) => (current ? { ...current, displayName } : current))
+          setPreferences((current) =>
+            current ? { ...current, displayName } : current,
+          )
         }
         placeholder="Your name"
         value={preferences.displayName}
@@ -76,8 +85,8 @@ export default function OnboardingProfileScreen() {
             Country and region
           </Text>
           <Text style={{ color: "#64748b", marginTop: 3 }}>
-            Default region: {selectedCountry.country} / {selectedCountry.currency} /{" "}
-            {selectedCountry.timezone}
+            Default region: {selectedCountry.country} /{" "}
+            {selectedCountry.currency} / {selectedCountry.timezone}
           </Text>
         </View>
 
@@ -100,7 +109,13 @@ export default function OnboardingProfileScreen() {
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PrimaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -110,10 +125,12 @@ function PrimaryButton({ label, onPress }: { label: string; onPress: () => void 
         backgroundColor: "#7c3aed",
         borderRadius: 18,
         justifyContent: "center",
-        minHeight: 54
+        minHeight: 54,
       }}
     >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }

@@ -2,23 +2,44 @@
 
 import { useActionState, useState } from "react";
 import { signupAction, type AuthActionState } from "@/lib/auth/actions";
-import { profileTypeLabels, profileTypes, userRoleLabels, userRoles } from "@/lib/health/constants";
+import {
+  profileTypeLabels,
+  profileTypes,
+  userRoleLabels,
+  userRoles,
+} from "@/lib/health/constants";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SubmitButton } from "@/components/auth/submit-button";
 
 const initialState: AuthActionState = { message: "", status: "idle" };
 
 export function SignupForm() {
   const [state, formAction] = useActionState(signupAction, initialState);
-  const [contactMethod, setContactMethod] = useState<"email" | "phone">("email");
+  const [contactMethod, setContactMethod] = useState<"email" | "phone">(
+    "email",
+  );
   const [familySetup, setFamilySetup] = useState<"create" | "join">("create");
 
   return (
     <form action={formAction} className="space-y-4">
-      {state.status === "error" ? <Alert className="border-destructive/30 text-destructive">{state.message}</Alert> : null}
-      {state.status === "success" ? <Alert className="border-primary/30 text-primary">{state.message}</Alert> : null}
+      {state.status === "error" ? (
+        <Alert className="border-destructive/30 text-destructive">
+          {state.message}
+        </Alert>
+      ) : null}
+      {state.status === "success" ? (
+        <Alert className="border-primary/30 text-primary">
+          {state.message}
+        </Alert>
+      ) : null}
       <label className="space-y-2 text-sm font-medium text-slate-200">
         <span>Full name</span>
         <Input autoComplete="name" name="fullName" placeholder="Jane Doe" />
@@ -27,26 +48,55 @@ export function SignupForm() {
         <legend>Sign up with</legend>
         <div className="grid grid-cols-2 gap-2">
           <label className="flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3">
-            <input checked={contactMethod === "email"} name="contactMethod" onChange={() => setContactMethod("email")} type="radio" value="email" />
+            <input
+              checked={contactMethod === "email"}
+              name="contactMethod"
+              onChange={() => setContactMethod("email")}
+              type="radio"
+              value="email"
+            />
             <span>Email</span>
           </label>
           <label className="flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3">
-            <input checked={contactMethod === "phone"} name="contactMethod" onChange={() => setContactMethod("phone")} type="radio" value="phone" />
+            <input
+              checked={contactMethod === "phone"}
+              name="contactMethod"
+              onChange={() => setContactMethod("phone")}
+              type="radio"
+              value="phone"
+            />
             <span>Phone</span>
           </label>
         </div>
       </fieldset>
       <label className="space-y-2 text-sm font-medium text-slate-200">
         <span>Email</span>
-        <Input autoComplete="email" disabled={contactMethod !== "email"} name="email" placeholder="you@example.com" type="email" />
+        <Input
+          autoComplete="email"
+          disabled={contactMethod !== "email"}
+          name="email"
+          placeholder="you@example.com"
+          type="email"
+        />
       </label>
       <label className="space-y-2 text-sm font-medium text-slate-200">
         <span>Phone</span>
-        <Input autoComplete="tel" disabled={contactMethod !== "phone"} name="phone" placeholder="+15551234567" type="tel" />
+        <Input
+          autoComplete="tel"
+          disabled={contactMethod !== "phone"}
+          name="phone"
+          placeholder="+15551234567"
+          type="tel"
+        />
       </label>
       <label className="space-y-2 text-sm font-medium text-slate-200">
         <span>Password</span>
-        <Input autoComplete="new-password" name="password" placeholder="At least 8 characters" type="password" />
+        <Input
+          autoComplete="new-password"
+          name="password"
+          placeholder="At least 8 characters"
+          type="password"
+        />
       </label>
       <label className="space-y-2 text-sm font-medium text-slate-200">
         <span>Role</span>
@@ -82,22 +132,43 @@ export function SignupForm() {
         <legend>Family</legend>
         <div className="grid grid-cols-2 gap-2">
           <label className="flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3">
-            <input checked={familySetup === "create"} name="familySetup" onChange={() => setFamilySetup("create")} type="radio" value="create" />
+            <input
+              checked={familySetup === "create"}
+              name="familySetup"
+              onChange={() => setFamilySetup("create")}
+              type="radio"
+              value="create"
+            />
             <span>Create</span>
           </label>
           <label className="flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3">
-            <input checked={familySetup === "join"} name="familySetup" onChange={() => setFamilySetup("join")} type="radio" value="join" />
+            <input
+              checked={familySetup === "join"}
+              name="familySetup"
+              onChange={() => setFamilySetup("join")}
+              type="radio"
+              value="join"
+            />
             <span>Join</span>
           </label>
         </div>
       </fieldset>
       <label className="space-y-2 text-sm font-medium text-slate-200">
         <span>Family name</span>
-        <Input disabled={familySetup !== "create"} name="familyName" placeholder="Johnson Family" />
+        <Input
+          disabled={familySetup !== "create"}
+          name="familyName"
+          placeholder="Johnson Family"
+        />
       </label>
       <label className="space-y-2 text-sm font-medium text-slate-200">
         <span>Join code</span>
-        <Input autoCapitalize="none" disabled={familySetup !== "join"} name="joinCode" placeholder="Invite code" />
+        <Input
+          autoCapitalize="none"
+          disabled={familySetup !== "join"}
+          name="joinCode"
+          placeholder="Invite code"
+        />
       </label>
       <SubmitButton>Create account</SubmitButton>
     </form>

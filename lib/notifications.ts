@@ -1,7 +1,7 @@
 import {
   getNotificationColorToken,
   notificationTypes as notificationTypeTokens,
-  type NotificationType
+  type NotificationType,
 } from "@/constants/notification-colors";
 import { supabase } from "@/lib/supabase";
 
@@ -12,7 +12,7 @@ export const notificationTypes = [
   notificationTypeTokens.orangeImportantHealth,
   notificationTypeTokens.redEmergency,
   notificationTypeTokens.purpleAiSuggestion,
-  notificationTypeTokens.greySystem
+  notificationTypeTokens.greySystem,
 ] as const;
 
 export type AppNotification = {
@@ -65,7 +65,9 @@ export function getNotificationColour(type: NotificationType) {
   return getNotificationColorToken(type);
 }
 
-export function getSafePreview(notification: Pick<AppNotification, "safe_preview" | "title">) {
+export function getSafePreview(
+  notification: Pick<AppNotification, "safe_preview" | "title">,
+) {
   const preview = notification.safe_preview?.trim();
   return preview || notification.title;
 }
@@ -82,7 +84,7 @@ export async function createNotification(input: CreateNotificationInput) {
 
   const {
     data: { user },
-    error: userError
+    error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) {
@@ -106,7 +108,7 @@ export async function createNotification(input: CreateNotificationInput) {
       safe_preview: safePreview,
       sender_profile_id: input.senderProfileId ?? user.id,
       title,
-      type: input.type
+      type: input.type,
     })
     .select("*")
     .single();
@@ -122,7 +124,7 @@ export async function markNotificationRead(notificationId: string) {
   const { data, error } = await supabase
     .from("notifications")
     .update({
-      is_read: true
+      is_read: true,
     })
     .eq("id", notificationId)
     .select("*")
@@ -135,7 +137,9 @@ export async function markNotificationRead(notificationId: string) {
   return data as AppNotification;
 }
 
-export async function listNotificationsForProfile(profileId: string | null | undefined) {
+export async function listNotificationsForProfile(
+  profileId: string | null | undefined,
+) {
   if (!profileId) {
     return [];
   }

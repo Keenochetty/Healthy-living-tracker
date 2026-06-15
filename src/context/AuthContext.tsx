@@ -5,13 +5,13 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
 } from "react";
 
 import {
   getLocalTestingMode,
   saveLocalOnboardingBackup,
-  setLocalTestingMode
+  setLocalTestingMode,
 } from "@/lib/authStorage";
 import {
   getProfile,
@@ -19,13 +19,10 @@ import {
   saveOnboardingToCloud,
   signInWithEmail,
   signOut as signOutFromSupabase,
-  signUpWithEmail
+  signUpWithEmail,
 } from "@/lib/profileSync";
 import { supabase } from "@/lib/supabase";
-import {
-  getUserPreferences,
-  saveUserPreferences
-} from "@/lib/userPreferences";
+import { getUserPreferences, saveUserPreferences } from "@/lib/userPreferences";
 import type { AuthUserProfile } from "@/types/auth";
 import type { UserPreferences } from "@/types/profile";
 
@@ -41,16 +38,19 @@ type AuthContextValue = {
   profile: AuthUserProfile | null;
   refreshProfile: () => Promise<void>;
   savePreferences: (
-    preferences: UserPreferences
+    preferences: UserPreferences,
   ) => Promise<{ error: string | null; savedLocally: boolean }>;
   session: Session | null;
   setLocalMode: (enabled: boolean) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   signUp: (
     email: string,
     password: string,
-    fullName?: string
+    fullName?: string,
   ) => Promise<{ error: string | null }>;
   user: User | null;
 };
@@ -71,7 +71,7 @@ function mapProfile(user: User | null, profile: AuthUserProfile | null) {
       typeof user.user_metadata.full_name === "string"
         ? user.user_metadata.full_name
         : null,
-    id: user.id
+    id: user.id,
   };
 }
 
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (cloudPreferences.data) {
       const saved = await saveUserPreferences(cloudPreferences.data, {
-        skipRemoteSync: true
+        skipRemoteSync: true,
       });
       setPreferences(saved);
     } else {
@@ -129,10 +129,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
               email: row.email,
               fullName: row.full_name,
               id: row.id,
-              phone: row.phone
+              phone: row.phone,
             }
-          : null
-      )
+          : null,
+      ),
     );
   }, [hydrateLocalPreferences, session?.user]);
 
@@ -141,11 +141,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     async function initialise() {
       setLoading(true);
-      const [localEnabled, localPreferences, sessionResult] = await Promise.all([
-        getLocalTestingMode(),
-        getUserPreferences(),
-        supabase.auth.getSession()
-      ]);
+      const [localEnabled, localPreferences, sessionResult] = await Promise.all(
+        [
+          getLocalTestingMode(),
+          getUserPreferences(),
+          supabase.auth.getSession(),
+        ],
+      );
 
       if (!isActive) return;
 
@@ -158,9 +160,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initialise();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        setSession(nextSession);
+      },
+    );
 
     return () => {
       isActive = false;
@@ -174,7 +178,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const refreshTask = Promise.resolve().then(refreshProfile);
 
     refreshTask.catch(() => {
-      setError("Could not sync right now. Your local settings are still saved.");
+      setError(
+        "Could not sync right now. Your local settings are still saved.",
+      );
     });
   }, [initialized, refreshProfile]);
 
@@ -242,7 +248,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (result.error) {
       setError("Saved locally. Cloud sync will retry later.");
-      return { error: "Saved locally. Cloud sync will retry later.", savedLocally: true };
+      return {
+        error: "Saved locally. Cloud sync will retry later.",
+        savedLocally: true,
+      };
     }
 
     setError(null);
@@ -274,7 +283,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await logout();
     },
     signUp,
-    user
+    user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

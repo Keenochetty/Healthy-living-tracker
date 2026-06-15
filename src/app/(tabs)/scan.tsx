@@ -8,29 +8,31 @@ import { useAppTheme } from "@/theme/ThemeProvider";
 
 const SCAN_ACTIONS = [
   {
-    description: "Scan a food barcode and review product details before logging.",
+    description:
+      "Scan a food barcode and review product details before logging.",
     href: "/food/barcode-scanner",
     icon: ScanBarcode,
-    label: "Food barcode"
+    label: "Food barcode",
   },
   {
-    description: "Use assisted capture for prescriptions, documents, food, and health records.",
+    description:
+      "Use assisted capture for prescriptions, documents, food, and health records.",
     href: "/ai",
     icon: Sparkles,
-    label: "AI-assisted scan"
+    label: "AI-assisted scan",
   },
   {
     description: "Scan a trusted QR code to join a Family Circle.",
     href: "/scan-invite",
     icon: Camera,
-    label: "Circle invite"
+    label: "Circle invite",
   },
   {
     description: "Open health records and document capture options.",
     href: "/records",
     icon: FileText,
-    label: "Health record"
-  }
+    label: "Health record",
+  },
 ] as const;
 
 export default function ScanScreen() {
@@ -43,7 +45,8 @@ export default function ScanScreen() {
           Capture health information
         </Text>
         <Text style={{ color: "#ffffff", lineHeight: 21, marginTop: 8 }}>
-          Choose what to scan. You will review captured information before anything is saved.
+          Choose what to scan. You will review captured information before
+          anything is saved.
         </Text>
       </AppCard>
 
@@ -57,13 +60,31 @@ export default function ScanScreen() {
 
             return (
               <AppCard key={action.label}>
-                <View style={{ alignItems: "center", flexDirection: "row", gap: 14 }}>
+                <View
+                  style={{
+                    alignItems: "center",
+                    flexDirection: "row",
+                    gap: 14,
+                  }}
+                >
                   <Icon color={theme.primary} size={26} />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.text, fontSize: 17, fontWeight: "900" }}>
+                    <Text
+                      style={{
+                        color: theme.text,
+                        fontSize: 17,
+                        fontWeight: "900",
+                      }}
+                    >
                       {action.label}
                     </Text>
-                    <Text style={{ color: theme.mutedText, lineHeight: 20, marginTop: 4 }}>
+                    <Text
+                      style={{
+                        color: theme.mutedText,
+                        lineHeight: 20,
+                        marginTop: 4,
+                      }}
+                    >
                       {action.description}
                     </Text>
                   </View>

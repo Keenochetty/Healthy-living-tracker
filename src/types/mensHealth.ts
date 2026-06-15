@@ -1,12 +1,6 @@
-export type MensHealthStatus =
-  | "disabled"
-  | "enabled"
-  | "shared_view_only";
+export type MensHealthStatus = "disabled" | "enabled" | "shared_view_only";
 
-export type MensHealthCheckInFrequency =
-  | "daily"
-  | "weekly"
-  | "custom";
+export type MensHealthCheckInFrequency = "daily" | "weekly" | "custom";
 
 export type MensHealthSymptomKey =
   | "testicular_lump_note"

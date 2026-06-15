@@ -2,7 +2,11 @@ import * as Localization from "expo-localization";
 
 import { defaultSettingsPreferences } from "@/constants/settings";
 import { supabase } from "@/lib/supabase";
-import type { DeviceSettingsDefaults, SettingsPreferences, UnitsPreferences } from "@/types/settings";
+import type {
+  DeviceSettingsDefaults,
+  SettingsPreferences,
+  UnitsPreferences,
+} from "@/types/settings";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -15,9 +19,14 @@ function isImperialMeasurementSystem(value: string | null | undefined) {
 export function getDeviceSettingsDefaults(): DeviceSettingsDefaults {
   const locale = Localization.getLocales()[0];
   const calendar = Localization.getCalendars()[0];
-  const measurementSystem = isImperialMeasurementSystem(locale.measurementSystem) ? "imperial" : "metric";
+  const measurementSystem = isImperialMeasurementSystem(
+    locale.measurementSystem,
+  )
+    ? "imperial"
+    : "metric";
   const region = locale.regionCode?.toUpperCase() ?? null;
-  const uses24hourClock = calendar.uses24hourClock ?? measurementSystem === "metric";
+  const uses24hourClock =
+    calendar.uses24hourClock ?? measurementSystem === "metric";
 
   return {
     dateFormat: region === "US" ? "mm_dd_yyyy" : "dd_mm_yyyy",
@@ -26,17 +35,24 @@ export function getDeviceSettingsDefaults(): DeviceSettingsDefaults {
     locale: locale.languageTag,
     measurementSystem,
     region,
-    temperature: locale.temperatureUnit === "fahrenheit" ? "fahrenheit" : "celsius",
+    temperature:
+      locale.temperatureUnit === "fahrenheit" ? "fahrenheit" : "celsius",
     timeFormat: uses24hourClock ? "24_hour" : "12_hour",
-    weight: measurementSystem === "metric" ? "kg" : "lb"
+    weight: measurementSystem === "metric" ? "kg" : "lb",
   };
 }
 
-export function normalizeSettingsPreferences(value: unknown): SettingsPreferences {
+export function normalizeSettingsPreferences(
+  value: unknown,
+): SettingsPreferences {
   const preferences = isRecord(value) ? value : {};
   const units = isRecord(preferences.units) ? preferences.units : {};
-  const appearance = isRecord(preferences.appearance) ? preferences.appearance : {};
-  const notifications = isRecord(preferences.notifications) ? preferences.notifications : {};
+  const appearance = isRecord(preferences.appearance)
+    ? preferences.appearance
+    : {};
+  const notifications = isRecord(preferences.notifications)
+    ? preferences.notifications
+    : {};
   const privacy = isRecord(preferences.privacy) ? preferences.privacy : {};
   const ai = isRecord(preferences.ai) ? preferences.ai : {};
 
@@ -49,7 +65,7 @@ export function normalizeSettingsPreferences(value: unknown): SettingsPreference
       logActionsToAudit:
         typeof ai.logActionsToAudit === "boolean"
           ? ai.logActionsToAudit
-          : defaultSettingsPreferences.ai.logActionsToAudit
+          : defaultSettingsPreferences.ai.logActionsToAudit,
     },
     appearance: {
       reduceMotion:
@@ -57,9 +73,11 @@ export function normalizeSettingsPreferences(value: unknown): SettingsPreference
           ? appearance.reduceMotion
           : defaultSettingsPreferences.appearance.reduceMotion,
       theme:
-        appearance.theme === "light" || appearance.theme === "dark" || appearance.theme === "device_default"
+        appearance.theme === "light" ||
+        appearance.theme === "dark" ||
+        appearance.theme === "device_default"
           ? appearance.theme
-          : defaultSettingsPreferences.appearance.theme
+          : defaultSettingsPreferences.appearance.theme,
     },
     notifications: {
       lockSensitiveNotifications:
@@ -69,7 +87,7 @@ export function normalizeSettingsPreferences(value: unknown): SettingsPreference
       showSafePreviews:
         typeof notifications.showSafePreviews === "boolean"
           ? notifications.showSafePreviews
-          : defaultSettingsPreferences.notifications.showSafePreviews
+          : defaultSettingsPreferences.notifications.showSafePreviews,
     },
     privacy: {
       caregiverSharingEnabled:
@@ -83,9 +101,9 @@ export function normalizeSettingsPreferences(value: unknown): SettingsPreference
       partnerSharingEnabled:
         typeof privacy.partnerSharingEnabled === "boolean"
           ? privacy.partnerSharingEnabled
-          : defaultSettingsPreferences.privacy.partnerSharingEnabled
+          : defaultSettingsPreferences.privacy.partnerSharingEnabled,
     },
-    units: normalizeUnitsPreferences(units)
+    units: normalizeUnitsPreferences(units),
   };
 }
 
@@ -94,37 +112,53 @@ export function normalizeUnitsPreferences(value: unknown): UnitsPreferences {
 
   return {
     dateFormat:
-      units.dateFormat === "dd_mm_yyyy" || units.dateFormat === "mm_dd_yyyy" || units.dateFormat === "device_default"
+      units.dateFormat === "dd_mm_yyyy" ||
+      units.dateFormat === "mm_dd_yyyy" ||
+      units.dateFormat === "device_default"
         ? units.dateFormat
         : defaultSettingsPreferences.units.dateFormat,
     distance:
-      units.distance === "km" || units.distance === "miles" || units.distance === "device_default"
+      units.distance === "km" ||
+      units.distance === "miles" ||
+      units.distance === "device_default"
         ? units.distance
         : defaultSettingsPreferences.units.distance,
     height:
-      units.height === "cm" || units.height === "ft_in" || units.height === "device_default"
+      units.height === "cm" ||
+      units.height === "ft_in" ||
+      units.height === "device_default"
         ? units.height
         : defaultSettingsPreferences.units.height,
     system:
-      units.system === "metric" || units.system === "imperial" || units.system === "device_default"
+      units.system === "metric" ||
+      units.system === "imperial" ||
+      units.system === "device_default"
         ? units.system
         : defaultSettingsPreferences.units.system,
     temperature:
-      units.temperature === "celsius" || units.temperature === "fahrenheit" || units.temperature === "device_default"
+      units.temperature === "celsius" ||
+      units.temperature === "fahrenheit" ||
+      units.temperature === "device_default"
         ? units.temperature
         : defaultSettingsPreferences.units.temperature,
     timeFormat:
-      units.timeFormat === "12_hour" || units.timeFormat === "24_hour" || units.timeFormat === "device_default"
+      units.timeFormat === "12_hour" ||
+      units.timeFormat === "24_hour" ||
+      units.timeFormat === "device_default"
         ? units.timeFormat
         : defaultSettingsPreferences.units.timeFormat,
     weight:
-      units.weight === "kg" || units.weight === "lb" || units.weight === "device_default"
+      units.weight === "kg" ||
+      units.weight === "lb" ||
+      units.weight === "device_default"
         ? units.weight
-        : defaultSettingsPreferences.units.weight
+        : defaultSettingsPreferences.units.weight,
   };
 }
 
-export async function getSettingsPreferences(profileId: string | null | undefined) {
+export async function getSettingsPreferences(
+  profileId: string | null | undefined,
+) {
   if (!profileId) {
     return normalizeSettingsPreferences(defaultSettingsPreferences);
   }
@@ -144,7 +178,7 @@ export async function getSettingsPreferences(profileId: string | null | undefine
 
 export async function updateSettingsPreferences(
   profileId: string | null | undefined,
-  preferences: SettingsPreferences
+  preferences: SettingsPreferences,
 ) {
   if (!profileId) {
     throw new Error("Sign in before updating settings.");
@@ -155,7 +189,7 @@ export async function updateSettingsPreferences(
     .from("user_settings")
     .upsert({
       preferences: normalizedPreferences,
-      profile_id: profileId
+      profile_id: profileId,
     })
     .select("preferences")
     .single();

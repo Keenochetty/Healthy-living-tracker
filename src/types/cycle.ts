@@ -87,7 +87,11 @@ export type PregnancyProfile = {
   updatedAt: string;
 };
 
-export type PregnancySymptomSeverity = "mild" | "moderate" | "strong" | "urgent";
+export type PregnancySymptomSeverity =
+  | "mild"
+  | "moderate"
+  | "strong"
+  | "urgent";
 
 export type PregnancySymptomLog = {
   createdAt: string;

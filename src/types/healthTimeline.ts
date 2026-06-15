@@ -29,7 +29,15 @@ export type HealthReminderStatus =
   | "cancelled"
   | "paused";
 
-export type RepeatFrequency = "none" | "daily" | "weekly" | "monthly" | "specific_days" | "every_x_hours" | "every_x_days" | "custom";
+export type RepeatFrequency =
+  | "none"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "specific_days"
+  | "every_x_hours"
+  | "every_x_days"
+  | "custom";
 
 export type ReminderCategory =
   | "medication"
@@ -156,7 +164,10 @@ export type CreateHealthReminderInput = {
 };
 
 export type UpdateHealthReminderInput = Partial<
-  Omit<HealthReminder, "createdAt" | "id" | "profileId" | "updatedAt" | "userId">
+  Omit<
+    HealthReminder,
+    "createdAt" | "id" | "profileId" | "updatedAt" | "userId"
+  >
 >;
 
 export type HealthTimelineEvent = {
@@ -266,7 +277,14 @@ export type ScheduledNotificationRecord = {
 };
 
 export type ReminderActionLog = {
-  action: "completed" | "taken" | "skipped" | "snoozed" | "opened" | "dismissed" | "rescheduled";
+  action:
+    | "completed"
+    | "taken"
+    | "skipped"
+    | "snoozed"
+    | "opened"
+    | "dismissed"
+    | "rescheduled";
   actionSource: "in_app" | "notification" | "assistant" | "caregiver";
   createdAt: string;
   id: string;

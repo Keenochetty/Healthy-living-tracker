@@ -3,7 +3,7 @@ import { Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import {
   ELDER_CONSENT_DISCLAIMER,
-  ELDER_CONSENT_STATUS_OPTIONS
+  ELDER_CONSENT_STATUS_OPTIONS,
 } from "@/constants/elderOptions";
 import { createElderProfile } from "@/lib/elderStorage";
 import type { ElderConsentStatus, ElderProfile } from "@/types/elder";
@@ -45,7 +45,7 @@ export function AddElderProfileCard({ onCreated }: AddElderProfileCardProps) {
       livesAlone,
       medicalNotes,
       primaryDoctor: primaryDoctor.trim() || undefined,
-      relationship: relationship.trim() || undefined
+      relationship: relationship.trim() || undefined,
     });
 
     setDisplayName("");
@@ -93,8 +93,16 @@ export function AddElderProfileCard({ onCreated }: AddElderProfileCardProps) {
           value={dateOfBirth}
         />
 
-        <View style={{ alignItems: "center", flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ color: "#0f172a", fontWeight: "800" }}>Lives alone</Text>
+        <View
+          style={{
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text style={{ color: "#0f172a", fontWeight: "800" }}>
+            Lives alone
+          </Text>
           <Switch onValueChange={setLivesAlone} value={livesAlone} />
         </View>
 
@@ -146,8 +154,14 @@ export function AddElderProfileCard({ onCreated }: AddElderProfileCardProps) {
           value={emergencyContactPhone}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleCreate} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Add elder profile</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleCreate}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Add elder profile
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -161,7 +175,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -169,5 +183,5 @@ const buttonStyle = {
   backgroundColor: "#059669",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

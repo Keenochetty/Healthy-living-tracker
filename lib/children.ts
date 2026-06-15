@@ -51,7 +51,9 @@ function cleanOptional(value?: string) {
   return nextValue ? nextValue : null;
 }
 
-export function getChildFullName(child: Pick<ChildProfile, "first_name" | "last_name">) {
+export function getChildFullName(
+  child: Pick<ChildProfile, "first_name" | "last_name">,
+) {
   return [child.first_name, child.last_name].filter(Boolean).join(" ");
 }
 
@@ -70,7 +72,8 @@ export function getChildAge(dateOfBirth: string | null) {
   let age = today.getFullYear() - birthDate.getFullYear();
   const hasHadBirthday =
     today.getMonth() > birthDate.getMonth() ||
-    (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+    (today.getMonth() === birthDate.getMonth() &&
+      today.getDate() >= birthDate.getDate());
 
   if (!hasHadBirthday) {
     age -= 1;
@@ -81,25 +84,36 @@ export function getChildAge(dateOfBirth: string | null) {
 
 export function canCreateOrEditChildProfiles(
   profile: ProfileRecord | null,
-  selectedFamily: FamilyRecord | null
+  selectedFamily: FamilyRecord | null,
 ) {
   const role = profile?.primary_role ?? profile?.app_role;
 
   return role === "parent_guardian" && Boolean(selectedFamily);
 }
 
-export function openChildProfile(childId: string, viewer: "family" | "caregiver" = "family") {
-  router.push(viewer === "caregiver" ? `/caregiver/child/${childId}` : `/child/${childId}`);
+export function openChildProfile(
+  childId: string,
+  viewer: "family" | "caregiver" = "family",
+) {
+  router.push(
+    viewer === "caregiver"
+      ? `/caregiver/child/${childId}`
+      : `/child/${childId}`,
+  );
 }
 
-export async function listChildrenInSelectedFamily(familyId: string | null | undefined) {
+export async function listChildrenInSelectedFamily(
+  familyId: string | null | undefined,
+) {
   if (!familyId) {
     return [];
   }
 
   const { data, error } = await supabase
     .from("children")
-    .select("id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by")
+    .select(
+      "id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by",
+    )
     .eq("family_id", familyId)
     .order("created_at", { ascending: false });
 
@@ -113,7 +127,9 @@ export async function listChildrenInSelectedFamily(familyId: string | null | und
 export async function getChildProfile(childId: string) {
   const { data, error } = await supabase
     .from("children")
-    .select("id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by")
+    .select(
+      "id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by",
+    )
     .eq("id", childId)
     .single();
 
@@ -127,7 +143,7 @@ export async function getChildProfile(childId: string) {
 export async function createChildProfile(input: ChildProfileInput) {
   const {
     data: { user },
-    error: userError
+    error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) {
@@ -152,9 +168,11 @@ export async function createChildProfile(input: ChildProfileInput) {
       family_id: input.familyId,
       first_name: firstName,
       gender: cleanOptional(input.gender),
-      last_name: cleanOptional(input.lastName)
+      last_name: cleanOptional(input.lastName),
     })
-    .select("id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by")
+    .select(
+      "id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by",
+    )
     .single();
 
   if (error) {
@@ -164,7 +182,10 @@ export async function createChildProfile(input: ChildProfileInput) {
   return data as ChildProfile;
 }
 
-export async function updateChildProfile(childId: string, input: Omit<ChildProfileInput, "familyId">) {
+export async function updateChildProfile(
+  childId: string,
+  input: Omit<ChildProfileInput, "familyId">,
+) {
   const firstName = input.firstName.trim();
 
   if (!firstName) {
@@ -177,10 +198,12 @@ export async function updateChildProfile(childId: string, input: Omit<ChildProfi
       date_of_birth: cleanOptional(input.dateOfBirth),
       first_name: firstName,
       gender: cleanOptional(input.gender),
-      last_name: cleanOptional(input.lastName)
+      last_name: cleanOptional(input.lastName),
     })
     .eq("id", childId)
-    .select("id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by")
+    .select(
+      "id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by",
+    )
     .single();
 
   if (error) {
@@ -193,7 +216,7 @@ export async function updateChildProfile(childId: string, input: Omit<ChildProfi
 export async function getCaregiverChildProfile(childId: string) {
   const {
     data: { user },
-    error: userError
+    error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) {
@@ -221,7 +244,7 @@ export async function getCaregiverChildProfile(childId: string) {
   const { data: access, error: accessError } = await supabase
     .from("caregiver_child_access")
     .select(
-      "can_view_care_instructions, can_view_schedule, can_log_activity, can_upload_photos, can_use_emergency_button, is_active"
+      "can_view_care_instructions, can_view_schedule, can_log_activity, can_upload_photos, can_use_emergency_button, is_active",
     )
     .eq("caregiver_profile_id", caregiverProfile.id)
     .eq("child_id", childId)
@@ -240,14 +263,14 @@ export async function getCaregiverChildProfile(childId: string) {
 
   return {
     access: access as CaregiverChildAccess,
-    child
+    child,
   };
 }
 
 export async function listAssignedCaregiverChildren() {
   const {
     data: { user },
-    error: userError
+    error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) {
@@ -275,7 +298,7 @@ export async function listAssignedCaregiverChildren() {
   const { data: accessRows, error: accessError } = await supabase
     .from("caregiver_child_access")
     .select(
-      "child_id, can_view_care_instructions, can_view_schedule, can_log_activity, can_upload_photos, can_use_emergency_button, is_active"
+      "child_id, can_view_care_instructions, can_view_schedule, can_log_activity, can_upload_photos, can_use_emergency_button, is_active",
     )
     .eq("caregiver_profile_id", caregiverProfile.id)
     .eq("is_active", true)
@@ -285,7 +308,9 @@ export async function listAssignedCaregiverChildren() {
     throw accessError;
   }
 
-  const childIds = Array.from(new Set((accessRows ?? []).map((row) => row.child_id).filter(Boolean)));
+  const childIds = Array.from(
+    new Set((accessRows ?? []).map((row) => row.child_id).filter(Boolean)),
+  );
 
   if (childIds.length === 0) {
     return [];
@@ -293,14 +318,18 @@ export async function listAssignedCaregiverChildren() {
 
   const { data: children, error: childrenError } = await supabase
     .from("children")
-    .select("id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by")
+    .select(
+      "id, family_id, first_name, last_name, date_of_birth, gender, notes, created_by",
+    )
     .in("id", childIds);
 
   if (childrenError) {
     throw childrenError;
   }
 
-  const childrenById = new Map((children ?? []).map((child) => [child.id, child as ChildProfile]));
+  const childrenById = new Map(
+    (children ?? []).map((child) => [child.id, child as ChildProfile]),
+  );
 
   return (accessRows ?? [])
     .map((access) => {
@@ -317,15 +346,17 @@ export async function listAssignedCaregiverChildren() {
           can_use_emergency_button: access.can_use_emergency_button,
           can_view_care_instructions: access.can_view_care_instructions,
           can_view_schedule: access.can_view_schedule,
-          is_active: access.is_active
+          is_active: access.is_active,
         },
-        child
+        child,
       };
     })
     .filter((item): item is AssignedCaregiverChild => item !== null);
 }
 
-export async function grantCaregiverAccessToChild(input: GrantCaregiverAccessInput) {
+export async function grantCaregiverAccessToChild(
+  input: GrantCaregiverAccessInput,
+) {
   const caregiverEmail = input.caregiverEmail.trim();
 
   if (!caregiverEmail) {
@@ -339,7 +370,7 @@ export async function grantCaregiverAccessToChild(input: GrantCaregiverAccessInp
     allow_view_care_instructions: input.canViewCareInstructions,
     allow_view_schedule: input.canViewSchedule,
     caregiver_email: caregiverEmail,
-    target_child_id: input.childId
+    target_child_id: input.childId,
   });
 
   if (error) {

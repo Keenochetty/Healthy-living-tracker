@@ -39,13 +39,15 @@ export async function getTodayStepCount() {
   }
 }
 
-export async function subscribeToStepUpdates(callback: (steps: number) => void) {
+export async function subscribeToStepUpdates(
+  callback: (steps: number) => void,
+) {
   const available = await isPedometerAvailable();
 
   if (!available) {
     callback(0);
     return {
-      remove: () => undefined
+      remove: () => undefined,
     };
   }
 

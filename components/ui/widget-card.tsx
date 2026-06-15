@@ -1,5 +1,11 @@
 import type { PropsWithChildren, ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from "react-native";
 
 import { componentRadius } from "@/constants/radius";
 import { spacing } from "@/constants/spacing";
@@ -14,7 +20,15 @@ type WidgetCardProps = PropsWithChildren<{
   title?: string;
 }>;
 
-export function WidgetCard({ accentColor = colors.brand.primary, action, children, onPress, style, subtitle, title }: WidgetCardProps) {
+export function WidgetCard({
+  accentColor = colors.brand.primary,
+  action,
+  children,
+  onPress,
+  style,
+  subtitle,
+  title,
+}: WidgetCardProps) {
   const content = (
     <View style={[styles.card, style]}>
       {title || subtitle || action ? (
@@ -36,7 +50,11 @@ export function WidgetCard({ accentColor = colors.brand.primary, action, childre
   }
 
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [pressed && styles.pressed]}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [pressed && styles.pressed]}
+    >
       {content}
     </Pressable>
   );
@@ -46,7 +64,7 @@ const styles = StyleSheet.create({
   accent: {
     borderRadius: 999,
     height: 3,
-    width: 36
+    width: 36,
   },
   card: {
     backgroundColor: colors.card.background,
@@ -55,30 +73,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg,
-    ...shadows.card
+    ...shadows.card,
   },
   header: {
     alignItems: "flex-start",
     flexDirection: "row",
     gap: spacing.md,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   pressed: {
     opacity: 0.9,
-    transform: [{ scale: 0.985 }, { translateY: 1 }]
+    transform: [{ scale: 0.985 }, { translateY: 1 }],
   },
   subtitle: {
     color: colors.text.muted,
     fontSize: 13,
-    lineHeight: 18
+    lineHeight: 18,
   },
   title: {
     color: colors.text.primary,
     fontSize: 17,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   titleGroup: {
     flex: 1,
-    gap: spacing.xs
-  }
+    gap: spacing.xs,
+  },
 });

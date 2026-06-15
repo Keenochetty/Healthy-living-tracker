@@ -1,5 +1,8 @@
 export type PreferredContactMethod = "email" | "phone" | "none";
-export type EmergencyContactVisibility = "private" | "circle_admins" | "emergency_contacts";
+export type EmergencyContactVisibility =
+  | "private"
+  | "circle_admins"
+  | "emergency_contacts";
 
 export type EmergencyContact = {
   id: string;

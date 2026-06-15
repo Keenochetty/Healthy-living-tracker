@@ -5,7 +5,7 @@ module.exports = {
     "./app/**/*.{js,jsx,ts,tsx}",
     "./components/**/*.{js,jsx,ts,tsx}",
     "./lib/**/*.{js,jsx,ts,tsx}",
-    "./src/**/*.{js,jsx,ts,tsx}"
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   presets: [require("nativewind/preset")],
   theme: {
@@ -14,12 +14,12 @@ module.exports = {
         ink: {
           DEFAULT: "#17202A",
           muted: "#64748B",
-          soft: "#94A3B8"
+          soft: "#94A3B8",
         },
         canvas: {
           DEFAULT: "#FAF8F4",
           warm: "#FFFDF8",
-          cool: "#F5F8FB"
+          cool: "#F5F8FB",
         },
         wellness: {
           mint: "#DFF6EE",
@@ -33,7 +33,7 @@ module.exports = {
           purple: "#6D5BD0",
           orange: "#C56A2A",
           red: "#B42318",
-          grey: "#667085"
+          grey: "#667085",
         },
         realm: {
           health: "hsl(var(--health) / <alpha-value>)",
@@ -43,7 +43,7 @@ module.exports = {
           baby: "hsl(var(--baby) / <alpha-value>)",
           family: "hsl(var(--family) / <alpha-value>)",
           records: "hsl(var(--records) / <alpha-value>)",
-          meds: "hsl(var(--meds) / <alpha-value>)"
+          meds: "hsl(var(--meds) / <alpha-value>)",
         },
         "surface-soft": "hsl(var(--surface-soft) / <alpha-value>)",
         "surface-raised": "hsl(var(--surface-raised) / <alpha-value>)",
@@ -55,46 +55,46 @@ module.exports = {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))"
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))"
+          foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))"
+          foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))"
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))"
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))"
+          foreground: "hsl(var(--popover-foreground))",
         },
         card: {
           DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))"
-        }
+          foreground: "hsl(var(--card-foreground))",
+        },
       },
       borderRadius: {
         "2xl": 24,
         "3xl": 32,
         lg: "var(--radius, 18px)",
         md: "calc(var(--radius, 18px) - 2px)",
-        sm: "calc(var(--radius, 18px) - 4px)"
+        sm: "calc(var(--radius, 18px) - 4px)",
       },
       boxShadow: {
         card: "var(--shadow-card)",
         soft: "var(--shadow-soft)",
-        float: "var(--shadow-float)"
-      }
-    }
+        float: "var(--shadow-float)",
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };

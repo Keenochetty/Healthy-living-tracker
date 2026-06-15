@@ -74,7 +74,7 @@ export async function isAuthenticated() {
 export async function signIn({ email, password }: SignInInput) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: cleanText(email),
-    password
+    password,
   });
 
   if (error) {
@@ -87,7 +87,7 @@ export async function signIn({ email, password }: SignInInput) {
 export async function signUp({ email, password }: SignUpInput) {
   const { data, error } = await supabase.auth.signUp({
     email: cleanText(email),
-    password
+    password,
   });
 
   if (error) {
@@ -118,7 +118,7 @@ export async function createInitialProfile(user: User) {
     full_name: fallbackName,
     display_name: fallbackName,
     primary_role: "parent_guardian",
-    is_onboarding_complete: false
+    is_onboarding_complete: false,
   });
 
   if (error) {
@@ -146,7 +146,7 @@ export async function completeOnboarding(input: OnboardingInput) {
     full_name: fullName,
     display_name: displayName,
     primary_role: input.primaryRole,
-    is_onboarding_complete: true
+    is_onboarding_complete: true,
   });
 
   if (profileError) {
@@ -159,7 +159,7 @@ export async function completeOnboarding(input: OnboardingInput) {
     privacy_preferences: {},
     ai_preferences: {},
     calendar_preferences: {},
-    security_preferences: {}
+    security_preferences: {},
   });
 
   if (settingsError) {
@@ -173,7 +173,7 @@ export async function completeOnboarding(input: OnboardingInput) {
       .from("families")
       .insert({
         name: cleanText(input.familyName ?? ""),
-        owner_id: userId
+        owner_id: userId,
       })
       .select("id")
       .single();
@@ -184,13 +184,15 @@ export async function completeOnboarding(input: OnboardingInput) {
 
     familyId = family.id;
 
-    const { error: memberError } = await supabase.from("family_members").insert({
-      family_id: familyId,
-      profile_id: userId,
-      role: input.primaryRole,
-      relationship: "self",
-      can_manage_family: true
-    });
+    const { error: memberError } = await supabase
+      .from("family_members")
+      .insert({
+        family_id: familyId,
+        profile_id: userId,
+        role: input.primaryRole,
+        relationship: "self",
+        can_manage_family: true,
+      });
 
     if (memberError) {
       throw memberError;
@@ -198,9 +200,11 @@ export async function completeOnboarding(input: OnboardingInput) {
   }
 
   if (input.primaryRole === "caregiver" && input.enableCaregiverWorkProfile) {
-    const { error: caregiverError } = await supabase.from("caregiver_profiles").insert({
-      profile_id: userId
-    });
+    const { error: caregiverError } = await supabase
+      .from("caregiver_profiles")
+      .insert({
+        profile_id: userId,
+      });
 
     if (caregiverError) {
       throw caregiverError;
@@ -208,7 +212,7 @@ export async function completeOnboarding(input: OnboardingInput) {
   }
 
   return {
-    familyId
+    familyId,
   };
 }
 

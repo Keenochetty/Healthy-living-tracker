@@ -17,7 +17,7 @@ export function MedicationCard({
   onMarkTaken,
   onOpen,
   onSchedule,
-  schedule
+  schedule,
 }: MedicationCardProps) {
   const nextReminder = schedule?.reminderTimes.find((time) => time.enabled);
   const nextReminderDate = nextReminder
@@ -32,7 +32,7 @@ export function MedicationCard({
         borderRadius: 24,
         borderWidth: 1,
         gap: 12,
-        padding: 15
+        padding: 15,
       }}
     >
       <TouchableOpacity
@@ -47,7 +47,7 @@ export function MedicationCard({
             borderRadius: 18,
             height: 48,
             justifyContent: "center",
-            width: 48
+            width: 48,
           }}
         >
           <Text style={{ color: "#f97316", fontWeight: "900" }}>Med</Text>
@@ -58,11 +58,20 @@ export function MedicationCard({
             {medication.name}
           </Text>
           {medication.dosage ? (
-            <Text style={{ color: "#64748b", marginTop: 3 }}>{medication.dosage}</Text>
+            <Text style={{ color: "#64748b", marginTop: 3 }}>
+              {medication.dosage}
+            </Text>
           ) : null}
-          <Text style={{ color: medication.active ? "#059669" : "#64748b", marginTop: 3 }}>
+          <Text
+            style={{
+              color: medication.active ? "#059669" : "#64748b",
+              marginTop: 3,
+            }}
+          >
             {medication.active ? "Active" : "Inactive"}
-            {nextReminderDate ? ` - next ${formatReminderTime(nextReminderDate.toISOString())}` : ""}
+            {nextReminderDate
+              ? ` - next ${formatReminderTime(nextReminderDate.toISOString())}`
+              : ""}
           </Text>
         </View>
 
@@ -90,7 +99,7 @@ function ActionButton({
   icon,
   label,
   onPress,
-  primary = false
+  primary = false,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -109,11 +118,13 @@ function ActionButton({
         flexDirection: "row",
         gap: 7,
         justifyContent: "center",
-        minHeight: 42
+        minHeight: 42,
       }}
     >
       {icon}
-      <Text style={{ color: primary ? "#ffffff" : "#6d28d9", fontWeight: "900" }}>
+      <Text
+        style={{ color: primary ? "#ffffff" : "#6d28d9", fontWeight: "900" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

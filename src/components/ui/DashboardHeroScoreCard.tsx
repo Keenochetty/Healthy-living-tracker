@@ -20,7 +20,7 @@ export function DashboardHeroScoreCard({
   onPress,
   score,
   subtitle,
-  title
+  title,
 }: DashboardHeroScoreCardProps) {
   const { theme } = useAppTheme();
   const progress = maxScore > 0 ? Math.min(score / maxScore, 1) : 0;
@@ -36,17 +36,34 @@ export function DashboardHeroScoreCard({
         shadowColor: "#000",
         shadowOffset: { height: 16, width: 0 },
         shadowOpacity: 0.22,
-        shadowRadius: 28
+        shadowRadius: 28,
       }}
     >
-      <View style={{ alignItems: "center", flexDirection: "row", gap: spacing.lg }}>
+      <View
+        style={{ alignItems: "center", flexDirection: "row", gap: spacing.lg }}
+      >
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.mutedText, fontSize: 14, fontWeight: "800" }}>{subtitle}</Text>
-          <Text style={{ color: theme.text, fontSize: 30, fontWeight: "900", marginTop: 8 }}>
+          <Text
+            style={{ color: theme.mutedText, fontSize: 14, fontWeight: "800" }}
+          >
+            {subtitle}
+          </Text>
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: 30,
+              fontWeight: "900",
+              marginTop: 8,
+            }}
+          >
             {title}
           </Text>
           {helper ? (
-            <Text style={{ color: theme.primary, fontWeight: "800", marginTop: 8 }}>{helper}</Text>
+            <Text
+              style={{ color: theme.primary, fontWeight: "800", marginTop: 8 }}
+            >
+              {helper}
+            </Text>
           ) : null}
         </View>
 
@@ -59,7 +76,7 @@ export function DashboardHeroScoreCard({
             backgroundColor: "rgba(110, 231, 200, 0.08)",
             height: 86,
             justifyContent: "center",
-            width: 86
+            width: 86,
           }}
         >
           <View
@@ -70,10 +87,14 @@ export function DashboardHeroScoreCard({
               borderWidth: 3 + Math.round(progress * 2),
               height: 66,
               justifyContent: "center",
-              width: 66
+              width: 66,
             }}
           >
-            <Text style={{ color: theme.text, fontSize: 22, fontWeight: "900" }}>{score}</Text>
+            <Text
+              style={{ color: theme.text, fontSize: 22, fontWeight: "900" }}
+            >
+              {score}
+            </Text>
           </View>
         </View>
 

@@ -31,7 +31,9 @@ export default function AiReviewScreen() {
     if (!jobId) return;
     const updated = await approveAiJob(jobId);
     setJob(updated);
-    setMessage("Draft approved. Saving into health records will be connected in a later step.");
+    setMessage(
+      "Draft approved. Saving into health records will be connected in a later step.",
+    );
   }
 
   async function discard() {
@@ -64,7 +66,9 @@ export default function AiReviewScreen() {
 
       {job.localUri ? (
         <AppCard>
-          <Text style={{ color: "#0f172a", fontWeight: "900", marginBottom: 10 }}>
+          <Text
+            style={{ color: "#0f172a", fontWeight: "900", marginBottom: 10 }}
+          >
             Input preview
           </Text>
           {job.inputType === "image" ? (
@@ -74,7 +78,9 @@ export default function AiReviewScreen() {
               style={{ borderRadius: 18, height: 220, width: "100%" }}
             />
           ) : (
-            <Text style={{ color: "#64748b" }}>{job.fileName ?? job.localUri}</Text>
+            <Text style={{ color: "#64748b" }}>
+              {job.fileName ?? job.localUri}
+            </Text>
           )}
         </AppCard>
       ) : null}
@@ -92,7 +98,11 @@ export default function AiReviewScreen() {
         </AppCard>
       ) : null}
 
-      <TouchableOpacity activeOpacity={0.85} onPress={() => router.back()} style={backButtonStyle}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => router.back()}
+        style={backButtonStyle}
+      >
         <Text style={{ color: "#7c3aed", fontWeight: "900" }}>Back</Text>
       </TouchableOpacity>
     </ScreenWrapper>
@@ -104,5 +114,5 @@ const backButtonStyle = {
   backgroundColor: "#f5f3ff",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

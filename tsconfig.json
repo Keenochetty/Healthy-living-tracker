@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,30 +16,12 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/components/*": [
-        "src/components/*",
-        "components/*"
-      ],
-      "@/constants/*": [
-        "src/constants/*",
-        "constants/*"
-      ],
-      "@/lib/*": [
-        "src/lib/*",
-        "lib/*"
-      ],
-      "@/types/*": [
-        "src/types/*",
-        "types/*"
-      ],
-      "@/utils/*": [
-        "src/utils/*",
-        "utils/*"
-      ],
-      "@/*": [
-        "src/*",
-        "*"
-      ]
+      "@/components/*": ["src/components/*", "components/*"],
+      "@/constants/*": ["src/constants/*", "constants/*"],
+      "@/lib/*": ["src/lib/*", "lib/*"],
+      "@/types/*": ["src/types/*", "types/*"],
+      "@/utils/*": ["src/utils/*", "utils/*"],
+      "@/*": ["src/*", "*"]
     }
   },
   "include": [
@@ -53,10 +31,6 @@
     ".expo/types/**/*.ts",
     "nativewind-env.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "family-health-app",
-    "_archive"
-  ],
+  "exclude": ["node_modules", "family-health-app", "_archive"],
   "extends": "expo/tsconfig.base"
 }

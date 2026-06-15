@@ -15,7 +15,7 @@ const UNIT_ROWS: Array<[keyof UnitPreferences, string]> = [
   ["temperatureUnit", "Temperature"],
   ["distanceUnit", "Distance"],
   ["speedUnit", "Speed"],
-  ["dateFormat", "Date format"]
+  ["dateFormat", "Date format"],
 ];
 
 export function UnitPreviewCard({ units }: UnitPreviewCardProps) {
@@ -29,11 +29,13 @@ export function UnitPreviewCard({ units }: UnitPreviewCardProps) {
             style={{
               alignItems: "center",
               flexDirection: "row",
-              justifyContent: "space-between"
+              justifyContent: "space-between",
             }}
           >
             <Text style={{ color: theme.mutedText }}>{label}</Text>
-            <Text style={{ color: theme.text, fontWeight: "900" }}>{units[key]}</Text>
+            <Text style={{ color: theme.text, fontWeight: "900" }}>
+              {units[key]}
+            </Text>
           </View>
         ))}
       </View>

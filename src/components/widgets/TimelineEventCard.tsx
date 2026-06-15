@@ -10,14 +10,32 @@ type TimelineEventCardProps = {
   title: string;
 };
 
-export function TimelineEventCard({ icon = "calendar", meta, title }: TimelineEventCardProps) {
+export function TimelineEventCard({
+  icon = "calendar",
+  meta,
+  title,
+}: TimelineEventCardProps) {
   return (
     <AppCard padding="md">
-      <View style={{ alignItems: "center", flexDirection: "row", gap: appSpacing.md }}>
+      <View
+        style={{
+          alignItems: "center",
+          flexDirection: "row",
+          gap: appSpacing.md,
+        }}
+      >
         <AppIcon container name={icon} size={18} variant="primary" />
         <View style={{ flex: 1 }}>
-          <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
-          {meta ? <Text style={[typography.helper, { color: appColors.textSecondary }]}>{meta}</Text> : null}
+          <Text style={[typography.cardTitle, { color: appColors.text }]}>
+            {title}
+          </Text>
+          {meta ? (
+            <Text
+              style={[typography.helper, { color: appColors.textSecondary }]}
+            >
+              {meta}
+            </Text>
+          ) : null}
         </View>
       </View>
     </AppCard>

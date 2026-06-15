@@ -15,7 +15,14 @@ type HealthQuickWidgetProps = {
   value: string;
 };
 
-export function HealthQuickWidget({ color, icon, label, onPress, privacyBadge, value }: HealthQuickWidgetProps) {
+export function HealthQuickWidget({
+  color,
+  icon,
+  label,
+  onPress,
+  privacyBadge,
+  value,
+}: HealthQuickWidgetProps) {
   return (
     <AppCard
       onPress={onPress}
@@ -24,18 +31,30 @@ export function HealthQuickWidget({ color, icon, label, onPress, privacyBadge, v
         borderColor: `${color}33`,
         borderWidth: 1,
         minHeight: 112,
-        width: 148
+        width: 148,
       }}
     >
       <View style={{ gap: appSpacing.sm }}>
-        <View style={{ alignItems: "center", flexDirection: "row", justifyContent: "space-between" }}>
+        <View
+          style={{
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
           <AppIcon color={color} name={icon} size={20} />
           {privacyBadge ? <PrivacyBadge type={privacyBadge} /> : null}
         </View>
-        <Text numberOfLines={1} style={[typography.caption, { color: appColors.textSecondary }]}>
+        <Text
+          numberOfLines={1}
+          style={[typography.caption, { color: appColors.textSecondary }]}
+        >
           {label}
         </Text>
-        <Text numberOfLines={2} style={[typography.widgetValue, { color: appColors.text }]}>
+        <Text
+          numberOfLines={2}
+          style={[typography.widgetValue, { color: appColors.text }]}
+        >
           {value}
         </Text>
       </View>

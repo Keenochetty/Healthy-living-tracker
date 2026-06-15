@@ -1,13 +1,38 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-import { AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, WidgetCard } from "@/components/ui";
-import { calendarEventTypeLabels, calendarEventTypes, calendarSourceLabels } from "@/constants/calendar";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  QuickActionButton,
+  StatusPill,
+  WidgetCard,
+} from "@/components/ui";
+import {
+  calendarEventTypeLabels,
+  calendarEventTypes,
+  calendarSourceLabels,
+} from "@/constants/calendar";
 import { PRIVACY_LEVELS } from "@/constants/permissions";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
-import { getDefaultEventPrivacy, getEventColour, getEventIcon, getSafeEventPreview, smartRouteEvent } from "@/lib/calendar";
+import {
+  getDefaultEventPrivacy,
+  getEventColour,
+  getEventIcon,
+  getSafeEventPreview,
+  smartRouteEvent,
+} from "@/lib/calendar";
 import { useProfileContext } from "@/lib/profile-context";
 import type { CalendarEventSource, CalendarEventType } from "@/types/calendar";
 import type { PrivacyLevel } from "@/types/permissions";
@@ -27,7 +52,7 @@ const compactPrivacyLabels = {
   circle_shared: "Circle",
   emergency_only: "Emergency",
   partner_shared: "Partner",
-  private: "Private"
+  private: "Private",
 } as const satisfies Record<PrivacyLevel, string>;
 
 export default function CreateCalendarEventScreen() {
@@ -41,15 +66,25 @@ export default function CreateCalendarEventScreen() {
   const [eventTypeMenuOpen, setEventTypeMenuOpen] = useState(false);
   const [eventType, setEventType] = useState<CalendarEventType>("family");
   const [source, setSource] = useState<CalendarEventSource>("profile_owner");
-  const [privacyLevel, setPrivacyLevel] = useState<PrivacyLevel>("circle_shared");
-  const selectedDate = typeof date === "string" ? date : new Date().toISOString().slice(0, 10);
-  const sourceLabel = profile?.display_name || profile?.full_name || "Your account";
-  const routePreview = smartRouteEvent({ description, eventSource: source, eventType, text: title });
+  const [privacyLevel, setPrivacyLevel] =
+    useState<PrivacyLevel>("circle_shared");
+  const selectedDate =
+    typeof date === "string" ? date : new Date().toISOString().slice(0, 10);
+  const sourceLabel =
+    profile?.display_name || profile?.full_name || "Your account";
+  const routePreview = smartRouteEvent({
+    description,
+    eventSource: source,
+    eventType,
+    text: title,
+  });
   const eventPreview = {
     description,
     isSensitive: routePreview.isSensitive,
     privacyLevel,
-    safePreview: routePreview.isSensitive ? "Sensitive event details hidden" : description || "Event details will appear here."
+    safePreview: routePreview.isSensitive
+      ? "Sensitive event details hidden"
+      : description || "Event details will appear here.",
   };
   const previewColour = getEventColour(eventType, source, privacyLevel);
 
@@ -57,7 +92,13 @@ export default function CreateCalendarEventScreen() {
     <View style={styles.root}>
       <AppScreen>
         <AppHeader
-          action={<QuickActionButton label="Back" onPress={() => openRoute("/tabs/calendar")} toneColor={colors.text.muted} />}
+          action={
+            <QuickActionButton
+              label="Back"
+              onPress={() => openRoute("/tabs/calendar")}
+              toneColor={colors.text.muted}
+            />
+          }
           eyebrow="Calendar"
           subtitle="Add event placeholder. Persistence, sync, approval workflow, and smart routing are future integrations."
           title="Add event"
@@ -70,7 +111,13 @@ export default function CreateCalendarEventScreen() {
           title="Event details"
         >
           <View style={styles.form}>
-            <TextInput onChangeText={setTitle} placeholder="Title" placeholderTextColor={colors.text.muted} style={styles.input} value={title} />
+            <TextInput
+              onChangeText={setTitle}
+              placeholder="Title"
+              placeholderTextColor={colors.text.muted}
+              style={styles.input}
+              value={title}
+            />
             <TextInput
               multiline
               onChangeText={setDescription}
@@ -80,13 +127,31 @@ export default function CreateCalendarEventScreen() {
               value={description}
             />
             <View style={styles.timeRow}>
-              <Pressable accessibilityRole="button" onPress={() => setTimeTarget("start")} style={({ pressed }) => [styles.timeButton, pressed && styles.pressed]}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setTimeTarget("start")}
+                style={({ pressed }) => [
+                  styles.timeButton,
+                  pressed && styles.pressed,
+                ]}
+              >
                 <Text style={styles.timeLabel}>Start</Text>
-                <Text style={styles.timeValue}>{selectedDate} · {startTime}</Text>
+                <Text style={styles.timeValue}>
+                  {selectedDate} · {startTime}
+                </Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => setTimeTarget("end")} style={({ pressed }) => [styles.timeButton, pressed && styles.pressed]}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setTimeTarget("end")}
+                style={({ pressed }) => [
+                  styles.timeButton,
+                  pressed && styles.pressed,
+                ]}
+              >
                 <Text style={styles.timeLabel}>End</Text>
-                <Text style={styles.timeValue}>{selectedDate} · {endTime}</Text>
+                <Text style={styles.timeValue}>
+                  {selectedDate} · {endTime}
+                </Text>
               </Pressable>
             </View>
             <QuickActionButton
@@ -101,19 +166,32 @@ export default function CreateCalendarEventScreen() {
             />
 
             <Text style={styles.groupTitle}>Event type</Text>
-            <Pressable accessibilityRole="button" onPress={() => setEventTypeMenuOpen(true)} style={({ pressed }) => [styles.selectButton, pressed && styles.pressed]}>
-              <Text style={styles.selectText}>{calendarEventTypeLabels[eventType]}</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setEventTypeMenuOpen(true)}
+              style={({ pressed }) => [
+                styles.selectButton,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={styles.selectText}>
+                {calendarEventTypeLabels[eventType]}
+              </Text>
               <AppIcon color={colors.text.muted} name="chevron" size={18} />
             </Pressable>
 
             <Text style={styles.groupTitle}>Source</Text>
             <View style={styles.readOnlySource}>
               <View style={styles.sourceAvatar}>
-                <Text style={styles.sourceInitial}>{sourceLabel.slice(0, 1).toUpperCase()}</Text>
+                <Text style={styles.sourceInitial}>
+                  {sourceLabel.slice(0, 1).toUpperCase()}
+                </Text>
               </View>
               <View style={styles.sourceCopy}>
                 <Text style={styles.previewTitle}>{sourceLabel}</Text>
-                <Text style={styles.previewText}>Saved as {calendarSourceLabels[source]}</Text>
+                <Text style={styles.previewText}>
+                  Saved as {calendarSourceLabels[source]}
+                </Text>
               </View>
             </View>
 
@@ -122,27 +200,59 @@ export default function CreateCalendarEventScreen() {
               {PRIVACY_LEVELS.map((level) => (
                 <QuickActionButton
                   key={level}
-                  icon={privacyLevel === level ? <AppIcon color={colors.status.success} name="lock" size={18} /> : undefined}
+                  icon={
+                    privacyLevel === level ? (
+                      <AppIcon
+                        color={colors.status.success}
+                        name="lock"
+                        size={18}
+                      />
+                    ) : undefined
+                  }
                   label={compactPrivacyLabels[level]}
                   onPress={() => setPrivacyLevel(level)}
-                  toneColor={privacyLevel === level ? colors.status.success : colors.text.muted}
+                  toneColor={
+                    privacyLevel === level
+                      ? colors.status.success
+                      : colors.text.muted
+                  }
                 />
               ))}
             </View>
 
             <View style={styles.preview}>
-              <Text style={styles.previewTitle}>{title.trim() || "New event"}</Text>
-              <Text style={styles.previewText}>{getSafeEventPreview(eventPreview)}</Text>
+              <Text style={styles.previewTitle}>
+                {title.trim() || "New event"}
+              </Text>
+              <Text style={styles.previewText}>
+                {getSafeEventPreview(eventPreview)}
+              </Text>
               <View style={styles.pillGrid}>
                 <StatusPill label={calendarEventTypeLabels[eventType]} />
-                <StatusPill label={calendarSourceLabels[source]} tone={source === "ai" ? "ai" : "default"} />
-                <StatusPill label={compactPrivacyLabels[privacyLevel]} tone={privacyLevel === "private" ? "warning" : "default"} />
-                <StatusPill label={getEventIcon(eventType)} tone={previewColour === "purple" ? "ai" : "default"} />
+                <StatusPill
+                  label={calendarSourceLabels[source]}
+                  tone={source === "ai" ? "ai" : "default"}
+                />
+                <StatusPill
+                  label={compactPrivacyLabels[privacyLevel]}
+                  tone={privacyLevel === "private" ? "warning" : "default"}
+                />
+                <StatusPill
+                  label={getEventIcon(eventType)}
+                  tone={previewColour === "purple" ? "ai" : "default"}
+                />
               </View>
             </View>
 
             <QuickActionButton
-              icon={<AppIcon color={colors.brand.primary} name="calendar" size={20} variant="filled" />}
+              icon={
+                <AppIcon
+                  color={colors.brand.primary}
+                  name="calendar"
+                  size={20}
+                  variant="filled"
+                />
+              }
               label="Save placeholder"
               onPress={() => openRoute("/tabs/calendar")}
               toneColor={colors.brand.primary}
@@ -151,10 +261,18 @@ export default function CreateCalendarEventScreen() {
         </WidgetCard>
 
         <Modal transparent visible={Boolean(timeTarget)} animationType="fade">
-          <Pressable style={styles.modalBackdrop} onPress={() => setTimeTarget(null)}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setTimeTarget(null)}
+          >
             <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>{timeTarget === "start" ? "Start time" : "End time"}</Text>
-              <ScrollView style={styles.timePicker} showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalTitle}>
+                {timeTarget === "start" ? "Start time" : "End time"}
+              </Text>
+              <ScrollView
+                style={styles.timePicker}
+                showsVerticalScrollIndicator={false}
+              >
                 {timeSlots.map((slot) => (
                   <Pressable
                     accessibilityRole="button"
@@ -167,7 +285,10 @@ export default function CreateCalendarEventScreen() {
                       }
                       setTimeTarget(null);
                     }}
-                    style={({ pressed }) => [styles.timeOption, pressed && styles.pressed]}
+                    style={({ pressed }) => [
+                      styles.timeOption,
+                      pressed && styles.pressed,
+                    ]}
                   >
                     <Text style={styles.timeOptionText}>{slot}</Text>
                   </Pressable>
@@ -178,10 +299,16 @@ export default function CreateCalendarEventScreen() {
         </Modal>
 
         <Modal transparent visible={eventTypeMenuOpen} animationType="fade">
-          <Pressable style={styles.modalBackdrop} onPress={() => setEventTypeMenuOpen(false)}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setEventTypeMenuOpen(false)}
+          >
             <View style={styles.modalCard}>
               <Text style={styles.modalTitle}>Event type</Text>
-              <ScrollView style={styles.timePicker} showsVerticalScrollIndicator={false}>
+              <ScrollView
+                style={styles.timePicker}
+                showsVerticalScrollIndicator={false}
+              >
                 {calendarEventTypes.map((type) => (
                   <Pressable
                     accessibilityRole="button"
@@ -190,9 +317,14 @@ export default function CreateCalendarEventScreen() {
                       setEventType(type);
                       setEventTypeMenuOpen(false);
                     }}
-                    style={({ pressed }) => [styles.timeOption, pressed && styles.pressed]}
+                    style={({ pressed }) => [
+                      styles.timeOption,
+                      pressed && styles.pressed,
+                    ]}
                   >
-                    <Text style={styles.timeOptionText}>{calendarEventTypeLabels[type]}</Text>
+                    <Text style={styles.timeOptionText}>
+                      {calendarEventTypeLabels[type]}
+                    </Text>
                   </Pressable>
                 ))}
               </ScrollView>
@@ -206,12 +338,12 @@ export default function CreateCalendarEventScreen() {
 
 const styles = StyleSheet.create({
   form: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   groupTitle: {
     color: colors.text.primary,
     fontSize: 15,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   input: {
     backgroundColor: colors.card.background,
@@ -221,14 +353,14 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontSize: 16,
     minHeight: 52,
-    padding: spacing.md
+    padding: spacing.md,
   },
   modalBackdrop: {
     alignItems: "center",
     backgroundColor: "rgba(15, 23, 42, 0.32)",
     flex: 1,
     justifyContent: "center",
-    padding: spacing.xl
+    padding: spacing.xl,
   },
   modalCard: {
     backgroundColor: colors.card.background,
@@ -239,21 +371,21 @@ const styles = StyleSheet.create({
     maxHeight: "78%",
     maxWidth: 380,
     padding: spacing.xl,
-    width: "100%"
+    width: "100%",
   },
   modalTitle: {
     color: colors.text.primary,
     fontSize: 22,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   pillGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   pressed: {
     opacity: 0.84,
-    transform: [{ scale: 0.99 }]
+    transform: [{ scale: 0.99 }],
   },
   preview: {
     backgroundColor: colors.background.warm,
@@ -261,17 +393,17 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     gap: spacing.sm,
-    padding: spacing.md
+    padding: spacing.md,
   },
   previewText: {
     color: colors.text.secondary,
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
   },
   previewTitle: {
     color: colors.text.primary,
     fontSize: 18,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   readOnlySource: {
     alignItems: "center",
@@ -281,11 +413,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.md,
-    padding: spacing.md
+    padding: spacing.md,
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
+    flex: 1,
   },
   selectButton: {
     alignItems: "center",
@@ -296,12 +428,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     minHeight: 52,
-    padding: spacing.md
+    padding: spacing.md,
   },
   selectText: {
     color: colors.text.primary,
     fontSize: 16,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   sourceAvatar: {
     alignItems: "center",
@@ -309,20 +441,20 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     height: 44,
     justifyContent: "center",
-    width: 44
+    width: 44,
   },
   sourceCopy: {
     flex: 1,
-    gap: spacing.xs
+    gap: spacing.xs,
   },
   sourceInitial: {
     color: colors.brand.primary,
     fontSize: 17,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   textArea: {
     minHeight: 90,
-    textAlignVertical: "top"
+    textAlignVertical: "top",
   },
   timeButton: {
     backgroundColor: colors.card.background,
@@ -333,38 +465,38 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     minHeight: 64,
     minWidth: 140,
-    padding: spacing.md
+    padding: spacing.md,
   },
   timeLabel: {
     color: colors.text.muted,
     fontSize: 12,
     fontWeight: "900",
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   timeOption: {
     borderBottomColor: colors.border.soft,
     borderBottomWidth: 1,
     minHeight: 48,
     justifyContent: "center",
-    paddingVertical: spacing.sm
+    paddingVertical: spacing.sm,
   },
   timeOptionText: {
     color: colors.text.primary,
     fontSize: 17,
     fontWeight: "800",
-    textAlign: "center"
+    textAlign: "center",
   },
   timePicker: {
-    maxHeight: 320
+    maxHeight: 320,
   },
   timeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md
+    gap: spacing.md,
   },
   timeValue: {
     color: colors.text.primary,
     fontSize: 15,
-    fontWeight: "900"
-  }
+    fontWeight: "900",
+  },
 });

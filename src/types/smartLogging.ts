@@ -1,4 +1,8 @@
-import type { FoodSource, NutritionDiaryEntry, NutritionMealGroup } from "@/types/nutrition";
+import type {
+  FoodSource,
+  NutritionDiaryEntry,
+  NutritionMealGroup,
+} from "@/types/nutrition";
 
 export type SmartLogMethod =
   | "meal_photo"
@@ -64,7 +68,13 @@ export type SmartFoodSuggestion = {
   priority: number;
   route: string;
   title: string;
-  type: "protein" | "water" | "repeat_meal" | "workout_support" | "diary_reminder" | "general";
+  type:
+    | "protein"
+    | "water"
+    | "repeat_meal"
+    | "workout_support"
+    | "diary_reminder"
+    | "general";
 };
 
 export type ConfirmedSmartLogEntry = NutritionDiaryEntry;

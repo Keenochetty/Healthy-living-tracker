@@ -7,7 +7,7 @@ export const spacing = {
   lg: 16,
   xl: 20,
   "2xl": 24,
-  "3xl": 32
+  "3xl": 32,
 } as const;
 
 export const radius = {
@@ -16,7 +16,7 @@ export const radius = {
   lg: 22,
   xl: 28,
   "2xl": 34,
-  full: 999
+  full: 999,
 } as const;
 
 export const fontSizes = {
@@ -27,7 +27,7 @@ export const fontSizes = {
   lg: 20,
   xl: 24,
   "2xl": 30,
-  "3xl": 36
+  "3xl": 36,
 } as const;
 
 export type AppTheme = {
@@ -70,7 +70,7 @@ export const themes: Record<UserThemeKey, AppTheme> = {
     success: "#22c55e",
     warning: "#f59e0b",
     danger: "#ef4444",
-    info: "#3b82f6"
+    info: "#3b82f6",
   },
   zest_green: {
     background: "#f7fee7",
@@ -85,7 +85,7 @@ export const themes: Record<UserThemeKey, AppTheme> = {
     success: "#22c55e",
     warning: "#f59e0b",
     danger: "#ef4444",
-    info: "#3b82f6"
+    info: "#3b82f6",
   },
   peach_parenting: {
     background: "#fff7ed",
@@ -100,7 +100,7 @@ export const themes: Record<UserThemeKey, AppTheme> = {
     success: "#22c55e",
     warning: "#f59e0b",
     danger: "#ef4444",
-    info: "#3b82f6"
+    info: "#3b82f6",
   },
   clean_blue: {
     background: "#eff6ff",
@@ -115,7 +115,7 @@ export const themes: Record<UserThemeKey, AppTheme> = {
     success: "#22c55e",
     warning: "#f59e0b",
     danger: "#ef4444",
-    info: "#3b82f6"
+    info: "#3b82f6",
   },
   calm_dark: {
     background: "#0f172a",
@@ -130,7 +130,7 @@ export const themes: Record<UserThemeKey, AppTheme> = {
     success: "#22c55e",
     warning: "#f59e0b",
     danger: "#ef4444",
-    info: "#3b82f6"
+    info: "#3b82f6",
   },
   premium_dark_health: {
     background: "#08111a",
@@ -153,8 +153,8 @@ export const themes: Record<UserThemeKey, AppTheme> = {
     success: "#6ee7c8",
     warning: "#f8b84e",
     danger: "#ef4444",
-    info: "#38bdf8"
-  }
+    info: "#38bdf8",
+  },
 };
 
 export const statusColours = {
@@ -166,7 +166,7 @@ export const statusColours = {
   completed: "#22c55e",
   pending: "#f59e0b",
   synced: "#14b8a6",
-  offline: "#94a3b8"
+  offline: "#94a3b8",
 } as const;
 
 export type StatusKey = keyof typeof statusColours;

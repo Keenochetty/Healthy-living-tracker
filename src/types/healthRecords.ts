@@ -23,7 +23,11 @@ export type HealthRecordReminderType =
   | "general";
 
 export type HealthRecordFileType = "image" | "pdf" | "note" | "unknown";
-export type HealthRecordReminderStatus = "upcoming" | "done" | "dismissed" | "missed";
+export type HealthRecordReminderStatus =
+  | "upcoming"
+  | "done"
+  | "dismissed"
+  | "missed";
 
 export type HealthRecord = {
   allowedViewerIds: string[];
@@ -220,4 +224,3 @@ export type RecordWidgetKey =
   | "lab_follow_up"
   | "pinned_health_record"
   | "records_needing_attention";
-

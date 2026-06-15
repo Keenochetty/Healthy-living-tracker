@@ -6,12 +6,27 @@ import { colors } from "@/constants/theme";
 
 type StatusTone = "ai" | "default" | "emergency" | "success" | "warning";
 
-const toneStyles: Record<StatusTone, { backgroundColor: string; color: string }> = {
+const toneStyles: Record<
+  StatusTone,
+  { backgroundColor: string; color: string }
+> = {
   ai: { backgroundColor: colors.status.aiSoft, color: colors.status.ai },
-  default: { backgroundColor: colors.status.systemSoft, color: colors.status.system },
-  emergency: { backgroundColor: colors.status.emergencySoft, color: colors.status.emergency },
-  success: { backgroundColor: colors.status.successSoft, color: colors.status.success },
-  warning: { backgroundColor: colors.status.warningSoft, color: colors.status.warning }
+  default: {
+    backgroundColor: colors.status.systemSoft,
+    color: colors.status.system,
+  },
+  emergency: {
+    backgroundColor: colors.status.emergencySoft,
+    color: colors.status.emergency,
+  },
+  success: {
+    backgroundColor: colors.status.successSoft,
+    color: colors.status.success,
+  },
+  warning: {
+    backgroundColor: colors.status.warningSoft,
+    color: colors.status.warning,
+  },
 };
 
 type StatusPillProps = {
@@ -32,12 +47,12 @@ export function StatusPill({ label, tone = "default" }: StatusPillProps) {
 const styles = StyleSheet.create({
   label: {
     fontSize: 13,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   pill: {
     alignSelf: "flex-start",
     borderRadius: componentRadius.chip,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm
-  }
+    paddingVertical: spacing.sm,
+  },
 });

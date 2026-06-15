@@ -2,8 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { DEFAULT_TIMER_PRESETS } from "@/constants/fitnessOptions";
-import { completeWorkoutSession, createWorkoutSession } from "@/lib/fitnessStorage";
-import { lightFeedback, playTimerBeep, successFeedback, warningFeedback } from "@/lib/workoutFeedback";
+import {
+  completeWorkoutSession,
+  createWorkoutSession,
+} from "@/lib/fitnessStorage";
+import {
+  lightFeedback,
+  playTimerBeep,
+  successFeedback,
+  warningFeedback,
+} from "@/lib/workoutFeedback";
 import type { IntervalTimerPreset, WorkoutSession } from "@/types/fitness";
 
 type IntervalTimerCardProps = {
@@ -20,37 +28,42 @@ function formatCountdown(seconds: number) {
 
 export function IntervalTimerCard({
   onCompleted,
-  presets = DEFAULT_TIMER_PRESETS
+  presets = DEFAULT_TIMER_PRESETS,
 }: IntervalTimerCardProps) {
-  const [selectedPresetId, setSelectedPresetId] = useState(presets[0]?.id ?? "preset-30-30");
-  const selectedPreset = presets.find((preset) => preset.id === selectedPresetId) ?? presets[0];
+  const [selectedPresetId, setSelectedPresetId] = useState(
+    presets[0]?.id ?? "preset-30-30",
+  );
+  const selectedPreset =
+    presets.find((preset) => preset.id === selectedPresetId) ?? presets[0];
   const flatSegments = useMemo(
     () =>
-      Array.from({ length: selectedPreset?.rounds ?? 1 }).flatMap(() =>
-        selectedPreset?.segments ?? []
+      Array.from({ length: selectedPreset?.rounds ?? 1 }).flatMap(
+        () => selectedPreset?.segments ?? [],
       ),
-    [selectedPreset]
+    [selectedPreset],
   );
   const [segmentIndex, setSegmentIndex] = useState(0);
-  const [remainingSeconds, setRemainingSeconds] = useState(flatSegments[0]?.durationSeconds ?? 30);
+  const [remainingSeconds, setRemainingSeconds] = useState(
+    flatSegments[0]?.durationSeconds ?? 30,
+  );
   const [running, setRunning] = useState(false);
 
   const completeInterval = useCallback(async () => {
     await successFeedback();
     const totalDuration = flatSegments.reduce(
       (total, segment) => total + segment.durationSeconds,
-      0
+      0,
     );
     const session = await createWorkoutSession({
       durationSeconds: totalDuration,
       intensity: "moderate",
       notes: "Completed interval timer session.",
       title: selectedPreset?.title ?? "Interval session",
-      workoutType: "hiit"
+      workoutType: "hiit",
     });
     const completedSession = await completeWorkoutSession(session.id, {
       durationSeconds: totalDuration,
-      endedAt: new Date().toISOString()
+      endedAt: new Date().toISOString(),
     });
 
     if (completedSession) {
@@ -104,7 +117,14 @@ export function IntervalTimerCard({
     : 1;
 
   return (
-    <View style={{ backgroundColor: "#ffffff", borderRadius: 28, gap: 14, padding: 18 }}>
+    <View
+      style={{
+        backgroundColor: "#ffffff",
+        borderRadius: 28,
+        gap: 14,
+        padding: 18,
+      }}
+    >
       <View>
         <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
           Interval timer
@@ -121,27 +141,54 @@ export function IntervalTimerCard({
             key={preset.id}
             onPress={() => selectPreset(preset)}
             style={{
-              backgroundColor: selectedPresetId === preset.id ? "#7c3aed" : "#f8fafc",
+              backgroundColor:
+                selectedPresetId === preset.id ? "#7c3aed" : "#f8fafc",
               borderRadius: 999,
               paddingHorizontal: 12,
-              paddingVertical: 9
+              paddingVertical: 9,
             }}
           >
-            <Text style={{ color: selectedPresetId === preset.id ? "#ffffff" : "#475569", fontWeight: "900" }}>
+            <Text
+              style={{
+                color: selectedPresetId === preset.id ? "#ffffff" : "#475569",
+                fontWeight: "900",
+              }}
+            >
               {preset.title}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <View style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 24, padding: 18 }}>
+      <View
+        style={{
+          alignItems: "center",
+          backgroundColor: "#f8fafc",
+          borderRadius: 24,
+          padding: 18,
+        }}
+      >
         <Text style={{ color: "#64748b", fontWeight: "900" }}>
           Round {round} of {selectedPreset?.rounds ?? 1}
         </Text>
-        <Text style={{ color: "#0f172a", fontSize: 48, fontWeight: "900", marginTop: 8 }}>
+        <Text
+          style={{
+            color: "#0f172a",
+            fontSize: 48,
+            fontWeight: "900",
+            marginTop: 8,
+          }}
+        >
           {formatCountdown(remainingSeconds)}
         </Text>
-        <Text style={{ color: "#7c3aed", fontSize: 18, fontWeight: "900", marginTop: 4 }}>
+        <Text
+          style={{
+            color: "#7c3aed",
+            fontSize: 18,
+            fontWeight: "900",
+            marginTop: 4,
+          }}
+        >
           {currentSegment?.label ?? "Work"}
         </Text>
       </View>
@@ -174,7 +221,7 @@ function TimerButton({
   danger = false,
   label,
   onPress,
-  primary = false
+  primary = false,
 }: {
   danger?: boolean;
   label: string;
@@ -191,10 +238,15 @@ function TimerButton({
         borderRadius: 16,
         flex: 1,
         justifyContent: "center",
-        minHeight: 48
+        minHeight: 48,
       }}
     >
-      <Text style={{ color: primary ? "#ffffff" : danger ? "#dc2626" : "#6d28d9", fontWeight: "900" }}>
+      <Text
+        style={{
+          color: primary ? "#ffffff" : danger ? "#dc2626" : "#6d28d9",
+          fontWeight: "900",
+        }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

@@ -24,7 +24,10 @@ type TabRoute = {
 };
 
 type FloatingTabBarProps = {
-  descriptors?: Record<string, { options: { tabBarAccessibilityLabel?: string } }>;
+  descriptors?: Record<
+    string,
+    { options: { tabBarAccessibilityLabel?: string } }
+  >;
   navigation?: {
     emit: (...args: any[]) => unknown;
     navigate: (...args: any[]) => void;
@@ -39,49 +42,52 @@ const NAV_ITEMS: Record<string, NavConfig> = {
   today: {
     accessibilityLabel: "Open Home",
     iconName: "home",
-    label: "Home"
+    label: "Home",
   },
   calendar: {
     accessibilityLabel: "Open Calendar",
     iconName: "calendar",
-    label: "Calendar"
+    label: "Calendar",
   },
   health: {
     accessibilityLabel: "Open Health",
     iconName: "health",
-    label: "Health"
+    label: "Health",
   },
   fitness: {
     accessibilityLabel: "Open Fitness",
     iconName: "fitness",
-    label: "Fitness"
+    label: "Fitness",
   },
   food: {
     accessibilityLabel: "Open Food",
     iconName: "food",
-    label: "Food"
-  }
+    label: "Food",
+  },
 };
 
 type FloatingBottomNavProps = FloatingTabBarProps & {
   activeRouteName?: keyof typeof NAV_ITEMS;
 };
 
-const STANDALONE_ROUTES = Object.keys(NAV_ITEMS).map((name) => ({ key: `standalone-${name}`, name }));
+const STANDALONE_ROUTES = Object.keys(NAV_ITEMS).map((name) => ({
+  key: `standalone-${name}`,
+  name,
+}));
 
 const NAV_HREFS: Record<string, Href> = {
   calendar: "/(tabs)/calendar" as Href,
   fitness: "/(tabs)/fitness" as Href,
   food: "/(tabs)/food" as Href,
   health: "/(tabs)/health" as Href,
-  today: "/(tabs)/today" as Href
+  today: "/(tabs)/today" as Href,
 };
 
 export function FloatingBottomNav({
   activeRouteName,
   descriptors = {},
   navigation,
-  state
+  state,
 }: FloatingBottomNavProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
@@ -91,9 +97,11 @@ export function FloatingBottomNav({
     state?.index ??
     Math.max(
       0,
-      routes.findIndex((route) => route.name === activeRouteName)
+      routes.findIndex((route) => route.name === activeRouteName),
     );
-  const visibleRoutes = routes.filter((route: TabRoute) => NAV_ITEMS[route.name]);
+  const visibleRoutes = routes.filter(
+    (route: TabRoute) => NAV_ITEMS[route.name],
+  );
 
   const compact = screenWidth < 400;
   const navWidth = Math.min(screenWidth - NAV_SIDE_MARGIN * 2, NAV_MAX_WIDTH);
@@ -109,14 +117,18 @@ export function FloatingBottomNav({
             borderColor: theme.border,
             bottom: navSafeOffset,
             shadowColor: theme.background,
-            width: navWidth
-          }
+            width: navWidth,
+          },
         ]}
       >
-        <View style={[styles.navContent, compact ? styles.navContentCompact : null]}>
+        <View
+          style={[styles.navContent, compact ? styles.navContentCompact : null]}
+        >
           {visibleRoutes.map((route: TabRoute) => {
             const config = NAV_ITEMS[route.name];
-            const focused = activeIndex === routes.findIndex((item: TabRoute) => item.key === route.key);
+            const focused =
+              activeIndex ===
+              routes.findIndex((item: TabRoute) => item.key === route.key);
             const { options = {} } = descriptors[route.key] ?? {};
 
             const onPress = () => {
@@ -130,7 +142,7 @@ export function FloatingBottomNav({
               const event = navigation.emit({
                 canPreventDefault: true,
                 target: route.key,
-                type: "tabPress"
+                type: "tabPress",
               }) as { defaultPrevented?: boolean };
 
               if (!focused && !event.defaultPrevented) {
@@ -142,13 +154,15 @@ export function FloatingBottomNav({
               if (!navigation) return;
               navigation.emit({
                 target: route.key,
-                type: "tabLongPress"
+                type: "tabLongPress",
               });
             };
 
             return (
               <FloatingBottomNavItem
-                accessibilityLabel={options.tabBarAccessibilityLabel ?? config.accessibilityLabel}
+                accessibilityLabel={
+                  options.tabBarAccessibilityLabel ?? config.accessibilityLabel
+                }
                 focused={focused}
                 iconName={config.iconName}
                 key={route.key}
@@ -174,7 +188,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "absolute",
     zIndex: zLayers.floatingNav,
-    ...appShadows.floating
+    ...appShadows.floating,
   },
   navContent: {
     alignItems: "center",
@@ -183,10 +197,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 8,
     width: "100%",
-    zIndex: zLayers.floatingAction
+    zIndex: zLayers.floatingAction,
   },
   navContentCompact: {
-    paddingHorizontal: 5
+    paddingHorizontal: 5,
   },
   overlay: {
     bottom: 0,
@@ -194,6 +208,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
     alignItems: "center",
-    zIndex: zLayers.floatingNav
-  }
+    zIndex: zLayers.floatingNav,
+  },
 });

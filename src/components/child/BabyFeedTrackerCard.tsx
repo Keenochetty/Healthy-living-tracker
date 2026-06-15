@@ -5,7 +5,7 @@ import {
   FEEDING_DISCLAIMER,
   FEED_TYPE_OPTIONS,
   QUICK_FEED_AMOUNTS,
-  getFeedTypeLabel
+  getFeedTypeLabel,
 } from "@/constants/childOptions";
 import { addFeedLog, getTodayFeedLogs } from "@/lib/childStorage";
 import type { BabyFeedLog, FeedType } from "@/types/child";
@@ -16,7 +16,10 @@ type BabyFeedTrackerCardProps = {
   onChange?: () => void;
 };
 
-export function BabyFeedTrackerCard({ childId, onChange }: BabyFeedTrackerCardProps) {
+export function BabyFeedTrackerCard({
+  childId,
+  onChange,
+}: BabyFeedTrackerCardProps) {
   const [feedType, setFeedType] = useState<FeedType>("formula");
   const [amount, setAmount] = useState("90");
   const [notes, setNotes] = useState("");
@@ -46,8 +49,10 @@ export function BabyFeedTrackerCard({ childId, onChange }: BabyFeedTrackerCardPr
     await addFeedLog({
       childId,
       feedType,
-      finishedAmountMl: Number.isFinite(parsedAmount) ? parsedAmount : undefined,
-      notes
+      finishedAmountMl: Number.isFinite(parsedAmount)
+        ? parsedAmount
+        : undefined,
+      notes,
     });
 
     setNotes("");
@@ -106,17 +111,24 @@ export function BabyFeedTrackerCard({ childId, onChange }: BabyFeedTrackerCardPr
           value={notes}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
           <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save feed</Text>
         </TouchableOpacity>
 
-        <Text style={{ color: "#9a3412", lineHeight: 20 }}>{FEEDING_DISCLAIMER}</Text>
+        <Text style={{ color: "#9a3412", lineHeight: 20 }}>
+          {FEEDING_DISCLAIMER}
+        </Text>
 
         {logs.length ? (
           <View style={{ gap: 8 }}>
             {logs.slice(0, 3).map((log) => (
               <Text key={log.id} style={{ color: "#64748b" }}>
-                {getFeedTypeLabel(log.feedType)} - {log.finishedAmountMl ?? log.offeredAmountMl ?? 0} ml
+                {getFeedTypeLabel(log.feedType)} -{" "}
+                {log.finishedAmountMl ?? log.offeredAmountMl ?? 0} ml
               </Text>
             ))}
           </View>
@@ -129,7 +141,7 @@ export function BabyFeedTrackerCard({ childId, onChange }: BabyFeedTrackerCardPr
 function Pill({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
@@ -145,10 +157,12 @@ function Pill({
         borderRadius: 999,
         borderWidth: 1,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#6d28d9" : "#475569", fontWeight: "800" }}>
+      <Text
+        style={{ color: selected ? "#6d28d9" : "#475569", fontWeight: "800" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -162,7 +176,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -170,5 +184,5 @@ const buttonStyle = {
   backgroundColor: "#a855f7",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 50
+  minHeight: 50,
 };

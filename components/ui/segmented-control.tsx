@@ -15,7 +15,11 @@ type SegmentedControlProps<T extends string> = {
   value: T;
 };
 
-export function SegmentedControl<T extends string>({ onChange, options, value }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  onChange,
+  options,
+  value,
+}: SegmentedControlProps<T>) {
   return (
     <View style={styles.container}>
       {options.map((option) => {
@@ -28,7 +32,9 @@ export function SegmentedControl<T extends string>({ onChange, options, value }:
             onPress={() => onChange(option.value)}
             style={[styles.segment, selected && styles.selectedSegment]}
           >
-            <Text style={[styles.label, selected && styles.selectedLabel]}>{option.label}</Text>
+            <Text style={[styles.label, selected && styles.selectedLabel]}>
+              {option.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -44,25 +50,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.xs,
-    padding: spacing.xs
+    padding: spacing.xs,
   },
   label: {
     color: colors.text.muted,
     fontSize: 14,
     fontWeight: "700",
-    textAlign: "center"
+    textAlign: "center",
   },
   segment: {
     borderRadius: componentRadius.chip,
     flex: 1,
     minHeight: 40,
     justifyContent: "center",
-    paddingHorizontal: spacing.md
+    paddingHorizontal: spacing.md,
   },
   selectedLabel: {
-    color: colors.text.inverse
+    color: colors.text.inverse,
   },
   selectedSegment: {
-    backgroundColor: colors.brand.primary
-  }
+    backgroundColor: colors.brand.primary,
+  },
 });

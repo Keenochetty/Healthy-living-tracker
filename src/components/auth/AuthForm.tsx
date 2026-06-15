@@ -50,7 +50,7 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
       setError(
         nextError instanceof Error
           ? nextError.message
-          : "Could not sign in. Please check your details."
+          : "Could not sign in. Please check your details.",
       );
     } finally {
       setLoading(false);
@@ -100,9 +100,17 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
           />
         ) : null}
 
-        {error ? <Text style={{ color: theme.danger, lineHeight: 20 }}>{error}</Text> : null}
+        {error ? (
+          <Text style={{ color: theme.danger, lineHeight: 20 }}>{error}</Text>
+        ) : null}
 
-        <AppButton fullWidth loading={loading} onPress={submit} size="lg" title={mode === "signup" ? "Create account" : "Sign in"} />
+        <AppButton
+          fullWidth
+          loading={loading}
+          onPress={submit}
+          size="lg"
+          title={mode === "signup" ? "Create account" : "Sign in"}
+        />
       </View>
     </AppCard>
   );

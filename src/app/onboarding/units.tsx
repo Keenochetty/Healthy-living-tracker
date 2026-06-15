@@ -19,14 +19,18 @@ const UNIT_OPTIONS: Array<UnitOption<keyof UnitPreferences>> = [
   { key: "weightUnit", label: "Weight", options: ["kg", "lb"] },
   { key: "heightUnit", label: "Height", options: ["cm", "in"] },
   { key: "liquidUnit", label: "Liquid", options: ["ml", "oz"] },
-  { key: "temperatureUnit", label: "Temperature", options: ["celsius", "fahrenheit"] },
+  {
+    key: "temperatureUnit",
+    label: "Temperature",
+    options: ["celsius", "fahrenheit"],
+  },
   { key: "distanceUnit", label: "Distance", options: ["km", "miles"] },
   { key: "speedUnit", label: "Speed", options: ["kmh", "mph"] },
   {
     key: "dateFormat",
     label: "Date format",
-    options: ["dd/mm/yyyy", "mm/dd/yyyy", "yyyy/mm/dd"]
-  }
+    options: ["dd/mm/yyyy", "mm/dd/yyyy", "yyyy/mm/dd"],
+  },
 ];
 
 export default function OnboardingUnitsScreen() {
@@ -38,7 +42,10 @@ export default function OnboardingUnitsScreen() {
     getUserPreferences().then((preferences) => setUnits(preferences.units));
   }, []);
 
-  function updateUnit<T extends keyof UnitPreferences>(key: T, value: UnitPreferences[T]) {
+  function updateUnit<T extends keyof UnitPreferences>(
+    key: T,
+    value: UnitPreferences[T],
+  ) {
     setUnits((current) => (current ? { ...current, [key]: value } : current));
   }
 
@@ -51,7 +58,7 @@ export default function OnboardingUnitsScreen() {
     const result = await savePreferences({
       ...currentPreferences,
       onboardingComplete: true,
-      units
+      units,
     });
 
     if (result.error) {
@@ -74,18 +81,23 @@ export default function OnboardingUnitsScreen() {
           Review your units
         </Text>
         <Text style={{ color: "#64748b", lineHeight: 21 }}>
-          These are auto-selected from your country. Adjust anything that feels wrong.
+          These are auto-selected from your country. Adjust anything that feels
+          wrong.
         </Text>
       </View>
 
       <UnitPreviewCard units={units} />
 
-      {message ? <Text style={{ color: "#92400e", lineHeight: 20 }}>{message}</Text> : null}
+      {message ? (
+        <Text style={{ color: "#92400e", lineHeight: 20 }}>{message}</Text>
+      ) : null}
 
       <View style={{ gap: 12 }}>
         {UNIT_OPTIONS.map((option) => (
           <View key={option.key} style={{ gap: 8 }}>
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>{option.label}</Text>
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+              {option.label}
+            </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {option.options.map((value) => (
                 <TouchableOpacity
@@ -93,18 +105,21 @@ export default function OnboardingUnitsScreen() {
                   key={value}
                   onPress={() => updateUnit(option.key, value)}
                   style={{
-                    backgroundColor: units[option.key] === value ? "#7c3aed" : "#ffffff",
-                    borderColor: units[option.key] === value ? "#7c3aed" : "#f1f5f9",
+                    backgroundColor:
+                      units[option.key] === value ? "#7c3aed" : "#ffffff",
+                    borderColor:
+                      units[option.key] === value ? "#7c3aed" : "#f1f5f9",
                     borderRadius: 999,
                     borderWidth: 1,
                     paddingHorizontal: 14,
-                    paddingVertical: 10
+                    paddingVertical: 10,
                   }}
                 >
                   <Text
                     style={{
-                      color: units[option.key] === value ? "#ffffff" : "#475569",
-                      fontWeight: "900"
+                      color:
+                        units[option.key] === value ? "#ffffff" : "#475569",
+                      fontWeight: "900",
                     }}
                   >
                     {value}
@@ -121,7 +136,13 @@ export default function OnboardingUnitsScreen() {
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PrimaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -131,10 +152,12 @@ function PrimaryButton({ label, onPress }: { label: string; onPress: () => void 
         backgroundColor: "#7c3aed",
         borderRadius: 18,
         justifyContent: "center",
-        minHeight: 54
+        minHeight: 54,
       }}
     >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }

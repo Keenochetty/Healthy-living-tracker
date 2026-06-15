@@ -8,5 +8,5 @@ export const typography = {
   privacyLabel: { fontSize: 12, fontWeight: "900" as const, lineHeight: 16 },
   disclaimer: { fontSize: 12, fontWeight: "600" as const, lineHeight: 18 },
   metricValue: { fontSize: 24, fontWeight: "900" as const, lineHeight: 30 },
-  widgetValue: { fontSize: 16, fontWeight: "900" as const, lineHeight: 21 }
+  widgetValue: { fontSize: 16, fontWeight: "900" as const, lineHeight: 21 },
 } as const;

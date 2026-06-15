@@ -1,6 +1,6 @@
 import {
   invitePermissionPresetDefaults,
-  invitePermissionPresetLabels
+  invitePermissionPresetLabels,
 } from "@/constants/invites";
 import type { CircleInvite, CreateCircleInviteInput } from "@/types/invites";
 
@@ -12,7 +12,9 @@ export function buildPlaceholderInviteLink(inviteToken: string) {
   return `https://app.local/invites/${inviteToken}`;
 }
 
-export function buildPlaceholderCircleInvite(input: CreateCircleInviteInput & { createdBy: string }): CircleInvite {
+export function buildPlaceholderCircleInvite(
+  input: CreateCircleInviteInput & { createdBy: string },
+): CircleInvite {
   const inviteToken = createPlaceholderInviteToken(input.circleId);
 
   return {
@@ -28,16 +30,20 @@ export function buildPlaceholderCircleInvite(input: CreateCircleInviteInput & { 
     inviteToken,
     method: input.method,
     permissionPreset: input.permissionPreset,
-    recipientLabel: input.recipientLabel?.trim() || invitePermissionPresetLabels[input.permissionPreset],
+    recipientLabel:
+      input.recipientLabel?.trim() ||
+      invitePermissionPresetLabels[input.permissionPreset],
     relationship: input.relationship,
     requiresAdminApproval: true,
     role: input.role,
     source: "placeholder",
-    status: "pending"
+    status: "pending",
   };
 }
 
-export function getDefaultPermissionsForInvitePreset(preset: CreateCircleInviteInput["permissionPreset"]) {
+export function getDefaultPermissionsForInvitePreset(
+  preset: CreateCircleInviteInput["permissionPreset"],
+) {
   return [...invitePermissionPresetDefaults[preset]];
 }
 
@@ -61,13 +67,15 @@ export function getPlaceholderCircleInvites(circleId: string): CircleInvite[] {
       requiresAdminApproval: true,
       role: "caregiver",
       source: "placeholder",
-      status: "pending"
+      status: "pending",
     },
     {
       circleId,
       createdAt: "2026-06-01T08:15:00.000Z",
       createdBy: "Circle admin",
-      defaultPermissions: getDefaultPermissionsForInvitePreset("adult_family_member"),
+      defaultPermissions: getDefaultPermissionsForInvitePreset(
+        "adult_family_member",
+      ),
       expiresAt: "2026-06-15T08:15:00.000Z",
       id: `${circleId}-invite-adult-member`,
       invitedEmail: null,
@@ -81,7 +89,7 @@ export function getPlaceholderCircleInvites(circleId: string): CircleInvite[] {
       requiresAdminApproval: true,
       role: "member",
       source: "placeholder",
-      status: "pending"
-    }
+      status: "pending",
+    },
   ];
 }

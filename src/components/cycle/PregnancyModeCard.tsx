@@ -3,12 +3,12 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import {
   PREGNANCY_DISCLAIMER,
-  PREGNANCY_STATUS_OPTIONS
+  PREGNANCY_STATUS_OPTIONS,
 } from "@/constants/cycleOptions";
 import {
   clearPregnancyProfile,
   getPregnancyProfile,
-  savePregnancyProfile
+  savePregnancyProfile,
 } from "@/lib/cycleStorage";
 import type { PregnancyProfile, PregnancyStatus } from "@/types/cycle";
 import { AppCard } from "@/components/ui/AppCard";
@@ -52,7 +52,7 @@ export function PregnancyModeCard({ onChange }: PregnancyModeCardProps) {
       estimatedDueDate: estimatedDueDate.trim() || undefined,
       lastPeriodStartDate: lastPeriodStartDate.trim() || undefined,
       medicalNotes,
-      status
+      status,
     });
 
     onChange?.(profile);
@@ -123,23 +123,35 @@ export function PregnancyModeCard({ onChange }: PregnancyModeCardProps) {
 
         {status === "possible" ? (
           <Text style={{ color: "#9a3412", lineHeight: 21 }}>
-            If pregnancy is possible, consider taking a pregnancy test or speaking to a
-            healthcare professional.
+            If pregnancy is possible, consider taking a pregnancy test or
+            speaking to a healthcare professional.
           </Text>
         ) : null}
 
         {status === "pregnant" ? (
           <Text style={{ color: "#9a3412", lineHeight: 21 }}>
-            Use this space to organise appointments, symptoms and notes. Always follow
-            guidance from your healthcare professional.
+            Use this space to organise appointments, symptoms and notes. Always
+            follow guidance from your healthcare professional.
           </Text>
         ) : null}
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save pregnancy mode</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save pregnancy mode
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.85} onPress={handleClear} style={secondaryButtonStyle}>
-          <Text style={{ color: "#7c3aed", fontWeight: "900" }}>Clear pregnancy mode</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleClear}
+          style={secondaryButtonStyle}
+        >
+          <Text style={{ color: "#7c3aed", fontWeight: "900" }}>
+            Clear pregnancy mode
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -153,7 +165,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -161,7 +173,7 @@ const buttonStyle = {
   backgroundColor: "#7c3aed",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };
 
 const secondaryButtonStyle = {
@@ -169,5 +181,5 @@ const secondaryButtonStyle = {
   backgroundColor: "#f5f3ff",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

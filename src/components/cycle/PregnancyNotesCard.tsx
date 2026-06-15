@@ -10,7 +10,10 @@ type PregnancyNotesCardProps = {
   pregnancyProfileId: string;
 };
 
-export function PregnancyNotesCard({ onChange, pregnancyProfileId }: PregnancyNotesCardProps) {
+export function PregnancyNotesCard({
+  onChange,
+  pregnancyProfileId,
+}: PregnancyNotesCardProps) {
   const [note, setNote] = useState("");
   const [notes, setNotes] = useState<PregnancyNote[]>([]);
   const [title, setTitle] = useState("");
@@ -39,7 +42,7 @@ export function PregnancyNotesCard({ onChange, pregnancyProfileId }: PregnancyNo
     await addPregnancyNote({
       note,
       pregnancyProfileId,
-      title
+      title,
     });
 
     setNote("");
@@ -76,7 +79,11 @@ export function PregnancyNotesCard({ onChange, pregnancyProfileId }: PregnancyNo
           value={note}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
           <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save note</Text>
         </TouchableOpacity>
 
@@ -84,9 +91,21 @@ export function PregnancyNotesCard({ onChange, pregnancyProfileId }: PregnancyNo
           .filter((item) => item.pregnancyProfileId === pregnancyProfileId)
           .slice(0, 4)
           .map((item) => (
-            <View key={item.id} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-              <Text style={{ color: "#0f172a", fontWeight: "900" }}>{item.title}</Text>
-              <Text style={{ color: "#64748b", marginTop: 3 }} numberOfLines={2}>
+            <View
+              key={item.id}
+              style={{
+                backgroundColor: "#f8fafc",
+                borderRadius: 16,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+                {item.title}
+              </Text>
+              <Text
+                style={{ color: "#64748b", marginTop: 3 }}
+                numberOfLines={2}
+              >
                 {item.note}
               </Text>
             </View>
@@ -103,7 +122,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -111,5 +130,5 @@ const buttonStyle = {
   backgroundColor: "#db2777",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

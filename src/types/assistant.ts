@@ -32,7 +32,11 @@ export type AssistantRiskCategory =
   | "emergency_or_urgent"
   | "blocked_medical_advice";
 
-export type AssistantDraftStatus = "draft" | "confirmed" | "cancelled" | "edited";
+export type AssistantDraftStatus =
+  | "draft"
+  | "confirmed"
+  | "cancelled"
+  | "edited";
 
 export type AssistantDataCategory =
   | "nutrition"

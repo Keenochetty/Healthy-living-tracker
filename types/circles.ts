@@ -1,4 +1,8 @@
-import type { AgeAccessStage, CareProfile, CareProfileType } from "@/types/care-profiles";
+import type {
+  AgeAccessStage,
+  CareProfile,
+  CareProfileType,
+} from "@/types/care-profiles";
 
 export type CircleMemberRole =
   | "owner"

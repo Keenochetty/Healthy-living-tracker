@@ -17,7 +17,9 @@ import type { CaregiverSummary } from "@/types/caregiver";
 
 export default function CaregiverDetailScreen() {
   const params = useLocalSearchParams<{ caregiverId?: string }>();
-  const caregiverId = Array.isArray(params.caregiverId) ? params.caregiverId[0] : params.caregiverId;
+  const caregiverId = Array.isArray(params.caregiverId)
+    ? params.caregiverId[0]
+    : params.caregiverId;
   const [summary, setSummary] = useState<CaregiverSummary | null>(null);
 
   const loadSummary = useCallback(async () => {
@@ -51,7 +53,9 @@ export default function CaregiverDetailScreen() {
   return (
     <ScreenWrapper>
       <View style={{ gap: 4 }}>
-        <Text style={{ color: "#64748b", fontSize: 14 }}>Caregiver profile</Text>
+        <Text style={{ color: "#64748b", fontSize: 14 }}>
+          Caregiver profile
+        </Text>
         <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
           {summary.caregiver.displayName}
         </Text>
@@ -62,12 +66,25 @@ export default function CaregiverDetailScreen() {
 
       <CaregiverPrivacyCard />
       <CaregiverProfileCard summary={summary} />
-      <CaregiverRateCard caregiverId={caregiverId} currency={summary.caregiver.currency} onChange={loadSummary} />
-      <CaregiverAvailabilityCard caregiverId={caregiverId} onChange={loadSummary} />
+      <CaregiverRateCard
+        caregiverId={caregiverId}
+        currency={summary.caregiver.currency}
+        onChange={loadSummary}
+      />
+      <CaregiverAvailabilityCard
+        caregiverId={caregiverId}
+        onChange={loadSummary}
+      />
       <CaregiverInviteQRCard caregiverId={caregiverId} />
-      <CaregiverBookingRequestCard caregiverId={caregiverId} onChange={loadSummary} />
+      <CaregiverBookingRequestCard
+        caregiverId={caregiverId}
+        onChange={loadSummary}
+      />
       <CaregiverCheckInCard caregiverId={caregiverId} onChange={loadSummary} />
-      <CaregiverUpdateNotesCard caregiverId={caregiverId} onChange={loadSummary} />
+      <CaregiverUpdateNotesCard
+        caregiverId={caregiverId}
+        onChange={loadSummary}
+      />
     </ScreenWrapper>
   );
 }

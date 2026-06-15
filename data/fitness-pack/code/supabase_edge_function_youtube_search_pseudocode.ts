@@ -1,10 +1,10 @@
 // Supabase Edge Function pseudo-code: youtube-video-search
 // Purpose: search YouTube for embeddable exercise demos, store metadata only, and require manual approval.
 
-import { serve } from 'https://deno.land/std/http/server.ts'
+import { serve } from "https://deno.land/std/http/server.ts";
 
 serve(async (req) => {
-  const { exercise_id, query, maxResults = 5 } = await req.json()
+  const { exercise_id, query, maxResults = 5 } = await req.json();
 
   // 1) Validate user is admin/editor or internal job.
   // 2) Call YouTube Data API search.list with:
@@ -22,6 +22,6 @@ serve(async (req) => {
   // 6) Never download or store the audiovisual video file.
 
   return new Response(JSON.stringify({ ok: true, exercise_id }), {
-    headers: { 'content-type': 'application/json' }
-  })
-})
+    headers: { "content-type": "application/json" },
+  });
+});

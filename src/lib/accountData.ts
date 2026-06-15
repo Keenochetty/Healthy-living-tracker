@@ -20,18 +20,26 @@ type DeleteResponse = {
 };
 
 export async function requestServerDataExport(categories: string[]) {
-  const { data, error } = await supabase.functions.invoke<ExportResponse>("data-export", { body: { categories } });
+  const { data, error } = await supabase.functions.invoke<ExportResponse>(
+    "data-export",
+    { body: { categories } },
+  );
   if (error) throw new Error(error.message);
-  if (!data?.ok || !data.export) throw new Error(data?.error ?? "Data export failed.");
+  if (!data?.ok || !data.export)
+    throw new Error(data?.error ?? "Data export failed.");
   return data.export;
 }
 
 export async function deleteAuthenticatedAccount(confirmation: string) {
-  const { data, error } = await supabase.functions.invoke<DeleteResponse>("delete-account", {
-    body: { acknowledgeRetention: true, confirmation }
-  });
+  const { data, error } = await supabase.functions.invoke<DeleteResponse>(
+    "delete-account",
+    {
+      body: { acknowledgeRetention: true, confirmation },
+    },
+  );
   if (error) throw new Error(error.message);
-  if (!data?.ok || data.status !== "completed") throw new Error(data?.error ?? "Account deletion did not complete.");
+  if (!data?.ok || data.status !== "completed")
+    throw new Error(data?.error ?? "Account deletion did not complete.");
   return data;
 }
 

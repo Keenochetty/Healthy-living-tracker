@@ -6,7 +6,11 @@ type CaregiverChipProps = {
   selected: boolean;
 };
 
-export function CaregiverChip({ label, onPress, selected }: CaregiverChipProps) {
+export function CaregiverChip({
+  label,
+  onPress,
+  selected,
+}: CaregiverChipProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -17,10 +21,12 @@ export function CaregiverChip({ label, onPress, selected }: CaregiverChipProps) 
         borderRadius: 999,
         borderWidth: 1,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#4f46e5" : "#475569", fontWeight: "800" }}>
+      <Text
+        style={{ color: selected ? "#4f46e5" : "#475569", fontWeight: "800" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

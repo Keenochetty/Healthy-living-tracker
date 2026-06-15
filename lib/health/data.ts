@@ -16,7 +16,7 @@ import type {
   HealthLog,
   MedicineLog,
   Reminder,
-  TemperatureLog
+  TemperatureLog,
 } from "@/lib/health/types";
 
 function db(client: Awaited<ReturnType<typeof createClient>>) {
@@ -27,7 +27,7 @@ export async function getCurrentUser() {
   const supabase = await createClient();
   const {
     data: { user },
-    error
+    error,
   } = await supabase.auth.getUser();
 
   if (error || !user) {
@@ -48,7 +48,11 @@ export async function ensureDefaultFamily() {
     .maybeSingle();
 
   if (profile?.default_family_id) {
-    const { data: family } = await anySupabase.from("families").select("*").eq("id", profile.default_family_id).maybeSingle();
+    const { data: family } = await anySupabase
+      .from("families")
+      .select("*")
+      .eq("id", profile.default_family_id)
+      .maybeSingle();
     if (family) return { supabase, user, family: family as Family };
   }
 
@@ -60,7 +64,10 @@ export async function ensureDefaultFamily() {
     .maybeSingle();
 
   if (membership?.families) {
-    await anySupabase.from("profiles").update({ default_family_id: membership.family_id }).eq("id", user.id);
+    await anySupabase
+      .from("profiles")
+      .update({ default_family_id: membership.family_id })
+      .eq("id", user.id);
     return { supabase, user, family: membership.families as Family };
   }
 
@@ -73,14 +80,23 @@ export async function ensureDefaultFamily() {
 
   if (familyError) throw familyError;
 
-  await anySupabase.from("family_memberships").insert({ family_id: family.id, user_id: user.id, role: "owner" });
+  await anySupabase
+    .from("family_memberships")
+    .insert({ family_id: family.id, user_id: user.id, role: "owner" });
   await anySupabase.from("profiles").upsert({
     id: user.id,
     email: user.email,
     full_name: profile?.full_name ?? user.user_metadata?.full_name ?? null,
-    default_family_id: family.id
+    default_family_id: family.id,
   });
-  await anySupabase.from("subscriptions").insert({ family_id: family.id, user_id: user.id, plan: "free", status: "active" });
+  await anySupabase
+    .from("subscriptions")
+    .insert({
+      family_id: family.id,
+      user_id: user.id,
+      plan: "free",
+      status: "active",
+    });
 
   return { supabase, user, family: family as Family };
 }
@@ -104,9 +120,13 @@ export async function getAppData(): Promise<AppData> {
     reminders,
     documents,
     aiChats,
-    subscriptions
+    subscriptions,
   ] = await Promise.all([
-    anySupabase.from("family_members").select("*").eq("family_id", family.id).order("created_at", { ascending: false }),
+    anySupabase
+      .from("family_members")
+      .select("*")
+      .eq("family_id", family.id)
+      .order("created_at", { ascending: false }),
     anySupabase
       .from("caregiver_child_access")
       .select("*, family_members:child_id(*)")
@@ -179,8 +199,18 @@ export async function getAppData(): Promise<AppData> {
       .eq("family_id", family.id)
       .order("created_at", { ascending: false })
       .limit(10),
-    anySupabase.from("ai_chats").select("*").eq("family_id", family.id).order("updated_at", { ascending: false }).limit(20),
-    anySupabase.from("subscriptions").select("plan,status").eq("family_id", family.id).limit(1).maybeSingle()
+    anySupabase
+      .from("ai_chats")
+      .select("*")
+      .eq("family_id", family.id)
+      .order("updated_at", { ascending: false })
+      .limit(20),
+    anySupabase
+      .from("subscriptions")
+      .select("plan,status")
+      .eq("family_id", family.id)
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   return {
@@ -199,6 +229,6 @@ export async function getAppData(): Promise<AppData> {
     reminders: (reminders.data ?? []) as Reminder[],
     documents: (documents.data ?? []) as DocumentRecord[],
     aiChats: (aiChats.data ?? []) as AiChat[],
-    subscription: subscriptions.data ?? null
+    subscription: subscriptions.data ?? null,
   };
 }

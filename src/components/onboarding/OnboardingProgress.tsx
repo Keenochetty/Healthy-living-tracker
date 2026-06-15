@@ -10,7 +10,7 @@ type OnboardingProgressProps = {
 export function OnboardingProgress({
   primaryColor,
   step,
-  totalSteps
+  totalSteps,
 }: OnboardingProgressProps) {
   const { theme } = useAppTheme();
   const progress = Math.min(100, Math.max(0, (step / totalSteps) * 100));
@@ -26,7 +26,7 @@ export function OnboardingProgress({
           backgroundColor: theme.primarySoft,
           borderRadius: 999,
           height: 8,
-          overflow: "hidden"
+          overflow: "hidden",
         }}
       >
         <View
@@ -34,7 +34,7 @@ export function OnboardingProgress({
             backgroundColor: accent,
             borderRadius: 999,
             height: "100%",
-            width: `${progress}%` as `${number}%`
+            width: `${progress}%` as `${number}%`,
           }}
         />
       </View>

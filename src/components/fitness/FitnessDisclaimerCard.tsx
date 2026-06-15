@@ -9,8 +9,8 @@ export function FitnessDisclaimerCard() {
         Move safely
       </Text>
       <Text style={{ color: "#166534", lineHeight: 21, marginTop: 6 }}>
-        This app helps you plan and track workouts. It does not replace advice from
-        a healthcare or fitness professional.
+        This app helps you plan and track workouts. It does not replace advice
+        from a healthcare or fitness professional.
       </Text>
       <Text style={{ color: "#166534", lineHeight: 21, marginTop: 6 }}>
         Stop and seek help if you feel chest pain, faintness, severe pain, or

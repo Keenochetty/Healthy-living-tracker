@@ -84,7 +84,12 @@ export type FitnessSummary = {
 
 export type WorkoutDifficulty = "beginner" | "intermediate" | "advanced";
 
-export type WorkoutLocation = "home" | "gym" | "both" | "machine" | "bodyweight";
+export type WorkoutLocation =
+  | "home"
+  | "gym"
+  | "both"
+  | "machine"
+  | "bodyweight";
 
 export type WorkoutGoalTag =
   | "strength"

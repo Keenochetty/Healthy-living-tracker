@@ -7,6 +7,7 @@ Deno.serve(async (req) => {
   return jsonResponse({
     results: [],
     status: "placeholder",
-    message: "Medication/supplement API calls stay server-side and must never make treatment, dose, or interaction decisions."
+    message:
+      "Medication/supplement API calls stay server-side and must never make treatment, dose, or interaction decisions.",
   });
 });

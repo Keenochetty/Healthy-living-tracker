@@ -1,14 +1,21 @@
 import * as ImagePicker from "expo-image-picker";
 import { Href, router } from "expo-router";
 import { useState } from "react";
-import { Image, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { AppCard } from "@/components/ui/AppCard";
 import { ensureImagePickerPermission } from "@/lib/devicePermissions";
 import {
   getSafetyStatusLabel,
   saveMedicationStandardMatch,
-  saveSupplementIngredientMatch
+  saveSupplementIngredientMatch,
 } from "@/lib/medicationSafetyStorage";
 import {
   createHealthDocument,
@@ -18,9 +25,14 @@ import {
   FOOD_TIMING_OPTIONS,
   MEDICATION_FORM_OPTIONS,
   SCHEDULE_TIMING_OPTIONS,
-  SUPPLEMENT_FORM_OPTIONS
+  SUPPLEMENT_FORM_OPTIONS,
 } from "@/lib/medicationSupplementStorage";
-import type { FoodTiming, MedicationForm, ScheduleTiming, SupplementForm } from "@/types/medication";
+import type {
+  FoodTiming,
+  MedicationForm,
+  ScheduleTiming,
+  SupplementForm,
+} from "@/types/medication";
 
 type ItemType = "medication" | "supplement";
 
@@ -31,7 +43,7 @@ const INPUT_STYLE = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
@@ -40,7 +52,9 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
   const [brandName, setBrandName] = useState("");
   const [mainIngredient, setMainIngredient] = useState("");
   const [strength, setStrength] = useState("");
-  const [form, setForm] = useState<MedicationForm | SupplementForm>(itemType === "medication" ? "tablet" : "capsule");
+  const [form, setForm] = useState<MedicationForm | SupplementForm>(
+    itemType === "medication" ? "tablet" : "capsule",
+  );
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -60,7 +74,10 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
 
   async function pickImage() {
     if (!(await ensureImagePickerPermission("photos"))) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+    });
 
     if (!result.canceled) {
       setImageUri(result.assets[0]?.uri);
@@ -72,37 +89,38 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
       return;
     }
 
-    const savedItem = itemType === "medication"
-      ? await createMedication({
-          brandName,
-          doseAmount: Number(amount) || undefined,
-          doseUnit: unit,
-          form: form as MedicationForm,
-          genericName,
-          instructions,
-          name,
-          notes,
-          pharmacy,
-          prescribedBy,
-          reason,
-          startDate,
-          endDate,
-          strength
-        })
-      : await createSupplement({
-          brand: brandName,
-          form: form as SupplementForm,
-          instructions,
-          mainIngredient,
-          name,
-          notes,
-          reason,
-          servingAmount: Number(amount) || undefined,
-          servingUnit: unit,
-          startDate,
-          endDate,
-          strength
-        });
+    const savedItem =
+      itemType === "medication"
+        ? await createMedication({
+            brandName,
+            doseAmount: Number(amount) || undefined,
+            doseUnit: unit,
+            form: form as MedicationForm,
+            genericName,
+            instructions,
+            name,
+            notes,
+            pharmacy,
+            prescribedBy,
+            reason,
+            startDate,
+            endDate,
+            strength,
+          })
+        : await createSupplement({
+            brand: brandName,
+            form: form as SupplementForm,
+            instructions,
+            mainIngredient,
+            name,
+            notes,
+            reason,
+            servingAmount: Number(amount) || undefined,
+            servingUnit: unit,
+            startDate,
+            endDate,
+            strength,
+          });
 
     await createHealthSchedule({
       customInstructions: scheduleInstructions,
@@ -111,7 +129,10 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
       itemType,
       reminderEnabled: true,
       timing,
-      times: timesText.split(",").map((time) => time.trim()).filter(Boolean)
+      times: timesText
+        .split(",")
+        .map((time) => time.trim())
+        .filter(Boolean),
     });
 
     if (imageUri) {
@@ -120,7 +141,10 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
         fileUrl: imageUri,
         relatedId: savedItem.id,
         relatedType: itemType,
-        title: itemType === "medication" ? "Prescription or label photo" : "Supplement label photo"
+        title:
+          itemType === "medication"
+            ? "Prescription or label photo"
+            : "Supplement label photo",
       });
     }
 
@@ -129,24 +153,34 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
         await saveMedicationStandardMatch(savedItem.id, {
           displayName: safetyMatchText,
           ingredientName: safetyMatchText,
-          source: "manual"
+          source: "manual",
         });
       } else {
         await saveSupplementIngredientMatch(savedItem.id, {
           displayName: safetyMatchText,
           ingredientName: safetyMatchText,
-          source: "manual"
+          source: "manual",
         });
       }
     }
 
-    router.replace(`/${itemType === "medication" ? "medication" : "supplements"}/${savedItem.id}` as Href);
+    router.replace(
+      `/${itemType === "medication" ? "medication" : "supplements"}/${savedItem.id}` as Href,
+    );
   }
 
   return (
     <View style={{ gap: 12 }}>
       <View style={{ gap: 4 }}>
-        <Text style={{ color: getAccentColor(itemType), fontSize: 14, fontWeight: "800" }}>Health realm</Text>
+        <Text
+          style={{
+            color: getAccentColor(itemType),
+            fontSize: 14,
+            fontWeight: "800",
+          }}
+        >
+          Health realm
+        </Text>
         <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
           {itemType === "medication" ? "Add Medication" : "Add Supplement"}
         </Text>
@@ -162,52 +196,189 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
 
       <AppCard>
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>{itemType === "medication" ? "Medication details" : "Supplement details"}</Text>
-          <View style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-            <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "900" }}>Safety status</Text>
-            <Text style={{ color: "#0f172a", fontWeight: "900", marginTop: 4 }}>{getSafetyStatusLabel("not_checked")}</Text>
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            {itemType === "medication"
+              ? "Medication details"
+              : "Supplement details"}
+          </Text>
+          <View
+            style={{
+              backgroundColor: "#f8fafc",
+              borderRadius: 16,
+              padding: 12,
+            }}
+          >
+            <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "900" }}>
+              Safety status
+            </Text>
+            <Text style={{ color: "#0f172a", fontWeight: "900", marginTop: 4 }}>
+              {getSafetyStatusLabel("not_checked")}
+            </Text>
           </View>
-          <TextInput onChangeText={setName} placeholder={itemType === "medication" ? "Medication name" : "Supplement name"} placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={name} />
+          <TextInput
+            onChangeText={setName}
+            placeholder={
+              itemType === "medication" ? "Medication name" : "Supplement name"
+            }
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={name}
+          />
           {itemType === "medication" ? (
-            <TextInput onChangeText={setGenericName} placeholder="Generic name optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={genericName} />
+            <TextInput
+              onChangeText={setGenericName}
+              placeholder="Generic name optional"
+              placeholderTextColor="#94a3b8"
+              style={INPUT_STYLE}
+              value={genericName}
+            />
           ) : (
-            <TextInput onChangeText={setMainIngredient} placeholder="Main ingredient optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={mainIngredient} />
+            <TextInput
+              onChangeText={setMainIngredient}
+              placeholder="Main ingredient optional"
+              placeholderTextColor="#94a3b8"
+              style={INPUT_STYLE}
+              value={mainIngredient}
+            />
           )}
-          <TextInput onChangeText={setBrandName} placeholder={itemType === "medication" ? "Brand name optional" : "Brand optional"} placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={brandName} />
-          <TextInput onChangeText={setStrength} placeholder="Strength, e.g. 500 mg" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={strength} />
+          <TextInput
+            onChangeText={setBrandName}
+            placeholder={
+              itemType === "medication"
+                ? "Brand name optional"
+                : "Brand optional"
+            }
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={brandName}
+          />
+          <TextInput
+            onChangeText={setStrength}
+            placeholder="Strength, e.g. 500 mg"
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={strength}
+          />
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {(itemType === "medication" ? MEDICATION_FORM_OPTIONS : SUPPLEMENT_FORM_OPTIONS).map((option) => (
-              <Chip key={option.key} label={option.label} selected={form === option.key} onPress={() => setForm(option.key)} />
+            {(itemType === "medication"
+              ? MEDICATION_FORM_OPTIONS
+              : SUPPLEMENT_FORM_OPTIONS
+            ).map((option) => (
+              <Chip
+                key={option.key}
+                label={option.label}
+                selected={form === option.key}
+                onPress={() => setForm(option.key)}
+              />
             ))}
           </View>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <TextInput keyboardType="numeric" onChangeText={setAmount} placeholder={itemType === "medication" ? "Dose amount" : "Serving amount"} placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={amount} />
-            <TextInput onChangeText={setUnit} placeholder={itemType === "medication" ? "Dose unit" : "Serving unit"} placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={unit} />
+            <TextInput
+              keyboardType="numeric"
+              onChangeText={setAmount}
+              placeholder={
+                itemType === "medication" ? "Dose amount" : "Serving amount"
+              }
+              placeholderTextColor="#94a3b8"
+              style={{ ...INPUT_STYLE, flex: 1 }}
+              value={amount}
+            />
+            <TextInput
+              onChangeText={setUnit}
+              placeholder={
+                itemType === "medication" ? "Dose unit" : "Serving unit"
+              }
+              placeholderTextColor="#94a3b8"
+              style={{ ...INPUT_STYLE, flex: 1 }}
+              value={unit}
+            />
           </View>
-          <TextInput multiline onChangeText={setInstructions} placeholder="Instructions from label optional" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }} value={instructions} />
+          <TextInput
+            multiline
+            onChangeText={setInstructions}
+            placeholder="Instructions from label optional"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }}
+            value={instructions}
+          />
           {itemType === "medication" ? (
             <>
-              <TextInput onChangeText={setPrescribedBy} placeholder="Prescribed by optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={prescribedBy} />
-              <TextInput onChangeText={setPharmacy} placeholder="Pharmacy optional" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={pharmacy} />
+              <TextInput
+                onChangeText={setPrescribedBy}
+                placeholder="Prescribed by optional"
+                placeholderTextColor="#94a3b8"
+                style={INPUT_STYLE}
+                value={prescribedBy}
+              />
+              <TextInput
+                onChangeText={setPharmacy}
+                placeholder="Pharmacy optional"
+                placeholderTextColor="#94a3b8"
+                style={INPUT_STYLE}
+                value={pharmacy}
+              />
             </>
           ) : null}
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <TextInput onChangeText={setStartDate} placeholder="Start date YYYY-MM-DD" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={startDate} />
-            <TextInput onChangeText={setEndDate} placeholder="End date optional" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={endDate} />
+            <TextInput
+              onChangeText={setStartDate}
+              placeholder="Start date YYYY-MM-DD"
+              placeholderTextColor="#94a3b8"
+              style={{ ...INPUT_STYLE, flex: 1 }}
+              value={startDate}
+            />
+            <TextInput
+              onChangeText={setEndDate}
+              placeholder="End date optional"
+              placeholderTextColor="#94a3b8"
+              style={{ ...INPUT_STYLE, flex: 1 }}
+              value={endDate}
+            />
           </View>
-          <TextInput onChangeText={setReason} placeholder={itemType === "medication" ? "Reason / purpose optional" : "Reason / goal optional"} placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={reason} />
-          <TextInput multiline onChangeText={setNotes} placeholder="Notes" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }} value={notes} />
+          <TextInput
+            onChangeText={setReason}
+            placeholder={
+              itemType === "medication"
+                ? "Reason / purpose optional"
+                : "Reason / goal optional"
+            }
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={reason}
+          />
+          <TextInput
+            multiline
+            onChangeText={setNotes}
+            placeholder="Notes"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }}
+            value={notes}
+          />
           <TextInput
             onChangeText={setSafetyMatchText}
-            placeholder={itemType === "medication" ? "Name match to confirm optional" : "Main ingredient match to confirm optional"}
+            placeholder={
+              itemType === "medication"
+                ? "Name match to confirm optional"
+                : "Main ingredient match to confirm optional"
+            }
             placeholderTextColor="#94a3b8"
             style={INPUT_STYLE}
             value={safetyMatchText}
           />
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Matches are saved for review only. Confirm they match your label or professional guidance.
+            Matches are saved for review only. Confirm they match your label or
+            professional guidance.
           </Text>
-          <View style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 16, flexDirection: "row", justifyContent: "space-between", padding: 12 }}>
+          <View
+            style={{
+              alignItems: "center",
+              backgroundColor: "#f8fafc",
+              borderRadius: 16,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 12,
+            }}
+          >
             <Text style={{ color: "#0f172a", fontWeight: "900" }}>Private</Text>
             <Switch onValueChange={setIsPrivate} value={isPrivate} />
           </View>
@@ -216,59 +387,168 @@ export function MedicationSupplementForm({ itemType }: { itemType: ItemType }) {
 
       <AppCard>
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>Schedule</Text>
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            Schedule
+          </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {SCHEDULE_TIMING_OPTIONS.map((option) => (
-              <Chip key={option.key} label={option.label} selected={timing === option.key} onPress={() => setTiming(option.key)} />
+              <Chip
+                key={option.key}
+                label={option.label}
+                selected={timing === option.key}
+                onPress={() => setTiming(option.key)}
+              />
             ))}
           </View>
-          <TextInput onChangeText={setTimesText} placeholder="Times, e.g. 08:00, 20:00" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={timesText} />
+          <TextInput
+            onChangeText={setTimesText}
+            placeholder="Times, e.g. 08:00, 20:00"
+            placeholderTextColor="#94a3b8"
+            style={INPUT_STYLE}
+            value={timesText}
+          />
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {FOOD_TIMING_OPTIONS.map((option) => (
-              <Chip key={option.key} label={option.label} selected={foodTiming === option.key} onPress={() => setFoodTiming(option.key)} />
+              <Chip
+                key={option.key}
+                label={option.label}
+                selected={foodTiming === option.key}
+                onPress={() => setFoodTiming(option.key)}
+              />
             ))}
           </View>
           {foodTiming !== "none" ? (
             <Text style={{ color: "#64748b", lineHeight: 21 }}>
-              Food timing notes should follow your label, pharmacist, doctor, or professional guidance.
+              Food timing notes should follow your label, pharmacist, doctor, or
+              professional guidance.
             </Text>
           ) : null}
-          <TextInput multiline onChangeText={setScheduleInstructions} placeholder="Schedule instructions optional" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }} value={scheduleInstructions} />
+          <TextInput
+            multiline
+            onChangeText={setScheduleInstructions}
+            placeholder="Schedule instructions optional"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, minHeight: 90, paddingTop: 13 }}
+            value={scheduleInstructions}
+          />
         </View>
       </AppCard>
 
       <AppCard>
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>{itemType === "medication" ? "Prescription photo/document optional" : "Label photo optional"}</Text>
-          {imageUri ? <Image alt="Selected document" source={{ uri: imageUri }} style={{ backgroundColor: "#f8fafc", borderRadius: 16, height: 160, width: "100%" }} /> : null}
-          <SecondaryButton label="Choose image placeholder" onPress={pickImage} />
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            {itemType === "medication"
+              ? "Prescription photo/document optional"
+              : "Label photo optional"}
+          </Text>
+          {imageUri ? (
+            <Image
+              alt="Selected document"
+              source={{ uri: imageUri }}
+              style={{
+                backgroundColor: "#f8fafc",
+                borderRadius: 16,
+                height: 160,
+                width: "100%",
+              }}
+            />
+          ) : null}
+          <SecondaryButton
+            label="Choose image placeholder"
+            onPress={pickImage}
+          />
         </View>
       </AppCard>
 
-      <PrimaryButton disabled={!name.trim()} label={itemType === "medication" ? "Save Medication" : "Save Supplement"} onPress={saveItem} />
+      <PrimaryButton
+        disabled={!name.trim()}
+        label={
+          itemType === "medication" ? "Save Medication" : "Save Supplement"
+        }
+        onPress={saveItem}
+      />
     </View>
   );
 }
 
-function Chip({ label, onPress, selected }: { label: string; onPress: () => void; selected: boolean }) {
+function Chip({
+  label,
+  onPress,
+  selected,
+}: {
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+}) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ backgroundColor: selected ? "#0f172a" : "#f8fafc", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9 }}>
-      <Text style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}>{label}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        backgroundColor: selected ? "#0f172a" : "#f8fafc",
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 9,
+      }}
+    >
+      <Text
+        style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}
+      >
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
 
-function PrimaryButton({ disabled = false, label, onPress }: { disabled?: boolean; label: string; onPress: () => void }) {
+function PrimaryButton({
+  disabled = false,
+  label,
+  onPress,
+}: {
+  disabled?: boolean;
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <TouchableOpacity activeOpacity={0.85} disabled={disabled} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#0f172a", borderRadius: 18, justifyContent: "center", minHeight: 52, opacity: disabled ? 0.55 : 1 }}>
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      disabled={disabled}
+      onPress={onPress}
+      style={{
+        alignItems: "center",
+        backgroundColor: "#0f172a",
+        borderRadius: 18,
+        justifyContent: "center",
+        minHeight: 52,
+        opacity: disabled ? 0.55 : 1,
+      }}
+    >
+      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
 
-function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function SecondaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 18, justifyContent: "center", minHeight: 52 }}>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        borderRadius: 18,
+        justifyContent: "center",
+        minHeight: 52,
+      }}
+    >
       <Text style={{ color: "#475569", fontWeight: "900" }}>{label}</Text>
     </TouchableOpacity>
   );

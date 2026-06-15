@@ -5,7 +5,7 @@ import { getCircleRoleDefinition } from "@/constants/circleRoles";
 import {
   addPendingRequest,
   createDefaultMockCircle,
-  getAvatarInitials
+  getAvatarInitials,
 } from "@/lib/circleStorage";
 import type { CircleInvite, CircleRole, FamilyCircle } from "@/types/circle";
 
@@ -24,17 +24,24 @@ function normaliseInviteLink(url: string, token: string) {
 
 async function readInvites() {
   try {
-    const storedInvites = await AsyncStorage.getItem(CIRCLE_INVITES_STORAGE_KEY);
+    const storedInvites = await AsyncStorage.getItem(
+      CIRCLE_INVITES_STORAGE_KEY,
+    );
     const parsedInvites = storedInvites ? JSON.parse(storedInvites) : [];
 
-    return Array.isArray(parsedInvites) ? (parsedInvites as CircleInvite[]) : [];
+    return Array.isArray(parsedInvites)
+      ? (parsedInvites as CircleInvite[])
+      : [];
   } catch {
     return [];
   }
 }
 
 async function writeInvites(invites: CircleInvite[]) {
-  await AsyncStorage.setItem(CIRCLE_INVITES_STORAGE_KEY, JSON.stringify(invites));
+  await AsyncStorage.setItem(
+    CIRCLE_INVITES_STORAGE_KEY,
+    JSON.stringify(invites),
+  );
 }
 
 export function createInviteToken() {
@@ -46,14 +53,16 @@ export function createInviteToken() {
 
 export function buildInviteLink(token: string) {
   return normaliseInviteLink(
-    Linking.createURL(`join/${encodeURIComponent(token)}`, { scheme: "familyhealth" }),
-    token
+    Linking.createURL(`join/${encodeURIComponent(token)}`, {
+      scheme: "familyhealth",
+    }),
+    token,
   );
 }
 
 export async function createMockCircleInvite({
   circleName,
-  role
+  role,
 }: {
   circleName: string;
   role: CircleRole;
@@ -68,11 +77,14 @@ export async function createMockCircleInvite({
     permissions: [...roleDefinition.defaultPermissions],
     role,
     status: "open",
-    token
+    token,
   };
   const invites = await readInvites();
 
-  await writeInvites([invite, ...invites.filter((item) => item.token !== token)]);
+  await writeInvites([
+    invite,
+    ...invites.filter((item) => item.token !== token),
+  ]);
 
   return invite;
 }
@@ -95,11 +107,13 @@ export async function acceptInvite(token: string) {
   const updatedInvite: CircleInvite = {
     ...invite,
     joinRequestedAt: requestedAt,
-    status: "join_requested"
+    status: "join_requested",
   };
 
   await writeInvites(
-    invites.map((item) => (item.token === updatedInvite.token ? updatedInvite : item))
+    invites.map((item) =>
+      item.token === updatedInvite.token ? updatedInvite : item,
+    ),
   );
   const roleDefinition = getCircleRoleDefinition(invite.role);
   const displayName = `New ${roleDefinition.label}`;
@@ -113,7 +127,7 @@ export async function acceptInvite(token: string) {
     permissions: [...invite.permissions],
     requestedAt,
     role: invite.role,
-    status: "pending"
+    status: "pending",
   });
 
   return updatedInvite;

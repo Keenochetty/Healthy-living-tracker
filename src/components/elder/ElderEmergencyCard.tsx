@@ -64,7 +64,7 @@ const buttonStyle = {
   backgroundColor: "#ea580c",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };
 
 const secondaryButtonStyle = {
@@ -72,5 +72,5 @@ const secondaryButtonStyle = {
   backgroundColor: "#ffedd5",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

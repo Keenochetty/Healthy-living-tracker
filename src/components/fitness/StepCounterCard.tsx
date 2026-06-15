@@ -15,7 +15,7 @@ export function StepCounterCard({ onRefresh }: StepCounterCardProps) {
   async function refreshSteps() {
     const [nextAvailable, nextSteps] = await Promise.all([
       isPedometerAvailable(),
-      getTodayStepCount()
+      getTodayStepCount(),
     ]);
 
     setAvailable(nextAvailable);
@@ -32,7 +32,7 @@ export function StepCounterCard({ onRefresh }: StepCounterCardProps) {
           setAvailable(nextAvailable);
           setSteps(nextSteps);
         }
-      }
+      },
     );
 
     return () => {
@@ -47,7 +47,14 @@ export function StepCounterCard({ onRefresh }: StepCounterCardProps) {
           <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
             Steps today
           </Text>
-          <Text style={{ color: "#166534", fontSize: 30, fontWeight: "900", marginTop: 5 }}>
+          <Text
+            style={{
+              color: "#166534",
+              fontSize: 30,
+              fontWeight: "900",
+              marginTop: 5,
+            }}
+          >
             {steps}
           </Text>
         </View>
@@ -66,10 +73,12 @@ export function StepCounterCard({ onRefresh }: StepCounterCardProps) {
             backgroundColor: "#22c55e",
             borderRadius: 16,
             justifyContent: "center",
-            minHeight: 46
+            minHeight: 46,
           }}
         >
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Refresh steps</Text>
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Refresh steps
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>

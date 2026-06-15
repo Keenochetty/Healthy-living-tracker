@@ -11,11 +11,19 @@ type AppFloatingActionButtonProps = {
   variant?: "primary" | "secondary";
 };
 
-export function AppFloatingActionButton({ icon, label, onPress, variant = "primary" }: AppFloatingActionButtonProps) {
+export function AppFloatingActionButton({
+  icon,
+  label,
+  onPress,
+  variant = "primary",
+}: AppFloatingActionButtonProps) {
   const { theme } = useAppTheme();
-  const backgroundColor = variant === "secondary" ? theme.secondary : theme.primary;
+  const backgroundColor =
+    variant === "secondary" ? theme.secondary : theme.primary;
   const renderedIcon = isValidElement(icon)
-    ? cloneElement(icon as ReactElement<{ color?: string }>, { color: "#ffffff" })
+    ? cloneElement(icon as ReactElement<{ color?: string }>, {
+        color: "#ffffff",
+      })
     : icon;
 
   return (
@@ -38,11 +46,13 @@ export function AppFloatingActionButton({ icon, label, onPress, variant = "prima
         shadowOpacity: 0.16,
         shadowRadius: 18,
         width: label ? undefined : 54,
-        justifyContent: "center"
+        justifyContent: "center",
       })}
     >
       {renderedIcon}
-      {label ? <Text style={{ color: "#ffffff", fontWeight: "900" }}>{label}</Text> : null}
+      {label ? (
+        <Text style={{ color: "#ffffff", fontWeight: "900" }}>{label}</Text>
+      ) : null}
     </Pressable>
   );
 }

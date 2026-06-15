@@ -15,7 +15,7 @@ import {
   getLastSyncStatus,
   getSyncedHealthSamples,
   requestHealthPermissions,
-  syncSelectedHealthData
+  syncSelectedHealthData,
 } from "@/services/healthSync/healthSyncService";
 import type {
   HealthSyncConnection,
@@ -24,28 +24,32 @@ import type {
   HealthSyncSource,
   HealthSyncSourceOption,
   HealthSyncStatus,
-  SyncedHealthSample
+  SyncedHealthSample,
 } from "@/types/healthSync";
 
 export default function DeviceSyncScreen() {
   const [sources, setSources] = useState<HealthSyncSourceOption[]>([]);
-  const [connection, setConnection] = useState<HealthSyncConnection | null>(null);
+  const [connection, setConnection] = useState<HealthSyncConnection | null>(
+    null,
+  );
   const [status, setStatus] = useState<HealthSyncStatus | null>(null);
   const [samples, setSamples] = useState<SyncedHealthSample[]>([]);
   const [errors, setErrors] = useState<HealthSyncError[]>([]);
-  const [selectedSource, setSelectedSource] = useState<HealthSyncSource>("mock");
+  const [selectedSource, setSelectedSource] =
+    useState<HealthSyncSource>("mock");
   const [selectedTypes, setSelectedTypes] = useState<HealthSyncDataType[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
 
   const loadSync = useCallback(async () => {
-    const [nextSources, nextConnection, nextStatus, nextSamples, nextErrors] = await Promise.all([
-      getAvailableHealthSources(),
-      getHealthSyncConnection(),
-      getLastSyncStatus(),
-      getSyncedHealthSamples(),
-      getHealthSyncErrors()
-    ]);
+    const [nextSources, nextConnection, nextStatus, nextSamples, nextErrors] =
+      await Promise.all([
+        getAvailableHealthSources(),
+        getHealthSyncConnection(),
+        getLastSyncStatus(),
+        getSyncedHealthSamples(),
+        getHealthSyncErrors(),
+      ]);
 
     setSources(nextSources);
     setConnection(nextConnection);
@@ -66,16 +70,19 @@ export default function DeviceSyncScreen() {
     setSelectedTypes((current) =>
       current.includes(dataType)
         ? current.filter((item) => item !== dataType)
-        : [...current, dataType]
+        : [...current, dataType],
     );
   }
 
   async function savePermissions() {
-    await requestHealthPermissions({ dataTypes: selectedTypes, source: selectedSource });
+    await requestHealthPermissions({
+      dataTypes: selectedTypes,
+      source: selectedSource,
+    });
     setMessage(
       selectedTypes.length
         ? "Some data types are connected. You can update permissions anytime."
-        : "Choose at least one data type before syncing."
+        : "Choose at least one data type before syncing.",
     );
     await loadSync();
   }
@@ -90,9 +97,15 @@ export default function DeviceSyncScreen() {
       }
 
       const result = await syncSelectedHealthData();
-      setMessage(result.importedCount ? `${result.importedCount} sample${result.importedCount === 1 ? "" : "s"} imported.` : "No device data found for this period.");
+      setMessage(
+        result.importedCount
+          ? `${result.importedCount} sample${result.importedCount === 1 ? "" : "s"} imported.`
+          : "No device data found for this period.",
+      );
     } catch {
-      setMessage("Sync could not complete right now. Your manual logs are still safe.");
+      setMessage(
+        "Sync could not complete right now. Your manual logs are still safe.",
+      );
     } finally {
       setSyncing(false);
       await loadSync();
@@ -106,13 +119,19 @@ export default function DeviceSyncScreen() {
     await loadSync();
   }
 
-  const selectedSourceDetails = sources.find((source) => source.source === selectedSource);
+  const selectedSourceDetails = sources.find(
+    (source) => source.source === selectedSource,
+  );
 
   return (
     <ScreenWrapper backgroundColor="#fffaf0">
       <View style={{ gap: 4 }}>
-        <Text style={{ color: "#b45309", fontSize: 14, fontWeight: "800" }}>Health realm</Text>
-        <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>Device Sync</Text>
+        <Text style={{ color: "#b45309", fontSize: 14, fontWeight: "800" }}>
+          Health realm
+        </Text>
+        <Text style={{ color: "#0f172a", fontSize: 30, fontWeight: "900" }}>
+          Device Sync
+        </Text>
         <Text style={{ color: "#64748b", lineHeight: 20 }}>
           Connect your health data safely.
         </Text>
@@ -124,10 +143,12 @@ export default function DeviceSyncScreen() {
             Choose what health data to sync
           </Text>
           <Text style={{ color: "#334155", lineHeight: 21 }}>
-            You control what data this app can read. You can change permissions anytime.
+            You control what data this app can read. You can change permissions
+            anytime.
           </Text>
           <Text style={{ color: "#334155", lineHeight: 21 }}>
-            You control what data is imported. You can disconnect device sync anytime.
+            You control what data is imported. You can disconnect device sync
+            anytime.
           </Text>
         </View>
       </AppCard>
@@ -142,21 +163,50 @@ export default function DeviceSyncScreen() {
               setMessage(source.message ?? null);
             }}
             style={{
-              backgroundColor: selectedSource === source.source ? "#fffbeb" : "#ffffff",
-              borderColor: selectedSource === source.source ? "#f59e0b" : "#e2e8f0",
+              backgroundColor:
+                selectedSource === source.source ? "#fffbeb" : "#ffffff",
+              borderColor:
+                selectedSource === source.source ? "#f59e0b" : "#e2e8f0",
               borderRadius: 20,
               borderWidth: 1,
               flexGrow: 1,
               minHeight: 142,
               minWidth: "45%",
-              padding: 14
+              padding: 14,
             }}
           >
-            <AppIcon color={getSourceColor(source.source)} container containerVariant="white" name={getSourceIcon(source.source)} size={22} />
-            <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900", marginTop: 10 }}>{source.title}</Text>
-            <Text style={{ color: "#64748b", lineHeight: 19, marginTop: 5 }}>{source.description}</Text>
-            <Text style={{ color: source.isAvailable ? "#059669" : "#9a3412", fontWeight: "900", marginTop: 8 }}>
-              {source.isAvailable ? (source.isComingSoon ? "Prepared" : "Available") : "Unavailable"}
+            <AppIcon
+              color={getSourceColor(source.source)}
+              container
+              containerVariant="white"
+              name={getSourceIcon(source.source)}
+              size={22}
+            />
+            <Text
+              style={{
+                color: "#0f172a",
+                fontSize: 18,
+                fontWeight: "900",
+                marginTop: 10,
+              }}
+            >
+              {source.title}
+            </Text>
+            <Text style={{ color: "#64748b", lineHeight: 19, marginTop: 5 }}>
+              {source.description}
+            </Text>
+            <Text
+              style={{
+                color: source.isAvailable ? "#059669" : "#9a3412",
+                fontWeight: "900",
+                marginTop: 8,
+              }}
+            >
+              {source.isAvailable
+                ? source.isComingSoon
+                  ? "Prepared"
+                  : "Available"
+                : "Unavailable"}
             </Text>
           </TouchableOpacity>
         ))}
@@ -164,20 +214,40 @@ export default function DeviceSyncScreen() {
 
       <AppCard>
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>Sync Status</Text>
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            Sync Status
+          </Text>
           <MetricRow label="Platform" value={Platform.OS} />
-          <MetricRow label="Connected source" value={formatSource(status?.source ?? selectedSource)} />
-          <MetricRow label="Permission status" value={formatStatus(status?.permissionStatus ?? "not_requested")} />
-          <MetricRow label="Last sync" value={status?.lastSyncAt ? new Date(status.lastSyncAt).toLocaleString() : "No sync yet"} />
+          <MetricRow
+            label="Connected source"
+            value={formatSource(status?.source ?? selectedSource)}
+          />
+          <MetricRow
+            label="Permission status"
+            value={formatStatus(status?.permissionStatus ?? "not_requested")}
+          />
+          <MetricRow
+            label="Last sync"
+            value={
+              status?.lastSyncAt
+                ? new Date(status.lastSyncAt).toLocaleString()
+                : "No sync yet"
+            }
+          />
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            {message ?? status?.message ?? selectedSourceDetails?.message ?? "Choose data types, then sync when ready."}
+            {message ??
+              status?.message ??
+              selectedSourceDetails?.message ??
+              "Choose data types, then sync when ready."}
           </Text>
         </View>
       </AppCard>
 
       <AppCard>
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>Choose Data to Sync</Text>
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            Choose Data to Sync
+          </Text>
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
             All data types start off. Select only what you want to import.
           </Text>
@@ -196,10 +266,15 @@ export default function DeviceSyncScreen() {
                     borderRadius: 999,
                     borderWidth: 1,
                     paddingHorizontal: 12,
-                    paddingVertical: 9
+                    paddingVertical: 9,
                   }}
                 >
-                  <Text style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}>
+                  <Text
+                    style={{
+                      color: selected ? "#ffffff" : "#475569",
+                      fontWeight: "900",
+                    }}
+                  >
                     {selected ? "On " : "Off "}
                     {dataType.label}
                   </Text>
@@ -209,21 +284,35 @@ export default function DeviceSyncScreen() {
           </View>
           <View style={{ flexDirection: "row", gap: 10 }}>
             <PrimaryButton label="Save Permissions" onPress={savePermissions} />
-            <PrimaryButton disabled={syncing} label={syncing ? "Syncing" : "Sync Now"} onPress={syncNow} />
+            <PrimaryButton
+              disabled={syncing}
+              label={syncing ? "Syncing" : "Sync Now"}
+              onPress={syncNow}
+            />
           </View>
           <TouchableOpacity activeOpacity={0.85} onPress={disconnect}>
-            <Text style={{ color: "#dc2626", fontWeight: "900" }}>Disconnect device sync</Text>
+            <Text style={{ color: "#dc2626", fontWeight: "900" }}>
+              Disconnect device sync
+            </Text>
           </TouchableOpacity>
         </View>
       </AppCard>
 
       <AppCard backgroundColor="#f0fdf4">
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#166534", fontSize: 20, fontWeight: "900" }}>Synced Today</Text>
+          <Text style={{ color: "#166534", fontSize: 20, fontWeight: "900" }}>
+            Synced Today
+          </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
             <MetricTile label="Samples" value={`${samples.length}`} />
-            <MetricTile label="Steps" value={formatSampleTotal(samples, "steps", "steps")} />
-            <MetricTile label="Distance" value={formatSampleTotal(samples, "distance", "km")} />
+            <MetricTile
+              label="Steps"
+              value={formatSampleTotal(samples, "steps", "steps")}
+            />
+            <MetricTile
+              label="Distance"
+              value={formatSampleTotal(samples, "distance", "km")}
+            />
             <MetricTile label="Sleep" value={formatSleep(samples)} />
           </View>
         </View>
@@ -231,46 +320,79 @@ export default function DeviceSyncScreen() {
 
       <AppCard>
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>Recent Sync Activity</Text>
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            Recent Sync Activity
+          </Text>
           {samples.length ? (
             samples.slice(0, 8).map((sample) => (
-              <View key={sample.id} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-                <Text style={{ color: "#0f172a", fontWeight: "900" }}>{formatDataType(sample.dataType)}</Text>
+              <View
+                key={sample.id}
+                style={{
+                  backgroundColor: "#f8fafc",
+                  borderRadius: 16,
+                  padding: 12,
+                }}
+              >
+                <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+                  {formatDataType(sample.dataType)}
+                </Text>
                 <Text style={{ color: "#64748b", marginTop: 4 }}>
                   {sample.value} {sample.unit} - {formatSource(sample.source)}
                 </Text>
-                <Text style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>{new Date(sample.startTime).toLocaleString()}</Text>
+                <Text style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
+                  {new Date(sample.startTime).toLocaleString()}
+                </Text>
               </View>
             ))
           ) : (
-            <Text style={{ color: "#64748b", lineHeight: 21 }}>No device data found for this period.</Text>
+            <Text style={{ color: "#64748b", lineHeight: 21 }}>
+              No device data found for this period.
+            </Text>
           )}
         </View>
       </AppCard>
 
       <AppCard backgroundColor="#fff7ed">
         <View style={{ gap: 12 }}>
-          <Text style={{ color: "#9a3412", fontSize: 20, fontWeight: "900" }}>Manual Logging Fallback</Text>
+          <Text style={{ color: "#9a3412", fontSize: 20, fontWeight: "900" }}>
+            Manual Logging Fallback
+          </Text>
           <Text style={{ color: "#9a3412", lineHeight: 21 }}>
-            Device sync is not available on this device yet. You can still log health data manually.
+            Device sync is not available on this device yet. You can still log
+            health data manually.
           </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            <FallbackButton label="Add weight" route="/biometrics?type=weight" />
+            <FallbackButton
+              label="Add weight"
+              route="/biometrics?type=weight"
+            />
             <FallbackButton label="Add sleep" route="/biometrics?type=sleep" />
             <FallbackButton label="Add workout" route="/fitness" />
             <FallbackButton label="Add water" route="/food?tab=water" />
-            <FallbackButton label="Add heart rate" route="/biometrics?type=heart_rate" />
-            <FallbackButton label="Add blood pressure" route="/biometrics?type=blood_pressure" />
-            <FallbackButton label="Add glucose" route="/biometrics?type=blood_glucose" />
+            <FallbackButton
+              label="Add heart rate"
+              route="/biometrics?type=heart_rate"
+            />
+            <FallbackButton
+              label="Add blood pressure"
+              route="/biometrics?type=blood_pressure"
+            />
+            <FallbackButton
+              label="Add glucose"
+              route="/biometrics?type=blood_glucose"
+            />
           </View>
         </View>
       </AppCard>
 
       <AppCard>
         <View style={{ gap: 10 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>Privacy Controls</Text>
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            Privacy Controls
+          </Text>
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Synced data is not shared with family or caregivers by default. Source labels stay attached to imported samples.
+            Synced data is not shared with family or caregivers by default.
+            Source labels stay attached to imported samples.
           </Text>
           {errors.length ? (
             <Text style={{ color: "#9a3412", lineHeight: 21 }}>
@@ -285,23 +407,63 @@ export default function DeviceSyncScreen() {
 
 function MetricRow({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}>
+    <View
+      style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}
+    >
       <Text style={{ color: "#64748b", flex: 1 }}>{label}</Text>
-      <Text style={{ color: "#0f172a", flex: 1, fontWeight: "900", textAlign: "right" }}>{value}</Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          flex: 1,
+          fontWeight: "900",
+          textAlign: "right",
+        }}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
 function MetricTile({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ backgroundColor: "#ffffff", borderColor: "#bbf7d0", borderRadius: 16, borderWidth: 1, flexGrow: 1, minWidth: "45%", padding: 12 }}>
-      <Text style={{ color: "#166534", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900", marginTop: 4 }}>{value}</Text>
+    <View
+      style={{
+        backgroundColor: "#ffffff",
+        borderColor: "#bbf7d0",
+        borderRadius: 16,
+        borderWidth: 1,
+        flexGrow: 1,
+        minWidth: "45%",
+        padding: 12,
+      }}
+    >
+      <Text style={{ color: "#166534", fontSize: 12, fontWeight: "900" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 18,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
-function PrimaryButton({ disabled = false, label, onPress }: { disabled?: boolean; label: string; onPress: () => void }) {
+function PrimaryButton({
+  disabled = false,
+  label,
+  onPress,
+}: {
+  disabled?: boolean;
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -315,7 +477,7 @@ function PrimaryButton({ disabled = false, label, onPress }: { disabled?: boolea
         justifyContent: "center",
         minHeight: 50,
         opacity: disabled ? 0.55 : 1,
-        paddingHorizontal: 12
+        paddingHorizontal: 12,
       }}
     >
       <Text style={{ color: "#ffffff", fontWeight: "900" }}>{label}</Text>
@@ -325,14 +487,26 @@ function PrimaryButton({ disabled = false, label, onPress }: { disabled?: boolea
 
 function FallbackButton({ label, route }: { label: string; route: string }) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={() => router.push(route as Href)} style={{ backgroundColor: "#ffffff", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9 }}>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => router.push(route as Href)}
+      style={{
+        backgroundColor: "#ffffff",
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 9,
+      }}
+    >
       <Text style={{ color: "#9a3412", fontWeight: "900" }}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 function getDefaultSource(sources: HealthSyncSourceOption[]): HealthSyncSource {
-  return sources.find((source) => source.isAvailable && source.source !== "manual")?.source ?? "manual";
+  return (
+    sources.find((source) => source.isAvailable && source.source !== "manual")
+      ?.source ?? "manual"
+  );
 }
 
 function getSourceIcon(source: HealthSyncSource) {
@@ -390,7 +564,11 @@ function formatDataType(dataType: HealthSyncDataType) {
     .join(" ");
 }
 
-function formatSampleTotal(samples: SyncedHealthSample[], dataType: HealthSyncDataType, unit: string) {
+function formatSampleTotal(
+  samples: SyncedHealthSample[],
+  dataType: HealthSyncDataType,
+  unit: string,
+) {
   const total = samples
     .filter((sample) => sample.dataType === dataType)
     .reduce((sum, sample) => sum + sample.value, 0);

@@ -12,7 +12,11 @@ type DiaperLogCardProps = {
   onChange?: () => void;
 };
 
-export function DiaperLogCard({ childId, latestDiaper, onChange }: DiaperLogCardProps) {
+export function DiaperLogCard({
+  childId,
+  latestDiaper,
+  onChange,
+}: DiaperLogCardProps) {
   const [diaperType, setDiaperType] = useState<DiaperType>("wet");
   const [notes, setNotes] = useState("");
 
@@ -30,7 +34,8 @@ export function DiaperLogCard({ childId, latestDiaper, onChange }: DiaperLogCard
             Diaper log
           </Text>
           <Text style={{ color: "#64748b", marginTop: 4 }}>
-            Latest: {latestDiaper ? latestDiaper.diaperType : "No diaper logs yet"}
+            Latest:{" "}
+            {latestDiaper ? latestDiaper.diaperType : "No diaper logs yet"}
           </Text>
         </View>
 
@@ -49,10 +54,15 @@ export function DiaperLogCard({ childId, latestDiaper, onChange }: DiaperLogCard
                   borderRadius: 999,
                   borderWidth: 1,
                   paddingHorizontal: 12,
-                  paddingVertical: 9
+                  paddingVertical: 9,
                 }}
               >
-                <Text style={{ color: selected ? "#15803d" : "#475569", fontWeight: "800" }}>
+                <Text
+                  style={{
+                    color: selected ? "#15803d" : "#475569",
+                    fontWeight: "800",
+                  }}
+                >
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -68,8 +78,14 @@ export function DiaperLogCard({ childId, latestDiaper, onChange }: DiaperLogCard
           value={notes}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save diaper</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save diaper
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -83,7 +99,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -91,5 +107,5 @@ const buttonStyle = {
   backgroundColor: "#10b981",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 50
+  minHeight: 50,
 };

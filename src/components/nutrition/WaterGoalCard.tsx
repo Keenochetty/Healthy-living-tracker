@@ -39,13 +39,20 @@ export function WaterGoalCard({ onChange, waterGoal }: WaterGoalCardProps) {
           </Text>
         </View>
 
-        <View style={{ backgroundColor: "#dbeafe", borderRadius: 999, height: 12, overflow: "hidden" }}>
+        <View
+          style={{
+            backgroundColor: "#dbeafe",
+            borderRadius: 999,
+            height: 12,
+            overflow: "hidden",
+          }}
+        >
           <View
             style={{
               backgroundColor: "#3b82f6",
               borderRadius: 999,
               height: "100%",
-              width: `${progress}%` as `${number}%`
+              width: `${progress}%` as `${number}%`,
             }}
           />
         </View>
@@ -56,9 +63,16 @@ export function WaterGoalCard({ onChange, waterGoal }: WaterGoalCardProps) {
               activeOpacity={0.85}
               key={amount}
               onPress={() => addWater(amount)}
-              style={{ backgroundColor: "#ffffff", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 9 }}
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 999,
+                paddingHorizontal: 12,
+                paddingVertical: 9,
+              }}
             >
-              <Text style={{ color: "#2563eb", fontWeight: "900" }}>+{amount}ml</Text>
+              <Text style={{ color: "#2563eb", fontWeight: "900" }}>
+                +{amount}ml
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -75,14 +89,19 @@ export function WaterGoalCard({ onChange, waterGoal }: WaterGoalCardProps) {
               color: "#0f172a",
               flex: 1,
               minHeight: 46,
-              paddingHorizontal: 12
+              paddingHorizontal: 12,
             }}
             value={targetMl}
           />
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={saveTarget}
-            style={{ backgroundColor: "#3b82f6", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 13 }}
+            style={{
+              backgroundColor: "#3b82f6",
+              borderRadius: 16,
+              paddingHorizontal: 14,
+              paddingVertical: 13,
+            }}
           >
             <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save</Text>
           </TouchableOpacity>

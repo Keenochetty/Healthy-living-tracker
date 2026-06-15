@@ -29,7 +29,9 @@ export function FoodLogList({ foodLogs, onChange }: FoodLogListProps) {
           />
         ))
       ) : (
-        <View style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 16 }}>
+        <View
+          style={{ backgroundColor: "#ffffff", borderRadius: 24, padding: 16 }}
+        >
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
             No meals logged yet. Add a quick meal when you are ready.
           </Text>

@@ -1,9 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import {
-  addFoodDetailsToDiary,
-  getCustomFoods
-} from "@/lib/nutritionStorage";
+import { addFoodDetailsToDiary, getCustomFoods } from "@/lib/nutritionStorage";
 import type {
   BarcodeProductCache,
   BarcodeProductLookupResult,
@@ -11,7 +8,7 @@ import type {
   FoodDetails,
   NutritionMealGroup,
   RecentlyScannedProduct,
-  ServingOption
+  ServingOption,
 } from "@/types/nutrition";
 
 const BARCODE_CACHE_STORAGE_KEY = "family_health_barcode_products_cache";
@@ -19,14 +16,16 @@ const RECENT_SCANNED_STORAGE_KEY = "family_health_recently_scanned_products";
 const LOCAL_USER_ID = "local-user";
 const LOCAL_PROFILE_ID = "local-profile";
 
-export async function lookupProductByBarcode(barcode: string): Promise<BarcodeProductLookupResult> {
+export async function lookupProductByBarcode(
+  barcode: string,
+): Promise<BarcodeProductLookupResult> {
   const normalizedBarcode = normalizeBarcode(barcode);
 
   if (!isValidBarcode(normalizedBarcode)) {
     return {
       barcode: normalizedBarcode,
       message: "Enter a numeric barcode with 8 to 14 digits.",
-      status: "error"
+      status: "error",
     };
   }
 
@@ -35,46 +34,63 @@ export async function lookupProductByBarcode(barcode: string): Promise<BarcodePr
 
     if (customFood) {
       await saveRecentlyScannedProduct(customFood);
-      return { barcode: normalizedBarcode, product: customFood, status: getLookupStatus(customFood) };
+      return {
+        barcode: normalizedBarcode,
+        product: customFood,
+        status: getLookupStatus(customFood),
+      };
     }
 
     const cachedFood = await lookupCachedBarcodeProduct(normalizedBarcode);
 
     if (cachedFood) {
       await saveRecentlyScannedProduct(cachedFood);
-      return { barcode: normalizedBarcode, product: cachedFood, status: getLookupStatus(cachedFood) };
+      return {
+        barcode: normalizedBarcode,
+        product: cachedFood,
+        status: getLookupStatus(cachedFood),
+      };
     }
 
-    const openFoodFactsProduct = await lookupOpenFoodFactsProduct(normalizedBarcode);
+    const openFoodFactsProduct =
+      await lookupOpenFoodFactsProduct(normalizedBarcode);
 
     if (openFoodFactsProduct) {
       await saveBarcodeProductCache(openFoodFactsProduct);
       await saveRecentlyScannedProduct(openFoodFactsProduct);
       return {
         barcode: normalizedBarcode,
-        message: getLookupStatus(openFoodFactsProduct) === "incomplete" ? "Some nutrition information is missing." : undefined,
+        message:
+          getLookupStatus(openFoodFactsProduct) === "incomplete"
+            ? "Some nutrition information is missing."
+            : undefined,
         product: openFoodFactsProduct,
-        status: getLookupStatus(openFoodFactsProduct)
+        status: getLookupStatus(openFoodFactsProduct),
       };
     }
 
     return {
       barcode: normalizedBarcode,
-      message: "We could not find this product. You can create it as a custom food.",
-      status: "not_found"
+      message:
+        "We could not find this product. You can create it as a custom food.",
+      status: "not_found",
     };
   } catch {
     return {
       barcode: normalizedBarcode,
-      message: "Product lookup is unavailable right now. You can still add the food manually.",
-      status: "error"
+      message:
+        "Product lookup is unavailable right now. You can still add the food manually.",
+      status: "error",
     };
   }
 }
 
 export async function lookupCustomFoodByBarcode(barcode: string) {
   const customFoods = await getCustomFoods();
-  const customFood = customFoods.find((food) => normalizeBarcode(food.barcode ?? "") === normalizeBarcode(barcode));
+  const customFood = customFoods.find(
+    (food) =>
+      normalizeBarcode(food.barcode ?? "") === normalizeBarcode(barcode),
+  );
 
   if (!customFood) {
     return null;
@@ -100,19 +116,24 @@ export async function lookupCustomFoodByBarcode(barcode: string) {
       {
         label: `${customFood.servingSize} ${customFood.servingUnit}`,
         quantity: customFood.servingSize,
-        unit: customFood.servingUnit
-      }
+        unit: customFood.servingUnit,
+      },
     ],
     sodiumMg: customFood.sodiumMg,
     source: "custom" as const,
     sourceFoodId: `custom-food-${customFood.id}`,
-    sugarG: customFood.sugarG
+    sugarG: customFood.sugarG,
   };
 }
 
 export async function lookupCachedBarcodeProduct(barcode: string) {
-  const cachedProducts = await readJsonArray<BarcodeProductCache>(BARCODE_CACHE_STORAGE_KEY);
-  const cachedProduct = cachedProducts.find((product) => normalizeBarcode(product.barcode) === normalizeBarcode(barcode));
+  const cachedProducts = await readJsonArray<BarcodeProductCache>(
+    BARCODE_CACHE_STORAGE_KEY,
+  );
+  const cachedProduct = cachedProducts.find(
+    (product) =>
+      normalizeBarcode(product.barcode) === normalizeBarcode(barcode),
+  );
 
   return cachedProduct ? barcodeCacheToFoodDetails(cachedProduct) : null;
 }
@@ -129,16 +150,16 @@ export async function lookupOpenFoodFactsProduct(barcode: string) {
     "ingredients_text",
     "allergens_tags",
     "states_tags",
-    "last_modified_t"
+    "last_modified_t",
   ].join(",");
   const response = await fetch(
     `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${fields}`,
     {
       headers: {
         Accept: "application/json",
-        "User-Agent": "FamilyHealth/1.0 (packaged product lookup)"
-      }
-    }
+        "User-Agent": "FamilyHealth/1.0 (packaged product lookup)",
+      },
+    },
   );
 
   if (!response.ok) {
@@ -148,7 +169,10 @@ export async function lookupOpenFoodFactsProduct(barcode: string) {
   return normalizeOpenFoodFactsProduct(await response.json(), barcode);
 }
 
-export function normalizeOpenFoodFactsProduct(raw: unknown, barcode: string): FoodDetails | null {
+export function normalizeOpenFoodFactsProduct(
+  raw: unknown,
+  barcode: string,
+): FoodDetails | null {
   if (!raw || typeof raw !== "object") {
     return null;
   }
@@ -162,9 +186,21 @@ export function normalizeOpenFoodFactsProduct(raw: unknown, barcode: string): Fo
 
   const nutriments = asRecord(product.nutriments);
   const serving = parseServing(String(product.serving_size ?? "100 g"));
-  const calories = getNutriment(nutriments, ["energy-kcal_serving", "energy-kcal_100g", "energy-kcal"]);
-  const protein = getNutriment(nutriments, ["proteins_serving", "proteins_100g", "proteins"]);
-  const carbs = getNutriment(nutriments, ["carbohydrates_serving", "carbohydrates_100g", "carbohydrates"]);
+  const calories = getNutriment(nutriments, [
+    "energy-kcal_serving",
+    "energy-kcal_100g",
+    "energy-kcal",
+  ]);
+  const protein = getNutriment(nutriments, [
+    "proteins_serving",
+    "proteins_100g",
+    "proteins",
+  ]);
+  const carbs = getNutriment(nutriments, [
+    "carbohydrates_serving",
+    "carbohydrates_100g",
+    "carbohydrates",
+  ]);
   const fat = getNutriment(nutriments, ["fat_serving", "fat_100g", "fat"]);
   const sourceFoodId = String(product.code ?? barcode);
 
@@ -181,7 +217,8 @@ export function normalizeOpenFoodFactsProduct(raw: unknown, barcode: string): Fo
     fatG: fat,
     fiberG: getNutriment(nutriments, ["fiber_serving", "fiber_100g", "fiber"]),
     id: `open-food-facts-${sourceFoodId}`,
-    imageUrl: firstText(product.image_front_url) ?? firstText(product.image_url),
+    imageUrl:
+      firstText(product.image_front_url) ?? firstText(product.image_url),
     ingredients: firstText(product.ingredients_text),
     name: firstText(product.product_name) ?? `Barcode ${barcode}`,
     nutrientsJson: nutriments,
@@ -190,7 +227,11 @@ export function normalizeOpenFoodFactsProduct(raw: unknown, barcode: string): Fo
     sodiumMg: getSodiumMg(nutriments),
     source: "open_food_facts",
     sourceFoodId,
-    sugarG: getNutriment(nutriments, ["sugars_serving", "sugars_100g", "sugars"])
+    sugarG: getNutriment(nutriments, [
+      "sugars_serving",
+      "sugars_100g",
+      "sugars",
+    ]),
   };
 }
 
@@ -199,9 +240,13 @@ export async function saveBarcodeProductCache(details: FoodDetails) {
     return null;
   }
 
-  const cachedProducts = await readJsonArray<BarcodeProductCache>(BARCODE_CACHE_STORAGE_KEY);
+  const cachedProducts = await readJsonArray<BarcodeProductCache>(
+    BARCODE_CACHE_STORAGE_KEY,
+  );
   const now = new Date().toISOString();
-  const existingProduct = cachedProducts.find((product) => product.barcode === details.barcode);
+  const existingProduct = cachedProducts.find(
+    (product) => product.barcode === details.barcode,
+  );
   const cacheProduct: BarcodeProductCache = {
     allergens: details.allergens,
     barcode: details.barcode,
@@ -212,7 +257,9 @@ export async function saveBarcodeProductCache(details: FoodDetails) {
     dataQuality: details.dataQuality ?? "unknown",
     fatG: details.fatG,
     fiberG: details.fiberG,
-    id: existingProduct?.id ?? `barcode-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id:
+      existingProduct?.id ??
+      `barcode-cache-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     imageUrl: details.imageUrl,
     ingredients: details.ingredients,
     lastFetchedAt: now,
@@ -226,23 +273,26 @@ export async function saveBarcodeProductCache(details: FoodDetails) {
     source: details.source,
     sourceFoodId: details.sourceFoodId,
     sugarG: details.sugarG,
-    updatedAt: now
+    updatedAt: now,
   };
 
   await writeJsonArray(BARCODE_CACHE_STORAGE_KEY, [
     cacheProduct,
-    ...cachedProducts.filter((product) => product.barcode !== details.barcode)
+    ...cachedProducts.filter((product) => product.barcode !== details.barcode),
   ]);
 
   return cacheProduct;
 }
 
 export async function getRecentlyScannedProducts() {
-  const products = await readJsonArray<RecentlyScannedProduct>(RECENT_SCANNED_STORAGE_KEY);
+  const products = await readJsonArray<RecentlyScannedProduct>(
+    RECENT_SCANNED_STORAGE_KEY,
+  );
 
   return products.sort(
     (left, right) =>
-      new Date(right.lastScannedAt).getTime() - new Date(left.lastScannedAt).getTime()
+      new Date(right.lastScannedAt).getTime() -
+      new Date(left.lastScannedAt).getTime(),
   );
 }
 
@@ -253,13 +303,17 @@ export async function saveRecentlyScannedProduct(details: FoodDetails) {
 
   const products = await getRecentlyScannedProducts();
   const now = new Date().toISOString();
-  const existingProduct = products.find((product) => product.barcode === details.barcode);
+  const existingProduct = products.find(
+    (product) => product.barcode === details.barcode,
+  );
   const recentProduct: RecentlyScannedProduct = {
     barcode: details.barcode,
     brand: details.brand,
     calories: details.calories,
     createdAt: existingProduct?.createdAt ?? now,
-    id: existingProduct?.id ?? `recent-scan-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id:
+      existingProduct?.id ??
+      `recent-scan-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     imageUrl: details.imageUrl,
     lastScannedAt: now,
     productName: details.name,
@@ -267,12 +321,12 @@ export async function saveRecentlyScannedProduct(details: FoodDetails) {
     source: details.source,
     sourceFoodId: details.sourceFoodId,
     timesScanned: (existingProduct?.timesScanned ?? 0) + 1,
-    userId: existingProduct?.userId ?? LOCAL_USER_ID
+    userId: existingProduct?.userId ?? LOCAL_USER_ID,
   };
 
   await writeJsonArray(RECENT_SCANNED_STORAGE_KEY, [
     recentProduct,
-    ...products.filter((product) => product.id !== recentProduct.id)
+    ...products.filter((product) => product.id !== recentProduct.id),
   ]);
 
   return recentProduct;
@@ -282,18 +336,23 @@ export async function addScannedProductToDiary({
   details,
   mealGroup,
   quantity,
-  serving
+  serving,
 }: {
   details: FoodDetails;
   mealGroup: NutritionMealGroup;
   quantity: number;
   serving: ServingOption;
 }) {
-  const entry = await addFoodDetailsToDiary({ details, mealGroup, quantity, serving });
+  const entry = await addFoodDetailsToDiary({
+    details,
+    mealGroup,
+    quantity,
+    serving,
+  });
 
   await Promise.all([
     saveRecentlyScannedProduct(details),
-    saveBarcodeProductCache(details)
+    saveBarcodeProductCache(details),
   ]);
 
   return entry;
@@ -303,7 +362,7 @@ function barcodeCacheToFoodDetails(product: BarcodeProductCache): FoodDetails {
   const serving = {
     label: `${product.servingSize ?? 100} ${product.servingUnit ?? "g"}`,
     quantity: product.servingSize ?? 100,
-    unit: product.servingUnit ?? "g"
+    unit: product.servingUnit ?? "g",
   };
 
   return {
@@ -327,7 +386,7 @@ function barcodeCacheToFoodDetails(product: BarcodeProductCache): FoodDetails {
     sodiumMg: product.sodiumMg,
     source: product.source,
     sourceFoodId: product.sourceFoodId,
-    sugarG: product.sugarG
+    sugarG: product.sugarG,
   };
 }
 
@@ -341,8 +400,13 @@ function buildServingOptions(serving: ServingOption): ServingOption[] {
   return options;
 }
 
-function getLookupStatus(details: FoodDetails): BarcodeProductLookupResult["status"] {
-  return details.calories <= 0 || details.proteinG === 0 || details.carbsG === 0 || details.fatG === 0
+function getLookupStatus(
+  details: FoodDetails,
+): BarcodeProductLookupResult["status"] {
+  return details.calories <= 0 ||
+    details.proteinG === 0 ||
+    details.carbsG === 0 ||
+    details.fatG === 0
     ? "incomplete"
     : "found";
 }
@@ -355,7 +419,7 @@ function parseServing(servingSize: string): ServingOption {
   return {
     label: `${Number.isFinite(quantity) ? quantity : 100} ${unit}`,
     quantity: Number.isFinite(quantity) ? quantity : 100,
-    unit
+    unit,
   };
 }
 
@@ -388,7 +452,9 @@ function getSodiumMg(nutriments: Record<string, unknown>) {
 function getOpenFoodFactsDataQuality(statesTags: unknown): FoodDataQuality {
   const tags = Array.isArray(statesTags) ? statesTags.map(String) : [];
 
-  return tags.some((tag) => tag.includes("nutrition-facts-completed")) ? "community" : "unknown";
+  return tags.some((tag) => tag.includes("nutrition-facts-completed"))
+    ? "community"
+    : "unknown";
 }
 
 function normalizeAllergens(value: unknown) {
@@ -402,7 +468,9 @@ function firstText(value: unknown) {
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 function normalizeBarcode(barcode: string) {

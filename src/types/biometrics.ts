@@ -98,7 +98,12 @@ export type BloodPressureLog = BiometricPrivacy & {
   userId: string;
 };
 
-export type BloodGlucoseTiming = "fasting" | "before_meal" | "after_meal" | "bedtime" | "other";
+export type BloodGlucoseTiming =
+  | "fasting"
+  | "before_meal"
+  | "after_meal"
+  | "bedtime"
+  | "other";
 
 export type BloodGlucoseLog = BiometricPrivacy & {
   createdAt: string;

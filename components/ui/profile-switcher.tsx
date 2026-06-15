@@ -12,10 +12,24 @@ type ProfileSwitcherProps = {
   profileName: string;
 };
 
-export function ProfileSwitcher({ familyName, modeLabel, onPress, profileName }: ProfileSwitcherProps) {
+export function ProfileSwitcher({
+  familyName,
+  modeLabel,
+  onPress,
+  profileName,
+}: ProfileSwitcherProps) {
   return (
-    <Pressable accessibilityRole="button" disabled={!onPress} onPress={onPress} style={({ pressed }) => [styles.container, pressed && styles.pressed]}>
-      <ChildAvatar name={profileName} size={44} subtitle={familyName ?? "Personal"} />
+    <Pressable
+      accessibilityRole="button"
+      disabled={!onPress}
+      onPress={onPress}
+      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+    >
+      <ChildAvatar
+        name={profileName}
+        size={44}
+        subtitle={familyName ?? "Personal"}
+      />
       {modeLabel ? (
         <View style={styles.mode}>
           <Text style={styles.modeText}>{modeLabel}</Text>
@@ -36,20 +50,20 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     justifyContent: "space-between",
     minHeight: layoutSpacing.touchTarget + 12,
-    padding: spacing.md
+    padding: spacing.md,
   },
   mode: {
     backgroundColor: colors.brand.primarySoft,
     borderRadius: componentRadius.chip,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm
+    paddingVertical: spacing.sm,
   },
   modeText: {
     color: colors.brand.primary,
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   pressed: {
-    opacity: 0.78
-  }
+    opacity: 0.78,
+  },
 });

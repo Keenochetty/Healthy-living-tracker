@@ -2,13 +2,22 @@ import * as Localization from "expo-localization";
 
 import { supabase } from "@/lib/supabase";
 
-export type MeasurementSystemPreference = "device_default" | "metric" | "imperial";
+export type MeasurementSystemPreference =
+  | "device_default"
+  | "metric"
+  | "imperial";
 export type WeightUnitPreference = "device_default" | "kg" | "lb";
 export type HeightUnitPreference = "device_default" | "cm" | "ft_in";
-export type TemperatureUnitPreference = "device_default" | "celsius" | "fahrenheit";
+export type TemperatureUnitPreference =
+  | "device_default"
+  | "celsius"
+  | "fahrenheit";
 export type DistanceUnitPreference = "device_default" | "km" | "miles";
 export type TimeFormatPreference = "device_default" | "12_hour" | "24_hour";
-export type DateFormatPreference = "device_default" | "dd_mm_yyyy" | "mm_dd_yyyy";
+export type DateFormatPreference =
+  | "device_default"
+  | "dd_mm_yyyy"
+  | "mm_dd_yyyy";
 
 export type MeasurementPreferences = {
   system: MeasurementSystemPreference;
@@ -38,7 +47,7 @@ export const defaultMeasurementPreferences: MeasurementPreferences = {
   system: "device_default",
   temperature: "device_default",
   timeFormat: "device_default",
-  weight: "device_default"
+  weight: "device_default",
 };
 
 function isImperialLocale(measurementSystem: string | null | undefined) {
@@ -48,7 +57,9 @@ function isImperialLocale(measurementSystem: string | null | undefined) {
 export function getDeviceMeasurementDefaults(): DeviceMeasurementDefaults {
   const locale = Localization.getLocales()[0];
   const calendar = Localization.getCalendars()[0];
-  const system = isImperialLocale(locale.measurementSystem) ? "imperial" : "metric";
+  const system = isImperialLocale(locale.measurementSystem)
+    ? "imperial"
+    : "metric";
   const region = locale.regionCode?.toUpperCase();
   const uses24hourClock = calendar.uses24hourClock ?? system === "metric";
 
@@ -58,28 +69,38 @@ export function getDeviceMeasurementDefaults(): DeviceMeasurementDefaults {
     height: system === "metric" ? "cm" : "ft_in",
     locale: locale.languageTag,
     system,
-    temperature: locale.temperatureUnit === "fahrenheit" ? "fahrenheit" : "celsius",
+    temperature:
+      locale.temperatureUnit === "fahrenheit" ? "fahrenheit" : "celsius",
     timeFormat: uses24hourClock ? "24_hour" : "12_hour",
-    weight: system === "metric" ? "kg" : "lb"
+    weight: system === "metric" ? "kg" : "lb",
   };
 }
 
-function normalizeMeasurementPreferences(value: unknown): MeasurementPreferences {
+function normalizeMeasurementPreferences(
+  value: unknown,
+): MeasurementPreferences {
   const preferences =
-    typeof value === "object" && value !== null ? (value as Partial<MeasurementPreferences>) : {};
+    typeof value === "object" && value !== null
+      ? (value as Partial<MeasurementPreferences>)
+      : {};
 
   return {
-    dateFormat: preferences.dateFormat ?? defaultMeasurementPreferences.dateFormat,
+    dateFormat:
+      preferences.dateFormat ?? defaultMeasurementPreferences.dateFormat,
     distance: preferences.distance ?? defaultMeasurementPreferences.distance,
     height: preferences.height ?? defaultMeasurementPreferences.height,
     system: preferences.system ?? defaultMeasurementPreferences.system,
-    temperature: preferences.temperature ?? defaultMeasurementPreferences.temperature,
-    timeFormat: preferences.timeFormat ?? defaultMeasurementPreferences.timeFormat,
-    weight: preferences.weight ?? defaultMeasurementPreferences.weight
+    temperature:
+      preferences.temperature ?? defaultMeasurementPreferences.temperature,
+    timeFormat:
+      preferences.timeFormat ?? defaultMeasurementPreferences.timeFormat,
+    weight: preferences.weight ?? defaultMeasurementPreferences.weight,
   };
 }
 
-export async function getMeasurementPreferences(profileId: string | null | undefined) {
+export async function getMeasurementPreferences(
+  profileId: string | null | undefined,
+) {
   if (!profileId) {
     return defaultMeasurementPreferences;
   }
@@ -99,7 +120,7 @@ export async function getMeasurementPreferences(profileId: string | null | undef
 
 export async function updateMeasurementPreferences(
   profileId: string | null | undefined,
-  preferences: MeasurementPreferences
+  preferences: MeasurementPreferences,
 ) {
   if (!profileId) {
     throw new Error("Sign in before updating measurement settings.");
@@ -109,7 +130,7 @@ export async function updateMeasurementPreferences(
     .from("user_settings")
     .upsert({
       measurement_preferences: preferences,
-      profile_id: profileId
+      profile_id: profileId,
     })
     .select("measurement_preferences")
     .single();

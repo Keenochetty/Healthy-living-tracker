@@ -1,7 +1,7 @@
 import type {
   IntervalTimerPreset,
   WorkoutIntensity,
-  WorkoutType
+  WorkoutType,
 } from "@/types/fitness";
 
 export type WorkoutTypeOption = {
@@ -21,14 +21,17 @@ export const WORKOUT_TYPE_OPTIONS: WorkoutTypeOption[] = [
   { colour: "#dc2626", emoji: "Lift", key: "strength", label: "Strength" },
   { colour: "#ef4444", emoji: "HR", key: "cardio", label: "Cardio" },
   { colour: "#65a30d", emoji: "Move", key: "mobility", label: "Mobility" },
-  { colour: "#64748b", emoji: "Custom", key: "custom", label: "Custom" }
+  { colour: "#64748b", emoji: "Custom", key: "custom", label: "Custom" },
 ];
 
-export const INTENSITY_OPTIONS: Array<{ key: WorkoutIntensity; label: string }> = [
+export const INTENSITY_OPTIONS: Array<{
+  key: WorkoutIntensity;
+  label: string;
+}> = [
   { key: "easy", label: "Easy" },
   { key: "moderate", label: "Moderate" },
   { key: "hard", label: "Hard" },
-  { key: "max", label: "Max" }
+  { key: "max", label: "Max" },
 ];
 
 const now = new Date().toISOString();
@@ -46,7 +49,7 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "work-30",
         label: "Work",
         type: "work",
-        vibrationEnabled: true
+        vibrationEnabled: true,
       },
       {
         beepEnabled: true,
@@ -54,11 +57,11 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "rest-30",
         label: "Rest",
         type: "rest",
-        vibrationEnabled: true
-      }
+        vibrationEnabled: true,
+      },
     ],
     title: "30 sec work / 30 sec rest",
-    updatedAt: now
+    updatedAt: now,
   },
   {
     createdAt: now,
@@ -72,7 +75,7 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "work-45",
         label: "Work",
         type: "work",
-        vibrationEnabled: true
+        vibrationEnabled: true,
       },
       {
         beepEnabled: true,
@@ -80,11 +83,11 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "rest-15",
         label: "Rest",
         type: "rest",
-        vibrationEnabled: true
-      }
+        vibrationEnabled: true,
+      },
     ],
     title: "45 sec work / 15 sec rest",
-    updatedAt: now
+    updatedAt: now,
   },
   {
     createdAt: now,
@@ -98,7 +101,7 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "work-60",
         label: "Work",
         type: "work",
-        vibrationEnabled: true
+        vibrationEnabled: true,
       },
       {
         beepEnabled: true,
@@ -106,11 +109,11 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "rest-30",
         label: "Rest",
         type: "rest",
-        vibrationEnabled: true
-      }
+        vibrationEnabled: true,
+      },
     ],
     title: "1 min work / 30 sec rest",
-    updatedAt: now
+    updatedAt: now,
   },
   {
     createdAt: now,
@@ -124,11 +127,11 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "warmup-300",
         label: "Warmup",
         type: "warmup",
-        vibrationEnabled: true
-      }
+        vibrationEnabled: true,
+      },
     ],
     title: "5 min warmup",
-    updatedAt: now
+    updatedAt: now,
   },
   {
     createdAt: now,
@@ -142,7 +145,7 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "custom-work",
         label: "Work",
         type: "work",
-        vibrationEnabled: true
+        vibrationEnabled: true,
       },
       {
         beepEnabled: true,
@@ -150,12 +153,12 @@ export const DEFAULT_TIMER_PRESETS: IntervalTimerPreset[] = [
         id: "custom-rest",
         label: "Rest",
         type: "rest",
-        vibrationEnabled: true
-      }
+        vibrationEnabled: true,
+      },
     ],
     title: "Custom",
-    updatedAt: now
-  }
+    updatedAt: now,
+  },
 ];
 
 export const FITNESS_DISCLAIMER =

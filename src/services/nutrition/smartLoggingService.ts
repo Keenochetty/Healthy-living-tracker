@@ -17,20 +17,30 @@ import {
   getTodayNutritionSummary,
   getWaterGoal,
   saveRecentFood,
-  toNutritionDateKey
+  toNutritionDateKey,
 } from "@/lib/nutritionStorage";
-import { calculateRecipePerServing, calculateSavedMealTotals } from "@/services/nutrition/nutritionCalculations";
-import type { FoodDetails, FoodSource, NutritionDiaryEntry, NutritionMealGroup } from "@/types/nutrition";
+import {
+  calculateRecipePerServing,
+  calculateSavedMealTotals,
+} from "@/services/nutrition/nutritionCalculations";
+import type {
+  FoodDetails,
+  FoodSource,
+  NutritionDiaryEntry,
+  NutritionMealGroup,
+} from "@/types/nutrition";
 import type {
   SmartFoodSuggestion,
   SmartLogMethod,
   SmartLogSession,
-  SmartLogSuggestedEntry
+  SmartLogSuggestedEntry,
 } from "@/types/smartLogging";
 
 const SMART_LOG_SESSIONS_STORAGE_KEY = "family_health_smart_log_sessions";
-const SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY = "family_health_smart_log_suggested_entries";
-const SMART_FOOD_SUGGESTIONS_STORAGE_KEY = "family_health_smart_food_suggestions";
+const SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY =
+  "family_health_smart_log_suggested_entries";
+const SMART_FOOD_SUGGESTIONS_STORAGE_KEY =
+  "family_health_smart_food_suggestions";
 const LOCAL_USER_ID = "local-user";
 const LOCAL_PROFILE_ID = "local-profile";
 
@@ -63,7 +73,7 @@ export async function createSmartLogSession({
   method,
   message,
   recipeUrl,
-  sourceMetadata
+  sourceMetadata,
 }: DraftInput & {
   method: SmartLogMethod;
   message?: string;
@@ -84,9 +94,11 @@ export async function createSmartLogSession({
     sourceMetadata,
     status: "review",
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
-  const sessions = await readJsonArray<SmartLogSession>(SMART_LOG_SESSIONS_STORAGE_KEY);
+  const sessions = await readJsonArray<SmartLogSession>(
+    SMART_LOG_SESSIONS_STORAGE_KEY,
+  );
 
   await writeJsonArray(SMART_LOG_SESSIONS_STORAGE_KEY, [session, ...sessions]);
 
@@ -99,11 +111,14 @@ export async function createMealPhotoDraft(input: DraftInput = {}) {
     ...input,
     method: "meal_photo",
     message: analysis.message,
-    sourceMetadata: { placeholder: true }
+    sourceMetadata: { placeholder: true },
   });
   const suggestedEntries = await saveSessionSuggestions(
     session,
-    analysis.entries.map((entry) => ({ ...entry, mealGroup: session.mealGroup }))
+    analysis.entries.map((entry) => ({
+      ...entry,
+      mealGroup: session.mealGroup,
+    })),
   );
 
   return { session, suggestedEntries };
@@ -115,11 +130,14 @@ export async function createNutritionLabelDraft(input: DraftInput = {}) {
     ...input,
     method: "nutrition_label",
     message: analysis.message,
-    sourceMetadata: { placeholder: true }
+    sourceMetadata: { placeholder: true },
   });
   const suggestedEntries = await saveSessionSuggestions(
     session,
-    analysis.entries.map((entry) => ({ ...entry, mealGroup: session.mealGroup }))
+    analysis.entries.map((entry) => ({
+      ...entry,
+      mealGroup: session.mealGroup,
+    })),
   );
 
   return { session, suggestedEntries };
@@ -127,14 +145,19 @@ export async function createNutritionLabelDraft(input: DraftInput = {}) {
 
 export async function createVoiceLogDraft(input: DraftInput = {}) {
   const text = input.inputText?.trim();
-  const parsed = text ? await parseVoiceMealText(text, input.mealGroup) : await transcribeVoiceMeal();
+  const parsed = text
+    ? await parseVoiceMealText(text, input.mealGroup)
+    : await transcribeVoiceMeal();
   const session = await createSmartLogSession({
     ...input,
     inputText: text,
     method: "voice_log",
-    message: parsed.message
+    message: parsed.message,
   });
-  const suggestedEntries = await saveSessionSuggestions(session, parsed.entries);
+  const suggestedEntries = await saveSessionSuggestions(
+    session,
+    parsed.entries,
+  );
 
   return { session, suggestedEntries };
 }
@@ -145,9 +168,12 @@ export async function createRecipeUrlDraft(input: DraftInput = {}) {
     ...input,
     method: "recipe_url",
     message: importedRecipe.message,
-    sourceMetadata: { placeholder: true }
+    sourceMetadata: { placeholder: true },
   });
-  const suggestedEntries = await saveSessionSuggestions(session, importedRecipe.entries);
+  const suggestedEntries = await saveSessionSuggestions(
+    session,
+    importedRecipe.entries,
+  );
 
   return { session, suggestedEntries };
 }
@@ -158,25 +184,31 @@ export async function createRepeatMealDraft(input: DraftInput = {}) {
   const session = await createSmartLogSession({
     ...input,
     entryDate,
-    mealGroup: input.mealGroup ?? latestMealEntries[0]?.mealGroup ?? "breakfast",
+    mealGroup:
+      input.mealGroup ?? latestMealEntries[0]?.mealGroup ?? "breakfast",
     method: "repeat_meal",
     message: latestMealEntries.length
       ? "Review this previous meal before adding it again."
-      : "No previous meal was found. Add items manually or use Quick Meal Builder."
+      : "No previous meal was found. Add items manually or use Quick Meal Builder.",
   });
   const suggestedEntries = await saveSessionSuggestions(
     session,
-    latestMealEntries.map((entry) => diaryEntryToSuggestion(entry, session.mealGroup))
+    latestMealEntries.map((entry) =>
+      diaryEntryToSuggestion(entry, session.mealGroup),
+    ),
   );
 
   return { session, suggestedEntries };
 }
 
-export async function createQuickMealBuilderDraft(input: DraftInput & { items?: QuickBuilderItem[] } = {}) {
+export async function createQuickMealBuilderDraft(
+  input: DraftInput & { items?: QuickBuilderItem[] } = {},
+) {
   const session = await createSmartLogSession({
     ...input,
     method: "quick_meal_builder",
-    message: "Build a meal from foods you already use, then confirm before saving."
+    message:
+      "Build a meal from foods you already use, then confirm before saving.",
   });
   const suggestedEntries = await saveSessionSuggestions(
     session,
@@ -193,8 +225,8 @@ export async function createQuickMealBuilderDraft(input: DraftInput & { items?: 
       source: item.source,
       sourceFoodId: item.sourceFoodId,
       sourceRefId: item.sourceRefId,
-      unit: item.unit ?? "serving"
-    }))
+      unit: item.unit ?? "serving",
+    })),
   );
 
   return { session, suggestedEntries };
@@ -202,7 +234,9 @@ export async function createQuickMealBuilderDraft(input: DraftInput & { items?: 
 
 export async function updateSmartLogSuggestedEntry(
   id: string,
-  partial: Partial<Omit<SmartLogSuggestedEntry, "id" | "createdAt" | "sessionId">>
+  partial: Partial<
+    Omit<SmartLogSuggestedEntry, "id" | "createdAt" | "sessionId">
+  >,
 ) {
   const entries = await getAllSmartLogSuggestedEntries();
   const updatedEntries = entries.map((entry) =>
@@ -215,9 +249,9 @@ export async function updateSmartLogSuggestedEntry(
           fatG: numberOrZero(partial.fatG ?? entry.fatG),
           proteinG: numberOrZero(partial.proteinG ?? entry.proteinG),
           quantity: numberOrZero(partial.quantity ?? entry.quantity),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : entry
+      : entry,
   );
 
   await writeJsonArray(SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY, updatedEntries);
@@ -227,7 +261,16 @@ export async function updateSmartLogSuggestedEntry(
 
 export async function addSmartLogSuggestedEntry(
   sessionId: string,
-  input: Omit<SmartLogSuggestedEntry, "createdAt" | "id" | "profileId" | "sessionId" | "status" | "updatedAt" | "userId">
+  input: Omit<
+    SmartLogSuggestedEntry,
+    | "createdAt"
+    | "id"
+    | "profileId"
+    | "sessionId"
+    | "status"
+    | "updatedAt"
+    | "userId"
+  >,
 ) {
   const session = await getSmartLogSessionById(sessionId);
 
@@ -243,7 +286,13 @@ export async function addSmartLogSuggestedEntry(
 export async function removeSmartLogSuggestedEntry(id: string) {
   const entries = await getAllSmartLogSuggestedEntries();
   const updatedEntries = entries.map((entry) =>
-    entry.id === id ? { ...entry, status: "removed" as const, updatedAt: new Date().toISOString() } : entry
+    entry.id === id
+      ? {
+          ...entry,
+          status: "removed" as const,
+          updatedAt: new Date().toISOString(),
+        }
+      : entry,
   );
 
   await writeJsonArray(SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY, updatedEntries);
@@ -261,8 +310,8 @@ export async function confirmSmartLogSession(sessionId: string) {
     sessions.map((session) =>
       session.id === sessionId
         ? { ...session, status: "confirmed" as const, updatedAt: now }
-        : session
-    )
+        : session,
+    ),
   );
 
   return savedEntries;
@@ -277,29 +326,34 @@ export async function cancelSmartLogSession(sessionId: string) {
     sessions.map((session) =>
       session.id === sessionId
         ? { ...session, status: "cancelled" as const, updatedAt: now }
-        : session
-    )
+        : session,
+    ),
   );
 }
 
 export async function saveSmartLogEntriesToDiary(sessionId: string) {
   const [session, suggestedEntries] = await Promise.all([
     getSmartLogSessionById(sessionId),
-    getSmartLogSuggestedEntries(sessionId)
+    getSmartLogSuggestedEntries(sessionId),
   ]);
 
   if (!session) {
     return [] as NutritionDiaryEntry[];
   }
 
-  const activeSuggestions = suggestedEntries.filter((entry) => entry.status === "active" && entry.foodName.trim());
+  const activeSuggestions = suggestedEntries.filter(
+    (entry) => entry.status === "active" && entry.foodName.trim(),
+  );
   const savedEntries: NutritionDiaryEntry[] = [];
 
   for (const suggestion of activeSuggestions) {
     const savedEntry = await createNutritionEntry({
       calories: suggestion.calories,
       carbsG: suggestion.carbsG,
-      confirmationSource: suggestion.confidence >= 0.95 ? "accepted_suggestion" : "edited_suggestion",
+      confirmationSource:
+        suggestion.confidence >= 0.95
+          ? "accepted_suggestion"
+          : "edited_suggestion",
       entryDate: session.entryDate,
       entrySource: "smart_log",
       fatG: suggestion.fatG,
@@ -313,7 +367,7 @@ export async function saveSmartLogEntriesToDiary(sessionId: string) {
       sourceFoodId: suggestion.sourceFoodId,
       sourceRefId: suggestion.sourceRefId,
       smartLogSessionId: session.id,
-      unit: suggestion.unit
+      unit: suggestion.unit,
     });
 
     savedEntries.push(savedEntry);
@@ -321,7 +375,7 @@ export async function saveSmartLogEntriesToDiary(sessionId: string) {
       defaultMealGroup: suggestion.mealGroup,
       defaultQuantity: suggestion.quantity,
       defaultUnit: suggestion.unit,
-      details: suggestionToFoodDetails(suggestion)
+      details: suggestionToFoodDetails(suggestion),
     });
   }
 
@@ -337,12 +391,18 @@ export async function generateSmartFoodSuggestions() {
 }
 
 export async function getSmartFoodSuggestionsForToday() {
-  const storedSuggestions = await readJsonArray<SmartFoodSuggestion>(SMART_FOOD_SUGGESTIONS_STORAGE_KEY);
+  const storedSuggestions = await readJsonArray<SmartFoodSuggestion>(
+    SMART_FOOD_SUGGESTIONS_STORAGE_KEY,
+  );
   const todayKey = toNutritionDateKey(new Date());
-  const todaysStoredSuggestions = storedSuggestions.filter((suggestion) => suggestion.createdAt.startsWith(todayKey));
+  const todaysStoredSuggestions = storedSuggestions.filter((suggestion) =>
+    suggestion.createdAt.startsWith(todayKey),
+  );
 
   return todaysStoredSuggestions.length
-    ? todaysStoredSuggestions.sort((left, right) => left.priority - right.priority)
+    ? todaysStoredSuggestions.sort(
+        (left, right) => left.priority - right.priority,
+      )
     : generateSmartFoodSuggestions();
 }
 
@@ -357,21 +417,28 @@ export async function getSmartLogSuggestedEntries(sessionId: string) {
 
   return entries
     .filter((entry) => entry.sessionId === sessionId)
-    .sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime());
+    .sort(
+      (left, right) =>
+        new Date(left.createdAt).getTime() -
+        new Date(right.createdAt).getTime(),
+    );
 }
 
 export async function getQuickMealBuilderFoods() {
-  const [recentFoods, favouriteFoods, customFoods, savedMeals, recipes] = await Promise.all([
-    getRecentFoods(),
-    getFavouriteFoods(),
-    getCustomFoods(),
-    getSavedMeals(),
-    getRecipes()
-  ]);
+  const [recentFoods, favouriteFoods, customFoods, savedMeals, recipes] =
+    await Promise.all([
+      getRecentFoods(),
+      getFavouriteFoods(),
+      getCustomFoods(),
+      getSavedMeals(),
+      getRecipes(),
+    ]);
   const savedMealFoods = await Promise.all(
     savedMeals.slice(0, 8).map(async (meal) => {
       const mealWithItems = await getSavedMealById(meal.id);
-      const totals = mealWithItems ? calculateSavedMealTotals(mealWithItems.items) : { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 };
+      const totals = mealWithItems
+        ? calculateSavedMealTotals(mealWithItems.items)
+        : { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 };
 
       return {
         calories: totals.calories,
@@ -384,15 +451,18 @@ export async function getQuickMealBuilderFoods() {
         source: "custom" as const,
         sourceFoodId: `saved-meal-${meal.id}`,
         sourceRefId: meal.id,
-        unit: "meal"
+        unit: "meal",
       };
-    })
+    }),
   );
   const recipeFoods = await Promise.all(
     recipes.slice(0, 8).map(async (recipe) => {
       const recipeWithIngredients = await getRecipeById(recipe.id);
       const totals = recipeWithIngredients
-        ? calculateRecipePerServing(recipeWithIngredients.recipe, recipeWithIngredients.ingredients)
+        ? calculateRecipePerServing(
+            recipeWithIngredients.recipe,
+            recipeWithIngredients.ingredients,
+          )
         : { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 };
 
       return {
@@ -406,9 +476,9 @@ export async function getQuickMealBuilderFoods() {
         source: "custom" as const,
         sourceFoodId: `recipe-${recipe.id}`,
         sourceRefId: recipe.id,
-        unit: "serving"
+        unit: "serving",
       };
-    })
+    }),
   );
 
   return [
@@ -422,7 +492,7 @@ export async function getQuickMealBuilderFoods() {
       quantity: food.defaultQuantity,
       source: food.source,
       sourceFoodId: food.sourceFoodId,
-      unit: food.defaultUnit
+      unit: food.defaultUnit,
     })),
     ...favouriteFoods.slice(0, 8).map((food) => ({
       calories: 0,
@@ -434,7 +504,7 @@ export async function getQuickMealBuilderFoods() {
       quantity: food.defaultQuantity,
       source: food.source,
       sourceFoodId: food.sourceFoodId,
-      unit: food.defaultUnit
+      unit: food.defaultUnit,
     })),
     ...customFoods.slice(0, 8).map((food) => ({
       calories: food.calories,
@@ -446,35 +516,46 @@ export async function getQuickMealBuilderFoods() {
       quantity: food.servingSize,
       source: "custom" as const,
       sourceFoodId: `custom-food-${food.id}`,
-      unit: food.servingUnit
+      unit: food.servingUnit,
     })),
     ...savedMealFoods,
-    ...recipeFoods
+    ...recipeFoods,
   ];
 }
 
 export async function analyzeMealPhoto(_imageUri?: string) {
   return {
     entries: [placeholderSuggestion("Suggested from photo")],
-    message: "Photo analysis is prepared but not connected yet. You can still add food manually from this photo."
+    message:
+      "Photo analysis is prepared but not connected yet. You can still add food manually from this photo.",
   };
 }
 
 export async function analyzeNutritionLabel(_imageUri?: string) {
   return {
-    entries: [placeholderSuggestion("Nutrition label item", "Enter the label values manually.")],
-    message: "Label scanning is prepared but not connected yet. Enter the label values manually."
+    entries: [
+      placeholderSuggestion(
+        "Nutrition label item",
+        "Enter the label values manually.",
+      ),
+    ],
+    message:
+      "Label scanning is prepared but not connected yet. Enter the label values manually.",
   };
 }
 
 export async function transcribeVoiceMeal() {
   return {
     entries: [placeholderSuggestion("Typed meal", "Type what you ate.")],
-    message: "Voice logging is prepared but not connected yet. Type what you ate."
+    message:
+      "Voice logging is prepared but not connected yet. Type what you ate.",
   };
 }
 
-export async function parseVoiceMealText(text: string, mealGroup: NutritionMealGroup = "breakfast") {
+export async function parseVoiceMealText(
+  text: string,
+  mealGroup: NutritionMealGroup = "breakfast",
+) {
   const chunks = text
     .split(/\band\b|,|\+/i)
     .map((chunk) => chunk.trim())
@@ -486,58 +567,130 @@ export async function parseVoiceMealText(text: string, mealGroup: NutritionMealG
     fatG: 0,
     foodName: cleanupVoiceFoodName(chunk),
     mealGroup,
-    notes: "Parsed from typed voice fallback. Please confirm all values before saving.",
+    notes:
+      "Parsed from typed voice fallback. Please confirm all values before saving.",
     proteinG: 0,
     quantity: parseQuantity(chunk),
-    unit: "serving"
+    unit: "serving",
   }));
 
   return {
     entries,
-    message: "Review the typed meal draft before saving."
+    message: "Review the typed meal draft before saving.",
   };
 }
 
 export async function importRecipeFromUrl(_recipeUrl?: string) {
   return {
-    entries: [] as Array<Omit<SmartLogSuggestedEntry, "createdAt" | "id" | "profileId" | "sessionId" | "status" | "updatedAt" | "userId">>,
-    message: "Recipe link import is prepared for a backend connection later. You can still create the recipe manually."
+    entries: [] as Array<
+      Omit<
+        SmartLogSuggestedEntry,
+        | "createdAt"
+        | "id"
+        | "profileId"
+        | "sessionId"
+        | "status"
+        | "updatedAt"
+        | "userId"
+      >
+    >,
+    message:
+      "Recipe link import is prepared for a backend connection later. You can still create the recipe manually.",
   };
 }
 
 async function buildSmartFoodSuggestions() {
   const now = new Date();
   const todayKey = toNutritionDateKey(now);
-  const [summary, waterGoal, target, todayEntries, workouts] = await Promise.all([
-    getTodayNutritionSummary(),
-    getWaterGoal(now),
-    getActiveNutritionTarget(),
-    getNutritionEntriesByDate(todayKey),
-    getWorkoutSessions()
-  ]);
+  const [summary, waterGoal, target, todayEntries, workouts] =
+    await Promise.all([
+      getTodayNutritionSummary(),
+      getWaterGoal(now),
+      getActiveNutritionTarget(),
+      getNutritionEntriesByDate(todayKey),
+      getWorkoutSessions(),
+    ]);
   const suggestions: SmartFoodSuggestion[] = [];
   const progressMessage = getNutritionGoalMessage(target, null);
 
   if (target && summary.proteinGrams < target.proteinTargetG * 0.65) {
-    suggestions.push(createSuggestion("protein", "Protein check-in", "Based on your logs, a protein-focused food could help you move toward today's target.", "Open Smart Log", "/food/smart-log?method=quick_meal_builder", 1));
+    suggestions.push(
+      createSuggestion(
+        "protein",
+        "Protein check-in",
+        "Based on your logs, a protein-focused food could help you move toward today's target.",
+        "Open Smart Log",
+        "/food/smart-log?method=quick_meal_builder",
+        1,
+      ),
+    );
   }
 
   if (waterGoal.currentMl < waterGoal.targetMl * 0.55) {
-    suggestions.push(createSuggestion("water", "Hydration check-in", "Your water log is still below today's target. A quick water log may help keep the day complete.", "Log Water", "/food?tab=water", 2));
+    suggestions.push(
+      createSuggestion(
+        "water",
+        "Hydration check-in",
+        "Your water log is still below today's target. A quick water log may help keep the day complete.",
+        "Log Water",
+        "/food?tab=water",
+        2,
+      ),
+    );
   }
 
   if (todayEntries.length === 0) {
-    suggestions.push(createSuggestion("diary_reminder", "Start today's diary", "Add a meal when you are ready so your reports have more complete context.", "Add Food", "/food?tab=add", 3));
+    suggestions.push(
+      createSuggestion(
+        "diary_reminder",
+        "Start today's diary",
+        "Add a meal when you are ready so your reports have more complete context.",
+        "Add Food",
+        "/food?tab=add",
+        3,
+      ),
+    );
   }
 
-  if (workouts.some((workout) => workout.completed && workout.startedAt.startsWith(todayKey))) {
-    suggestions.push(createSuggestion("workout_support", "Workout support", "Based on your workout log, reviewing food and water today may help your recovery notes later.", "Build Meal", "/food/smart-log?method=quick_meal_builder", 4));
+  if (
+    workouts.some(
+      (workout) => workout.completed && workout.startedAt.startsWith(todayKey),
+    )
+  ) {
+    suggestions.push(
+      createSuggestion(
+        "workout_support",
+        "Workout support",
+        "Based on your workout log, reviewing food and water today may help your recovery notes later.",
+        "Build Meal",
+        "/food/smart-log?method=quick_meal_builder",
+        4,
+      ),
+    );
   }
 
-  suggestions.push(createSuggestion("repeat_meal", "Repeat a previous meal", "If you ate something familiar, repeat a recent meal and edit it before saving.", "Repeat Meal", "/food/smart-log?method=repeat_meal", 5));
+  suggestions.push(
+    createSuggestion(
+      "repeat_meal",
+      "Repeat a previous meal",
+      "If you ate something familiar, repeat a recent meal and edit it before saving.",
+      "Repeat Meal",
+      "/food/smart-log?method=repeat_meal",
+      5,
+    ),
+  );
 
   if (target) {
-    suggestions.push(createSuggestion("general", "Goal context", progressMessage, "View Targets", "/food?tab=targets", 6));
+    suggestions.push(
+      createSuggestion(
+        "general",
+        "Goal context",
+        progressMessage,
+        "View Targets",
+        "/food?tab=targets",
+        6,
+      ),
+    );
   }
 
   return suggestions.slice(0, 5);
@@ -545,7 +698,18 @@ async function buildSmartFoodSuggestions() {
 
 async function saveSessionSuggestions(
   session: SmartLogSession,
-  suggestions: Array<Omit<SmartLogSuggestedEntry, "createdAt" | "id" | "profileId" | "sessionId" | "status" | "updatedAt" | "userId">>
+  suggestions: Array<
+    Omit<
+      SmartLogSuggestedEntry,
+      | "createdAt"
+      | "id"
+      | "profileId"
+      | "sessionId"
+      | "status"
+      | "updatedAt"
+      | "userId"
+    >
+  >,
 ) {
   const storedEntries = await getAllSmartLogSuggestedEntries();
   const now = new Date().toISOString();
@@ -566,10 +730,13 @@ async function saveSessionSuggestions(
     status: "active",
     unit: suggestion.unit.trim() || "serving",
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   }));
 
-  await writeJsonArray(SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY, [...entries, ...storedEntries]);
+  await writeJsonArray(SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY, [
+    ...entries,
+    ...storedEntries,
+  ]);
 
   return entries;
 }
@@ -579,7 +746,9 @@ async function getSmartLogSessions() {
 }
 
 async function getAllSmartLogSuggestedEntries() {
-  return readJsonArray<SmartLogSuggestedEntry>(SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY);
+  return readJsonArray<SmartLogSuggestedEntry>(
+    SMART_LOG_SUGGESTED_ENTRIES_STORAGE_KEY,
+  );
 }
 
 async function getLatestRepeatableMeal(todayKey: string) {
@@ -587,8 +756,14 @@ async function getLatestRepeatableMeal(todayKey: string) {
   const groupedEntries = new Map<string, NutritionDiaryEntry[]>();
 
   entries
-    .filter((entry) => entry.entryDate <= todayKey && entry.mealGroup !== "notes")
-    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+    .filter(
+      (entry) => entry.entryDate <= todayKey && entry.mealGroup !== "notes",
+    )
+    .sort(
+      (left, right) =>
+        new Date(right.createdAt).getTime() -
+        new Date(left.createdAt).getTime(),
+    )
     .forEach((entry) => {
       const key = `${entry.entryDate}-${entry.mealGroup}`;
       groupedEntries.set(key, [...(groupedEntries.get(key) ?? []), entry]);
@@ -597,7 +772,10 @@ async function getLatestRepeatableMeal(todayKey: string) {
   return Array.from(groupedEntries.values())[0] ?? [];
 }
 
-function diaryEntryToSuggestion(entry: NutritionDiaryEntry, mealGroup: NutritionMealGroup) {
+function diaryEntryToSuggestion(
+  entry: NutritionDiaryEntry,
+  mealGroup: NutritionMealGroup,
+) {
   return {
     calories: entry.calories,
     carbsG: entry.carbsG,
@@ -612,11 +790,14 @@ function diaryEntryToSuggestion(entry: NutritionDiaryEntry, mealGroup: Nutrition
     source: entry.source,
     sourceFoodId: entry.sourceFoodId,
     sourceRefId: entry.sourceRefId,
-    unit: entry.unit
+    unit: entry.unit,
   };
 }
 
-function placeholderSuggestion(foodName: string, notes = "Please confirm the food, quantity, and nutrition before saving.") {
+function placeholderSuggestion(
+  foodName: string,
+  notes = "Please confirm the food, quantity, and nutrition before saving.",
+) {
   return {
     calories: 0,
     carbsG: 0,
@@ -629,11 +810,13 @@ function placeholderSuggestion(foodName: string, notes = "Please confirm the foo
     quantity: 1,
     source: "custom" as const,
     sourceFoodId: createId("smart-placeholder-food"),
-    unit: "serving"
+    unit: "serving",
   };
 }
 
-function suggestionToFoodDetails(suggestion: SmartLogSuggestedEntry): FoodDetails {
+function suggestionToFoodDetails(
+  suggestion: SmartLogSuggestedEntry,
+): FoodDetails {
   return {
     calories: suggestion.calories,
     carbsG: suggestion.carbsG,
@@ -645,9 +828,15 @@ function suggestionToFoodDetails(suggestion: SmartLogSuggestedEntry): FoodDetail
     id: suggestion.sourceFoodId ?? suggestion.id,
     name: suggestion.foodName,
     proteinG: suggestion.proteinG,
-    servingOptions: [{ label: suggestion.unit, quantity: suggestion.quantity || 1, unit: suggestion.unit }],
+    servingOptions: [
+      {
+        label: suggestion.unit,
+        quantity: suggestion.quantity || 1,
+        unit: suggestion.unit,
+      },
+    ],
     source: suggestion.source ?? "custom",
-    sourceFoodId: suggestion.sourceFoodId ?? `smart-log-${suggestion.id}`
+    sourceFoodId: suggestion.sourceFoodId ?? `smart-log-${suggestion.id}`,
   };
 }
 
@@ -657,7 +846,7 @@ function createSuggestion(
   message: string,
   actionLabel: string,
   route: string,
-  priority: number
+  priority: number,
 ) {
   return {
     actionLabel,
@@ -667,15 +856,19 @@ function createSuggestion(
     priority,
     route,
     title,
-    type
+    type,
   };
 }
 
 function cleanupVoiceFoodName(value: string) {
-  return value
-    .replace(/\b\d+(\.\d+)?\b/g, "")
-    .replace(/\b(servings?|cups?|grams?|g|ml|pieces?|slices?)\b/gi, "")
-    .trim() || value.trim() || "Typed meal item";
+  return (
+    value
+      .replace(/\b\d+(\.\d+)?\b/g, "")
+      .replace(/\b(servings?|cups?|grams?|g|ml|pieces?|slices?)\b/gi, "")
+      .trim() ||
+    value.trim() ||
+    "Typed meal item"
+  );
 }
 
 function parseQuantity(value: string) {

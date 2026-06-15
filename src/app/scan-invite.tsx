@@ -1,4 +1,8 @@
-import { CameraView, type BarcodeScanningResult, useCameraPermissions } from "expo-camera";
+import {
+  CameraView,
+  type BarcodeScanningResult,
+  useCameraPermissions,
+} from "expo-camera";
 import { Href, router } from "expo-router";
 import { ScanLine } from "lucide-react-native";
 import { useState } from "react";
@@ -39,19 +43,31 @@ export default function ScanInviteScreen() {
           flex: 1,
           gap: 18,
           justifyContent: "center",
-          paddingHorizontal: 24
+          paddingHorizontal: 24,
         }}
       >
         <View style={{ alignItems: "center", gap: 12 }}>
           <ScanLine color="#7c3aed" size={42} />
-          <Text style={{ color: "#0f172a", fontSize: 25, fontWeight: "900", textAlign: "center" }}>
+          <Text
+            style={{
+              color: "#0f172a",
+              fontSize: 25,
+              fontWeight: "900",
+              textAlign: "center",
+            }}
+          >
             Scan a Circle invite
           </Text>
-          <Text style={{ color: "#64748b", lineHeight: 21, textAlign: "center" }}>
+          <Text
+            style={{ color: "#64748b", lineHeight: 21, textAlign: "center" }}
+          >
             QR scanning will open the camera and read family invite codes.
           </Text>
         </View>
-        <PrimaryButton label="Allow camera access" onPress={requestPermission} />
+        <PrimaryButton
+          label="Allow camera access"
+          onPress={requestPermission}
+        />
         <SecondaryButton label="Not now" onPress={() => router.back()} />
       </View>
     );
@@ -70,7 +86,7 @@ export default function ScanInviteScreen() {
           gap: 12,
           left: 20,
           position: "absolute",
-          right: 20
+          right: 20,
         }}
       >
         <View
@@ -78,7 +94,7 @@ export default function ScanInviteScreen() {
             backgroundColor: "rgba(15, 23, 42, 0.82)",
             borderRadius: 20,
             gap: 4,
-            padding: 16
+            padding: 16,
           }}
         >
           <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "900" }}>
@@ -94,7 +110,13 @@ export default function ScanInviteScreen() {
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PrimaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -104,7 +126,7 @@ function PrimaryButton({ label, onPress }: { label: string; onPress: () => void 
         backgroundColor: "#7c3aed",
         borderRadius: 18,
         justifyContent: "center",
-        minHeight: 52
+        minHeight: 52,
       }}
     >
       <Text style={{ color: "#ffffff", fontWeight: "900" }}>{label}</Text>
@@ -112,7 +134,13 @@ function PrimaryButton({ label, onPress }: { label: string; onPress: () => void 
   );
 }
 
-function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function SecondaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -122,7 +150,7 @@ function SecondaryButton({ label, onPress }: { label: string; onPress: () => voi
         backgroundColor: "#ffffff",
         borderRadius: 18,
         justifyContent: "center",
-        minHeight: 50
+        minHeight: 50,
       }}
     >
       <Text style={{ color: "#7c3aed", fontWeight: "900" }}>{label}</Text>

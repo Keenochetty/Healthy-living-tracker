@@ -7,14 +7,26 @@ import { useAppTheme } from "@/theme/ThemeProvider";
 export function FitnessSafetyRecoveryCard() {
   const { theme } = useAppTheme();
   return (
-    <AppCard style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+    <AppCard
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.card ?? theme.surface,
+          borderColor: theme.border,
+        },
+      ]}
+    >
       <View style={styles.header}>
         <View style={styles.icon}>
           <AppIcon color="#fef3c7" decorative name="safety" size={22} />
         </View>
         <View style={styles.headerCopy}>
-          <Text style={[styles.eyebrow, { color: theme.warning }]}>Safety + recovery</Text>
-          <Text style={[styles.title, { color: theme.text }]}>Train for the body you have today</Text>
+          <Text style={[styles.eyebrow, { color: theme.warning }]}>
+            Safety + recovery
+          </Text>
+          <Text style={[styles.title, { color: theme.text }]}>
+            Train for the body you have today
+          </Text>
         </View>
       </View>
       <Text style={[styles.body, { color: theme.mutedText }]}>
@@ -23,9 +35,16 @@ export function FitnessSafetyRecoveryCard() {
       </Text>
       <View style={styles.notes}>
         {FITNESS_SAFETY_NOTES.slice(0, 6).map((note) => (
-          <View key={note.id} style={[styles.note, { backgroundColor: theme.primarySoft }]}>
-            <Text style={[styles.noteTitle, { color: theme.text }]}>{note.title}</Text>
-            <Text style={[styles.noteBody, { color: theme.mutedText }]}>{note.guidance}</Text>
+          <View
+            key={note.id}
+            style={[styles.note, { backgroundColor: theme.primarySoft }]}
+          >
+            <Text style={[styles.noteTitle, { color: theme.text }]}>
+              {note.title}
+            </Text>
+            <Text style={[styles.noteBody, { color: theme.mutedText }]}>
+              {note.guidance}
+            </Text>
           </View>
         ))}
       </View>

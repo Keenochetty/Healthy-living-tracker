@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AppHeader, AppIcon, AppScreen, SettingsRow, StatusPill, ToggleRow, WidgetCard, type AppIconName } from "@/components/ui";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  SettingsRow,
+  StatusPill,
+  ToggleRow,
+  WidgetCard,
+  type AppIconName,
+} from "@/components/ui";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 
@@ -34,10 +43,13 @@ export function SettingsDetailScreen({
   rows = [],
   subtitle,
   title,
-  toggles = []
+  toggles = [],
 }: SettingsDetailScreenProps) {
-  const [toggleValues, setToggleValues] = useState(() =>
-    Object.fromEntries(toggles.map((toggle) => [toggle.label, toggle.value])) as Record<string, boolean>
+  const [toggleValues, setToggleValues] = useState(
+    () =>
+      Object.fromEntries(
+        toggles.map((toggle) => [toggle.label, toggle.value]),
+      ) as Record<string, boolean>,
   );
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -54,15 +66,28 @@ export function SettingsDetailScreen({
       {notice ? <Text style={styles.notice}>{notice}</Text> : null}
 
       {toggles.length ? (
-        <WidgetCard accentColor={colors.brand.primary} title="Preferences" subtitle="These controls are ready for backend persistence.">
+        <WidgetCard
+          accentColor={colors.brand.primary}
+          title="Preferences"
+          subtitle="These controls are ready for backend persistence."
+        >
           <View style={styles.section}>
             {toggles.map((toggle) => (
               <ToggleRow
-                icon={<AppIcon color={colors.brand.primary} name={toggle.icon ?? "settings"} size={20} />}
+                icon={
+                  <AppIcon
+                    color={colors.brand.primary}
+                    name={toggle.icon ?? "settings"}
+                    size={20}
+                  />
+                }
                 key={toggle.label}
                 label={toggle.label}
                 onValueChange={(value) => {
-                  setToggleValues((current) => ({ ...current, [toggle.label]: value }));
+                  setToggleValues((current) => ({
+                    ...current,
+                    [toggle.label]: value,
+                  }));
                   setNotice(null);
                 }}
                 subtitle={toggle.subtitle}
@@ -74,12 +99,24 @@ export function SettingsDetailScreen({
       ) : null}
 
       {rows.length ? (
-        <WidgetCard accentColor={colors.status.ai} title="Settings" subtitle="Clear grouped controls with safe placeholder behavior.">
+        <WidgetCard
+          accentColor={colors.status.ai}
+          title="Settings"
+          subtitle="Clear grouped controls with safe placeholder behavior."
+        >
           <View style={styles.section}>
             {rows.map((row) => (
               <SettingsRow
-                accessory={row.status ? <StatusPill label={row.status} /> : undefined}
-                icon={<AppIcon color={colors.status.ai} name={row.icon ?? "settings"} size={20} />}
+                accessory={
+                  row.status ? <StatusPill label={row.status} /> : undefined
+                }
+                icon={
+                  <AppIcon
+                    color={colors.status.ai}
+                    name={row.icon ?? "settings"}
+                    size={20}
+                  />
+                }
                 key={row.label}
                 label={row.label}
                 subtitle={row.subtitle}
@@ -104,15 +141,15 @@ const styles = StyleSheet.create({
   note: {
     color: colors.text.secondary,
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
   },
   notice: {
     color: colors.status.success,
     fontSize: 15,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   pressed: {
-    opacity: 0.82
+    opacity: 0.82,
   },
   saveButton: {
     alignItems: "center",
@@ -120,14 +157,14 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: "center",
     minHeight: 52,
-    paddingHorizontal: spacing.lg
+    paddingHorizontal: spacing.lg,
   },
   saveText: {
     color: colors.text.inverse,
     fontSize: 16,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   section: {
-    gap: spacing.md
-  }
+    gap: spacing.md,
+  },
 });

@@ -67,7 +67,8 @@ export const APP_MODULES: AppModule[] = [
   {
     key: "mens_health",
     name: "Men's Health",
-    description: "Private check-ins, symptoms, reminders and trusted education.",
+    description:
+      "Private check-ins, symptoms, reminders and trusted education.",
     emoji: "MH",
     core: false,
   },
@@ -81,5 +82,5 @@ export const APP_MODULES: AppModule[] = [
 ];
 
 export const CORE_MODULE_KEYS = APP_MODULES.filter((module) => module.core).map(
-  (module) => module.key
+  (module) => module.key,
 );

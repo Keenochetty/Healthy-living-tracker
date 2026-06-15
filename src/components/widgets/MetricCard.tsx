@@ -16,9 +16,17 @@ export function MetricCard({ helper, icon, label, value }: MetricCardProps) {
     <AppCard padding="md">
       <View style={{ gap: appSpacing.sm }}>
         {icon ? <AppIcon name={icon} size={20} variant="primary" /> : null}
-        <Text style={[typography.caption, { color: appColors.textSecondary }]}>{label}</Text>
-        <Text style={[typography.metricValue, { color: appColors.text }]}>{value}</Text>
-        {helper ? <Text style={[typography.helper, { color: appColors.textSecondary }]}>{helper}</Text> : null}
+        <Text style={[typography.caption, { color: appColors.textSecondary }]}>
+          {label}
+        </Text>
+        <Text style={[typography.metricValue, { color: appColors.text }]}>
+          {value}
+        </Text>
+        {helper ? (
+          <Text style={[typography.helper, { color: appColors.textSecondary }]}>
+            {helper}
+          </Text>
+        ) : null}
       </View>
     </AppCard>
   );

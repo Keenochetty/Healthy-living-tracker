@@ -11,7 +11,7 @@ export async function callOpenAiExtraction({
   fileUrl,
   inputType,
   jobType,
-  textInput
+  textInput,
 }: CallOpenAiExtractionInput) {
   const apiKey = Deno.env.get("OPENAI_API_KEY");
 
@@ -25,7 +25,7 @@ export async function callOpenAiExtraction({
     `Input type: ${inputType}`,
     textInput ? `Text input:\n${textInput}` : "",
     fileUrl ? `File URL for server-side retrieval: ${fileUrl}` : "",
-    "Return structured draft JSON only with draftType, title, summary, fields, suggestedActions, remindersDraft, warnings, confidence, and estimateOnly when relevant."
+    "Return structured draft JSON only with draftType, title, summary, fields, suggestedActions, remindersDraft, warnings, confidence, and estimateOnly when relevant.",
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -35,25 +35,25 @@ export async function callOpenAiExtraction({
       input: [
         {
           content: [{ text: getSystemPrompt(), type: "input_text" }],
-          role: "system"
+          role: "system",
         },
         {
           content: [{ text: userInput, type: "input_text" }],
-          role: "user"
-        }
+          role: "user",
+        },
       ],
       model,
       text: {
         format: {
-          type: "json_object"
-        }
-      }
+          type: "json_object",
+        },
+      },
     }),
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    method: "POST"
+    method: "POST",
   });
 
   if (!response.ok) {
@@ -64,7 +64,10 @@ export async function callOpenAiExtraction({
   const data = await response.json();
   const outputText =
     data.output_text ??
-    data.output?.flatMap((item: { content?: Array<{ text?: string }> }) => item.content ?? [])
+    data.output
+      ?.flatMap(
+        (item: { content?: Array<{ text?: string }> }) => item.content ?? [],
+      )
       ?.map((item: { text?: string }) => item.text)
       ?.filter(Boolean)
       ?.join("\n");

@@ -16,12 +16,12 @@ const SEVERITY_OPTIONS: PregnancySymptomSeverity[] = [
   "mild",
   "moderate",
   "strong",
-  "urgent"
+  "urgent",
 ];
 
 export function PregnancySymptomCard({
   onChange,
-  pregnancyProfileId
+  pregnancyProfileId,
 }: PregnancySymptomCardProps) {
   const [notes, setNotes] = useState("");
   const [severity, setSeverity] = useState<PregnancySymptomSeverity>("mild");
@@ -34,7 +34,7 @@ export function PregnancySymptomCard({
       notes,
       pregnancyProfileId,
       severity,
-      symptom: symptom.trim()
+      symptom: symptom.trim(),
     });
 
     setNotes("");
@@ -50,7 +50,8 @@ export function PregnancySymptomCard({
             Pregnancy symptoms
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Log symptoms privately. This app does not assess or diagnose symptoms.
+            Log symptoms privately. This app does not assess or diagnose
+            symptoms.
           </Text>
         </View>
 
@@ -88,8 +89,14 @@ export function PregnancySymptomCard({
           </Text>
         ) : null}
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save symptom</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save symptom
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -103,7 +110,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -111,5 +118,5 @@ const buttonStyle = {
   backgroundColor: "#db2777",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

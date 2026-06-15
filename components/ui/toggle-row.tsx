@@ -13,7 +13,14 @@ type ToggleRowProps = {
   value: boolean;
 };
 
-export function ToggleRow({ disabled, icon, label, onValueChange, subtitle, value }: ToggleRowProps) {
+export function ToggleRow({
+  disabled,
+  icon,
+  label,
+  onValueChange,
+  subtitle,
+  value,
+}: ToggleRowProps) {
   return (
     <SettingsRow
       accessory={
@@ -22,7 +29,10 @@ export function ToggleRow({ disabled, icon, label, onValueChange, subtitle, valu
           ios_backgroundColor={colors.border.strong}
           onValueChange={onValueChange}
           thumbColor={colors.card.background}
-          trackColor={{ false: colors.border.strong, true: colors.brand.primary }}
+          trackColor={{
+            false: colors.border.strong,
+            true: colors.brand.primary,
+          }}
           value={value}
         />
       }

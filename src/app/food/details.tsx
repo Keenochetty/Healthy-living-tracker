@@ -9,7 +9,7 @@ import {
   addFoodDetailsToDiary,
   getFavouriteFoods,
   removeFavouriteFood,
-  saveFavouriteFood
+  saveFavouriteFood,
 } from "@/lib/nutritionStorage";
 import { getFoodDetails } from "@/services/nutrition/foodSearchService";
 import type {
@@ -17,7 +17,7 @@ import type {
   FoodDetails,
   FoodSource,
   NutritionMealGroup,
-  ServingOption
+  ServingOption,
 } from "@/types/nutrition";
 
 const INPUT_STYLE = {
@@ -27,7 +27,7 @@ const INPUT_STYLE = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 export default function FoodDetailsScreen() {
@@ -43,7 +43,7 @@ export default function FoodDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mealGroup, setMealGroup] = useState<NutritionMealGroup>(
-    params.mealGroup ?? "breakfast"
+    params.mealGroup ?? "breakfast",
   );
   const [quantity, setQuantity] = useState("1");
   const [selectedServingIndex, setSelectedServingIndex] = useState(0);
@@ -63,7 +63,7 @@ export default function FoodDetailsScreen() {
 
         const [nextDetails, nextFavourites] = await Promise.all([
           getFoodDetails(source, sourceFoodId),
-          getFavouriteFoods()
+          getFavouriteFoods(),
         ]);
 
         setDetails(nextDetails);
@@ -93,11 +93,11 @@ export default function FoodDetailsScreen() {
   }, [details, quantity, selectedServing]);
   const isFavourite = Boolean(
     details &&
-      favourites.some(
-        (favourite) =>
-          favourite.source === details.source &&
-          favourite.sourceFoodId === details.sourceFoodId
-      )
+    favourites.some(
+      (favourite) =>
+        favourite.source === details.source &&
+        favourite.sourceFoodId === details.sourceFoodId,
+    ),
   );
 
   async function toggleFavourite() {
@@ -111,7 +111,7 @@ export default function FoodDetailsScreen() {
       await saveFavouriteFood({
         defaultQuantity: Number(quantity) || details.defaultServingSize,
         defaultUnit: selectedServing.unit,
-        details
+        details,
       });
     }
 
@@ -127,12 +127,12 @@ export default function FoodDetailsScreen() {
       details,
       mealGroup,
       quantity: Number(quantity) || details.defaultServingSize,
-      serving: selectedServing
+      serving: selectedServing,
     });
 
     const mealLabel =
-      NUTRITION_MEAL_GROUP_OPTIONS.find((option) => option.key === mealGroup)?.label ??
-      "Diary";
+      NUTRITION_MEAL_GROUP_OPTIONS.find((option) => option.key === mealGroup)
+        ?.label ?? "Diary";
 
     setSuccessMessage(`Added to ${mealLabel}`);
     setTimeout(() => {
@@ -144,7 +144,9 @@ export default function FoodDetailsScreen() {
     return (
       <ScreenWrapper backgroundColor="#fffaf0">
         <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>Loading food details...</Text>
+          <Text style={{ color: "#64748b", lineHeight: 21 }}>
+            Loading food details...
+          </Text>
         </AppCard>
       </ScreenWrapper>
     );
@@ -162,8 +164,20 @@ export default function FoodDetailsScreen() {
           </Text>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.replace({ pathname: "/food", params: { tab: "add" } } as Href)}
-            style={{ alignItems: "center", backgroundColor: "#f59e0b", borderRadius: 18, justifyContent: "center", marginTop: 14, minHeight: 52 }}
+            onPress={() =>
+              router.replace({
+                pathname: "/food",
+                params: { tab: "add" },
+              } as Href)
+            }
+            style={{
+              alignItems: "center",
+              backgroundColor: "#f59e0b",
+              borderRadius: 18,
+              justifyContent: "center",
+              marginTop: 14,
+              minHeight: 52,
+            }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
               Back to search
@@ -184,7 +198,9 @@ export default function FoodDetailsScreen() {
           {details.name}
         </Text>
         {details.brand ? (
-          <Text style={{ color: "#64748b", lineHeight: 20 }}>{details.brand}</Text>
+          <Text style={{ color: "#64748b", lineHeight: 20 }}>
+            {details.brand}
+          </Text>
         ) : null}
       </View>
 
@@ -211,9 +227,20 @@ export default function FoodDetailsScreen() {
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={toggleFavourite}
-              style={{ alignItems: "center", backgroundColor: isFavourite ? "#ffe4e6" : "#fffbeb", borderRadius: 16, justifyContent: "center", paddingHorizontal: 14 }}
+              style={{
+                alignItems: "center",
+                backgroundColor: isFavourite ? "#ffe4e6" : "#fffbeb",
+                borderRadius: 16,
+                justifyContent: "center",
+                paddingHorizontal: 14,
+              }}
             >
-              <Text style={{ color: isFavourite ? "#be123c" : "#92400e", fontWeight: "900" }}>
+              <Text
+                style={{
+                  color: isFavourite ? "#be123c" : "#92400e",
+                  fontWeight: "900",
+                }}
+              >
                 {isFavourite ? "Saved" : "Favourite"}
               </Text>
             </TouchableOpacity>
@@ -229,13 +256,20 @@ export default function FoodDetailsScreen() {
                   setQuantity(String(servingOption.quantity));
                 }}
                 style={{
-                  backgroundColor: selectedServingIndex === index ? "#f59e0b" : "#fffbeb",
+                  backgroundColor:
+                    selectedServingIndex === index ? "#f59e0b" : "#fffbeb",
                   borderRadius: 999,
                   paddingHorizontal: 12,
-                  paddingVertical: 9
+                  paddingVertical: 9,
                 }}
               >
-                <Text style={{ color: selectedServingIndex === index ? "#ffffff" : "#92400e", fontWeight: "900" }}>
+                <Text
+                  style={{
+                    color:
+                      selectedServingIndex === index ? "#ffffff" : "#92400e",
+                    fontWeight: "900",
+                  }}
+                >
                   {servingOption.label}
                 </Text>
               </TouchableOpacity>
@@ -243,19 +277,27 @@ export default function FoodDetailsScreen() {
           </View>
 
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {NUTRITION_MEAL_GROUP_OPTIONS.filter((option) => option.key !== "notes").map((option) => (
+            {NUTRITION_MEAL_GROUP_OPTIONS.filter(
+              (option) => option.key !== "notes",
+            ).map((option) => (
               <TouchableOpacity
                 activeOpacity={0.85}
                 key={option.key}
                 onPress={() => setMealGroup(option.key)}
                 style={{
-                  backgroundColor: mealGroup === option.key ? "#f59e0b" : "#f8fafc",
+                  backgroundColor:
+                    mealGroup === option.key ? "#f59e0b" : "#f8fafc",
                   borderRadius: 999,
                   paddingHorizontal: 12,
-                  paddingVertical: 9
+                  paddingVertical: 9,
                 }}
               >
-                <Text style={{ color: mealGroup === option.key ? "#ffffff" : "#475569", fontWeight: "900" }}>
+                <Text
+                  style={{
+                    color: mealGroup === option.key ? "#ffffff" : "#475569",
+                    fontWeight: "900",
+                  }}
+                >
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -265,13 +307,34 @@ export default function FoodDetailsScreen() {
       </AppCard>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-        <MetricCard label="Calories" value={`${Math.round(calculatedNutrition?.calories ?? 0)}`} />
-        <MetricCard label="Protein" value={`${round(calculatedNutrition?.proteinG)}g`} />
-        <MetricCard label="Carbs" value={`${round(calculatedNutrition?.carbsG)}g`} />
-        <MetricCard label="Fat" value={`${round(calculatedNutrition?.fatG)}g`} />
-        <MetricCard label="Fiber" value={`${round(calculatedNutrition?.fiberG)}g`} />
-        <MetricCard label="Sugar" value={`${round(calculatedNutrition?.sugarG)}g`} />
-        <MetricCard label="Sodium" value={`${round(calculatedNutrition?.sodiumMg)}mg`} />
+        <MetricCard
+          label="Calories"
+          value={`${Math.round(calculatedNutrition?.calories ?? 0)}`}
+        />
+        <MetricCard
+          label="Protein"
+          value={`${round(calculatedNutrition?.proteinG)}g`}
+        />
+        <MetricCard
+          label="Carbs"
+          value={`${round(calculatedNutrition?.carbsG)}g`}
+        />
+        <MetricCard
+          label="Fat"
+          value={`${round(calculatedNutrition?.fatG)}g`}
+        />
+        <MetricCard
+          label="Fiber"
+          value={`${round(calculatedNutrition?.fiberG)}g`}
+        />
+        <MetricCard
+          label="Sugar"
+          value={`${round(calculatedNutrition?.sugarG)}g`}
+        />
+        <MetricCard
+          label="Sodium"
+          value={`${round(calculatedNutrition?.sodiumMg)}mg`}
+        />
       </View>
 
       <AppCard>
@@ -285,26 +348,52 @@ export default function FoodDetailsScreen() {
         </TouchableOpacity>
         {showMoreNutrients ? (
           <View style={{ gap: 8, marginTop: 12 }}>
-            <NutrientLine label="Potassium" value={`${round(calculatedNutrition?.potassiumMg)}mg`} />
-            <NutrientLine label="Calcium" value={`${round(calculatedNutrition?.calciumMg)}mg`} />
-            <NutrientLine label="Iron" value={`${round(calculatedNutrition?.ironMg)}mg`} />
-            <NutrientLine label="Vitamin A" value={`${round(calculatedNutrition?.vitaminAMcg)}mcg`} />
-            <NutrientLine label="Vitamin C" value={`${round(calculatedNutrition?.vitaminCMg)}mg`} />
-            <NutrientLine label="Vitamin D" value={`${round(calculatedNutrition?.vitaminDMcg)}mcg`} />
+            <NutrientLine
+              label="Potassium"
+              value={`${round(calculatedNutrition?.potassiumMg)}mg`}
+            />
+            <NutrientLine
+              label="Calcium"
+              value={`${round(calculatedNutrition?.calciumMg)}mg`}
+            />
+            <NutrientLine
+              label="Iron"
+              value={`${round(calculatedNutrition?.ironMg)}mg`}
+            />
+            <NutrientLine
+              label="Vitamin A"
+              value={`${round(calculatedNutrition?.vitaminAMcg)}mcg`}
+            />
+            <NutrientLine
+              label="Vitamin C"
+              value={`${round(calculatedNutrition?.vitaminCMg)}mg`}
+            />
+            <NutrientLine
+              label="Vitamin D"
+              value={`${round(calculatedNutrition?.vitaminDMcg)}mcg`}
+            />
           </View>
         ) : null}
       </AppCard>
 
       {successMessage ? (
         <AppCard backgroundColor="#ecfdf5">
-          <Text style={{ color: "#047857", fontWeight: "900" }}>{successMessage}</Text>
+          <Text style={{ color: "#047857", fontWeight: "900" }}>
+            {successMessage}
+          </Text>
         </AppCard>
       ) : null}
 
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={addToDiary}
-        style={{ alignItems: "center", backgroundColor: "#f59e0b", borderRadius: 18, justifyContent: "center", minHeight: 54 }}
+        style={{
+          alignItems: "center",
+          backgroundColor: "#f59e0b",
+          borderRadius: 18,
+          justifyContent: "center",
+          minHeight: 54,
+        }}
       >
         <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
           Add to Diary
@@ -319,7 +408,11 @@ export default function FoodDetailsScreen() {
   );
 }
 
-function scaleNutrition(details: FoodDetails, quantity: number, serving: ServingOption) {
+function scaleNutrition(
+  details: FoodDetails,
+  quantity: number,
+  serving: ServingOption,
+) {
   const multiplier = getMultiplier(details, quantity, serving);
 
   return {
@@ -335,11 +428,15 @@ function scaleNutrition(details: FoodDetails, quantity: number, serving: Serving
     sugarG: scale(details.sugarG, multiplier),
     vitaminAMcg: scale(details.vitaminAMcg, multiplier),
     vitaminCMg: scale(details.vitaminCMg, multiplier),
-    vitaminDMcg: scale(details.vitaminDMcg, multiplier)
+    vitaminDMcg: scale(details.vitaminDMcg, multiplier),
   };
 }
 
-function getMultiplier(details: FoodDetails, quantity: number, serving: ServingOption) {
+function getMultiplier(
+  details: FoodDetails,
+  quantity: number,
+  serving: ServingOption,
+) {
   if (details.defaultServingSize <= 0) {
     return Math.max(0, quantity);
   }
@@ -351,14 +448,18 @@ function getMultiplier(details: FoodDetails, quantity: number, serving: ServingO
   const defaultServing = details.servingOptions.find(
     (option) =>
       option.quantity === details.defaultServingSize &&
-      option.unit === details.defaultServingUnit
+      option.unit === details.defaultServingUnit,
   );
 
-  if (serving.gramsEquivalent && defaultServing?.gramsEquivalent && serving.quantity) {
+  if (
+    serving.gramsEquivalent &&
+    defaultServing?.gramsEquivalent &&
+    serving.quantity
+  ) {
     return Math.max(
       0,
       (quantity * serving.gramsEquivalent) /
-        (serving.quantity * defaultServing.gramsEquivalent)
+        (serving.quantity * defaultServing.gramsEquivalent),
     );
   }
 
@@ -388,8 +489,17 @@ function getSourceLabel(source: FoodSource) {
 
 function Badge({ label }: { label: string }) {
   return (
-    <View style={{ backgroundColor: "#fffbeb", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }}>
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
+    <View
+      style={{
+        backgroundColor: "#fffbeb",
+        borderRadius: 999,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }}
+    >
+      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -404,11 +514,20 @@ function MetricCard({ label, value }: { label: string; value: string }) {
         borderWidth: 1,
         flexGrow: 1,
         minWidth: "30%",
-        padding: 14
+        padding: 14,
       }}
     >
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900", marginTop: 4 }}>
+      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 20,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
         {value}
       </Text>
     </View>

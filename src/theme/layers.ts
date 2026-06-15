@@ -6,5 +6,5 @@ export const zLayers = {
   floatingAction: 60,
   bottomSheet: 80,
   toast: 90,
-  modal: 100
+  modal: 100,
 } as const;

@@ -1,6 +1,7 @@
 # Release Readiness Checklist
 
 ## Privacy And Security
+
 - No private data leaks across profiles.
 - Sensitive modules are private by default.
 - Device Sync is never shared automatically.
@@ -12,6 +13,7 @@
 - Export/delete data plan prepared.
 
 ## Health Safety
+
 - Medical disclaimer visible.
 - Emergency disclaimer visible.
 - AI refuses diagnosis, prescribing, dosing, lab interpretation, pregnancy diagnosis, contraception safety claims, baby development interpretation, and hidden profile access.
@@ -19,6 +21,7 @@
 - Trusted content sources are visible and high-risk content is source-backed.
 
 ## Reliability
+
 - TypeScript passes.
 - Lint reviewed and unrelated/generated failures documented.
 - QA runner passes.
@@ -30,6 +33,7 @@
 - Offline/manual logging paths work.
 
 ## Manual Sign-Off
+
 - Onboarding
 - Health Overview
 - Calendar month and date bottom sheet

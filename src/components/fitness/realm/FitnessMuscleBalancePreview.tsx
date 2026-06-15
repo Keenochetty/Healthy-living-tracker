@@ -45,17 +45,33 @@ export function FitnessMuscleBalancePreview({
     (rankedMuscles[0]?.score ?? 0) >= 0.65 ? workedMost : "No high load";
 
   return (
-    <AppCard style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+    <AppCard
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.card ?? theme.surface,
+          borderColor: theme.border,
+        },
+      ]}
+    >
       <View style={styles.copy}>
         <Text style={styles.eyebrow}>Muscles used this week</Text>
-        <Text style={[styles.title, { color: theme.text }]}>Muscle Balance This Week</Text>
+        <Text style={[styles.title, { color: theme.text }]}>
+          Muscle Balance This Week
+        </Text>
         <Text style={[styles.body, { color: theme.mutedText }]}>
           See active areas and where balanced recovery may help.
         </Text>
         <View style={styles.insights}>
-          <Text style={[styles.insight, { color: theme.text }]}>Worked most: {workedMost}</Text>
-          <Text style={[styles.insight, { color: theme.mutedText }]}>Needs attention: {needsAttention}</Text>
-          <Text style={[styles.insight, { color: theme.warning }]}>Recovery attention: {recoveryAttention}</Text>
+          <Text style={[styles.insight, { color: theme.text }]}>
+            Worked most: {workedMost}
+          </Text>
+          <Text style={[styles.insight, { color: theme.mutedText }]}>
+            Needs attention: {needsAttention}
+          </Text>
+          <Text style={[styles.insight, { color: theme.warning }]}>
+            Recovery attention: {recoveryAttention}
+          </Text>
         </View>
         <Pressable onPress={onOpen} style={styles.button}>
           <Text style={styles.buttonText}>View body map</Text>

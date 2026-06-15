@@ -22,7 +22,7 @@ export function AppHeader({
   rightSlot,
   showNotificationIcon = false,
   subtitle,
-  title
+  title,
 }: AppHeaderProps) {
   const { theme } = useAppTheme();
 
@@ -32,12 +32,18 @@ export function AppHeader({
         alignItems: "center",
         flexDirection: "row",
         gap: spacing.md,
-        justifyContent: "space-between"
+        justifyContent: "space-between",
       }}
     >
       <View style={{ flex: 1 }}>
         {subtitle ? (
-          <Text style={{ color: theme.mutedText, fontSize: fontSizes.sm, marginBottom: 3 }}>
+          <Text
+            style={{
+              color: theme.mutedText,
+              fontSize: fontSizes.sm,
+              marginBottom: 3,
+            }}
+          >
             {subtitle}
           </Text>
         ) : null}
@@ -45,7 +51,7 @@ export function AppHeader({
           style={{
             color: theme.text,
             fontSize: compact ? fontSizes.xl : fontSizes["2xl"],
-            fontWeight: "900"
+            fontWeight: "900",
           }}
         >
           {title}
@@ -56,7 +62,9 @@ export function AppHeader({
       {showNotificationIcon ? (
         <AppIconButton icon={<Bell size={21} />} onPress={() => undefined} />
       ) : null}
-      {avatarInitials ? <AppAvatar initials={avatarInitials} size={44} /> : null}
+      {avatarInitials ? (
+        <AppAvatar initials={avatarInitials} size={44} />
+      ) : null}
     </View>
   );
 }

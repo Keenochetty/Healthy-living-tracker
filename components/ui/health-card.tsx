@@ -22,13 +22,15 @@ export function HealthCard({
   onPress,
   status,
   subtitle,
-  value
+  value,
 }: HealthCardProps) {
   return (
     <WidgetCard accentColor={accentColor} onPress={onPress}>
       <View style={styles.header}>
         <Text style={styles.label}>{label}</Text>
-        {status ? <Text style={[styles.status, { color: accentColor }]}>{status}</Text> : null}
+        {status ? (
+          <Text style={[styles.status, { color: accentColor }]}>{status}</Text>
+        ) : null}
       </View>
       <Text style={styles.value}>{value}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -42,25 +44,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.sm,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   label: {
     color: colors.text.muted,
     fontSize: 14,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   status: {
     fontSize: 13,
-    fontWeight: "700"
+    fontWeight: "700",
   },
   subtitle: {
     color: colors.text.secondary,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   value: {
     color: colors.text.primary,
     fontSize: 28,
-    fontWeight: "800"
-  }
+    fontWeight: "800",
+  },
 });

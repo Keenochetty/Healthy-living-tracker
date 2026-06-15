@@ -6,11 +6,20 @@ import type {
   CalendarEventSource,
   CalendarEventType,
   CalendarFilter,
-  SmartRouteEventInput
+  SmartRouteEventInput,
 } from "@/types/calendar";
 import type { PermissionCategory, PrivacyLevel } from "@/types/permissions";
 
-const sensitiveKeywords = ["diagnosis", "mental health", "pregnancy", "prescription", "private", "test result", "therapy", "cycle"];
+const sensitiveKeywords = [
+  "diagnosis",
+  "mental health",
+  "pregnancy",
+  "prescription",
+  "private",
+  "test result",
+  "therapy",
+  "cycle",
+];
 
 function atLocalTime(date: Date, hours: number, minutes = 0) {
   const nextDate = new Date(date);
@@ -25,10 +34,16 @@ function addDays(date: Date, days: number) {
 }
 
 function containsSensitiveText(text: string) {
-  return sensitiveKeywords.some((keyword) => text.toLowerCase().includes(keyword));
+  return sensitiveKeywords.some((keyword) =>
+    text.toLowerCase().includes(keyword),
+  );
 }
 
-export function getEventColour(eventType: CalendarEventType, eventSource: CalendarEventSource, privacyLevel: PrivacyLevel): CalendarEventColour {
+export function getEventColour(
+  eventType: CalendarEventType,
+  eventSource: CalendarEventSource,
+  privacyLevel: PrivacyLevel,
+): CalendarEventColour {
   if (eventType === "emergency" || privacyLevel === "emergency_only") {
     return "red";
   }
@@ -37,7 +52,12 @@ export function getEventColour(eventType: CalendarEventType, eventSource: Calend
     return "purple";
   }
 
-  if (eventType === "synced" || eventSource === "google_sync_placeholder" || eventSource === "apple_sync_placeholder" || eventSource === "system") {
+  if (
+    eventType === "synced" ||
+    eventSource === "google_sync_placeholder" ||
+    eventSource === "apple_sync_placeholder" ||
+    eventSource === "system"
+  ) {
     return "grey";
   }
 
@@ -49,11 +69,19 @@ export function getEventColour(eventType: CalendarEventType, eventSource: Calend
     return "teal";
   }
 
-  if (eventType === "caregiver" || eventSource === "caregiver" || eventType === "family") {
+  if (
+    eventType === "caregiver" ||
+    eventSource === "caregiver" ||
+    eventType === "family"
+  ) {
     return "green";
   }
 
-  if (eventType === "medical" || eventType === "medication" || eventType === "men_health") {
+  if (
+    eventType === "medical" ||
+    eventType === "medication" ||
+    eventType === "men_health"
+  ) {
     return "orange";
   }
 
@@ -65,7 +93,12 @@ export function getEventColour(eventType: CalendarEventType, eventSource: Calend
 }
 
 export function getEventIcon(eventType: CalendarEventType): AppIconName {
-  if (eventType === "medical" || eventType === "medication" || eventType === "women_health" || eventType === "men_health") {
+  if (
+    eventType === "medical" ||
+    eventType === "medication" ||
+    eventType === "women_health" ||
+    eventType === "men_health"
+  ) {
     return "doctor";
   }
 
@@ -73,7 +106,11 @@ export function getEventIcon(eventType: CalendarEventType): AppIconName {
     return "caregiver";
   }
 
-  if (eventType === "baby_routine" || eventType === "school" || eventType === "sport") {
+  if (
+    eventType === "baby_routine" ||
+    eventType === "school" ||
+    eventType === "sport"
+  ) {
     return "child";
   }
 
@@ -96,7 +133,10 @@ export function getEventIcon(eventType: CalendarEventType): AppIconName {
   return "calendar";
 }
 
-export function getDefaultEventPrivacy(eventType: CalendarEventType, linkedProfileType?: SmartRouteEventInput["linkedProfileType"]): PrivacyLevel {
+export function getDefaultEventPrivacy(
+  eventType: CalendarEventType,
+  linkedProfileType?: SmartRouteEventInput["linkedProfileType"],
+): PrivacyLevel {
   if (eventType === "emergency") {
     return "emergency_only";
   }
@@ -105,7 +145,11 @@ export function getDefaultEventPrivacy(eventType: CalendarEventType, linkedProfi
     return "private";
   }
 
-  if (eventType === "women_health" || eventType === "men_health" || eventType === "personal") {
+  if (
+    eventType === "women_health" ||
+    eventType === "men_health" ||
+    eventType === "personal"
+  ) {
     return "private";
   }
 
@@ -113,14 +157,23 @@ export function getDefaultEventPrivacy(eventType: CalendarEventType, linkedProfi
     return "caregiver_shared";
   }
 
-  if (eventType === "school" || eventType === "sport" || eventType === "baby_routine") {
+  if (
+    eventType === "school" ||
+    eventType === "sport" ||
+    eventType === "baby_routine"
+  ) {
     return "circle_shared";
   }
 
   return "circle_shared";
 }
 
-export function getSafeEventPreview(event: Pick<CalendarEvent, "description" | "isSensitive" | "privacyLevel" | "safePreview">) {
+export function getSafeEventPreview(
+  event: Pick<
+    CalendarEvent,
+    "description" | "isSensitive" | "privacyLevel" | "safePreview"
+  >,
+) {
   if (event.isSensitive || event.privacyLevel === "private") {
     return event.safePreview || "Private event details hidden";
   }
@@ -128,7 +181,10 @@ export function getSafeEventPreview(event: Pick<CalendarEvent, "description" | "
   return event.description?.trim() || event.safePreview || "No details added";
 }
 
-export function canViewerSeeEventDetails(event: CalendarEvent, viewerPermissions: readonly PermissionCategory[]) {
+export function canViewerSeeEventDetails(
+  event: CalendarEvent,
+  viewerPermissions: readonly PermissionCategory[],
+) {
   if (event.privacyLevel === "private") {
     return viewerPermissions.includes("manage_privacy");
   }
@@ -145,21 +201,30 @@ export function canViewerSeeEventDetails(event: CalendarEvent, viewerPermissions
 }
 
 export function smartRouteEvent(input: SmartRouteEventInput) {
-  const text = `${input.text ?? ""} ${input.title ?? ""} ${input.description ?? ""}`.toLowerCase();
+  const text =
+    `${input.text ?? ""} ${input.title ?? ""} ${input.description ?? ""}`.toLowerCase();
   let eventType = input.eventType ?? "other";
 
   if (eventType === "other") {
     if (text.includes("soccer") || text.includes("sport")) eventType = "sport";
-    else if (text.includes("doctor") || text.includes("appointment")) eventType = "medical";
-    else if (text.includes("baby") || text.includes("feeding")) eventType = "baby_routine";
+    else if (text.includes("doctor") || text.includes("appointment"))
+      eventType = "medical";
+    else if (text.includes("baby") || text.includes("feeding"))
+      eventType = "baby_routine";
     else if (text.includes("cycle")) eventType = "women_health";
-    else if (text.includes("caregiver") || text.includes("shift")) eventType = "caregiver";
+    else if (text.includes("caregiver") || text.includes("shift"))
+      eventType = "caregiver";
     else if (text.includes("school")) eventType = "school";
-    else if (text.includes("medication") || text.includes("medicine")) eventType = "medication";
+    else if (text.includes("medication") || text.includes("medicine"))
+      eventType = "medication";
   }
 
-  const eventSource = input.eventSource ?? (text.includes("ai") ? "ai" : "manual");
-  const privacyLevel = getDefaultEventPrivacy(eventType, input.linkedProfileType);
+  const eventSource =
+    input.eventSource ?? (text.includes("ai") ? "ai" : "manual");
+  const privacyLevel = getDefaultEventPrivacy(
+    eventType,
+    input.linkedProfileType,
+  );
   const colour = getEventColour(eventType, eventSource, privacyLevel);
   const icon = getEventIcon(eventType);
   const isSensitive = containsSensitiveText(text) || privacyLevel === "private";
@@ -171,16 +236,19 @@ export function smartRouteEvent(input: SmartRouteEventInput) {
     icon,
     isSensitive,
     privacyLevel,
-    requiresApproval: eventType === "caregiver" || eventType === "emergency"
+    requiresApproval: eventType === "caregiver" || eventType === "emergency",
   };
 }
 
 export function groupEventsByDay(events: CalendarEvent[]) {
-  return events.reduce<Record<string, CalendarEvent[]>>((accumulator, event) => {
-    const key = toCalendarDateKey(event.startTime);
-    accumulator[key] = [...(accumulator[key] ?? []), event];
-    return accumulator;
-  }, {});
+  return events.reduce<Record<string, CalendarEvent[]>>(
+    (accumulator, event) => {
+      const key = toCalendarDateKey(event.startTime);
+      accumulator[key] = [...(accumulator[key] ?? []), event];
+      return accumulator;
+    },
+    {},
+  );
 }
 
 export function sortEventsByTime(events: CalendarEvent[]) {
@@ -195,19 +263,48 @@ export function sortEventsByTime(events: CalendarEvent[]) {
 
 export function filterEvents(events: CalendarEvent[], filter: CalendarFilter) {
   if (filter.key === "all") return events;
-  if (filter.key === "personal") return events.filter((event) => event.eventType === "personal" || Boolean(event.profileId));
-  if (filter.key === "circle") return events.filter((event) => (filter.circleId ? event.circleId === filter.circleId : Boolean(event.circleId)));
-  if (filter.key === "care_profiles") return events.filter((event) => (filter.careProfileId ? event.careProfileId === filter.careProfileId : Boolean(event.careProfileId)));
-  if (filter.key === "medical") return events.filter((event) => event.eventType === "medical" || event.eventType === "medication" || event.eventType === "women_health" || event.eventType === "men_health");
-  if (filter.key === "caregiver") return events.filter((event) => event.eventType === "caregiver" || event.eventSource === "caregiver");
-  if (filter.key === "private") return events.filter((event) => event.privacyLevel === "private");
+  if (filter.key === "personal")
+    return events.filter(
+      (event) => event.eventType === "personal" || Boolean(event.profileId),
+    );
+  if (filter.key === "circle")
+    return events.filter((event) =>
+      filter.circleId
+        ? event.circleId === filter.circleId
+        : Boolean(event.circleId),
+    );
+  if (filter.key === "care_profiles")
+    return events.filter((event) =>
+      filter.careProfileId
+        ? event.careProfileId === filter.careProfileId
+        : Boolean(event.careProfileId),
+    );
+  if (filter.key === "medical")
+    return events.filter(
+      (event) =>
+        event.eventType === "medical" ||
+        event.eventType === "medication" ||
+        event.eventType === "women_health" ||
+        event.eventType === "men_health",
+    );
+  if (filter.key === "caregiver")
+    return events.filter(
+      (event) =>
+        event.eventType === "caregiver" || event.eventSource === "caregiver",
+    );
+  if (filter.key === "private")
+    return events.filter((event) => event.privacyLevel === "private");
 
   return events;
 }
 
 export function toCalendarDateKey(value: Date | string) {
   const date = typeof value === "string" ? new Date(value) : value;
-  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
 }
 
 export function formatCalendarTime(value?: string | null, allDay = false) {
@@ -217,24 +314,41 @@ export function formatCalendarTime(value?: string | null, allDay = false) {
 
   return new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
-    minute: "2-digit"
+    minute: "2-digit",
   }).format(new Date(value));
 }
 
-export function isSensitiveCalendarEvent(event: Pick<CalendarEvent, "eventType" | "privacyLevel" | "isSensitive">) {
-  return event.isSensitive || event.privacyLevel === "private" || event.privacyLevel === "emergency_only" || event.eventType === "women_health" || event.eventType === "men_health";
+export function isSensitiveCalendarEvent(
+  event: Pick<CalendarEvent, "eventType" | "privacyLevel" | "isSensitive">,
+) {
+  return (
+    event.isSensitive ||
+    event.privacyLevel === "private" ||
+    event.privacyLevel === "emergency_only" ||
+    event.eventType === "women_health" ||
+    event.eventType === "men_health"
+  );
 }
 
 export function getCalendarSmartRoutePlaceholder(eventType: CalendarEventType) {
   if (eventType === "emergency") return "/settings/emergency-contacts";
-  if (eventType === "medical" || eventType === "medication" || eventType === "women_health" || eventType === "men_health") return "/health/records";
-  if (eventType === "caregiver" || eventType === "baby_routine") return "/tabs/care";
+  if (
+    eventType === "medical" ||
+    eventType === "medication" ||
+    eventType === "women_health" ||
+    eventType === "men_health"
+  )
+    return "/health/records";
+  if (eventType === "caregiver" || eventType === "baby_routine")
+    return "/tabs/care";
   return "/tabs/calendar";
 }
 
 export function listEventsForDay(events: CalendarEvent[], date: Date) {
   const dateKey = toCalendarDateKey(date);
-  return sortEventsByTime(events.filter((event) => toCalendarDateKey(event.startTime) === dateKey));
+  return sortEventsByTime(
+    events.filter((event) => toCalendarDateKey(event.startTime) === dateKey),
+  );
 }
 
 export function getEventCountByDay(events: CalendarEvent[]) {
@@ -245,8 +359,17 @@ export function getEventCountByDay(events: CalendarEvent[]) {
   }, {});
 }
 
-function buildMockEvent(input: Omit<CalendarEvent, "colour" | "icon" | "safePreview" | "createdAt" | "updatedAt"> & { safePreview?: string }): CalendarEvent {
-  const colour = getEventColour(input.eventType, input.eventSource, input.privacyLevel);
+function buildMockEvent(
+  input: Omit<
+    CalendarEvent,
+    "colour" | "icon" | "safePreview" | "createdAt" | "updatedAt"
+  > & { safePreview?: string },
+): CalendarEvent {
+  const colour = getEventColour(
+    input.eventType,
+    input.eventSource,
+    input.privacyLevel,
+  );
   const icon = getEventIcon(input.eventType);
   const now = new Date().toISOString();
 
@@ -255,16 +378,27 @@ function buildMockEvent(input: Omit<CalendarEvent, "colour" | "icon" | "safePrev
     colour,
     createdAt: now,
     icon,
-    safePreview: input.safePreview ?? (input.isSensitive ? "Private event details hidden" : input.description ?? "No details added"),
-    updatedAt: now
+    safePreview:
+      input.safePreview ??
+      (input.isSensitive
+        ? "Private event details hidden"
+        : (input.description ?? "No details added")),
+    updatedAt: now,
   };
 }
 
-export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?: { id?: string | null; name?: string | null }): CalendarEvent[] {
+export function getMockCalendarEvents(
+  circles: FamilyCircle[],
+  personalProfile?: { id?: string | null; name?: string | null },
+): CalendarEvent[] {
   const today = new Date();
   const primaryCircle = circles[0];
-  const careCircle = circles.find((circle) => circle.kind === "care_circle") ?? primaryCircle;
-  const childProfile = primaryCircle?.careProfiles.find((profile) => profile.profileType === "child") ?? primaryCircle?.careProfiles[0];
+  const careCircle =
+    circles.find((circle) => circle.kind === "care_circle") ?? primaryCircle;
+  const childProfile =
+    primaryCircle?.careProfiles.find(
+      (profile) => profile.profileType === "child",
+    ) ?? primaryCircle?.careProfiles[0];
   const adultCareProfile = careCircle?.careProfiles[0];
   const createdByProfileId = personalProfile?.id ?? "placeholder-profile";
 
@@ -286,7 +420,7 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       privacyLevel: "circle_shared",
       requiresApproval: false,
       startTime: atLocalTime(today, 16),
-      title: "Tommy soccer practice"
+      title: "Tommy soccer practice",
     }),
     buildMockEvent({
       allDay: false,
@@ -306,7 +440,7 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       privacyLevel: "caregiver_shared",
       requiresApproval: true,
       startTime: atLocalTime(today, 9),
-      title: "Caregiver shift"
+      title: "Caregiver shift",
     }),
     buildMockEvent({
       allDay: false,
@@ -316,7 +450,8 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       circleId: careCircle?.id ?? null,
       circleName: careCircle?.name ?? "Dad's Care Circle",
       createdByProfileId,
-      description: "Doctor appointment. Sensitive details stay inside the full record.",
+      description:
+        "Doctor appointment. Sensitive details stay inside the full record.",
       endTime: atLocalTime(addDays(today, 1), 10, 45),
       eventSource: "manual",
       eventType: "medical",
@@ -326,7 +461,7 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       requiresApproval: false,
       safePreview: "Doctor appointment",
       startTime: atLocalTime(addDays(today, 1), 10),
-      title: "Doctor appointment"
+      title: "Doctor appointment",
     }),
     buildMockEvent({
       allDay: false,
@@ -345,13 +480,14 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       privacyLevel: "circle_shared",
       requiresApproval: false,
       startTime: atLocalTime(today, 14),
-      title: "Baby feeding reminder"
+      title: "Baby feeding reminder",
     }),
     buildMockEvent({
       allDay: false,
       approvalStatus: "none",
       createdByProfileId,
-      description: "Cycle reminder. Hidden from shared summaries unless explicitly shared.",
+      description:
+        "Cycle reminder. Hidden from shared summaries unless explicitly shared.",
       endTime: atLocalTime(addDays(today, 2), 9, 30),
       eventSource: "profile_owner",
       eventType: "women_health",
@@ -363,7 +499,7 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       requiresApproval: false,
       safePreview: "Private health event",
       startTime: atLocalTime(addDays(today, 2), 9),
-      title: "Cycle reminder"
+      title: "Cycle reminder",
     }),
     buildMockEvent({
       allDay: false,
@@ -380,7 +516,7 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       privacyLevel: "circle_shared",
       requiresApproval: false,
       startTime: atLocalTime(addDays(today, 3), 12),
-      title: "Synced calendar placeholder"
+      title: "Synced calendar placeholder",
     }),
     buildMockEvent({
       allDay: false,
@@ -388,7 +524,8 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       circleId: primaryCircle?.id ?? null,
       circleName: primaryCircle?.name ?? "My Household",
       createdByProfileId: "system",
-      description: "Emergency placeholder event with emergency-only visibility.",
+      description:
+        "Emergency placeholder event with emergency-only visibility.",
       endTime: atLocalTime(addDays(today, -1), 8, 30),
       eventSource: "system",
       eventType: "emergency",
@@ -398,17 +535,19 @@ export function getMockCalendarEvents(circles: FamilyCircle[], personalProfile?:
       requiresApproval: true,
       safePreview: "Emergency-only details",
       startTime: atLocalTime(addDays(today, -1), 8),
-      title: "Emergency contact review"
-    })
+      title: "Emergency contact review",
+    }),
   ];
 }
 
-export function createCalendarEventPlaceholder(input: Omit<CalendarEvent, "id" | "createdAt" | "updatedAt">) {
+export function createCalendarEventPlaceholder(
+  input: Omit<CalendarEvent, "id" | "createdAt" | "updatedAt">,
+) {
   const now = new Date().toISOString();
   return {
     ...input,
     createdAt: now,
     id: `placeholder-event-${Date.now().toString(36)}`,
-    updatedAt: now
+    updatedAt: now,
   } satisfies CalendarEvent;
 }

@@ -33,7 +33,7 @@ export const appColors = {
   navShadow: "rgba(0, 0, 0, 0.34)",
   locked: "#7c3aed",
   lockedSoft: "#f3e8ff",
-  emergency: "#be123c"
+  emergency: "#be123c",
 } as const;
 
 export const realmColors = {
@@ -50,7 +50,7 @@ export const realmColors = {
   baby_child: healthRealmAccents.baby,
   mens_health: "#60a5fa",
   family: healthRealmAccents.family,
-  ai_assistant: healthRealmAccents.health
+  ai_assistant: healthRealmAccents.health,
 } as const;
 
 export const statusColors = {
@@ -61,5 +61,5 @@ export const statusColors = {
   private: appColors.locked,
   shared: "#0f766e",
   locked: appColors.locked,
-  neutral: appColors.textMuted
+  neutral: appColors.textMuted,
 } as const;

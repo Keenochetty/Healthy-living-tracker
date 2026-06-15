@@ -3,7 +3,7 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import {
   MILESTONE_CATEGORIES,
-  MILESTONE_SUGGESTIONS
+  MILESTONE_SUGGESTIONS,
 } from "@/constants/childOptions";
 import { addMilestone, getMilestones } from "@/lib/childStorage";
 import type { ChildMilestone, MilestoneCategory } from "@/types/child";
@@ -14,7 +14,10 @@ type MilestoneTrackerCardProps = {
   onChange?: () => void;
 };
 
-export function MilestoneTrackerCard({ childId, onChange }: MilestoneTrackerCardProps) {
+export function MilestoneTrackerCard({
+  childId,
+  onChange,
+}: MilestoneTrackerCardProps) {
   const [category, setCategory] = useState<MilestoneCategory>("firsts");
   const [milestones, setMilestones] = useState<ChildMilestone[]>([]);
   const [notes, setNotes] = useState("");
@@ -46,7 +49,7 @@ export function MilestoneTrackerCard({ childId, onChange }: MilestoneTrackerCard
       category,
       childId,
       notes,
-      title: title.trim()
+      title: title.trim(),
     });
 
     setTitle("");
@@ -63,7 +66,8 @@ export function MilestoneTrackerCard({ childId, onChange }: MilestoneTrackerCard
             Milestones
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Keep personal memories and developmental notes without turning them into pressure.
+            Keep personal memories and developmental notes without turning them
+            into pressure.
           </Text>
         </View>
 
@@ -105,14 +109,31 @@ export function MilestoneTrackerCard({ childId, onChange }: MilestoneTrackerCard
           value={notes}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save milestone</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save milestone
+          </Text>
         </TouchableOpacity>
 
         {milestones.slice(0, 4).map((milestone) => (
-          <View key={milestone.id} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>{milestone.title}</Text>
-            <Text style={{ color: "#64748b", marginTop: 3 }}>{milestone.category}</Text>
+          <View
+            key={milestone.id}
+            style={{
+              backgroundColor: "#f8fafc",
+              borderRadius: 16,
+              padding: 12,
+            }}
+          >
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+              {milestone.title}
+            </Text>
+            <Text style={{ color: "#64748b", marginTop: 3 }}>
+              {milestone.category}
+            </Text>
           </View>
         ))}
       </View>
@@ -123,7 +144,7 @@ export function MilestoneTrackerCard({ childId, onChange }: MilestoneTrackerCard
 function Pill({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
@@ -139,10 +160,12 @@ function Pill({
         borderRadius: 999,
         borderWidth: 1,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#92400e" : "#475569", fontWeight: "800" }}>
+      <Text
+        style={{ color: selected ? "#92400e" : "#475569", fontWeight: "800" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -156,7 +179,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -164,5 +187,5 @@ const buttonStyle = {
   backgroundColor: "#f59e0b",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 50
+  minHeight: 50,
 };

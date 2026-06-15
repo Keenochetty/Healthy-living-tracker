@@ -8,7 +8,7 @@ import type {
   PregnancyNote,
   PregnancyProfile,
   PregnancySummary,
-  PregnancySymptomLog
+  PregnancySymptomLog,
 } from "@/types/cycle";
 
 const CYCLE_SETTINGS_KEY = "family_health_cycle_settings";
@@ -26,7 +26,7 @@ const DEFAULT_CYCLE_SETTINGS: CycleSettings = {
   partnerSharingEnabled: false,
   predictionEnabled: true,
   privateMode: true,
-  trackingEnabled: true
+  trackingEnabled: true,
 };
 
 export function subscribeToCycle(listener: () => void) {
@@ -89,11 +89,13 @@ function toDateString(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function sortByDate<T extends { date?: string; loggedAt?: string; createdAt: string }>(items: T[]) {
+function sortByDate<
+  T extends { date?: string; loggedAt?: string; createdAt: string },
+>(items: T[]) {
   return [...items].sort(
     (left, right) =>
       new Date(right.date ?? right.loggedAt ?? right.createdAt).getTime() -
-      new Date(left.date ?? left.loggedAt ?? left.createdAt).getTime()
+      new Date(left.date ?? left.loggedAt ?? left.createdAt).getTime(),
   );
 }
 
@@ -104,7 +106,7 @@ export async function getCycleSettings(): Promise<CycleSettings> {
     ...DEFAULT_CYCLE_SETTINGS,
     ...settings,
     partnerSharingEnabled: false,
-    privateMode: true
+    privateMode: true,
   };
 }
 
@@ -112,7 +114,7 @@ export async function saveCycleSettings(settings: CycleSettings) {
   const savedSettings: CycleSettings = {
     ...settings,
     partnerSharingEnabled: false,
-    privateMode: true
+    privateMode: true,
   };
 
   await AsyncStorage.setItem(CYCLE_SETTINGS_KEY, JSON.stringify(savedSettings));
@@ -128,7 +130,7 @@ export async function updateCycleSettings(partial: Partial<CycleSettings>) {
     ...settings,
     ...partial,
     partnerSharingEnabled: false,
-    privateMode: true
+    privateMode: true,
   });
 }
 
@@ -137,7 +139,7 @@ export async function getCycleLogs() {
 }
 
 export async function addCycleLog(
-  input: Omit<CycleLog, "id" | "private" | "createdAt" | "updatedAt">
+  input: Omit<CycleLog, "id" | "private" | "createdAt" | "updatedAt">,
 ) {
   const now = new Date().toISOString();
   const log: CycleLog = {
@@ -146,7 +148,7 @@ export async function addCycleLog(
     id: id("cycle-log"),
     notes: input.notes?.trim() || undefined,
     private: true,
-    updatedAt: now
+    updatedAt: now,
   };
   const logs = await getCycleLogs();
 
@@ -163,12 +165,14 @@ export async function addCycleLog(
 
 export async function updateCycleLog(
   logId: string,
-  partial: Partial<Omit<CycleLog, "id" | "createdAt" | "private">>
+  partial: Partial<Omit<CycleLog, "id" | "createdAt" | "private">>,
 ) {
   const now = new Date().toISOString();
   const logs = await getCycleLogs();
   const updatedLogs = logs.map((log) =>
-    log.id === logId ? { ...log, ...partial, private: true as const, updatedAt: now } : log
+    log.id === logId
+      ? { ...log, ...partial, private: true as const, updatedAt: now }
+      : log,
   );
 
   await writeJsonArray(CYCLE_LOGS_KEY, updatedLogs);
@@ -179,7 +183,10 @@ export async function updateCycleLog(
 export async function deleteCycleLog(logId: string) {
   const logs = await getCycleLogs();
 
-  await writeJsonArray(CYCLE_LOGS_KEY, logs.filter((log) => log.id !== logId));
+  await writeJsonArray(
+    CYCLE_LOGS_KEY,
+    logs.filter((log) => log.id !== logId),
+  );
 }
 
 export async function getCycleLogsByDate(date: string) {
@@ -213,7 +220,10 @@ export async function calculateCyclePrediction(): Promise<CyclePrediction> {
   }
 
   const nextPeriodStart = addDays(lastStart, settings.averageCycleLengthDays);
-  const nextPeriodEnd = addDays(nextPeriodStart, settings.averagePeriodLengthDays - 1);
+  const nextPeriodEnd = addDays(
+    nextPeriodStart,
+    settings.averagePeriodLengthDays - 1,
+  );
   const estimatedOvulationDate = addDays(nextPeriodStart, -14);
 
   return {
@@ -223,7 +233,7 @@ export async function calculateCyclePrediction(): Promise<CyclePrediction> {
     fertileWindowEnd: toDateString(addDays(estimatedOvulationDate, 1)),
     fertileWindowStart: toDateString(addDays(estimatedOvulationDate, -5)),
     nextPeriodEnd: toDateString(nextPeriodEnd),
-    nextPeriodStart: toDateString(nextPeriodStart)
+    nextPeriodStart: toDateString(nextPeriodStart),
   };
 }
 
@@ -240,7 +250,7 @@ export async function getPossiblePregnancyHint() {
   if (today.getTime() <= nextPeriodStart.getTime()) return null;
 
   const logsSinceEstimate = (await getCycleLogs()).filter(
-    (log) => log.date >= nextPeriodStartValue && log.flowLevel !== "none"
+    (log) => log.date >= nextPeriodStartValue && log.flowLevel !== "none",
   );
 
   if (logsSinceEstimate.length) return null;
@@ -253,7 +263,10 @@ export async function getPregnancyProfile() {
 }
 
 export async function savePregnancyProfile(
-  input: Omit<PregnancyProfile, "id" | "private" | "sharingEnabled" | "createdAt" | "updatedAt">
+  input: Omit<
+    PregnancyProfile,
+    "id" | "private" | "sharingEnabled" | "createdAt" | "updatedAt"
+  >,
 ) {
   const now = new Date().toISOString();
   const existingProfile = await getPregnancyProfile();
@@ -265,7 +278,7 @@ export async function savePregnancyProfile(
     medicalNotes: input.medicalNotes?.trim() || undefined,
     private: true,
     sharingEnabled: false,
-    updatedAt: now
+    updatedAt: now,
   };
 
   await AsyncStorage.setItem(PREGNANCY_PROFILE_KEY, JSON.stringify(profile));
@@ -274,14 +287,16 @@ export async function savePregnancyProfile(
   return profile;
 }
 
-export async function updatePregnancyProfile(partial: Partial<PregnancyProfile>) {
+export async function updatePregnancyProfile(
+  partial: Partial<PregnancyProfile>,
+) {
   const profile = await getPregnancyProfile();
 
   if (!profile) return null;
 
   const mergedProfile = {
     ...profile,
-    ...partial
+    ...partial,
   };
 
   return savePregnancyProfile({
@@ -291,7 +306,7 @@ export async function updatePregnancyProfile(partial: Partial<PregnancyProfile>)
     lastPeriodStartDate: mergedProfile.lastPeriodStartDate,
     medicalNotes: mergedProfile.medicalNotes,
     pregnancyStartDate: mergedProfile.pregnancyStartDate,
-    status: mergedProfile.status
+    status: mergedProfile.status,
   });
 }
 
@@ -301,11 +316,13 @@ export async function clearPregnancyProfile() {
 }
 
 export async function getPregnancySymptomLogs() {
-  return sortByDate(await readJsonArray<PregnancySymptomLog>(PREGNANCY_SYMPTOMS_KEY));
+  return sortByDate(
+    await readJsonArray<PregnancySymptomLog>(PREGNANCY_SYMPTOMS_KEY),
+  );
 }
 
 export async function addPregnancySymptomLog(
-  input: Omit<PregnancySymptomLog, "id" | "loggedAt" | "createdAt">
+  input: Omit<PregnancySymptomLog, "id" | "loggedAt" | "createdAt">,
 ) {
   const now = new Date().toISOString();
   const log: PregnancySymptomLog = {
@@ -313,7 +330,7 @@ export async function addPregnancySymptomLog(
     createdAt: now,
     id: id("pregnancy-symptom"),
     loggedAt: now,
-    notes: input.notes?.trim() || undefined
+    notes: input.notes?.trim() || undefined,
   };
   const logs = await getPregnancySymptomLogs();
 
@@ -323,11 +340,13 @@ export async function addPregnancySymptomLog(
 }
 
 export async function getPregnancyAppointments() {
-  return sortByDate(await readJsonArray<PregnancyAppointment>(PREGNANCY_APPOINTMENTS_KEY));
+  return sortByDate(
+    await readJsonArray<PregnancyAppointment>(PREGNANCY_APPOINTMENTS_KEY),
+  );
 }
 
 export async function addPregnancyAppointment(
-  input: Omit<PregnancyAppointment, "id" | "createdAt" | "updatedAt">
+  input: Omit<PregnancyAppointment, "id" | "createdAt" | "updatedAt">,
 ) {
   const now = new Date().toISOString();
   const appointment: PregnancyAppointment = {
@@ -335,29 +354,36 @@ export async function addPregnancyAppointment(
     createdAt: now,
     id: id("pregnancy-appointment"),
     notes: input.notes?.trim() || undefined,
-    updatedAt: now
+    updatedAt: now,
   };
   const appointments = await getPregnancyAppointments();
 
-  await writeJsonArray(PREGNANCY_APPOINTMENTS_KEY, [appointment, ...appointments]);
+  await writeJsonArray(PREGNANCY_APPOINTMENTS_KEY, [
+    appointment,
+    ...appointments,
+  ]);
 
   return appointment;
 }
 
 export async function updatePregnancyAppointment(
   appointmentId: string,
-  partial: Partial<Omit<PregnancyAppointment, "id" | "createdAt">>
+  partial: Partial<Omit<PregnancyAppointment, "id" | "createdAt">>,
 ) {
   const appointments = await getPregnancyAppointments();
   const updatedAppointments = appointments.map((appointment) =>
     appointment.id === appointmentId
       ? { ...appointment, ...partial, updatedAt: new Date().toISOString() }
-      : appointment
+      : appointment,
   );
 
   await writeJsonArray(PREGNANCY_APPOINTMENTS_KEY, updatedAppointments);
 
-  return updatedAppointments.find((appointment) => appointment.id === appointmentId) ?? null;
+  return (
+    updatedAppointments.find(
+      (appointment) => appointment.id === appointmentId,
+    ) ?? null
+  );
 }
 
 export async function deletePregnancyAppointment(appointmentId: string) {
@@ -365,7 +391,7 @@ export async function deletePregnancyAppointment(appointmentId: string) {
 
   await writeJsonArray(
     PREGNANCY_APPOINTMENTS_KEY,
-    appointments.filter((appointment) => appointment.id !== appointmentId)
+    appointments.filter((appointment) => appointment.id !== appointmentId),
   );
 }
 
@@ -374,7 +400,7 @@ export async function getPregnancyNotes() {
 }
 
 export async function addPregnancyNote(
-  input: Omit<PregnancyNote, "id" | "createdAt" | "updatedAt">
+  input: Omit<PregnancyNote, "id" | "createdAt" | "updatedAt">,
 ) {
   const now = new Date().toISOString();
   const note: PregnancyNote = {
@@ -383,7 +409,7 @@ export async function addPregnancyNote(
     id: id("pregnancy-note"),
     note: input.note.trim(),
     title: input.title.trim(),
-    updatedAt: now
+    updatedAt: now,
   };
   const notes = await getPregnancyNotes();
 
@@ -394,11 +420,15 @@ export async function addPregnancyNote(
 
 export async function updatePregnancyNote(
   noteId: string,
-  partial: Partial<Omit<PregnancyNote, "id" | "pregnancyProfileId" | "createdAt">>
+  partial: Partial<
+    Omit<PregnancyNote, "id" | "pregnancyProfileId" | "createdAt">
+  >,
 ) {
   const notes = await getPregnancyNotes();
   const updatedNotes = notes.map((note) =>
-    note.id === noteId ? { ...note, ...partial, updatedAt: new Date().toISOString() } : note
+    note.id === noteId
+      ? { ...note, ...partial, updatedAt: new Date().toISOString() }
+      : note,
   );
 
   await writeJsonArray(PREGNANCY_NOTES_KEY, updatedNotes);
@@ -411,7 +441,7 @@ export async function deletePregnancyNote(noteId: string) {
 
   await writeJsonArray(
     PREGNANCY_NOTES_KEY,
-    notes.filter((note) => note.id !== noteId)
+    notes.filter((note) => note.id !== noteId),
   );
 }
 
@@ -420,13 +450,13 @@ export async function getPregnancySummary(): Promise<PregnancySummary> {
     getPregnancyProfile(),
     getPregnancySymptomLogs(),
     getPregnancyAppointments(),
-    getPregnancyNotes()
+    getPregnancyNotes(),
   ]);
 
   return {
     appointmentCount: appointments.length,
     latestSymptom: symptoms[0],
     noteCount: notes.length,
-    profile
+    profile,
   };
 }

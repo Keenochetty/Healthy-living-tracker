@@ -10,7 +10,8 @@ export function CaregiverPrivacyCard() {
         Parent-controlled access
       </Text>
       <Text style={{ color: "#475569", lineHeight: 21, marginTop: 6 }}>
-        {CAREGIVER_PRIVACY_DISCLAIMER} Medical details are never shared by default.
+        {CAREGIVER_PRIVACY_DISCLAIMER} Medical details are never shared by
+        default.
       </Text>
     </AppCard>
   );

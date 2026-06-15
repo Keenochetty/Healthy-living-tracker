@@ -9,8 +9,8 @@ export function AiReviewWarningCard() {
         Please review carefully
       </Text>
       <Text style={{ color: "#9a3412", lineHeight: 21, marginTop: 6 }}>
-        AI can misread photos, documents, handwriting, medication names, dates and
-        dosages.
+        AI can misread photos, documents, handwriting, medication names, dates
+        and dosages.
       </Text>
     </AppCard>
   );

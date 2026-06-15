@@ -8,8 +8,8 @@ export const appMotion = {
   spring: {
     damping: 18,
     stiffness: 220,
-    mass: 0.8
+    mass: 0.8,
   },
   sheetDamping: 18,
-  sheetStiffness: 180
+  sheetStiffness: 180,
 } as const;

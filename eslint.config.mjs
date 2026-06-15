@@ -9,7 +9,7 @@ const config = [
     "family-health-app/**",
     "node_modules/**",
     "out/**",
-    "web-build/**"
+    "web-build/**",
   ]),
   ...nextVitals,
   {
@@ -19,9 +19,9 @@ const config = [
       "react-hooks/purity": "off",
       "react-hooks/refs": "off",
       "react-hooks/set-state-in-effect": "off",
-      "react/no-unescaped-entities": "off"
-    }
-  }
+      "react/no-unescaped-entities": "off",
+    },
+  },
 ];
 
 export default config;

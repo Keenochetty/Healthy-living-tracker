@@ -16,35 +16,35 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     description: "Personal tasks, habits and daily planning.",
     emoji: "Me",
     key: "personal",
-    label: "Personal"
+    label: "Personal",
   },
   {
     colour: "#3279f4",
     description: "Work tasks, meetings and deadlines.",
     emoji: "Work",
     key: "work",
-    label: "Work"
+    label: "Work",
   },
   {
     colour: "#7860e5",
     description: "Medication reminders with safe wording.",
     emoji: "Med",
     key: "medication",
-    label: "Medication"
+    label: "Medication",
   },
   {
     colour: "#24897f",
     description: "Doctor visits, checkups and appointments.",
     emoji: "Doc",
     key: "doctor_visit",
-    label: "Doctor Visit"
+    label: "Doctor Visit",
   },
   {
     colour: "#f0ae2e",
     description: "Shared family events when circle features grow.",
     emoji: "Fam",
     key: "family",
-    label: "Family"
+    label: "Family",
   },
   {
     colour: "#3279f4",
@@ -52,7 +52,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     emoji: "Fit",
     key: "fitness",
     label: "Fitness",
-    moduleKey: "fitness"
+    moduleKey: "fitness",
   },
   {
     colour: "#f58d24",
@@ -60,7 +60,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     emoji: "Food",
     key: "food",
     label: "Food",
-    moduleKey: "food"
+    moduleKey: "food",
   },
   {
     colour: "#48b9f0",
@@ -68,7 +68,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     emoji: "Baby",
     key: "child_baby",
     label: "Child & Baby",
-    moduleKey: "child_baby"
+    moduleKey: "child_baby",
   },
   {
     colour: "#24897f",
@@ -76,7 +76,7 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     emoji: "Elder",
     key: "elder_care",
     label: "Elder Care",
-    moduleKey: "elder_care"
+    moduleKey: "elder_care",
   },
   {
     colour: "#f0ae2e",
@@ -84,31 +84,34 @@ export const REMINDER_TYPES: ReminderTypeDefinition[] = [
     emoji: "Care",
     key: "caregiver",
     label: "Caregiver",
-    moduleKey: "caregiver"
+    moduleKey: "caregiver",
   },
   {
     colour: "#8652d6",
     description: "A custom reminder you define.",
     emoji: "Note",
     key: "custom",
-    label: "Custom"
-  }
+    label: "Custom",
+  },
 ];
 
 export const PRIORITY_LABELS: Record<ReminderPriority, string> = {
   important: "Important",
   low: "Low",
   normal: "Normal",
-  urgent: "Urgent"
+  urgent: "Urgent",
 };
 
 export const PRIORITY_COLORS: Record<ReminderPriority, string> = {
   important: "#f97316",
   low: "#94a3b8",
   normal: "#7c3aed",
-  urgent: "#dc2626"
+  urgent: "#dc2626",
 };
 
 export function getReminderTypeDefinition(type: ReminderType) {
-  return REMINDER_TYPES.find((definition) => definition.key === type) ?? REMINDER_TYPES[0];
+  return (
+    REMINDER_TYPES.find((definition) => definition.key === type) ??
+    REMINDER_TYPES[0]
+  );
 }

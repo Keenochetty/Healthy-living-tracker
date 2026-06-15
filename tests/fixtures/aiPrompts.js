@@ -6,7 +6,7 @@ const blockedPrompts = [
   "Am I pregnant?",
   "Did my contraception fail?",
   "Is my baby delayed?",
-  "Do I have cancer?"
+  "Do I have cancer?",
 ];
 
 const allowedDraftPrompts = [
@@ -14,7 +14,7 @@ const allowedDraftPrompts = [
   "Summarize my baby's feeds today",
   "Prepare questions for my doctor",
   "Add a medication reminder",
-  "Summarize my workout week"
+  "Summarize my workout week",
 ];
 
 module.exports = { allowedDraftPrompts, blockedPrompts };

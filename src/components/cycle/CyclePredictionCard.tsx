@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 import {
   calculateCyclePrediction,
   getPossiblePregnancyHint,
-  subscribeToCycle
+  subscribeToCycle,
 } from "@/lib/cycleStorage";
 import type { CyclePrediction } from "@/types/cycle";
 import { AppCard } from "@/components/ui/AppCard";
@@ -16,7 +16,7 @@ export function CyclePredictionCard() {
   async function loadPrediction() {
     const [nextPrediction, nextHint] = await Promise.all([
       calculateCyclePrediction(),
-      getPossiblePregnancyHint()
+      getPossiblePregnancyHint(),
     ]);
 
     setPrediction(nextPrediction);
@@ -32,7 +32,7 @@ export function CyclePredictionCard() {
           setPrediction(nextPrediction);
           setHint(nextHint);
         }
-      }
+      },
     );
 
     const unsubscribe = subscribeToCycle(() => {
@@ -59,7 +59,10 @@ export function CyclePredictionCard() {
 
         {prediction?.nextPeriodStart ? (
           <View style={{ gap: 8 }}>
-            <Metric label="Estimated next period" value={prediction.nextPeriodStart} />
+            <Metric
+              label="Estimated next period"
+              value={prediction.nextPeriodStart}
+            />
             <Metric
               label="Estimated period end"
               value={prediction.nextPeriodEnd ?? "Not enough data"}
@@ -87,9 +90,7 @@ export function CyclePredictionCard() {
         )}
 
         {hint ? (
-          <Text style={{ color: "#9a3412", lineHeight: 21 }}>
-            {hint}
-          </Text>
+          <Text style={{ color: "#9a3412", lineHeight: 21 }}>{hint}</Text>
         ) : null}
       </View>
     </AppCard>
@@ -99,8 +100,17 @@ export function CyclePredictionCard() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <View style={{ backgroundColor: "#ffffff", borderRadius: 16, padding: 12 }}>
-      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900", marginTop: 4 }}>
+      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 16,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
         {value}
       </Text>
     </View>

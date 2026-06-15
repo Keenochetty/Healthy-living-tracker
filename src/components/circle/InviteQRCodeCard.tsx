@@ -25,10 +25,20 @@ export function InviteQRCodeCard({ invite }: InviteQRCodeCardProps) {
         <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
           Invite ready
         </Text>
-        <View style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 14 }}>
-          <QRCode backgroundColor="#ffffff" color="#4c1d95" size={180} value={invite.inviteLink} />
+        <View
+          style={{ backgroundColor: "#ffffff", borderRadius: 20, padding: 14 }}
+        >
+          <QRCode
+            backgroundColor="#ffffff"
+            color="#4c1d95"
+            size={180}
+            value={invite.inviteLink}
+          />
         </View>
-        <Text selectable style={{ color: "#6d28d9", fontSize: 12, textAlign: "center" }}>
+        <Text
+          selectable
+          style={{ color: "#6d28d9", fontSize: 12, textAlign: "center" }}
+        >
           {invite.inviteLink}
         </Text>
         <TouchableOpacity
@@ -43,10 +53,14 @@ export function InviteQRCodeCard({ invite }: InviteQRCodeCardProps) {
             justifyContent: "center",
             minHeight: 48,
             paddingHorizontal: 16,
-            width: "100%"
+            width: "100%",
           }}
         >
-          {copied ? <Check color="#ffffff" size={18} /> : <Copy color="#ffffff" size={18} />}
+          {copied ? (
+            <Check color="#ffffff" size={18} />
+          ) : (
+            <Copy color="#ffffff" size={18} />
+          )}
           <Text style={{ color: "#ffffff", fontWeight: "800" }}>
             {copied ? "Invite link copied" : "Copy invite link"}
           </Text>

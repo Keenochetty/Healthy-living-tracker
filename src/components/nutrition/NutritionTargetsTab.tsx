@@ -9,61 +9,68 @@ import {
   formatMacroProgress,
   getActiveNutritionTarget,
   suggestGoalMessage,
-  suggestNutritionTargets
+  suggestNutritionTargets,
 } from "@/lib/nutritionStorage";
 import type {
   ActivityLevel,
   DailyNutritionProgress,
   NutritionDayAdjustment,
   NutritionGoalType,
-  NutritionTarget
+  NutritionTarget,
 } from "@/types/nutrition";
 
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
 
-const GOAL_OPTIONS: Array<{ description: string; key: NutritionGoalType; title: string }> = [
+const GOAL_OPTIONS: Array<{
+  description: string;
+  key: NutritionGoalType;
+  title: string;
+}> = [
   {
-    description: "Use a sustainable target with protein, fiber, and hydration support.",
+    description:
+      "Use a sustainable target with protein, fiber, and hydration support.",
     key: "lose_weight",
-    title: "Lose Weight"
+    title: "Lose Weight",
   },
   {
-    description: "Support strength training with enough energy, protein, and recovery nutrition.",
+    description:
+      "Support strength training with enough energy, protein, and recovery nutrition.",
     key: "gain_muscle",
-    title: "Gain Muscle"
+    title: "Gain Muscle",
   },
   {
     description: "Keep steady energy with balanced macros and hydration.",
     key: "maintain_weight",
-    title: "Maintain Weight"
+    title: "Maintain Weight",
   },
   {
     description: "Support running energy, hydration, and recovery.",
     key: "improve_running",
-    title: "Improve Running"
+    title: "Improve Running",
   },
   {
-    description: "Support workouts with recovery-focused protein, carbs, and water.",
+    description:
+      "Support workouts with recovery-focused protein, carbs, and water.",
     key: "workout_recovery",
-    title: "Workout Recovery"
+    title: "Workout Recovery",
   },
   {
     description: "Build a balanced target for everyday wellness.",
     key: "general_health",
-    title: "General Health"
+    title: "General Health",
   },
   {
     description: "Set your own nutrition goal and target values.",
     key: "custom",
-    title: "Custom Goal"
-  }
+    title: "Custom Goal",
+  },
 ];
 
 const FUTURE_GOALS = [
   "Pregnancy Nutrition",
   "Child Nutrition",
   "Elder Care Nutrition",
-  "Medical Condition Plan"
+  "Medical Condition Plan",
 ];
 
 const ACTIVITY_LEVELS: Array<{ key: ActivityLevel; label: string }> = [
@@ -71,7 +78,7 @@ const ACTIVITY_LEVELS: Array<{ key: ActivityLevel; label: string }> = [
   { key: "light", label: "Light" },
   { key: "moderate", label: "Moderate" },
   { key: "high", label: "High" },
-  { key: "athlete", label: "Athlete" }
+  { key: "athlete", label: "Athlete" },
 ];
 
 const WORKOUT_FOCUS_OPTIONS = [
@@ -81,22 +88,58 @@ const WORKOUT_FOCUS_OPTIONS = [
   "Weight loss",
   "General fitness",
   "Home workouts",
-  "Gym workouts"
+  "Gym workouts",
 ];
 
-const WORKOUT_ADJUSTMENTS: Array<{ adjustment: NutritionDayAdjustment; label: string }> = [
+const WORKOUT_ADJUSTMENTS: Array<{
+  adjustment: NutritionDayAdjustment;
+  label: string;
+}> = [
   { adjustment: { mode: "same" }, label: "Same" },
-  { adjustment: { caloriesAdjustmentPercent: 8, mode: "higher_calories" }, label: "Higher Calories" },
-  { adjustment: { carbsAdjustmentPercent: 12, mode: "higher_carbs" }, label: "Higher Carbs" },
-  { adjustment: { mode: "higher_protein", proteinAdjustmentPercent: 8 }, label: "Higher Protein" },
-  { adjustment: { caloriesAdjustmentPercent: 5, carbsAdjustmentPercent: 5, mode: "custom", proteinAdjustmentPercent: 5 }, label: "Custom" }
+  {
+    adjustment: { caloriesAdjustmentPercent: 8, mode: "higher_calories" },
+    label: "Higher Calories",
+  },
+  {
+    adjustment: { carbsAdjustmentPercent: 12, mode: "higher_carbs" },
+    label: "Higher Carbs",
+  },
+  {
+    adjustment: { mode: "higher_protein", proteinAdjustmentPercent: 8 },
+    label: "Higher Protein",
+  },
+  {
+    adjustment: {
+      caloriesAdjustmentPercent: 5,
+      carbsAdjustmentPercent: 5,
+      mode: "custom",
+      proteinAdjustmentPercent: 5,
+    },
+    label: "Custom",
+  },
 ];
 
-const REST_ADJUSTMENTS: Array<{ adjustment: NutritionDayAdjustment; label: string }> = [
+const REST_ADJUSTMENTS: Array<{
+  adjustment: NutritionDayAdjustment;
+  label: string;
+}> = [
   { adjustment: { mode: "same" }, label: "Same" },
-  { adjustment: { caloriesAdjustmentPercent: -8, mode: "lower_calories" }, label: "Slightly Lower" },
-  { adjustment: { carbsAdjustmentPercent: -12, mode: "lower_carbs" }, label: "Lower Carbs" },
-  { adjustment: { caloriesAdjustmentPercent: -5, carbsAdjustmentPercent: -5, mode: "custom" }, label: "Custom" }
+  {
+    adjustment: { caloriesAdjustmentPercent: -8, mode: "lower_calories" },
+    label: "Slightly Lower",
+  },
+  {
+    adjustment: { carbsAdjustmentPercent: -12, mode: "lower_carbs" },
+    label: "Lower Carbs",
+  },
+  {
+    adjustment: {
+      caloriesAdjustmentPercent: -5,
+      carbsAdjustmentPercent: -5,
+      mode: "custom",
+    },
+    label: "Custom",
+  },
 ];
 
 const INPUT_STYLE = {
@@ -106,17 +149,19 @@ const INPUT_STYLE = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 export function NutritionTargetsTab({
   onSaved,
-  todayKey
+  todayKey,
 }: {
   onSaved: () => void;
   todayKey: string;
 }) {
-  const [activeTarget, setActiveTarget] = useState<NutritionTarget | null>(null);
+  const [activeTarget, setActiveTarget] = useState<NutritionTarget | null>(
+    null,
+  );
   const [progress, setProgress] = useState<DailyNutritionProgress | null>(null);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
@@ -124,7 +169,7 @@ export function NutritionTargetsTab({
   const loadTargets = useCallback(async () => {
     const [target, dailyProgress] = await Promise.all([
       getActiveNutritionTarget(),
-      calculateDailyNutritionProgress(todayKey)
+      calculateDailyNutritionProgress(todayKey),
     ]);
 
     setActiveTarget(target);
@@ -143,7 +188,9 @@ export function NutritionTargetsTab({
         existingTarget={activeTarget}
         onCancel={() => setIsWizardOpen(false)}
         onSaved={async () => {
-          setSavedMessage("Targets saved. Your Food / Nutrition dashboard is now personalized.");
+          setSavedMessage(
+            "Targets saved. Your Food / Nutrition dashboard is now personalized.",
+          );
           setIsWizardOpen(false);
           await loadTargets();
           onSaved();
@@ -156,7 +203,9 @@ export function NutritionTargetsTab({
     <View style={{ gap: 12 }}>
       {savedMessage ? (
         <AppCard backgroundColor="#ecfdf5">
-          <Text style={{ color: "#047857", fontWeight: "900" }}>{savedMessage}</Text>
+          <Text style={{ color: "#047857", fontWeight: "900" }}>
+            {savedMessage}
+          </Text>
         </AppCard>
       ) : null}
 
@@ -169,16 +218,34 @@ export function NutritionTargetsTab({
       ) : (
         <AppCard>
           <View style={{ gap: 12 }}>
-            <View style={{ alignItems: "center", flexDirection: "row", gap: 10 }}>
-              <AppIcon color="#f59e0b" container containerVariant="white" name="vitals" size={22} />
-              <Text style={{ color: "#0f172a", flex: 1, fontSize: 22, fontWeight: "900" }}>
+            <View
+              style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
+            >
+              <AppIcon
+                color="#f59e0b"
+                container
+                containerVariant="white"
+                name="vitals"
+                size={22}
+              />
+              <Text
+                style={{
+                  color: "#0f172a",
+                  flex: 1,
+                  fontSize: 22,
+                  fontWeight: "900",
+                }}
+              >
                 Nutrition Targets
               </Text>
             </View>
             <Text style={{ color: "#64748b", lineHeight: 21 }}>
               Set a nutrition goal to personalize your food dashboard.
             </Text>
-            <PrimaryButton label="Set My Nutrition Goal" onPress={() => setIsWizardOpen(true)} />
+            <PrimaryButton
+              label="Set My Nutrition Goal"
+              onPress={() => setIsWizardOpen(true)}
+            />
           </View>
         </AppCard>
       )}
@@ -191,7 +258,7 @@ export function NutritionTargetsTab({
 function TargetsHome({
   onEdit,
   progress,
-  target
+  target,
 }: {
   onEdit: () => void;
   progress: DailyNutritionProgress | null;
@@ -202,19 +269,40 @@ function TargetsHome({
       <AppCard>
         <View style={{ gap: 12 }}>
           <View style={{ alignItems: "center", flexDirection: "row", gap: 10 }}>
-            <AppIcon color="#f59e0b" container containerVariant="white" name="vitals" size={22} />
+            <AppIcon
+              color="#f59e0b"
+              container
+              containerVariant="white"
+              name="vitals"
+              size={22}
+            />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: "#b45309", fontSize: 13, fontWeight: "900" }}>Current Goal</Text>
-              <Text style={{ color: "#0f172a", fontSize: 24, fontWeight: "900" }}>
+              <Text
+                style={{ color: "#b45309", fontSize: 13, fontWeight: "900" }}
+              >
+                Current Goal
+              </Text>
+              <Text
+                style={{ color: "#0f172a", fontSize: 24, fontWeight: "900" }}
+              >
                 {getGoalLabel(target.goalType)}
               </Text>
             </View>
           </View>
 
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-            <MetricPill label="Calories" value={`${Math.round(target.caloriesTarget).toLocaleString()} / day`} />
-            <MetricPill label="Protein" value={`${Math.round(target.proteinTargetG)} g / day`} />
-            <MetricPill label="Water" value={`${formatWaterMl(target.waterTargetMl)} / day`} />
+            <MetricPill
+              label="Calories"
+              value={`${Math.round(target.caloriesTarget).toLocaleString()} / day`}
+            />
+            <MetricPill
+              label="Protein"
+              value={`${Math.round(target.proteinTargetG)} g / day`}
+            />
+            <MetricPill
+              label="Water"
+              value={`${formatWaterMl(target.waterTargetMl)} / day`}
+            />
           </View>
 
           <View style={{ flexDirection: "row", gap: 10 }}>
@@ -225,19 +313,107 @@ function TargetsHome({
       </AppCard>
 
       <AppCard backgroundColor="#fffbeb">
-        <Text style={{ color: "#92400e", fontSize: 20, fontWeight: "900" }}>Goal Support</Text>
+        <Text style={{ color: "#92400e", fontSize: 20, fontWeight: "900" }}>
+          Goal Support
+        </Text>
         <Text style={{ color: "#92400e", lineHeight: 21, marginTop: 6 }}>
           {suggestGoalMessage(target.goalType)}
         </Text>
       </AppCard>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-        <ProgressMetricCard label="Calories Target" progress={calculateTargetProgressPercent(progress?.caloriesConsumed, progress?.caloriesTarget)} value={progress ? formatMacroProgress(progress.caloriesConsumed, progress.caloriesTarget, "kcal") : `0 / ${target.caloriesTarget} kcal`} />
-        <ProgressMetricCard label="Protein Target" progress={calculateTargetProgressPercent(progress?.proteinConsumedG, progress?.proteinTargetG)} value={progress ? formatMacroProgress(progress.proteinConsumedG, progress.proteinTargetG, "g") : `0 / ${target.proteinTargetG} g`} />
-        <ProgressMetricCard label="Carbs Target" progress={calculateTargetProgressPercent(progress?.carbsConsumedG, progress?.carbsTargetG)} value={progress ? formatMacroProgress(progress.carbsConsumedG, progress.carbsTargetG, "g") : `0 / ${target.carbsTargetG} g`} />
-        <ProgressMetricCard label="Fat Target" progress={calculateTargetProgressPercent(progress?.fatConsumedG, progress?.fatTargetG)} value={progress ? formatMacroProgress(progress.fatConsumedG, progress.fatTargetG, "g") : `0 / ${target.fatTargetG} g`} />
-        <ProgressMetricCard label="Fiber Target" progress={calculateTargetProgressPercent(progress?.fiberConsumedG, progress?.fiberTargetG)} value={progress ? formatMacroProgress(progress.fiberConsumedG ?? 0, progress.fiberTargetG ?? target.fiberTargetG ?? 0, "g") : `0 / ${target.fiberTargetG ?? 0} g`} />
-        <ProgressMetricCard label="Water Target" progress={calculateTargetProgressPercent(progress?.waterConsumedMl, progress?.waterTargetMl)} value={progress ? `${formatWaterMl(progress.waterConsumedMl)} / ${formatWaterMl(progress.waterTargetMl)}` : `0 / ${formatWaterMl(target.waterTargetMl)}`} />
+        <ProgressMetricCard
+          label="Calories Target"
+          progress={calculateTargetProgressPercent(
+            progress?.caloriesConsumed,
+            progress?.caloriesTarget,
+          )}
+          value={
+            progress
+              ? formatMacroProgress(
+                  progress.caloriesConsumed,
+                  progress.caloriesTarget,
+                  "kcal",
+                )
+              : `0 / ${target.caloriesTarget} kcal`
+          }
+        />
+        <ProgressMetricCard
+          label="Protein Target"
+          progress={calculateTargetProgressPercent(
+            progress?.proteinConsumedG,
+            progress?.proteinTargetG,
+          )}
+          value={
+            progress
+              ? formatMacroProgress(
+                  progress.proteinConsumedG,
+                  progress.proteinTargetG,
+                  "g",
+                )
+              : `0 / ${target.proteinTargetG} g`
+          }
+        />
+        <ProgressMetricCard
+          label="Carbs Target"
+          progress={calculateTargetProgressPercent(
+            progress?.carbsConsumedG,
+            progress?.carbsTargetG,
+          )}
+          value={
+            progress
+              ? formatMacroProgress(
+                  progress.carbsConsumedG,
+                  progress.carbsTargetG,
+                  "g",
+                )
+              : `0 / ${target.carbsTargetG} g`
+          }
+        />
+        <ProgressMetricCard
+          label="Fat Target"
+          progress={calculateTargetProgressPercent(
+            progress?.fatConsumedG,
+            progress?.fatTargetG,
+          )}
+          value={
+            progress
+              ? formatMacroProgress(
+                  progress.fatConsumedG,
+                  progress.fatTargetG,
+                  "g",
+                )
+              : `0 / ${target.fatTargetG} g`
+          }
+        />
+        <ProgressMetricCard
+          label="Fiber Target"
+          progress={calculateTargetProgressPercent(
+            progress?.fiberConsumedG,
+            progress?.fiberTargetG,
+          )}
+          value={
+            progress
+              ? formatMacroProgress(
+                  progress.fiberConsumedG ?? 0,
+                  progress.fiberTargetG ?? target.fiberTargetG ?? 0,
+                  "g",
+                )
+              : `0 / ${target.fiberTargetG ?? 0} g`
+          }
+        />
+        <ProgressMetricCard
+          label="Water Target"
+          progress={calculateTargetProgressPercent(
+            progress?.waterConsumedMl,
+            progress?.waterTargetMl,
+          )}
+          value={
+            progress
+              ? `${formatWaterMl(progress.waterConsumedMl)} / ${formatWaterMl(progress.waterTargetMl)}`
+              : `0 / ${formatWaterMl(target.waterTargetMl)}`
+          }
+        />
       </View>
 
       <AppCard>
@@ -245,7 +421,8 @@ function TargetsHome({
           Workout and rest days
         </Text>
         <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-          Workout days: {getAdjustmentLabel(target.workoutDayAdjustment)}. Rest days: {getAdjustmentLabel(target.restDayAdjustment)}.
+          Workout days: {getAdjustmentLabel(target.workoutDayAdjustment)}. Rest
+          days: {getAdjustmentLabel(target.restDayAdjustment)}.
         </Text>
       </AppCard>
     </View>
@@ -255,28 +432,62 @@ function TargetsHome({
 function TargetsWizard({
   existingTarget,
   onCancel,
-  onSaved
+  onSaved,
 }: {
   existingTarget: NutritionTarget | null;
   onCancel: () => void;
   onSaved: () => void;
 }) {
   const [step, setStep] = useState<WizardStep>(1);
-  const [goalType, setGoalType] = useState<NutritionGoalType>(existingTarget?.goalType ?? "gain_muscle");
-  const [currentWeightKg, setCurrentWeightKg] = useState(existingTarget?.currentWeightKg ? String(existingTarget.currentWeightKg) : "");
-  const [goalWeightKg, setGoalWeightKg] = useState(existingTarget?.goalWeightKg ? String(existingTarget.goalWeightKg) : "");
+  const [goalType, setGoalType] = useState<NutritionGoalType>(
+    existingTarget?.goalType ?? "gain_muscle",
+  );
+  const [currentWeightKg, setCurrentWeightKg] = useState(
+    existingTarget?.currentWeightKg
+      ? String(existingTarget.currentWeightKg)
+      : "",
+  );
+  const [goalWeightKg, setGoalWeightKg] = useState(
+    existingTarget?.goalWeightKg ? String(existingTarget.goalWeightKg) : "",
+  );
   const [goalDate, setGoalDate] = useState(existingTarget?.goalDate ?? "");
-  const [activityLevel, setActivityLevel] = useState<ActivityLevel>(existingTarget?.activityLevel ?? "moderate");
-  const [trainingDaysPerWeek, setTrainingDaysPerWeek] = useState(existingTarget?.trainingDaysPerWeek ? String(existingTarget.trainingDaysPerWeek) : "3");
-  const [mainWorkoutFocus, setMainWorkoutFocus] = useState(existingTarget?.mainWorkoutFocus ?? "General fitness");
-  const [caloriesTarget, setCaloriesTarget] = useState(String(existingTarget?.caloriesTarget ?? 2300));
-  const [proteinTargetG, setProteinTargetG] = useState(String(existingTarget?.proteinTargetG ?? 130));
-  const [carbsTargetG, setCarbsTargetG] = useState(String(existingTarget?.carbsTargetG ?? 250));
-  const [fatTargetG, setFatTargetG] = useState(String(existingTarget?.fatTargetG ?? 70));
-  const [fiberTargetG, setFiberTargetG] = useState(String(existingTarget?.fiberTargetG ?? 30));
-  const [waterTargetMl, setWaterTargetMl] = useState(String(existingTarget?.waterTargetMl ?? 2500));
-  const [workoutDayAdjustment, setWorkoutDayAdjustment] = useState<NutritionDayAdjustment>(existingTarget?.workoutDayAdjustment ?? { mode: "same" });
-  const [restDayAdjustment, setRestDayAdjustment] = useState<NutritionDayAdjustment>(existingTarget?.restDayAdjustment ?? { mode: "same" });
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>(
+    existingTarget?.activityLevel ?? "moderate",
+  );
+  const [trainingDaysPerWeek, setTrainingDaysPerWeek] = useState(
+    existingTarget?.trainingDaysPerWeek
+      ? String(existingTarget.trainingDaysPerWeek)
+      : "3",
+  );
+  const [mainWorkoutFocus, setMainWorkoutFocus] = useState(
+    existingTarget?.mainWorkoutFocus ?? "General fitness",
+  );
+  const [caloriesTarget, setCaloriesTarget] = useState(
+    String(existingTarget?.caloriesTarget ?? 2300),
+  );
+  const [proteinTargetG, setProteinTargetG] = useState(
+    String(existingTarget?.proteinTargetG ?? 130),
+  );
+  const [carbsTargetG, setCarbsTargetG] = useState(
+    String(existingTarget?.carbsTargetG ?? 250),
+  );
+  const [fatTargetG, setFatTargetG] = useState(
+    String(existingTarget?.fatTargetG ?? 70),
+  );
+  const [fiberTargetG, setFiberTargetG] = useState(
+    String(existingTarget?.fiberTargetG ?? 30),
+  );
+  const [waterTargetMl, setWaterTargetMl] = useState(
+    String(existingTarget?.waterTargetMl ?? 2500),
+  );
+  const [workoutDayAdjustment, setWorkoutDayAdjustment] =
+    useState<NutritionDayAdjustment>(
+      existingTarget?.workoutDayAdjustment ?? { mode: "same" },
+    );
+  const [restDayAdjustment, setRestDayAdjustment] =
+    useState<NutritionDayAdjustment>(
+      existingTarget?.restDayAdjustment ?? { mode: "same" },
+    );
 
   const suggestedTargets = useMemo(
     () =>
@@ -284,9 +495,9 @@ function TargetsWizard({
         activityLevel,
         currentWeightKg: Number(currentWeightKg) || undefined,
         goalType,
-        trainingDaysPerWeek: Number(trainingDaysPerWeek) || undefined
+        trainingDaysPerWeek: Number(trainingDaysPerWeek) || undefined,
       }),
-    [activityLevel, currentWeightKg, goalType, trainingDaysPerWeek]
+    [activityLevel, currentWeightKg, goalType, trainingDaysPerWeek],
   );
 
   function useSuggestedTargets() {
@@ -316,7 +527,7 @@ function TargetsWizard({
       restDayAdjustment,
       trainingDaysPerWeek: Number(trainingDaysPerWeek) || undefined,
       waterTargetMl: Number(waterTargetMl) || 0,
-      workoutDayAdjustment
+      workoutDayAdjustment,
     });
 
     onSaved();
@@ -406,8 +617,24 @@ function TargetsWizard({
       ) : null}
 
       <View style={{ flexDirection: "row", gap: 10 }}>
-        <SecondaryButton label={step === 1 ? "Cancel" : "Back"} onPress={step === 1 ? onCancel : () => setStep((current) => Math.max(1, current - 1) as WizardStep)} />
-        <PrimaryButton label={step === 6 ? "Save Targets" : "Next"} onPress={step === 6 ? saveTargets : () => setStep((current) => Math.min(6, current + 1) as WizardStep)} />
+        <SecondaryButton
+          label={step === 1 ? "Cancel" : "Back"}
+          onPress={
+            step === 1
+              ? onCancel
+              : () =>
+                  setStep((current) => Math.max(1, current - 1) as WizardStep)
+          }
+        />
+        <PrimaryButton
+          label={step === 6 ? "Save Targets" : "Next"}
+          onPress={
+            step === 6
+              ? saveTargets
+              : () =>
+                  setStep((current) => Math.min(6, current + 1) as WizardStep)
+          }
+        />
       </View>
 
       <SafetyNotice />
@@ -417,7 +644,7 @@ function TargetsWizard({
 
 function WizardGoalStep({
   goalType,
-  onSelect
+  onSelect,
 }: {
   goalType: NutritionGoalType;
   onSelect: (goalType: NutritionGoalType) => void;
@@ -434,11 +661,15 @@ function WizardGoalStep({
             borderColor: goalType === goal.key ? "#f59e0b" : "#fde68a",
             borderRadius: 18,
             borderWidth: 1,
-            padding: 14
+            padding: 14,
           }}
         >
-          <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>{goal.title}</Text>
-          <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>{goal.description}</Text>
+          <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>
+            {goal.title}
+          </Text>
+          <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
+            {goal.description}
+          </Text>
         </TouchableOpacity>
       ))}
 
@@ -466,7 +697,7 @@ function WizardBodyStep({
   onGoalWeightChange,
   onMainWorkoutFocusChange,
   onTrainingDaysChange,
-  trainingDaysPerWeek
+  trainingDaysPerWeek,
 }: {
   activityLevel: ActivityLevel;
   currentWeightKg: string;
@@ -484,27 +715,54 @@ function WizardBodyStep({
   return (
     <AppCard>
       <View style={{ gap: 12 }}>
-        <TargetInput keyboardType="numeric" label="Current weight (kg)" onChangeText={onCurrentWeightChange} value={currentWeightKg} />
-        <TargetInput keyboardType="numeric" label="Goal weight (kg)" onChangeText={onGoalWeightChange} value={goalWeightKg} />
-        <TargetInput label="Goal date optional" onChangeText={onGoalDateChange} placeholder="YYYY-MM-DD" value={goalDate} />
-        <TargetInput keyboardType="numeric" label="Training days per week" onChangeText={onTrainingDaysChange} value={trainingDaysPerWeek} />
+        <TargetInput
+          keyboardType="numeric"
+          label="Current weight (kg)"
+          onChangeText={onCurrentWeightChange}
+          value={currentWeightKg}
+        />
+        <TargetInput
+          keyboardType="numeric"
+          label="Goal weight (kg)"
+          onChangeText={onGoalWeightChange}
+          value={goalWeightKg}
+        />
+        <TargetInput
+          label="Goal date optional"
+          onChangeText={onGoalDateChange}
+          placeholder="YYYY-MM-DD"
+          value={goalDate}
+        />
+        <TargetInput
+          keyboardType="numeric"
+          label="Training days per week"
+          onChangeText={onTrainingDaysChange}
+          value={trainingDaysPerWeek}
+        />
 
         <ChoiceGroup
           label="Activity level"
-          options={ACTIVITY_LEVELS.map((item) => ({ key: item.key, label: item.label }))}
+          options={ACTIVITY_LEVELS.map((item) => ({
+            key: item.key,
+            label: item.label,
+          }))}
           selectedKey={activityLevel}
           onSelect={(key) => onActivityLevelChange(key as ActivityLevel)}
         />
 
         <ChoiceGroup
           label="Main workout focus"
-          options={WORKOUT_FOCUS_OPTIONS.map((label) => ({ key: label, label }))}
+          options={WORKOUT_FOCUS_OPTIONS.map((label) => ({
+            key: label,
+            label,
+          }))}
           selectedKey={mainWorkoutFocus}
           onSelect={onMainWorkoutFocusChange}
         />
 
         <Text style={{ color: "#64748b", lineHeight: 20 }}>
-          Preferred units: metric (kg, cm, ml, grams). Imperial support is prepared for later.
+          Preferred units: metric (kg, cm, ml, grams). Imperial support is
+          prepared for later.
         </Text>
       </View>
     </AppCard>
@@ -514,7 +772,7 @@ function WizardBodyStep({
 function WizardSuggestedStep({
   onAdjust,
   onUseSuggested,
-  suggestedTargets
+  suggestedTargets,
 }: {
   onAdjust: () => void;
   onUseSuggested: () => void;
@@ -535,12 +793,27 @@ function WizardSuggestedStep({
         </Text>
       </AppCard>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-        <MetricPill label="Calories" value={`${suggestedTargets.caloriesTarget} kcal`} />
-        <MetricPill label="Protein" value={`${suggestedTargets.proteinTargetG} g`} />
-        <MetricPill label="Carbs" value={`${suggestedTargets.carbsTargetG} g`} />
+        <MetricPill
+          label="Calories"
+          value={`${suggestedTargets.caloriesTarget} kcal`}
+        />
+        <MetricPill
+          label="Protein"
+          value={`${suggestedTargets.proteinTargetG} g`}
+        />
+        <MetricPill
+          label="Carbs"
+          value={`${suggestedTargets.carbsTargetG} g`}
+        />
         <MetricPill label="Fat" value={`${suggestedTargets.fatTargetG} g`} />
-        <MetricPill label="Fiber" value={`${suggestedTargets.fiberTargetG ?? 30} g`} />
-        <MetricPill label="Water" value={`${suggestedTargets.waterTargetMl} ml`} />
+        <MetricPill
+          label="Fiber"
+          value={`${suggestedTargets.fiberTargetG ?? 30} g`}
+        />
+        <MetricPill
+          label="Water"
+          value={`${suggestedTargets.waterTargetMl} ml`}
+        />
       </View>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <PrimaryButton label="Use Suggested Targets" onPress={onUseSuggested} />
@@ -562,7 +835,7 @@ function WizardManualStep({
   onProteinChange,
   onWaterChange,
   proteinTargetG,
-  waterTargetMl
+  waterTargetMl,
 }: {
   caloriesTarget: string;
   carbsTargetG: string;
@@ -580,12 +853,48 @@ function WizardManualStep({
   return (
     <AppCard>
       <View style={{ gap: 12 }}>
-        <TargetInput helper="Energy target used to compare daily food intake with your goal." keyboardType="numeric" label="Calories per day" onChangeText={onCaloriesChange} value={caloriesTarget} />
-        <TargetInput helper="Helps support muscle repair and recovery after workouts." keyboardType="numeric" label="Protein grams" onChangeText={onProteinChange} value={proteinTargetG} />
-        <TargetInput helper="Supports training energy and daily meals." keyboardType="numeric" label="Carbs grams" onChangeText={onCarbsChange} value={carbsTargetG} />
-        <TargetInput helper="Supports balanced meals and energy." keyboardType="numeric" label="Fat grams" onChangeText={onFatChange} value={fatTargetG} />
-        <TargetInput helper="Supports a balanced nutrition pattern." keyboardType="numeric" label="Fiber grams" onChangeText={onFiberChange} value={fiberTargetG} />
-        <TargetInput helper="Used for your daily water progress widget." keyboardType="numeric" label="Water ml" onChangeText={onWaterChange} value={waterTargetMl} />
+        <TargetInput
+          helper="Energy target used to compare daily food intake with your goal."
+          keyboardType="numeric"
+          label="Calories per day"
+          onChangeText={onCaloriesChange}
+          value={caloriesTarget}
+        />
+        <TargetInput
+          helper="Helps support muscle repair and recovery after workouts."
+          keyboardType="numeric"
+          label="Protein grams"
+          onChangeText={onProteinChange}
+          value={proteinTargetG}
+        />
+        <TargetInput
+          helper="Supports training energy and daily meals."
+          keyboardType="numeric"
+          label="Carbs grams"
+          onChangeText={onCarbsChange}
+          value={carbsTargetG}
+        />
+        <TargetInput
+          helper="Supports balanced meals and energy."
+          keyboardType="numeric"
+          label="Fat grams"
+          onChangeText={onFatChange}
+          value={fatTargetG}
+        />
+        <TargetInput
+          helper="Supports a balanced nutrition pattern."
+          keyboardType="numeric"
+          label="Fiber grams"
+          onChangeText={onFiberChange}
+          value={fiberTargetG}
+        />
+        <TargetInput
+          helper="Used for your daily water progress widget."
+          keyboardType="numeric"
+          label="Water ml"
+          onChangeText={onWaterChange}
+          value={waterTargetMl}
+        />
       </View>
     </AppCard>
   );
@@ -595,7 +904,7 @@ function WizardAdjustmentStep({
   onRestChange,
   onWorkoutChange,
   restDayAdjustment,
-  workoutDayAdjustment
+  workoutDayAdjustment,
 }: {
   onRestChange: (adjustment: NutritionDayAdjustment) => void;
   onWorkoutChange: (adjustment: NutritionDayAdjustment) => void;
@@ -607,17 +916,33 @@ function WizardAdjustmentStep({
       <AppCard>
         <ChoiceGroup
           label="Workout days"
-          options={WORKOUT_ADJUSTMENTS.map((item) => ({ key: item.adjustment.mode, label: item.label }))}
+          options={WORKOUT_ADJUSTMENTS.map((item) => ({
+            key: item.adjustment.mode,
+            label: item.label,
+          }))}
           selectedKey={workoutDayAdjustment.mode}
-          onSelect={(key) => onWorkoutChange(WORKOUT_ADJUSTMENTS.find((item) => item.adjustment.mode === key)?.adjustment ?? { mode: "same" })}
+          onSelect={(key) =>
+            onWorkoutChange(
+              WORKOUT_ADJUSTMENTS.find((item) => item.adjustment.mode === key)
+                ?.adjustment ?? { mode: "same" },
+            )
+          }
         />
       </AppCard>
       <AppCard>
         <ChoiceGroup
           label="Rest days"
-          options={REST_ADJUSTMENTS.map((item) => ({ key: item.adjustment.mode, label: item.label }))}
+          options={REST_ADJUSTMENTS.map((item) => ({
+            key: item.adjustment.mode,
+            label: item.label,
+          }))}
           selectedKey={restDayAdjustment.mode}
-          onSelect={(key) => onRestChange(REST_ADJUSTMENTS.find((item) => item.adjustment.mode === key)?.adjustment ?? { mode: "same" })}
+          onSelect={(key) =>
+            onRestChange(
+              REST_ADJUSTMENTS.find((item) => item.adjustment.mode === key)
+                ?.adjustment ?? { mode: "same" },
+            )
+          }
         />
       </AppCard>
     </View>
@@ -633,7 +958,7 @@ function WizardReviewStep({
   proteinTargetG,
   restDayAdjustment,
   waterTargetMl,
-  workoutDayAdjustment
+  workoutDayAdjustment,
 }: {
   caloriesTarget: string;
   carbsTargetG: string;
@@ -658,8 +983,14 @@ function WizardReviewStep({
         <MetricLine label="Fat" value={`${fatTargetG} g`} />
         <MetricLine label="Fiber" value={`${fiberTargetG} g`} />
         <MetricLine label="Water" value={`${waterTargetMl} ml`} />
-        <MetricLine label="Workout Days" value={getAdjustmentLabel(workoutDayAdjustment)} />
-        <MetricLine label="Rest Days" value={getAdjustmentLabel(restDayAdjustment)} />
+        <MetricLine
+          label="Workout Days"
+          value={getAdjustmentLabel(workoutDayAdjustment)}
+        />
+        <MetricLine
+          label="Rest Days"
+          value={getAdjustmentLabel(restDayAdjustment)}
+        />
       </View>
     </AppCard>
   );
@@ -671,7 +1002,7 @@ function TargetInput({
   label,
   onChangeText,
   placeholder,
-  value
+  value,
 }: {
   helper?: string;
   keyboardType?: "default" | "numeric";
@@ -683,7 +1014,9 @@ function TargetInput({
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ color: "#0f172a", fontWeight: "900" }}>{label}</Text>
-      {helper ? <Text style={{ color: "#64748b", lineHeight: 20 }}>{helper}</Text> : null}
+      {helper ? (
+        <Text style={{ color: "#64748b", lineHeight: 20 }}>{helper}</Text>
+      ) : null}
       <TextInput
         keyboardType={keyboardType}
         onChangeText={onChangeText}
@@ -700,7 +1033,7 @@ function ChoiceGroup({
   label,
   onSelect,
   options,
-  selectedKey
+  selectedKey,
 }: {
   label: string;
   onSelect: (key: string) => void;
@@ -717,13 +1050,19 @@ function ChoiceGroup({
             key={option.key}
             onPress={() => onSelect(option.key)}
             style={{
-              backgroundColor: selectedKey === option.key ? "#f59e0b" : "#fffbeb",
+              backgroundColor:
+                selectedKey === option.key ? "#f59e0b" : "#fffbeb",
               borderRadius: 999,
               paddingHorizontal: 12,
-              paddingVertical: 9
+              paddingVertical: 9,
             }}
           >
-            <Text style={{ color: selectedKey === option.key ? "#ffffff" : "#92400e", fontWeight: "900" }}>
+            <Text
+              style={{
+                color: selectedKey === option.key ? "#ffffff" : "#92400e",
+                fontWeight: "900",
+              }}
+            >
               {option.label}
             </Text>
           </TouchableOpacity>
@@ -735,18 +1074,56 @@ function ChoiceGroup({
 
 function MetricPill({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ backgroundColor: "#fffbeb", borderRadius: 16, flexGrow: 1, minWidth: "30%", padding: 12 }}>
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900", marginTop: 4 }}>{value}</Text>
+    <View
+      style={{
+        backgroundColor: "#fffbeb",
+        borderRadius: 16,
+        flexGrow: 1,
+        minWidth: "30%",
+        padding: 12,
+      }}
+    >
+      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 16,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
-function ProgressMetricCard({ label, progress, value }: { label: string; progress: number; value: string }) {
+function ProgressMetricCard({
+  label,
+  progress,
+  value,
+}: {
+  label: string;
+  progress: number;
+  value: string;
+}) {
   return (
     <AppCard style={{ flexGrow: 1, minWidth: "46%" }}>
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 17, fontWeight: "900", marginTop: 4 }}>{value}</Text>
+      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 17,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
+        {value}
+      </Text>
       <ProgressBar progress={progress} />
     </AppCard>
   );
@@ -754,13 +1131,21 @@ function ProgressMetricCard({ label, progress, value }: { label: string; progres
 
 function ProgressBar({ progress }: { progress: number }) {
   return (
-    <View style={{ backgroundColor: "#fde68a", borderRadius: 999, height: 10, marginTop: 10, overflow: "hidden" }}>
+    <View
+      style={{
+        backgroundColor: "#fde68a",
+        borderRadius: 999,
+        height: 10,
+        marginTop: 10,
+        overflow: "hidden",
+      }}
+    >
       <View
         style={{
           backgroundColor: "#f59e0b",
           borderRadius: 999,
           height: "100%",
-          width: `${Math.max(0, Math.min(100, progress))}%` as `${number}%`
+          width: `${Math.max(0, Math.min(100, progress))}%` as `${number}%`,
         }}
       />
     </View>
@@ -769,25 +1154,67 @@ function ProgressBar({ progress }: { progress: number }) {
 
 function MetricLine({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}>
-      <Text style={{ color: "#64748b", flex: 1, fontWeight: "800" }}>{label}</Text>
+    <View
+      style={{ flexDirection: "row", gap: 10, justifyContent: "space-between" }}
+    >
+      <Text style={{ color: "#64748b", flex: 1, fontWeight: "800" }}>
+        {label}
+      </Text>
       <Text style={{ color: "#0f172a", fontWeight: "900" }}>{value}</Text>
     </View>
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PrimaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#f59e0b", borderRadius: 18, flex: 1, justifyContent: "center", minHeight: 52 }}>
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        alignItems: "center",
+        backgroundColor: "#f59e0b",
+        borderRadius: 18,
+        flex: 1,
+        justifyContent: "center",
+        minHeight: 52,
+      }}
+    >
+      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
 
-function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function SecondaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#fffbeb", borderRadius: 18, flex: 1, justifyContent: "center", minHeight: 52 }}>
-      <Text style={{ color: "#92400e", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        alignItems: "center",
+        backgroundColor: "#fffbeb",
+        borderRadius: 18,
+        flex: 1,
+        justifyContent: "center",
+        minHeight: 52,
+      }}
+    >
+      <Text style={{ color: "#92400e", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -795,9 +1222,9 @@ function SecondaryButton({ label, onPress }: { label: string; onPress: () => voi
 function SafetyNotice() {
   return (
     <Text style={{ color: "#64748b", fontSize: 12, lineHeight: 18 }}>
-      Targets are for general wellness tracking only and are not medical advice. For pregnancy,
-      children, medical conditions, medication concerns, or eating concerns, speak to a healthcare
-      professional.
+      Targets are for general wellness tracking only and are not medical advice.
+      For pregnancy, children, medical conditions, medication concerns, or
+      eating concerns, speak to a healthcare professional.
     </Text>
   );
 }
@@ -820,7 +1247,10 @@ function getStepTitle(step: WizardStep) {
 }
 
 export function getGoalLabel(goalType?: NutritionGoalType) {
-  return GOAL_OPTIONS.find((goal) => goal.key === goalType)?.title ?? "Nutrition Goal";
+  return (
+    GOAL_OPTIONS.find((goal) => goal.key === goalType)?.title ??
+    "Nutrition Goal"
+  );
 }
 
 function getAdjustmentLabel(adjustment?: NutritionDayAdjustment) {
@@ -844,5 +1274,7 @@ function getAdjustmentLabel(adjustment?: NutritionDayAdjustment) {
 }
 
 function formatWaterMl(amountMl: number) {
-  return amountMl >= 1000 ? `${(amountMl / 1000).toFixed(1)} L` : `${Math.round(amountMl)} ml`;
+  return amountMl >= 1000
+    ? `${(amountMl / 1000).toFixed(1)} L`
+    : `${Math.round(amountMl)} ml`;
 }

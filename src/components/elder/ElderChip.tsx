@@ -17,10 +17,12 @@ export function ElderChip({ label, onPress, selected }: ElderChipProps) {
         borderRadius: 999,
         borderWidth: 1,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#15803d" : "#475569", fontWeight: "800" }}>
+      <Text
+        style={{ color: selected ? "#15803d" : "#475569", fontWeight: "800" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

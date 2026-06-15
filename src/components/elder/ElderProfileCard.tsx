@@ -21,11 +21,12 @@ export function ElderProfileCard({ onOpen, summary }: ElderProfileCardProps) {
               borderRadius: 20,
               height: 52,
               justifyContent: "center",
-              width: 52
+              width: 52,
             }}
           >
             <Text style={{ color: "#059669", fontWeight: "900" }}>
-              {summary.elder.avatarEmoji ?? summary.elder.displayName.slice(0, 2).toUpperCase()}
+              {summary.elder.avatarEmoji ??
+                summary.elder.displayName.slice(0, 2).toUpperCase()}
             </Text>
           </View>
           <View style={{ flex: 1 }}>
@@ -36,10 +37,12 @@ export function ElderProfileCard({ onOpen, summary }: ElderProfileCardProps) {
               {summary.elder.relationship ?? "Elder profile"}
             </Text>
             <Text style={{ color: "#64748b", marginTop: 6 }}>
-              Last check-in: {getElderCheckInStatusLabel(summary.latestCheckIn?.status)}
+              Last check-in:{" "}
+              {getElderCheckInStatusLabel(summary.latestCheckIn?.status)}
             </Text>
             <Text style={{ color: "#64748b", marginTop: 3 }}>
-              Next appointment: {summary.nextAppointment?.appointmentDate ?? "None planned"}
+              Next appointment:{" "}
+              {summary.nextAppointment?.appointmentDate ?? "None planned"}
             </Text>
           </View>
         </View>
@@ -50,8 +53,14 @@ export function ElderProfileCard({ onOpen, summary }: ElderProfileCardProps) {
           </Text>
         ) : null}
 
-        <TouchableOpacity activeOpacity={0.85} onPress={onOpen} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Open profile</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onOpen}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Open profile
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -63,5 +72,5 @@ const buttonStyle = {
   backgroundColor: "#059669",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 48
+  minHeight: 48,
 };

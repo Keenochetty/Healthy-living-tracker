@@ -8,7 +8,7 @@ import type {
   ProfileModuleRow,
   ProfileRow,
   ProfileSettingsRow,
-  ProfileWidgetRow
+  ProfileWidgetRow,
 } from "@/types/database";
 import type { UserPreferences } from "@/types/profile";
 
@@ -41,11 +41,17 @@ function fail<T>(fallback: string, error?: unknown): SyncResult<T> {
   return { data: null, error: friendlyError(fallback, error) };
 }
 
-function chooseUnit<T extends string>(value: string | null | undefined, fallback: T): T {
+function chooseUnit<T extends string>(
+  value: string | null | undefined,
+  fallback: T,
+): T {
   return (value ?? fallback) as T;
 }
 
-function getFullNameFromUser(user: User, preferences?: Partial<UserPreferences>) {
+function getFullNameFromUser(
+  user: User,
+  preferences?: Partial<UserPreferences>,
+) {
   const metadataName =
     typeof user.user_metadata.full_name === "string"
       ? user.user_metadata.full_name
@@ -60,9 +66,9 @@ function getFullNameFromUser(user: User, preferences?: Partial<UserPreferences>)
 }
 
 export function getDefaultWidgetKeys(moduleKeys: AppModuleKey[]) {
-  return APP_WIDGETS.filter((widget) => moduleKeys.includes(widget.moduleKey)).map(
-    (widget) => widget.key
-  );
+  return APP_WIDGETS.filter((widget) =>
+    moduleKeys.includes(widget.moduleKey),
+  ).map((widget) => widget.key);
 }
 
 export async function getCurrentSession(): Promise<SyncResult<Session>> {
@@ -90,7 +96,7 @@ export async function getCurrentSupabaseUser() {
 export async function signUpWithEmail({
   email,
   fullName,
-  password
+  password,
 }: {
   email: string;
   fullName: string;
@@ -100,10 +106,10 @@ export async function signUpWithEmail({
     email: email.trim(),
     options: {
       data: {
-        full_name: fullName.trim() || undefined
-      }
+        full_name: fullName.trim() || undefined,
+      },
     },
-    password
+    password,
   });
 
   if (error) return fail("Could not create account. Please try again.", error);
@@ -111,7 +117,7 @@ export async function signUpWithEmail({
   if (data.user) {
     await upsertProfile(data.user.id, {
       email: data.user.email,
-      full_name: fullName.trim() || null
+      full_name: fullName.trim() || null,
     });
   }
 
@@ -120,17 +126,18 @@ export async function signUpWithEmail({
 
 export async function signInWithEmail({
   email,
-  password
+  password,
 }: {
   email: string;
   password: string;
 }): Promise<SyncResult<Session>> {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.trim(),
-    password
+    password,
   });
 
-  if (error) return fail("Could not sign in. Please check your details.", error);
+  if (error)
+    return fail("Could not sign in. Please check your details.", error);
 
   return ok(data.session);
 }
@@ -143,7 +150,9 @@ export async function signOut(): Promise<SyncResult<boolean>> {
   return ok(true);
 }
 
-export async function getProfile(userId: string): Promise<SyncResult<ProfileRow>> {
+export async function getProfile(
+  userId: string,
+): Promise<SyncResult<ProfileRow>> {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
@@ -157,7 +166,7 @@ export async function getProfile(userId: string): Promise<SyncResult<ProfileRow>
 
 export async function upsertProfile(
   userId: string,
-  data: Partial<ProfileRow & { displayName?: string }>
+  data: Partial<ProfileRow & { displayName?: string }>,
 ): Promise<SyncResult<ProfileRow>> {
   const userResult = await getCurrentUser();
   const user = userResult.data;
@@ -172,7 +181,7 @@ export async function upsertProfile(
     id: userId,
     language: data.language,
     timezone: data.timezone,
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
 
   const { data: row, error } = await supabase
@@ -187,7 +196,7 @@ export async function upsertProfile(
 }
 
 export async function getProfileSettings(
-  userId: string
+  userId: string,
 ): Promise<SyncResult<ProfileSettingsRow>> {
   const { data, error } = await supabase
     .from("profile_settings")
@@ -202,7 +211,7 @@ export async function getProfileSettings(
 
 export async function upsertProfileSettings(
   userId: string,
-  settings: Partial<ProfileSettingsRow>
+  settings: Partial<ProfileSettingsRow>,
 ): Promise<SyncResult<ProfileSettingsRow>> {
   const { data, error } = await supabase
     .from("profile_settings")
@@ -210,9 +219,9 @@ export async function upsertProfileSettings(
       {
         ...settings,
         profile_id: userId,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
-      { onConflict: "profile_id" }
+      { onConflict: "profile_id" },
     )
     .select("*")
     .single();
@@ -223,7 +232,7 @@ export async function upsertProfileSettings(
 }
 
 export async function getProfileModules(
-  userId: string
+  userId: string,
 ): Promise<SyncResult<ProfileModuleRow[]>> {
   const { data, error } = await supabase
     .from("profile_modules")
@@ -238,13 +247,13 @@ export async function getProfileModules(
 
 export async function syncProfileModules(
   userId: string,
-  enabledModules: AppModuleKey[]
+  enabledModules: AppModuleKey[],
 ): Promise<SyncResult<ProfileModuleRow[]>> {
   const rows = enabledModules.map((moduleKey) => ({
     enabled: true,
     module_key: moduleKey,
     profile_id: userId,
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   }));
 
   const { data, error } = await supabase
@@ -258,7 +267,7 @@ export async function syncProfileModules(
 }
 
 export async function getProfileWidgets(
-  userId: string
+  userId: string,
 ): Promise<SyncResult<ProfileWidgetRow[]>> {
   const { data, error } = await supabase
     .from("profile_widgets")
@@ -274,7 +283,7 @@ export async function getProfileWidgets(
 
 export async function syncProfileWidgets(
   userId: string,
-  widgets: WidgetKey[]
+  widgets: WidgetKey[],
 ): Promise<SyncResult<ProfileWidgetRow[]>> {
   const rows = widgets.map((widgetKey, sortOrder) => ({
     enabled: true,
@@ -282,7 +291,7 @@ export async function syncProfileWidgets(
     size: "medium",
     sort_order: sortOrder,
     updated_at: new Date().toISOString(),
-    widget_key: widgetKey
+    widget_key: widgetKey,
   }));
 
   const { data, error } = await supabase
@@ -297,16 +306,20 @@ export async function syncProfileWidgets(
 
 export async function saveOnboardingToCloud(
   userId: string,
-  preferences: UserPreferences
+  preferences: UserPreferences,
 ): Promise<SyncResult<UserPreferences>> {
   const profile = await upsertProfile(userId, {
     country: preferences.country,
     displayName: preferences.displayName,
     language: preferences.language,
-    timezone: preferences.timezone
+    timezone: preferences.timezone,
   });
 
-  if (profile.error) return fail("Could not sync right now. Your local settings are still saved.", profile.error);
+  if (profile.error)
+    return fail(
+      "Could not sync right now. Your local settings are still saved.",
+      profile.error,
+    );
 
   const settings = await upsertProfileSettings(userId, {
     currency: preferences.currency,
@@ -318,44 +331,56 @@ export async function saveOnboardingToCloud(
     speed_unit: preferences.units.speedUnit,
     temperature_unit: preferences.units.temperatureUnit,
     theme_key: preferences.themeKey,
-    weight_unit: preferences.units.weightUnit
+    weight_unit: preferences.units.weightUnit,
   });
 
-  if (settings.error) return fail("Could not sync right now. Your local settings are still saved.", settings.error);
+  if (settings.error)
+    return fail(
+      "Could not sync right now. Your local settings are still saved.",
+      settings.error,
+    );
 
   const modules = await syncProfileModules(userId, preferences.enabledModules);
 
-  if (modules.error) return fail("Could not sync right now. Your local settings are still saved.", modules.error);
+  if (modules.error)
+    return fail(
+      "Could not sync right now. Your local settings are still saved.",
+      modules.error,
+    );
 
   const enabledWidgets = preferences.enabledWidgets.length
     ? preferences.enabledWidgets
     : getDefaultWidgetKeys(preferences.enabledModules);
   const widgets = await syncProfileWidgets(userId, enabledWidgets);
 
-  if (widgets.error) return fail("Could not sync right now. Your local settings are still saved.", widgets.error);
+  if (widgets.error)
+    return fail(
+      "Could not sync right now. Your local settings are still saved.",
+      widgets.error,
+    );
 
   return ok({
     ...preferences,
     enabledWidgets,
-    onboardingComplete: true
+    onboardingComplete: true,
   });
 }
 
 export async function loadCloudPreferences(
-  userId: string
+  userId: string,
 ): Promise<SyncResult<UserPreferences>> {
   const local = await getLocalOnboardingBackup();
   const [profile, settings, modules, widgets] = await Promise.all([
     getProfile(userId),
     getProfileSettings(userId),
     getProfileModules(userId),
-    getProfileWidgets(userId)
+    getProfileWidgets(userId),
   ]);
 
   if (profile.error || settings.error || modules.error || widgets.error) {
     return fail(
       "Could not load cloud settings. Your local settings are still available.",
-      profile.error ?? settings.error ?? modules.error ?? widgets.error
+      profile.error ?? settings.error ?? modules.error ?? widgets.error,
     );
   }
 
@@ -386,25 +411,37 @@ export async function loadCloudPreferences(
     timezone: profile.data?.timezone ?? local.timezone,
     units: {
       ...local.units,
-      dateFormat: chooseUnit(settings.data?.date_format, local.units.dateFormat),
+      dateFormat: chooseUnit(
+        settings.data?.date_format,
+        local.units.dateFormat,
+      ),
       distanceUnit: chooseUnit(
         settings.data?.distance_unit,
-        local.units.distanceUnit
+        local.units.distanceUnit,
       ),
-      heightUnit: chooseUnit(settings.data?.height_unit, local.units.heightUnit),
-      liquidUnit: chooseUnit(settings.data?.liquid_unit, local.units.liquidUnit),
+      heightUnit: chooseUnit(
+        settings.data?.height_unit,
+        local.units.heightUnit,
+      ),
+      liquidUnit: chooseUnit(
+        settings.data?.liquid_unit,
+        local.units.liquidUnit,
+      ),
       speedUnit: chooseUnit(settings.data?.speed_unit, local.units.speedUnit),
       temperatureUnit: chooseUnit(
         settings.data?.temperature_unit,
-        local.units.temperatureUnit
+        local.units.temperatureUnit,
       ),
-      weightUnit: chooseUnit(settings.data?.weight_unit, local.units.weightUnit)
-    }
+      weightUnit: chooseUnit(
+        settings.data?.weight_unit,
+        local.units.weightUnit,
+      ),
+    },
   });
 }
 
 export async function syncLocalPreferencesToCloud(
-  userId: string
+  userId: string,
 ): Promise<SyncResult<UserPreferences>> {
   const preferences = await getLocalOnboardingBackup();
 
@@ -447,6 +484,6 @@ export async function syncRemotePreferencesToLocal() {
   const { saveUserPreferences } = await import("@/lib/userPreferences");
 
   return saveUserPreferences(remote, {
-    skipRemoteSync: true
+    skipRemoteSync: true,
   });
 }

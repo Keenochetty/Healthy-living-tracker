@@ -16,7 +16,7 @@ function formatDateLabel(date: Date) {
   return new Intl.DateTimeFormat(undefined, {
     day: "numeric",
     month: "long",
-    weekday: "long"
+    weekday: "long",
   }).format(date);
 }
 
@@ -29,11 +29,19 @@ export function DayTimeline({ date, events, onOpenEvent }: DayTimelineProps) {
       </View>
 
       {events.length === 0 ? (
-        <NativeEmptyState icon="calendar" title="No events this day" message="Choose another day or add an event placeholder." />
+        <NativeEmptyState
+          icon="calendar"
+          title="No events this day"
+          message="Choose another day or add an event placeholder."
+        />
       ) : (
         <View style={styles.list}>
           {events.map((event) => (
-            <CalendarEventCard event={event} key={event.id} onOpen={onOpenEvent} />
+            <CalendarEventCard
+              event={event}
+              key={event.id}
+              onOpen={onOpenEvent}
+            />
           ))}
         </View>
       )}
@@ -43,24 +51,24 @@ export function DayTimeline({ date, events, onOpenEvent }: DayTimelineProps) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   count: {
     color: colors.text.muted,
     fontSize: 14,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   header: {
     alignItems: "center",
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   list: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   title: {
     color: colors.text.primary,
     fontSize: 20,
-    fontWeight: "900"
-  }
+    fontWeight: "900",
+  },
 });

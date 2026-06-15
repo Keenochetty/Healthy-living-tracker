@@ -1,7 +1,12 @@
 import { Text, View } from "react-native";
 
 import { AppIcon } from "@/components/ui/AppIcon";
-import { appColors, appRadius, appSpacing, typography } from "@/theme/designSystem";
+import {
+  appColors,
+  appRadius,
+  appSpacing,
+  typography,
+} from "@/theme/designSystem";
 import type { PrivacyBadgeType } from "@/types/designSystem";
 
 type PrivacyBadgeProps = {
@@ -15,7 +20,7 @@ const LABELS: Record<PrivacyBadgeType, string> = {
   shared_family: "Shared with family",
   shared_caregiver: "Shared with caregiver",
   emergency_only: "Emergency only",
-  locked: "Locked"
+  locked: "Locked",
 };
 
 export function PrivacyBadge({ label, type = "private" }: PrivacyBadgeProps) {
@@ -26,18 +31,29 @@ export function PrivacyBadge({ label, type = "private" }: PrivacyBadgeProps) {
       style={{
         alignItems: "center",
         alignSelf: "flex-start",
-        backgroundColor: isLocked ? appColors.lockedSoft : appColors.surfaceWarm,
+        backgroundColor: isLocked
+          ? appColors.lockedSoft
+          : appColors.surfaceWarm,
         borderColor: isLocked ? appColors.locked : appColors.border,
         borderRadius: appRadius.pill,
         borderWidth: 1,
         flexDirection: "row",
         gap: appSpacing.xs,
         minHeight: 28,
-        paddingHorizontal: appSpacing.sm
+        paddingHorizontal: appSpacing.sm,
       }}
     >
-      <AppIcon name={isLocked ? "privacy" : "safety"} size={13} variant={isLocked ? "private" : "muted"} />
-      <Text style={[typography.privacyLabel, { color: isLocked ? appColors.locked : appColors.textSecondary }]}>
+      <AppIcon
+        name={isLocked ? "privacy" : "safety"}
+        size={13}
+        variant={isLocked ? "private" : "muted"}
+      />
+      <Text
+        style={[
+          typography.privacyLabel,
+          { color: isLocked ? appColors.locked : appColors.textSecondary },
+        ]}
+      >
         {label ?? LABELS[type]}
       </Text>
     </View>

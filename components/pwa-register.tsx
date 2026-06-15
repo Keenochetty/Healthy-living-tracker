@@ -4,7 +4,10 @@ import { useEffect } from "react";
 
 export function PwaRegister() {
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") {
+    if (
+      !("serviceWorker" in navigator) ||
+      process.env.NODE_ENV !== "production"
+    ) {
       return;
     }
 
@@ -17,7 +20,7 @@ export function PwaRegister() {
 
       navigator.serviceWorker.register("/sw.js", {
         scope: "/",
-        updateViaCache: "none"
+        updateViaCache: "none",
       });
     });
 

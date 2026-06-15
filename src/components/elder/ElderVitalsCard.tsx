@@ -11,7 +11,11 @@ type ElderVitalsCardProps = {
   onChange?: () => void;
 };
 
-export function ElderVitalsCard({ elderId, latestVitals, onChange }: ElderVitalsCardProps) {
+export function ElderVitalsCard({
+  elderId,
+  latestVitals,
+  onChange,
+}: ElderVitalsCardProps) {
   const [bloodPressureDiastolic, setBloodPressureDiastolic] = useState("");
   const [bloodPressureSystolic, setBloodPressureSystolic] = useState("");
   const [bloodSugar, setBloodSugar] = useState("");
@@ -29,7 +33,7 @@ export function ElderVitalsCard({ elderId, latestVitals, onChange }: ElderVitals
       heartRate: toNumber(heartRate),
       notes,
       oxygenSaturation: toNumber(oxygenSaturation),
-      temperature: toNumber(temperature)
+      temperature: toNumber(temperature),
     });
 
     setBloodPressureDiastolic("");
@@ -50,27 +54,82 @@ export function ElderVitalsCard({ elderId, latestVitals, onChange }: ElderVitals
             Vitals log
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Store values only. This app does not interpret vitals. Contact a healthcare
-            professional if worried.
+            Store values only. This app does not interpret vitals. Contact a
+            healthcare professional if worried.
           </Text>
         </View>
 
         {latestVitals ? (
           <Text style={{ color: "#64748b" }}>
-            Latest: {latestVitals.heartRate ?? "-"} BPM, {latestVitals.temperature ?? "-"} C
+            Latest: {latestVitals.heartRate ?? "-"} BPM,{" "}
+            {latestVitals.temperature ?? "-"} C
           </Text>
         ) : null}
 
-        <TextInput keyboardType="numeric" onChangeText={setHeartRate} placeholder="Heart rate" placeholderTextColor="#94a3b8" style={inputStyle} value={heartRate} />
-        <TextInput keyboardType="decimal-pad" onChangeText={setTemperature} placeholder="Temperature" placeholderTextColor="#94a3b8" style={inputStyle} value={temperature} />
-        <TextInput keyboardType="numeric" onChangeText={setBloodPressureSystolic} placeholder="Blood pressure systolic" placeholderTextColor="#94a3b8" style={inputStyle} value={bloodPressureSystolic} />
-        <TextInput keyboardType="numeric" onChangeText={setBloodPressureDiastolic} placeholder="Blood pressure diastolic" placeholderTextColor="#94a3b8" style={inputStyle} value={bloodPressureDiastolic} />
-        <TextInput keyboardType="numeric" onChangeText={setOxygenSaturation} placeholder="Oxygen saturation" placeholderTextColor="#94a3b8" style={inputStyle} value={oxygenSaturation} />
-        <TextInput keyboardType="decimal-pad" onChangeText={setBloodSugar} placeholder="Blood sugar, optional" placeholderTextColor="#94a3b8" style={inputStyle} value={bloodSugar} />
-        <TextInput onChangeText={setNotes} placeholder="Notes, optional" placeholderTextColor="#94a3b8" style={inputStyle} value={notes} />
+        <TextInput
+          keyboardType="numeric"
+          onChangeText={setHeartRate}
+          placeholder="Heart rate"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={heartRate}
+        />
+        <TextInput
+          keyboardType="decimal-pad"
+          onChangeText={setTemperature}
+          placeholder="Temperature"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={temperature}
+        />
+        <TextInput
+          keyboardType="numeric"
+          onChangeText={setBloodPressureSystolic}
+          placeholder="Blood pressure systolic"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={bloodPressureSystolic}
+        />
+        <TextInput
+          keyboardType="numeric"
+          onChangeText={setBloodPressureDiastolic}
+          placeholder="Blood pressure diastolic"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={bloodPressureDiastolic}
+        />
+        <TextInput
+          keyboardType="numeric"
+          onChangeText={setOxygenSaturation}
+          placeholder="Oxygen saturation"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={oxygenSaturation}
+        />
+        <TextInput
+          keyboardType="decimal-pad"
+          onChangeText={setBloodSugar}
+          placeholder="Blood sugar, optional"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={bloodSugar}
+        />
+        <TextInput
+          onChangeText={setNotes}
+          placeholder="Notes, optional"
+          placeholderTextColor="#94a3b8"
+          style={inputStyle}
+          value={notes}
+        />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save vitals</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save vitals
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -90,7 +149,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -98,5 +157,5 @@ const buttonStyle = {
   backgroundColor: "#0f766e",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

@@ -3,7 +3,11 @@ import * as Localization from "expo-localization";
 
 import { CORE_MODULE_KEYS } from "@/constants/modules";
 import { APP_WIDGETS } from "@/constants/widgets";
-import { DEFAULT_COUNTRY, getCountryByCode, getCountryByName } from "@/constants/countries";
+import {
+  DEFAULT_COUNTRY,
+  getCountryByCode,
+  getCountryByName,
+} from "@/constants/countries";
 import type { AppModuleKey } from "@/types/app";
 import type { UnitPreferences, UserPreferences } from "@/types/profile";
 import { saveEnabledModules } from "./profilePreferences";
@@ -13,7 +17,7 @@ const USER_PREFERENCES_STORAGE_KEY = "family_health_user_preferences";
 const preferenceListeners = new Set<(preferences: UserPreferences) => void>();
 
 export function subscribeToUserPreferences(
-  listener: (preferences: UserPreferences) => void
+  listener: (preferences: UserPreferences) => void,
 ) {
   preferenceListeners.add(listener);
 
@@ -35,13 +39,13 @@ function getDetectedDefaults() {
     return {
       country,
       language: locale.languageCode ?? "en",
-      timezone: calendar.timeZone ?? country.timezone
+      timezone: calendar.timeZone ?? country.timezone,
     };
   } catch {
     return {
       country: DEFAULT_COUNTRY,
       language: "en",
-      timezone: DEFAULT_COUNTRY.timezone
+      timezone: DEFAULT_COUNTRY.timezone,
     };
   }
 }
@@ -49,7 +53,7 @@ function getDetectedDefaults() {
 export function getDefaultUserPreferences(): UserPreferences {
   const detected = getDetectedDefaults();
   const defaultWidgets = APP_WIDGETS.filter((widget) =>
-    CORE_MODULE_KEYS.includes(widget.moduleKey)
+    CORE_MODULE_KEYS.includes(widget.moduleKey),
   ).map((widget) => widget.key);
 
   return {
@@ -62,21 +66,26 @@ export function getDefaultUserPreferences(): UserPreferences {
     onboardingComplete: false,
     themeKey: "soft_lavender",
     timezone: detected.timezone,
-    units: { ...detected.country.defaultUnits }
+    units: { ...detected.country.defaultUnits },
   };
 }
 
-function normalisePreferences(preferences: Partial<UserPreferences>): UserPreferences {
+function normalisePreferences(
+  preferences: Partial<UserPreferences>,
+): UserPreferences {
   const defaults = getDefaultUserPreferences();
   const country = getCountryByName(preferences.country ?? defaults.country);
   const enabledModules = Array.from(
-    new Set([...CORE_MODULE_KEYS, ...(preferences.enabledModules ?? defaults.enabledModules)])
+    new Set([
+      ...CORE_MODULE_KEYS,
+      ...(preferences.enabledModules ?? defaults.enabledModules),
+    ]),
   ) as AppModuleKey[];
   const enabledWidgets = preferences.enabledWidgets?.length
     ? preferences.enabledWidgets
-    : APP_WIDGETS.filter((widget) => enabledModules.includes(widget.moduleKey)).map(
-        (widget) => widget.key
-      );
+    : APP_WIDGETS.filter((widget) =>
+        enabledModules.includes(widget.moduleKey),
+      ).map((widget) => widget.key);
 
   return {
     ...defaults,
@@ -88,20 +97,24 @@ function normalisePreferences(preferences: Partial<UserPreferences>): UserPrefer
     timezone: preferences.timezone ?? country.timezone,
     units: {
       ...country.defaultUnits,
-      ...(preferences.units ?? {})
-    }
+      ...(preferences.units ?? {}),
+    },
   };
 }
 
 export async function getUserPreferences(): Promise<UserPreferences> {
   try {
-    const storedPreferences = await AsyncStorage.getItem(USER_PREFERENCES_STORAGE_KEY);
+    const storedPreferences = await AsyncStorage.getItem(
+      USER_PREFERENCES_STORAGE_KEY,
+    );
 
     if (!storedPreferences) {
       return getDefaultUserPreferences();
     }
 
-    return normalisePreferences(JSON.parse(storedPreferences) as Partial<UserPreferences>);
+    return normalisePreferences(
+      JSON.parse(storedPreferences) as Partial<UserPreferences>,
+    );
   } catch {
     return getDefaultUserPreferences();
   }
@@ -113,13 +126,13 @@ type SaveUserPreferencesOptions = {
 
 export async function saveUserPreferences(
   preferences: UserPreferences,
-  options: SaveUserPreferencesOptions = {}
+  options: SaveUserPreferencesOptions = {},
 ) {
   const normalisedPreferences = normalisePreferences(preferences);
 
   await AsyncStorage.setItem(
     USER_PREFERENCES_STORAGE_KEY,
-    JSON.stringify(normalisedPreferences)
+    JSON.stringify(normalisedPreferences),
   );
   await saveEnabledModules(normalisedPreferences.enabledModules);
   notifyPreferenceListeners(normalisedPreferences);
@@ -139,7 +152,7 @@ export async function updateUserPreferences(partial: Partial<UserPreferences>) {
     ...partial,
     units: partial.units
       ? ({ ...currentPreferences.units, ...partial.units } as UnitPreferences)
-      : currentPreferences.units
+      : currentPreferences.units,
   });
 }
 

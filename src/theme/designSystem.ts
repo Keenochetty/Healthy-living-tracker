@@ -13,6 +13,6 @@ export {
   healthRadius,
   healthRealmAccents,
   healthShadows,
-  realmAccentWithOpacity
+  realmAccentWithOpacity,
 } from "./healthTheme";
 export type { HealthColorTheme } from "./healthTheme";

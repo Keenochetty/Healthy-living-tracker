@@ -6,15 +6,19 @@ import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
 import { OnboardingChoiceCard } from "@/components/onboarding/OnboardingChoiceCard";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 import { APP_MODULES, CORE_MODULE_KEYS } from "@/constants/modules";
-import { getUserPreferences, updateUserPreferences } from "@/lib/userPreferences";
+import {
+  getUserPreferences,
+  updateUserPreferences,
+} from "@/lib/userPreferences";
 import type { AppModuleKey } from "@/types/app";
 
 export default function OnboardingModulesScreen() {
-  const [enabledModules, setEnabledModules] = useState<AppModuleKey[]>(CORE_MODULE_KEYS);
+  const [enabledModules, setEnabledModules] =
+    useState<AppModuleKey[]>(CORE_MODULE_KEYS);
 
   useEffect(() => {
     getUserPreferences().then((preferences) =>
-      setEnabledModules(preferences.enabledModules)
+      setEnabledModules(preferences.enabledModules),
     );
   }, []);
 
@@ -26,7 +30,7 @@ export default function OnboardingModulesScreen() {
     setEnabledModules((current) =>
       current.includes(moduleKey)
         ? current.filter((key) => key !== moduleKey)
-        : [...current, moduleKey]
+        : [...current, moduleKey],
     );
   }
 
@@ -71,7 +75,13 @@ export default function OnboardingModulesScreen() {
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PrimaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -81,10 +91,12 @@ function PrimaryButton({ label, onPress }: { label: string; onPress: () => void 
         backgroundColor: "#7c3aed",
         borderRadius: 18,
         justifyContent: "center",
-        minHeight: 54
+        minHeight: 54,
       }}
     >
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }

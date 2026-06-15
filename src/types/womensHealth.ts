@@ -1,4 +1,8 @@
-export type WomensHealthFeatureStatus = "disabled" | "enabled" | "shared_view" | "locked";
+export type WomensHealthFeatureStatus =
+  | "disabled"
+  | "enabled"
+  | "shared_view"
+  | "locked";
 
 export type CycleOverlayType =
   | "period_logged"
@@ -12,7 +16,13 @@ export type CycleOverlayType =
   | "pregnancy_test"
   | "ovulation_test";
 
-export type FlowLevel = "none" | "spotting" | "light" | "medium" | "heavy" | "very_heavy";
+export type FlowLevel =
+  | "none"
+  | "spotting"
+  | "light"
+  | "medium"
+  | "heavy"
+  | "very_heavy";
 export type SymptomSeverity = "mild" | "moderate" | "strong";
 
 export type ContraceptionMethodType =
@@ -157,7 +167,14 @@ export type ContraceptionLog = {
 };
 
 export type WomensHealthSharePermission = {
-  category: "summary" | "calendar_overlay" | "period_logs" | "symptoms" | "mood_energy" | "contraception" | "reports";
+  category:
+    | "summary"
+    | "calendar_overlay"
+    | "period_logs"
+    | "symptoms"
+    | "mood_energy"
+    | "contraception"
+    | "reports";
   createdAt: string;
   id: string;
   permissionLevel: "none" | "view" | "add" | "edit" | "manage";

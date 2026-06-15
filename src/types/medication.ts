@@ -187,7 +187,12 @@ export type SafetyChecklistItem = {
 
 export type AllergySensitivityNote = {
   allergyName: string;
-  allergyType: "medication" | "food" | "supplement" | "environmental" | "unknown";
+  allergyType:
+    | "medication"
+    | "food"
+    | "supplement"
+    | "environmental"
+    | "unknown";
   confirmedByProfessional?: boolean;
   createdAt: string;
   id: string;

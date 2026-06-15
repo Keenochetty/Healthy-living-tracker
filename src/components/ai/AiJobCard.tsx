@@ -16,12 +16,15 @@ export function AiJobCard({ job }: AiJobCardProps) {
         <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>
           {job.title}
         </Text>
-        <Text style={{ color: "#64748b" }}>{getAiJobTypeLabel(job.jobType)}</Text>
+        <Text style={{ color: "#64748b" }}>
+          {getAiJobTypeLabel(job.jobType)}
+        </Text>
         <Text style={{ color: "#64748b" }}>
           {job.status} - confidence {job.confidence} - {job.safetyLevel}
         </Text>
         <Text style={{ color: "#64748b" }}>
-          {new Date(job.createdAt).toLocaleDateString()} - {job.warnings.length} warnings
+          {new Date(job.createdAt).toLocaleDateString()} - {job.warnings.length}{" "}
+          warnings
         </Text>
         <TouchableOpacity
           activeOpacity={0.85}
@@ -40,5 +43,5 @@ const buttonStyle = {
   backgroundColor: "#7c3aed",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 46
+  minHeight: 46,
 };

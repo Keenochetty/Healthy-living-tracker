@@ -156,7 +156,9 @@ export default function FitnessScreen() {
     useState<FitnessContentPreview | null>(null);
   const [contentError, setContentError] = useState("");
   const [contentLoading, setContentLoading] = useState(true);
-  const [featurePreferences, setFeaturePreferences] = useState<UserFeaturePreference[]>([]);
+  const [featurePreferences, setFeaturePreferences] = useState<
+    UserFeaturePreference[]
+  >([]);
 
   const loadFitness = useCallback(async () => {
     const [nextSummary, nextSessions] = await Promise.all([
@@ -200,7 +202,9 @@ export default function FitnessScreen() {
         .then(() =>
           Promise.all([
             loadFitness(),
-            getUserFeaturePreferences(activeProfile?.id).then(setFeaturePreferences),
+            getUserFeaturePreferences(activeProfile?.id).then(
+              setFeaturePreferences,
+            ),
           ]),
         )
         .catch(() => undefined);
@@ -217,21 +221,30 @@ export default function FitnessScreen() {
   const visibleGoals = useMemo(
     () =>
       FITNESS_GOAL_PATHS.filter((goal) =>
-        shouldShowFeature(FITNESS_GOAL_FEATURES[goal.id] ?? "fitness", featureContext),
+        shouldShowFeature(
+          FITNESS_GOAL_FEATURES[goal.id] ?? "fitness",
+          featureContext,
+        ),
       ),
     [featureContext],
   );
   const visiblePrograms = useMemo(
     () =>
       FITNESS_WORKOUT_PROGRAMS.filter((program) =>
-        shouldShowFeature(FITNESS_PROGRAM_FEATURES[program.id] ?? "fitness", featureContext),
+        shouldShowFeature(
+          FITNESS_PROGRAM_FEATURES[program.id] ?? "fitness",
+          featureContext,
+        ),
       ),
     [featureContext],
   );
   const visibleExplore = useMemo(
     () =>
       FITNESS_EXPLORE_CATEGORIES.filter((category) =>
-        shouldShowFeature(FITNESS_EXPLORE_FEATURES[category.id] ?? "fitness", featureContext),
+        shouldShowFeature(
+          FITNESS_EXPLORE_FEATURES[category.id] ?? "fitness",
+          featureContext,
+        ),
       ),
     [featureContext],
   );
@@ -540,7 +553,9 @@ function TodayTab({
         style={styles.customizeRow}
       >
         <AppIcon color={theme.primary} decorative name="settings" size={16} />
-        <Text style={[styles.customizeText, { color: theme.primary }]}>Customize</Text>
+        <Text style={[styles.customizeText, { color: theme.primary }]}>
+          Customize
+        </Text>
       </Pressable>
       {contentLoading ? (
         <ContentState icon="sync" text="Loading live fitness suggestions..." />
@@ -573,7 +588,11 @@ function TodayTab({
         workoutsThisWeek={summary?.workoutsThisWeek ?? 0}
       />
 
-      <FitnessDashboardSections latestWorkout={latestWorkout} onTab={onTab} summary={summary} />
+      <FitnessDashboardSections
+        latestWorkout={latestWorkout}
+        onTab={onTab}
+        summary={summary}
+      />
 
       <FitnessStatusRow
         onProgress={() => router.push("/fitness/history" as Href)}
@@ -595,25 +614,27 @@ function TodayTab({
         programs={visiblePrograms}
       />
 
-      {showAiImport ? <Pressable
-        accessibilityRole="button"
-        onPress={() => router.push("/fitness/ai-import" as Href)}
-      >
-        <AppCard style={styles.aiImportCard}>
-          <View style={styles.aiImportIcon}>
-            <AppIcon color="#6ee7c8" decorative name="search" size={22} />
-          </View>
-          <View style={styles.aiImportCopy}>
-            <Text style={styles.aiImportKicker}>AI plan import</Text>
-            <Text style={styles.aiImportTitle}>Find or import a plan</Text>
-            <Text style={styles.aiImportBody}>
-              Review workout, nutrition, or wellness guidance before importing
-              an editable draft.
-            </Text>
-          </View>
-          <AppIcon color="#94a3b8" decorative name="add" size={20} />
-        </AppCard>
-      </Pressable> : null}
+      {showAiImport ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push("/fitness/ai-import" as Href)}
+        >
+          <AppCard style={styles.aiImportCard}>
+            <View style={styles.aiImportIcon}>
+              <AppIcon color="#6ee7c8" decorative name="search" size={22} />
+            </View>
+            <View style={styles.aiImportCopy}>
+              <Text style={styles.aiImportKicker}>AI plan import</Text>
+              <Text style={styles.aiImportTitle}>Find or import a plan</Text>
+              <Text style={styles.aiImportBody}>
+                Review workout, nutrition, or wellness guidance before importing
+                an editable draft.
+              </Text>
+            </View>
+            <AppIcon color="#94a3b8" decorative name="add" size={20} />
+          </AppCard>
+        </Pressable>
+      ) : null}
 
       <FitnessExploreGrid
         categories={visibleExplore}
@@ -633,10 +654,12 @@ function TodayTab({
         }
       />
 
-      {showNutrition ? <FitnessNutritionSupport
-        onOpenFood={() => router.push("/food" as Href)}
-        suggestion={contentPreview?.nutritionSuggestion}
-      /> : null}
+      {showNutrition ? (
+        <FitnessNutritionSupport
+          onOpenFood={() => router.push("/food" as Href)}
+          suggestion={contentPreview?.nutritionSuggestion}
+        />
+      ) : null}
 
       <FitnessSafetyRecoveryCard />
 

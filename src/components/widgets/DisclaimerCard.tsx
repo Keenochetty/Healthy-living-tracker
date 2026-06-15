@@ -8,11 +8,18 @@ type DisclaimerCardProps = {
   title?: string;
 };
 
-export function DisclaimerCard({ text, title = "General wellness" }: DisclaimerCardProps) {
+export function DisclaimerCard({
+  text,
+  title = "General wellness",
+}: DisclaimerCardProps) {
   return (
     <AppCard variant="warning" style={{ gap: appSpacing.sm }}>
-      <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
-      <Text style={[typography.disclaimer, { color: appColors.textSecondary }]}>{text}</Text>
+      <Text style={[typography.cardTitle, { color: appColors.text }]}>
+        {title}
+      </Text>
+      <Text style={[typography.disclaimer, { color: appColors.textSecondary }]}>
+        {text}
+      </Text>
     </AppCard>
   );
 }

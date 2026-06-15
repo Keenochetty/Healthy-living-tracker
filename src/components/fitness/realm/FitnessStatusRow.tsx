@@ -60,12 +60,31 @@ export function FitnessStatusRow({
       contentContainerStyle={styles.rail}
     >
       {items.map((item) => (
-        <Pressable key={item.label} onPress={item.onPress} style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+        <Pressable
+          key={item.label}
+          onPress={item.onPress}
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.card ?? theme.surface,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <View style={[styles.icon, { backgroundColor: theme.primarySoft }]}>
-            <AppIcon color={theme.primary} decorative name={item.icon} size={18} />
+            <AppIcon
+              color={theme.primary}
+              decorative
+              name={item.icon}
+              size={18}
+            />
           </View>
-          <Text style={[styles.value, { color: theme.text }]}>{item.value}</Text>
-          <Text style={[styles.label, { color: theme.mutedText }]}>{item.label}</Text>
+          <Text style={[styles.value, { color: theme.text }]}>
+            {item.value}
+          </Text>
+          <Text style={[styles.label, { color: theme.mutedText }]}>
+            {item.label}
+          </Text>
         </Pressable>
       ))}
     </ScrollView>

@@ -8,7 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 
 import { supabase } from "@/lib/supabase";
@@ -48,7 +48,9 @@ const SELECTED_FAMILY_KEY = "fhfamily";
 const SELECTED_MODE_KEY = "fhmode";
 const DEFAULT_MODE: ViewingMode = "personal";
 
-const ProfileContext = createContext<ProfileContextValue | undefined>(undefined);
+const ProfileContext = createContext<ProfileContextValue | undefined>(
+  undefined,
+);
 
 function toNativeStorageKey(key: string) {
   return key.replace(/[^a-zA-Z0-9._-]/g, "");
@@ -103,7 +105,9 @@ async function deletePersistedItem(key: string) {
 }
 
 function isViewingMode(value: string | null): value is ViewingMode {
-  return value === "personal" || value === "family" || value === "caregiver_work";
+  return (
+    value === "personal" || value === "family" || value === "caregiver_work"
+  );
 }
 
 type FamilyMembershipRow = {
@@ -119,20 +123,27 @@ type FamilySummaryRow = {
 
 function normalizeFamilies(
   memberships: FamilyMembershipRow[],
-  families: Array<FamilySummaryRow | null | undefined>
+  families: Array<FamilySummaryRow | null | undefined>,
 ) {
   const familyMap = new Map<string, FamilyRecord>();
-  const membershipByFamilyId = new Map(memberships.map((membership) => [membership.family_id, membership]));
+  const membershipByFamilyId = new Map(
+    memberships.map((membership) => [membership.family_id, membership]),
+  );
 
   families.forEach((family) => {
     const membership = family?.id ? membershipByFamilyId.get(family.id) : null;
 
-    if (family?.id && family.name && membership && membership.role !== "caregiver") {
+    if (
+      family?.id &&
+      family.name &&
+      membership &&
+      membership.role !== "caregiver"
+    ) {
       familyMap.set(family.id, {
         id: family.id,
         name: family.name,
         relationship: membership.relationship,
-        role: membership.role
+        role: membership.role,
       });
     }
   });
@@ -143,12 +154,12 @@ function normalizeFamilies(
 async function loadPersistedSelection() {
   const [familyId, mode] = await Promise.all([
     getPersistedItem(SELECTED_FAMILY_KEY),
-    getPersistedItem(SELECTED_MODE_KEY)
+    getPersistedItem(SELECTED_MODE_KEY),
   ]);
 
   return {
     familyId,
-    mode: isViewingMode(mode) ? mode : DEFAULT_MODE
+    mode: isViewingMode(mode) ? mode : DEFAULT_MODE,
   };
 }
 
@@ -166,10 +177,8 @@ export function ProfileProvider({ children }: PropsWithChildren) {
     setErrorMessage(null);
 
     try {
-      const [{ data: userData, error: userError }, persistedSelection] = await Promise.all([
-        supabase.auth.getUser(),
-        loadPersistedSelection()
-      ]);
+      const [{ data: userData, error: userError }, persistedSelection] =
+        await Promise.all([supabase.auth.getUser(), loadPersistedSelection()]);
 
       if (userError) {
         throw userError;
@@ -186,15 +195,21 @@ export function ProfileProvider({ children }: PropsWithChildren) {
         return;
       }
 
-      const [{ data: profileData, error: profileError }, { data: membershipRows, error: membershipError }] =
-        await Promise.all([
-          supabase.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
-          supabase
-            .from("family_memberships")
-            .select("family_id, role, relationship")
-            .eq("user_id", authUser.id)
-            .in("role", ["owner", "admin", "member"])
-        ]);
+      const [
+        { data: profileData, error: profileError },
+        { data: membershipRows, error: membershipError },
+      ] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", authUser.id)
+          .maybeSingle(),
+        supabase
+          .from("family_memberships")
+          .select("family_id, role, relationship")
+          .eq("user_id", authUser.id)
+          .in("role", ["owner", "admin", "member"]),
+      ]);
 
       if (profileError) {
         throw profileError;
@@ -205,19 +220,29 @@ export function ProfileProvider({ children }: PropsWithChildren) {
       }
 
       const memberships = (membershipRows ?? []) as FamilyMembershipRow[];
-      const familyIds = Array.from(new Set(memberships.map((row) => row.family_id).filter(Boolean)));
+      const familyIds = Array.from(
+        new Set(memberships.map((row) => row.family_id).filter(Boolean)),
+      );
       const familyResult =
         familyIds.length > 0
-          ? await supabase.from("families").select("id, name").in("id", familyIds)
+          ? await supabase
+              .from("families")
+              .select("id, name")
+              .in("id", familyIds)
           : { data: [], error: null };
 
       if (familyResult.error) {
         throw familyResult.error;
       }
 
-      const loadedFamilies = normalizeFamilies(memberships, familyResult.data ?? []);
+      const loadedFamilies = normalizeFamilies(
+        memberships,
+        familyResult.data ?? [],
+      );
       const nextSelectedFamilyId =
-        loadedFamilies.find((family) => family.id === persistedSelection.familyId)?.id ??
+        loadedFamilies.find(
+          (family) => family.id === persistedSelection.familyId,
+        )?.id ??
         loadedFamilies[0]?.id ??
         null;
 
@@ -231,7 +256,11 @@ export function ProfileProvider({ children }: PropsWithChildren) {
         await deletePersistedItem(SELECTED_FAMILY_KEY);
       }
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to load profile context.");
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to load profile context.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -263,7 +292,7 @@ export function ProfileProvider({ children }: PropsWithChildren) {
       setSelectedFamilyId(family.id);
       await setPersistedItem(SELECTED_FAMILY_KEY, family.id);
     },
-    [families]
+    [families],
   );
 
   const switchMode = useCallback(async (mode: ViewingMode) => {
@@ -273,7 +302,7 @@ export function ProfileProvider({ children }: PropsWithChildren) {
 
   const selectedFamily = useMemo(
     () => families.find((family) => family.id === selectedFamilyId) ?? null,
-    [families, selectedFamilyId]
+    [families, selectedFamilyId],
   );
 
   const value = useMemo(
@@ -287,7 +316,7 @@ export function ProfileProvider({ children }: PropsWithChildren) {
       selectedMode,
       switchFamily,
       switchMode,
-      user
+      user,
     }),
     [
       errorMessage,
@@ -299,11 +328,13 @@ export function ProfileProvider({ children }: PropsWithChildren) {
       selectedMode,
       switchFamily,
       switchMode,
-      user
-    ]
+      user,
+    ],
   );
 
-  return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
+  return (
+    <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
+  );
 }
 
 export function useProfileContext() {

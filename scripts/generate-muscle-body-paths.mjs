@@ -9,7 +9,7 @@ const output =
 
 const sources = {
   female: { back: "FemaleBackPaths.swift", front: "FemaleFrontPaths.swift" },
-  male: { back: "MaleBackPaths.swift", front: "MaleFrontPaths.swift" }
+  male: { back: "MaleBackPaths.swift", front: "MaleFrontPaths.swift" },
 };
 
 const muscleKeyBySlug = {
@@ -42,7 +42,7 @@ const muscleKeyBySlug = {
   upperAbs: "abs",
   upperBack: "upper_back",
   upperChest: "upper_chest",
-  upperTrapezius: "traps"
+  upperTrapezius: "traps",
 };
 
 function parseArray(block, key) {
@@ -63,7 +63,7 @@ function parseParts(source) {
     const paths = [
       ...parseArray(block, "common"),
       ...parseArray(block, "left"),
-      ...parseArray(block, "right")
+      ...parseArray(block, "right"),
     ];
 
     if (paths.length) {
@@ -79,7 +79,9 @@ const data = {};
 for (const [gender, sides] of Object.entries(sources)) {
   data[gender] = {};
   for (const [side, filename] of Object.entries(sides)) {
-    data[gender][side] = parseParts(await readFile(path.join(sourceRoot, filename), "utf8"));
+    data[gender][side] = parseParts(
+      await readFile(path.join(sourceRoot, filename), "utf8"),
+    );
   }
 }
 

@@ -57,9 +57,22 @@ export type PermissionLevel =
   | "manage"
   | "emergency_only";
 
-export type InviteStatus = "active" | "pending" | "accepted" | "declined" | "expired" | "revoked";
-export type DefaultPrivacyLevel = "private" | "shared_summary" | "shared_selected";
-export type TeenPrivacyTransitionMode = "parent_full_input" | "parent_view_only" | "request_access" | "teen_selected_areas";
+export type InviteStatus =
+  | "active"
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "expired"
+  | "revoked";
+export type DefaultPrivacyLevel =
+  | "private"
+  | "shared_summary"
+  | "shared_selected";
+export type TeenPrivacyTransitionMode =
+  | "parent_full_input"
+  | "parent_view_only"
+  | "request_access"
+  | "teen_selected_areas";
 
 export type FamilyCircle = {
   createdAt: string;
@@ -172,7 +185,12 @@ export type EmergencyInfoCard = {
   medicationSummary?: string;
   profileId: string;
   updatedAt: string;
-  visibility: "private" | "circle_admins" | "emergency_contacts" | "caregiver_allowed" | "locked";
+  visibility:
+    | "private"
+    | "circle_admins"
+    | "emergency_contacts"
+    | "caregiver_allowed"
+    | "locked";
 };
 
 export type HealthAuditLog = {

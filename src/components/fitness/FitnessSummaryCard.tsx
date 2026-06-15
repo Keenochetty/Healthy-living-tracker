@@ -29,13 +29,20 @@ export function FitnessSummaryCard({ summary }: FitnessSummaryCardProps) {
           <Metric label="Streak" value={`${summary.currentStreakDays}d`} />
         </View>
 
-        <View style={{ backgroundColor: "#e2e8f0", borderRadius: 999, height: 10, overflow: "hidden" }}>
+        <View
+          style={{
+            backgroundColor: "#e2e8f0",
+            borderRadius: 999,
+            height: 10,
+            overflow: "hidden",
+          }}
+        >
           <View
             style={{
               backgroundColor: "#22c55e",
               borderRadius: 999,
               height: "100%",
-              width: `${summary.weeklyGoalProgress}%` as `${number}%`
+              width: `${summary.weeklyGoalProgress}%` as `${number}%`,
             }}
           />
         </View>
@@ -46,9 +53,25 @@ export function FitnessSummaryCard({ summary }: FitnessSummaryCardProps) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ backgroundColor: "#f8fafc", borderRadius: 16, minWidth: "30%", padding: 12 }}>
-      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900", marginTop: 4 }}>
+    <View
+      style={{
+        backgroundColor: "#f8fafc",
+        borderRadius: 16,
+        minWidth: "30%",
+        padding: 12,
+      }}
+    >
+      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 18,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
         {value}
       </Text>
     </View>

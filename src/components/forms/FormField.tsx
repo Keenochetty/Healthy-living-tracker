@@ -1,6 +1,11 @@
 import { Text, TextInput, type TextInputProps, View } from "react-native";
 
-import { appColors, appRadius, appSpacing, typography } from "@/theme/designSystem";
+import {
+  appColors,
+  appRadius,
+  appSpacing,
+  typography,
+} from "@/theme/designSystem";
 
 type FormFieldProps = TextInputProps & {
   error?: string;
@@ -9,12 +14,21 @@ type FormFieldProps = TextInputProps & {
   optional?: boolean;
 };
 
-export function FormField({ error, helper, label, optional, style, ...props }: FormFieldProps) {
+export function FormField({
+  error,
+  helper,
+  label,
+  optional,
+  style,
+  ...props
+}: FormFieldProps) {
   return (
     <View style={{ gap: appSpacing.sm }}>
       <Text style={[typography.helper, { color: appColors.text }]}>
         {label}
-        {optional ? <Text style={{ color: appColors.textMuted }}> optional</Text> : null}
+        {optional ? (
+          <Text style={{ color: appColors.textMuted }}> optional</Text>
+        ) : null}
       </Text>
       <TextInput
         placeholderTextColor={appColors.textMuted}
@@ -26,14 +40,22 @@ export function FormField({ error, helper, label, optional, style, ...props }: F
             borderWidth: 1,
             color: appColors.text,
             minHeight: 52,
-            paddingHorizontal: appSpacing.lg
+            paddingHorizontal: appSpacing.lg,
           },
-          style
+          style,
         ]}
         {...props}
       />
-      {error ? <Text style={[typography.caption, { color: appColors.error }]}>{error}</Text> : null}
-      {!error && helper ? <Text style={[typography.caption, { color: appColors.textSecondary }]}>{helper}</Text> : null}
+      {error ? (
+        <Text style={[typography.caption, { color: appColors.error }]}>
+          {error}
+        </Text>
+      ) : null}
+      {!error && helper ? (
+        <Text style={[typography.caption, { color: appColors.textSecondary }]}>
+          {helper}
+        </Text>
+      ) : null}
     </View>
   );
 }

@@ -11,7 +11,7 @@ import {
   Settings,
   User,
   Users,
-  Venus
+  Venus,
 } from "lucide-react";
 
 export const navItems = [
@@ -27,7 +27,7 @@ export const navItems = [
   { href: "/assistant", label: "AI Assistant", icon: Bot },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/settings/account", label: "Account", icon: User }
+  { href: "/settings/account", label: "Account", icon: User },
 ] as const;
 
 export const mobileNavItems = [
@@ -35,5 +35,5 @@ export const mobileNavItems = [
   { href: "/tabs/calendar", label: "Calendar", icon: CalendarPlus },
   { href: "/tabs/scan", label: "Scan", icon: Camera, primaryAction: true },
   { href: "/tabs/care", label: "Health", icon: HeartPulse },
-  { href: "/tabs/circle", label: "Circle", icon: Users }
+  { href: "/tabs/circle", label: "Circle", icon: Users },
 ] as const;

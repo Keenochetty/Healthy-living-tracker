@@ -1,5 +1,9 @@
 import { Href, router } from "expo-router";
-import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
+import {
+  CameraView,
+  useCameraPermissions,
+  type BarcodeScanningResult,
+} from "expo-camera";
 import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -16,7 +20,7 @@ const INPUT_STYLE = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 export default function BarcodeScannerScreen() {
@@ -52,7 +56,9 @@ export default function BarcodeScannerScreen() {
     return (
       <ScreenWrapper backgroundColor="#fffaf0">
         <AppCard>
-          <Text style={{ color: "#64748b", lineHeight: 21 }}>Loading camera permission...</Text>
+          <Text style={{ color: "#64748b", lineHeight: 21 }}>
+            Loading camera permission...
+          </Text>
         </AppCard>
       </ScreenWrapper>
     );
@@ -63,12 +69,26 @@ export default function BarcodeScannerScreen() {
       <ScreenWrapper backgroundColor="#fffaf0">
         <AppCard>
           <View style={{ gap: 12 }}>
-            <Text style={{ color: "#0f172a", fontSize: 22, fontWeight: "900" }}>Scan Barcode</Text>
-            <Text style={{ color: "#64748b", lineHeight: 21 }}>
-              Camera access is needed to scan barcodes. You can still enter the barcode manually.
+            <Text style={{ color: "#0f172a", fontSize: 22, fontWeight: "900" }}>
+              Scan Barcode
             </Text>
-            <PrimaryButton label="Allow Camera Access" onPress={requestPermission} />
-            <SecondaryButton label="Back to Add" onPress={() => router.replace({ pathname: "/food", params: { tab: "add" } } as Href)} />
+            <Text style={{ color: "#64748b", lineHeight: 21 }}>
+              Camera access is needed to scan barcodes. You can still enter the
+              barcode manually.
+            </Text>
+            <PrimaryButton
+              label="Allow Camera Access"
+              onPress={requestPermission}
+            />
+            <SecondaryButton
+              label="Back to Add"
+              onPress={() =>
+                router.replace({
+                  pathname: "/food",
+                  params: { tab: "add" },
+                } as Href)
+              }
+            />
           </View>
         </AppCard>
         <ManualBarcodeEntry
@@ -90,13 +110,36 @@ export default function BarcodeScannerScreen() {
         onBarcodeScanned={handleBarcodeScanned}
         style={{ flex: 1 }}
       >
-        <View style={{ flex: 1, justifyContent: "space-between", padding: 20, paddingTop: 56 }}>
-          <View style={{ alignItems: "center", flexDirection: "row", justifyContent: "space-between" }}>
-            <TouchableOpacity activeOpacity={0.85} onPress={() => router.back()} style={overlayButtonStyle}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "space-between",
+            padding: 20,
+            paddingTop: 56,
+          }}
+        >
+          <View
+            style={{
+              alignItems: "center",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.back()}
+              style={overlayButtonStyle}
+            >
               <Text style={overlayButtonTextStyle}>Back</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.85} onPress={() => setTorchEnabled((current) => !current)} style={overlayButtonStyle}>
-              <Text style={overlayButtonTextStyle}>{torchEnabled ? "Torch On" : "Torch"}</Text>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setTorchEnabled((current) => !current)}
+              style={overlayButtonStyle}
+            >
+              <Text style={overlayButtonTextStyle}>
+                {torchEnabled ? "Torch On" : "Torch"}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -107,14 +150,25 @@ export default function BarcodeScannerScreen() {
                 borderRadius: 28,
                 borderWidth: 3,
                 height: 220,
-                width: "82%"
+                width: "82%",
               }}
             />
-            <Text style={{ color: "#ffffff", fontSize: 17, fontWeight: "900", textAlign: "center" }}>
+            <Text
+              style={{
+                color: "#ffffff",
+                fontSize: 17,
+                fontWeight: "900",
+                textAlign: "center",
+              }}
+            >
               Place the barcode inside the frame.
             </Text>
             {scanLocked ? (
-              <TouchableOpacity activeOpacity={0.85} onPress={() => setScanLocked(false)} style={overlayButtonStyle}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => setScanLocked(false)}
+                style={overlayButtonStyle}
+              >
                 <Text style={overlayButtonTextStyle}>Scan again</Text>
               </TouchableOpacity>
             ) : null}
@@ -138,7 +192,7 @@ function ManualBarcodeEntry({
   errorMessage,
   manualBarcode,
   onBarcodeChange,
-  onSearch
+  onSearch,
 }: {
   dark?: boolean;
   errorMessage: string | null;
@@ -149,7 +203,9 @@ function ManualBarcodeEntry({
   return (
     <AppCard backgroundColor={dark ? "rgba(255,255,255,0.92)" : "#ffffff"}>
       <View style={{ gap: 10 }}>
-        <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>Enter barcode manually</Text>
+        <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>
+          Enter barcode manually
+        </Text>
         <TextInput
           keyboardType="numeric"
           onChangeText={(value) => onBarcodeChange(value.replace(/\D/g, ""))}
@@ -158,25 +214,65 @@ function ManualBarcodeEntry({
           style={INPUT_STYLE}
           value={manualBarcode}
         />
-        {errorMessage ? <Text style={{ color: "#dc2626", fontWeight: "800" }}>{errorMessage}</Text> : null}
+        {errorMessage ? (
+          <Text style={{ color: "#dc2626", fontWeight: "800" }}>
+            {errorMessage}
+          </Text>
+        ) : null}
         <PrimaryButton label="Search" onPress={onSearch} />
       </View>
     </AppCard>
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PrimaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#f59e0b", borderRadius: 18, justifyContent: "center", minHeight: 50 }}>
-      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        alignItems: "center",
+        backgroundColor: "#f59e0b",
+        borderRadius: 18,
+        justifyContent: "center",
+        minHeight: 50,
+      }}
+    >
+      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
 
-function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function SecondaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={{ alignItems: "center", backgroundColor: "#fffbeb", borderRadius: 18, justifyContent: "center", minHeight: 50 }}>
-      <Text style={{ color: "#92400e", fontSize: 16, fontWeight: "900" }}>{label}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        alignItems: "center",
+        backgroundColor: "#fffbeb",
+        borderRadius: 18,
+        justifyContent: "center",
+        minHeight: 50,
+      }}
+    >
+      <Text style={{ color: "#92400e", fontSize: 16, fontWeight: "900" }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -185,10 +281,10 @@ const overlayButtonStyle = {
   backgroundColor: "rgba(15,23,42,0.72)",
   borderRadius: 999,
   paddingHorizontal: 16,
-  paddingVertical: 10
+  paddingVertical: 10,
 };
 
 const overlayButtonTextStyle = {
   color: "#ffffff",
-  fontWeight: "900" as const
+  fontWeight: "900" as const,
 };

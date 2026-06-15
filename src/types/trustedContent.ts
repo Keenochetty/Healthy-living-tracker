@@ -11,7 +11,11 @@ export type TrustedSourceType =
   | "government"
   | "other";
 
-export type TrustedSourceStatus = "approved" | "needs_review" | "deprecated" | "blocked";
+export type TrustedSourceStatus =
+  | "approved"
+  | "needs_review"
+  | "deprecated"
+  | "blocked";
 
 export type HealthContentRiskLevel = "low" | "medium" | "high" | "critical";
 
@@ -40,7 +44,13 @@ export type HealthContentRealm =
   | "ai_assistant"
   | "general";
 
-export type AgeGroupRelevance = "adult" | "teen" | "child" | "baby" | "pregnancy" | "all";
+export type AgeGroupRelevance =
+  | "adult"
+  | "teen"
+  | "child"
+  | "baby"
+  | "pregnancy"
+  | "all";
 
 export type TrustedSource = {
   clinicalReviewAvailable: boolean;

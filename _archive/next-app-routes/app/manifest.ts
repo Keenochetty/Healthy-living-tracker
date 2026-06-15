@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Family Health",
     short_name: "Family Health",
-    description: "A private family health dashboard for records, reminders, and care tracking.",
+    description:
+      "A private family health dashboard for records, reminders, and care tracking.",
     start_url: "/dashboard",
     scope: "/",
     display: "standalone",
@@ -17,14 +18,14 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
-        purpose: "any"
+        purpose: "any",
       },
       {
         src: "/maskable-icon.svg",
         sizes: "any",
         type: "image/svg+xml",
-        purpose: "maskable"
-      }
-    ]
+        purpose: "maskable",
+      },
+    ],
   };
 }

@@ -14,7 +14,7 @@ export function AiDraftReviewCard({
   draft,
   mode,
   onApprove,
-  onDiscard
+  onDiscard,
 }: AiDraftReviewCardProps) {
   if (!draft) {
     return (
@@ -24,7 +24,9 @@ export function AiDraftReviewCard({
     );
   }
 
-  const fieldEntries = Object.entries(draft.fields).filter(([key]) => key !== "warnings");
+  const fieldEntries = Object.entries(draft.fields).filter(
+    ([key]) => key !== "warnings",
+  );
 
   return (
     <AppCard>
@@ -54,10 +56,23 @@ export function AiDraftReviewCard({
         </View>
 
         <View style={{ gap: 8 }}>
-          <Text style={{ color: "#0f172a", fontWeight: "900" }}>Extracted fields</Text>
+          <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+            Extracted fields
+          </Text>
           {fieldEntries.map(([key, value]) => (
-            <View key={key} style={{ backgroundColor: "#f8fafc", borderRadius: 14, padding: 12 }}>
-              <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "900" }}>{key}</Text>
+            <View
+              key={key}
+              style={{
+                backgroundColor: "#f8fafc",
+                borderRadius: 14,
+                padding: 12,
+              }}
+            >
+              <Text
+                style={{ color: "#64748b", fontSize: 12, fontWeight: "900" }}
+              >
+                {key}
+              </Text>
               <Text style={{ color: "#0f172a", marginTop: 4 }}>
                 {Array.isArray(value) ? value.join(", ") : String(value)}
               </Text>
@@ -67,16 +82,22 @@ export function AiDraftReviewCard({
 
         {draft.suggestedActions?.length ? (
           <View style={{ gap: 8 }}>
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>Suggested actions</Text>
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+              Suggested actions
+            </Text>
             {draft.suggestedActions.map((action) => (
-              <Text key={action} style={{ color: "#64748b" }}>{action}</Text>
+              <Text key={action} style={{ color: "#64748b" }}>
+                {action}
+              </Text>
             ))}
           </View>
         ) : null}
 
         {draft.remindersDraft?.length ? (
           <View style={{ gap: 8 }}>
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>Reminder drafts</Text>
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+              Reminder drafts
+            </Text>
             {draft.remindersDraft.map((reminder) => (
               <Text key={reminder.id} style={{ color: "#64748b" }}>
                 {reminder.title} - requires confirmation
@@ -86,17 +107,28 @@ export function AiDraftReviewCard({
         ) : null}
 
         <Text style={{ color: "#94a3b8", lineHeight: 20 }}>
-          TODO: Save doctor visit draft, medication schedule draft, food log draft,
-          vaccination draft, and create reminders only after user approval in later steps.
+          TODO: Save doctor visit draft, medication schedule draft, food log
+          draft, vaccination draft, and create reminders only after user
+          approval in later steps.
         </Text>
 
-        <TouchableOpacity activeOpacity={0.85} onPress={onApprove} style={buttonStyle}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onApprove}
+          style={buttonStyle}
+        >
           <Text style={{ color: "#ffffff", fontWeight: "900" }}>Approve</Text>
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.85} style={secondaryButtonStyle}>
-          <Text style={{ color: "#7c3aed", fontWeight: "900" }}>Edit later placeholder</Text>
+          <Text style={{ color: "#7c3aed", fontWeight: "900" }}>
+            Edit later placeholder
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.85} onPress={onDiscard} style={discardButtonStyle}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onDiscard}
+          style={discardButtonStyle}
+        >
           <Text style={{ color: "#9a3412", fontWeight: "900" }}>Discard</Text>
         </TouchableOpacity>
       </View>
@@ -109,7 +141,7 @@ const buttonStyle = {
   backgroundColor: "#7c3aed",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };
 
 const secondaryButtonStyle = {
@@ -117,7 +149,7 @@ const secondaryButtonStyle = {
   backgroundColor: "#f5f3ff",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };
 
 const discardButtonStyle = {
@@ -125,5 +157,5 @@ const discardButtonStyle = {
   backgroundColor: "#fff7ed",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

@@ -23,7 +23,7 @@ export function ChildProfileCard({ onOpen, summary }: ChildProfileCardProps) {
               borderRadius: 22,
               height: 56,
               justifyContent: "center",
-              width: 56
+              width: 56,
             }}
           >
             <Text style={{ color: "#7c3aed", fontSize: 14, fontWeight: "900" }}>

@@ -31,10 +31,17 @@ export function ChildSummaryCard({ summary }: ChildSummaryCardProps) {
           />
           <Metric
             label="Sleep"
-            value={summary.latestSleep ? `${summary.latestSleep.durationMinutes}m` : "None"}
+            value={
+              summary.latestSleep
+                ? `${summary.latestSleep.durationMinutes}m`
+                : "None"
+            }
           />
           <Metric label="Milestones" value={`${summary.milestonesCount}`} />
-          <Metric label="Records" value={`${summary.vaccinationRecordsCount}`} />
+          <Metric
+            label="Records"
+            value={`${summary.vaccinationRecordsCount}`}
+          />
         </View>
       </View>
     </AppCard>
@@ -43,9 +50,25 @@ export function ChildSummaryCard({ summary }: ChildSummaryCardProps) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ backgroundColor: "#ffffff", borderRadius: 16, minWidth: "30%", padding: 12 }}>
-      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900", marginTop: 4 }}>
+    <View
+      style={{
+        backgroundColor: "#ffffff",
+        borderRadius: 16,
+        minWidth: "30%",
+        padding: 12,
+      }}
+    >
+      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 18,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
         {value}
       </Text>
     </View>

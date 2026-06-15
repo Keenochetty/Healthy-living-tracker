@@ -23,7 +23,7 @@ import type {
   TrainingBodyProgressSummary,
   WeightLog,
   WeightLogInput,
-  WorkoutReadinessSummary
+  WorkoutReadinessSummary,
 } from "@/types/biometrics";
 
 const LOCAL_USER_ID = "local-user";
@@ -45,7 +45,7 @@ const BIOMETRIC_TYPES: BiometricType[] = [
   "energy",
   "mood",
   "digestion",
-  "symptom"
+  "symptom",
 ];
 
 const BIOMETRIC_WIDGET_KEYS = [
@@ -58,7 +58,7 @@ const BIOMETRIC_WIDGET_KEYS = [
   "blood_pressure",
   "blood_glucose",
   "digestion",
-  "symptoms"
+  "symptoms",
 ] as const satisfies WidgetKey[];
 
 const DEFAULT_PRIVACY = {
@@ -66,7 +66,7 @@ const DEFAULT_PRIVACY = {
   sharedWithCaregiver: false,
   sharedWithFamily: false,
   sharedWithPartner: false,
-  visibility: "private" as const
+  visibility: "private" as const,
 };
 
 type StoredBiometricLog = BiometricLog;
@@ -81,7 +81,7 @@ export const BIOMETRIC_TYPE_LABELS: Record<BiometricType, string> = {
   mood: "Mood",
   sleep: "Sleep",
   symptom: "Symptoms",
-  weight: "Weight"
+  weight: "Weight",
 };
 
 export const BIOMETRIC_TYPE_EMPTY_TEXT: Record<BiometricType, string> = {
@@ -94,7 +94,7 @@ export const BIOMETRIC_TYPE_EMPTY_TEXT: Record<BiometricType, string> = {
   mood: "Add your first log to start seeing trends.",
   sleep: "Log sleep to understand your recovery patterns.",
   symptom: "Add notes when something feels different.",
-  weight: "Track weight over time to support your goals."
+  weight: "Track weight over time to support your goals.",
 };
 
 async function readJsonArray<T>(key: string, fallback: T[] = []) {
@@ -122,7 +122,10 @@ function id(prefix: string) {
 }
 
 function sortByLoggedAt<T extends { loggedAt: string }>(items: T[]) {
-  return [...items].sort((left, right) => new Date(right.loggedAt).getTime() - new Date(left.loggedAt).getTime());
+  return [...items].sort(
+    (left, right) =>
+      new Date(right.loggedAt).getTime() - new Date(left.loggedAt).getTime(),
+  );
 }
 
 function toDateKey(date: Date) {
@@ -139,7 +142,7 @@ function makeBase(now: string) {
     createdAt: now,
     profileId: LOCAL_PROFILE_ID,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
 }
 
@@ -147,14 +150,16 @@ export function isBiometricWidget(widgetKey: WidgetKey) {
   return BIOMETRIC_WIDGET_KEYS.includes(widgetKey as BiometricWidgetKey);
 }
 
-export async function getAvailableBiometricWidgets(): Promise<BiometricWidgetSummary[]> {
+export async function getAvailableBiometricWidgets(): Promise<
+  BiometricWidgetSummary[]
+> {
   return Promise.all(
     BIOMETRIC_WIDGET_KEYS.map(async (widgetKey) => ({
       routeType: getWidgetRouteType(widgetKey),
       title: getBiometricWidgetTitle(widgetKey),
       value: await calculateBiometricWidgetValue(widgetKey),
-      widgetKey
-    }))
+      widgetKey,
+    })),
   );
 }
 
@@ -190,20 +195,26 @@ export async function calculateBiometricWidgetValue(widgetKey: WidgetKey) {
     }
     case "blood_glucose": {
       const latest = await getLatestBiometricLog("blood_glucose");
-      return latest?.value ? `${latest.value} ${latest.unit ?? "mmol/L"}` : "No log";
+      return latest?.value
+        ? `${latest.value} ${latest.unit ?? "mmol/L"}`
+        : "No log";
     }
     case "digestion":
       return (await getLatestBiometricLog("digestion"))?.label ?? "No log";
     case "symptoms": {
       const latest = await getLatestBiometricLog("symptom");
-      return latest?.label ? `${latest.label}${latest.severity ? ` ${latest.severity}/10` : ""}` : "No log";
+      return latest?.label
+        ? `${latest.label}${latest.severity ? ` ${latest.severity}/10` : ""}`
+        : "No log";
     }
     default:
       return "Ready";
   }
 }
 
-export function getWidgetRouteType(widgetKey: WidgetKey): BiometricType | undefined {
+export function getWidgetRouteType(
+  widgetKey: WidgetKey,
+): BiometricType | undefined {
   switch (widgetKey) {
     case "weight":
     case "biometric_goal_weight":
@@ -244,7 +255,7 @@ export async function createBiometricLog(input: BiometricLogInput) {
     severity: input.severity,
     type: input.type,
     unit: input.unit,
-    value: input.value
+    value: input.value,
   };
   const logs = await getBiometricLogs();
 
@@ -254,7 +265,9 @@ export async function createBiometricLog(input: BiometricLogInput) {
 }
 
 export async function getBiometricLogs() {
-  return sortByLoggedAt(await readJsonArray<StoredBiometricLog>(BIOMETRIC_LOGS_STORAGE_KEY));
+  return sortByLoggedAt(
+    await readJsonArray<StoredBiometricLog>(BIOMETRIC_LOGS_STORAGE_KEY),
+  );
 }
 
 export async function getBiometricLogsByType(type: BiometricType) {
@@ -263,7 +276,11 @@ export async function getBiometricLogsByType(type: BiometricType) {
   return logs.filter((log) => log.type === type);
 }
 
-export async function getBiometricLogsByDateRange(type: BiometricType | "all", startDate: Date, endDate: Date) {
+export async function getBiometricLogsByDateRange(
+  type: BiometricType | "all",
+  startDate: Date,
+  endDate: Date,
+) {
   const startKey = toDateKey(startDate);
   const endKey = toDateKey(endDate);
   const logs = await getBiometricLogs();
@@ -282,7 +299,10 @@ export async function getLatestBiometricLog(type: BiometricType) {
   return logs[0] ?? null;
 }
 
-export async function updateBiometricLog(id: string, partial: Partial<BiometricLogInput>) {
+export async function updateBiometricLog(
+  id: string,
+  partial: Partial<BiometricLogInput>,
+) {
   const logs = await getBiometricLogs();
   const updatedLogs = logs.map((log) =>
     log.id === id
@@ -298,9 +318,9 @@ export async function updateBiometricLog(id: string, partial: Partial<BiometricL
           severity: partial.severity ?? log.severity,
           unit: partial.unit ?? log.unit,
           updatedAt: new Date().toISOString(),
-          value: partial.value ?? log.value
+          value: partial.value ?? log.value,
         }
-      : log
+      : log,
   );
 
   await writeJsonArray(BIOMETRIC_LOGS_STORAGE_KEY, updatedLogs);
@@ -312,12 +332,17 @@ export async function deleteBiometricLog(id: string) {
   const logs = await getBiometricLogs();
   const deleted = logs.find((log) => log.id === id) ?? null;
 
-  await writeJsonArray(BIOMETRIC_LOGS_STORAGE_KEY, logs.filter((log) => log.id !== id));
+  await writeJsonArray(
+    BIOMETRIC_LOGS_STORAGE_KEY,
+    logs.filter((log) => log.id !== id),
+  );
 
   return deleted;
 }
 
-export async function calculateBiometricTrend(type: BiometricType): Promise<BiometricTrend> {
+export async function calculateBiometricTrend(
+  type: BiometricType,
+): Promise<BiometricTrend> {
   const logs = await getBiometricLogsByType(type);
   const numericLogs = logs.filter((log) => typeof log.value === "number");
   const latest = logs[0];
@@ -325,21 +350,35 @@ export async function calculateBiometricTrend(type: BiometricType): Promise<Biom
   const latestNumeric = numericLogs[0];
   const sevenDayLogs = getLogsWithinDays(numericLogs, 7);
   const thirtyDayLogs = getLogsWithinDays(numericLogs, 30);
-  const change = latestNumeric && previousNumeric ? latestNumeric.value! - previousNumeric.value! : undefined;
+  const change =
+    latestNumeric && previousNumeric
+      ? latestNumeric.value! - previousNumeric.value!
+      : undefined;
 
   return {
     changeSinceLastLog: change,
-    direction: change === undefined ? "unknown" : Math.abs(change) < 0.1 ? "same" : change > 0 ? "up" : "down",
-    highestValue: numericLogs.length ? Math.max(...numericLogs.map((log) => log.value ?? 0)) : undefined,
+    direction:
+      change === undefined
+        ? "unknown"
+        : Math.abs(change) < 0.1
+          ? "same"
+          : change > 0
+            ? "up"
+            : "down",
+    highestValue: numericLogs.length
+      ? Math.max(...numericLogs.map((log) => log.value ?? 0))
+      : undefined,
     latestLabel: latest?.label,
     latestLoggedAt: latest?.loggedAt,
     latestValue: latestNumeric?.value,
-    lowestValue: numericLogs.length ? Math.min(...numericLogs.map((log) => log.value ?? 0)) : undefined,
+    lowestValue: numericLogs.length
+      ? Math.min(...numericLogs.map((log) => log.value ?? 0))
+      : undefined,
     message: buildTrendMessage(type, latest, change),
     sevenDayAverage: averageLogValue(sevenDayLogs),
     thirtyDayAverage: averageLogValue(thirtyDayLogs),
     type,
-    unit: latestNumeric?.unit ?? latest?.unit
+    unit: latestNumeric?.unit ?? latest?.unit,
   };
 }
 
@@ -348,7 +387,7 @@ export async function getBiometricDashboardSummary(): Promise<BiometricDashboard
     BIOMETRIC_TYPES.map(async (type): Promise<BiometricDashboardItem> => {
       const [latest, trend] = await Promise.all([
         getLatestBiometricLog(type),
-        calculateBiometricTrend(type)
+        calculateBiometricTrend(type),
       ]);
 
       return {
@@ -358,14 +397,14 @@ export async function getBiometricDashboardSummary(): Promise<BiometricDashboard
         latestLoggedAt: latest?.loggedAt,
         title: BIOMETRIC_TYPE_LABELS[type],
         trendMessage: trend.message,
-        type
+        type,
       };
-    })
+    }),
   );
 
   return {
     items,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 }
 
@@ -376,7 +415,7 @@ export async function createWeightLog(input: WeightLogInput) {
     id: id("weight"),
     loggedAt: input.loggedAt ?? now,
     notes: input.notes?.trim() || undefined,
-    weightKg: input.weightKg
+    weightKg: input.weightKg,
   };
   const logs = await getWeightLogs();
 
@@ -387,15 +426,17 @@ export async function createWeightLog(input: WeightLogInput) {
       notes: log.notes,
       type: "weight",
       unit: "kg",
-      value: log.weightKg
-    })
+      value: log.weightKg,
+    }),
   ]);
 
   return log;
 }
 
 export async function getWeightLogs() {
-  return sortByLoggedAt(await readJsonArray<WeightLog>(WEIGHT_LOGS_STORAGE_KEY));
+  return sortByLoggedAt(
+    await readJsonArray<WeightLog>(WEIGHT_LOGS_STORAGE_KEY),
+  );
 }
 
 export async function createBodyMeasurementLog(input: BodyMeasurementLogInput) {
@@ -411,7 +452,7 @@ export async function createBodyMeasurementLog(input: BodyMeasurementLogInput) {
     notes: input.notes?.trim() || undefined,
     photoUrl: input.photoUrl?.trim() || undefined,
     thighCm: input.thighCm,
-    waistCm: input.waistCm
+    waistCm: input.waistCm,
   };
   const logs = await getBodyMeasurementLogs();
 
@@ -426,20 +467,23 @@ export async function createBodyMeasurementLog(input: BodyMeasurementLogInput) {
         hipCm: log.hipCm,
         photoUrl: log.photoUrl,
         thighCm: log.thighCm,
-        waistCm: log.waistCm
+        waistCm: log.waistCm,
       },
       notes: log.notes,
       type: "body_measurement",
       unit: "cm",
-      value: log.waistCm ?? log.chestCm ?? log.armCm ?? log.thighCm ?? log.hipCm
-    })
+      value:
+        log.waistCm ?? log.chestCm ?? log.armCm ?? log.thighCm ?? log.hipCm,
+    }),
   ]);
 
   return log;
 }
 
 export async function getBodyMeasurementLogs() {
-  return sortByLoggedAt(await readJsonArray<BodyMeasurementLog>(BODY_MEASUREMENTS_STORAGE_KEY));
+  return sortByLoggedAt(
+    await readJsonArray<BodyMeasurementLog>(BODY_MEASUREMENTS_STORAGE_KEY),
+  );
 }
 
 export async function createSleepLog(input: SleepLogInput) {
@@ -452,7 +496,7 @@ export async function createSleepLog(input: SleepLogInput) {
     loggedAt: input.loggedAt ?? now,
     notes: input.notes?.trim() || undefined,
     sleepQuality: input.sleepQuality,
-    wakeTime: input.wakeTime?.trim() || undefined
+    wakeTime: input.wakeTime?.trim() || undefined,
   };
   const logs = await getSleepLogs();
 
@@ -466,8 +510,8 @@ export async function createSleepLog(input: SleepLogInput) {
       quality: log.sleepQuality,
       type: "sleep",
       unit: "min",
-      value: log.durationMinutes
-    })
+      value: log.durationMinutes,
+    }),
   ]);
 
   return log;
@@ -486,7 +530,7 @@ export async function createBloodPressureLog(input: BloodPressureLogInput) {
     loggedAt: input.loggedAt ?? now,
     notes: input.notes?.trim() || undefined,
     pulse: input.pulse,
-    systolic: input.systolic
+    systolic: input.systolic,
   };
   const logs = await getBloodPressureLogs();
 
@@ -500,15 +544,17 @@ export async function createBloodPressureLog(input: BloodPressureLogInput) {
       type: "blood_pressure",
       unit: "mmHg",
       value: log.systolic,
-      metadata: { pulse: log.pulse }
-    })
+      metadata: { pulse: log.pulse },
+    }),
   ]);
 
   return log;
 }
 
 export async function getBloodPressureLogs() {
-  return sortByLoggedAt(await readJsonArray<BloodPressureLog>(BLOOD_PRESSURE_STORAGE_KEY));
+  return sortByLoggedAt(
+    await readJsonArray<BloodPressureLog>(BLOOD_PRESSURE_STORAGE_KEY),
+  );
 }
 
 export async function createBloodGlucoseLog(input: BloodGlucoseLogInput) {
@@ -520,7 +566,7 @@ export async function createBloodGlucoseLog(input: BloodGlucoseLogInput) {
     loggedAt: input.loggedAt ?? now,
     notes: input.notes?.trim() || undefined,
     timing: input.timing,
-    unit: input.unit
+    unit: input.unit,
   };
   const logs = await getBloodGlucoseLogs();
 
@@ -532,60 +578,84 @@ export async function createBloodGlucoseLog(input: BloodGlucoseLogInput) {
       notes: log.notes,
       type: "blood_glucose",
       unit: log.unit,
-      value: log.glucoseValue
-    })
+      value: log.glucoseValue,
+    }),
   ]);
 
   return log;
 }
 
 export async function getBloodGlucoseLogs() {
-  return sortByLoggedAt(await readJsonArray<BloodGlucoseLog>(BLOOD_GLUCOSE_STORAGE_KEY));
+  return sortByLoggedAt(
+    await readJsonArray<BloodGlucoseLog>(BLOOD_GLUCOSE_STORAGE_KEY),
+  );
 }
 
-export function createEnergyLog(label: string, notes?: string, loggedAt?: string) {
+export function createEnergyLog(
+  label: string,
+  notes?: string,
+  loggedAt?: string,
+) {
   return createBiometricLog({
     label,
     loggedAt,
     notes,
     type: "energy",
     unit: "level",
-    value: levelToNumber(label)
+    value: levelToNumber(label),
   });
 }
 
-export function createMoodLog(label: string, notes?: string, loggedAt?: string) {
+export function createMoodLog(
+  label: string,
+  notes?: string,
+  loggedAt?: string,
+) {
   return createBiometricLog({
     label,
     loggedAt,
     notes,
     type: "mood",
     unit: "level",
-    value: levelToNumber(label)
+    value: levelToNumber(label),
   });
 }
 
-export function createDigestionLog(label: string, notes?: string, loggedAt?: string) {
+export function createDigestionLog(
+  label: string,
+  notes?: string,
+  loggedAt?: string,
+) {
   return createBiometricLog({
     label,
     loggedAt,
     notes,
-    type: "digestion"
+    type: "digestion",
   });
 }
 
-export function createSymptomLog(label: string, severity: number, notes?: string, loggedAt?: string) {
+export function createSymptomLog(
+  label: string,
+  severity: number,
+  notes?: string,
+  loggedAt?: string,
+) {
   return createBiometricLog({
     label,
     loggedAt,
     notes,
     severity,
     type: "symptom",
-    value: severity
+    value: severity,
   });
 }
 
-export async function createHeartRateLog(restingBpm: number, activeBpm?: number, notes?: string, loggedAt?: string) {
+export async function createHeartRateLog(
+  restingBpm: number,
+  activeBpm?: number,
+  notes?: string,
+  loggedAt?: string,
+) {
   return createBiometricLog({
     loggedAt,
     metadata: { activeBpm },
@@ -594,58 +664,66 @@ export async function createHeartRateLog(restingBpm: number, activeBpm?: number,
     secondaryValue: activeBpm,
     type: "heart_rate",
     unit: "bpm",
-    value: restingBpm
+    value: restingBpm,
   });
 }
 
-export async function getNutritionBiometricInsights(): Promise<BiometricsInsight[]> {
-  const [weightTrend, sleep, energyLogs, digestion, glucose] = await Promise.all([
-    calculateBiometricTrend("weight"),
-    getLatestBiometricLog("sleep"),
-    getBiometricLogsByType("energy"),
-    getLatestBiometricLog("digestion"),
-    getLatestBiometricLog("blood_glucose")
-  ]);
+export async function getNutritionBiometricInsights(): Promise<
+  BiometricsInsight[]
+> {
+  const [weightTrend, sleep, energyLogs, digestion, glucose] =
+    await Promise.all([
+      calculateBiometricTrend("weight"),
+      getLatestBiometricLog("sleep"),
+      getBiometricLogsByType("energy"),
+      getLatestBiometricLog("digestion"),
+      getLatestBiometricLog("blood_glucose"),
+    ]);
   const insights: BiometricsInsight[] = [];
-  const recentLowEnergy = energyLogs.slice(0, 5).filter((log) => (log.value ?? 3) <= 2).length >= 2;
+  const recentLowEnergy =
+    energyLogs.slice(0, 5).filter((log) => (log.value ?? 3) <= 2).length >= 2;
 
   if (weightTrend.latestValue) {
     insights.push({
       message: "Your weight trend can help you understand progress over time.",
       title: "Weight trend",
-      type: "weight"
+      type: "weight",
     });
   }
 
   if (sleep?.value && sleep.value < 420) {
     insights.push({
-      message: "Sleep was lower than usual. Recovery and appetite can feel different on low-sleep days.",
+      message:
+        "Sleep was lower than usual. Recovery and appetite can feel different on low-sleep days.",
       title: "Sleep and nutrition",
-      type: "sleep"
+      type: "sleep",
     });
   }
 
   if (recentLowEnergy) {
     insights.push({
-      message: "Energy has been logged as low recently. Review sleep, food, hydration, and workload.",
+      message:
+        "Energy has been logged as low recently. Review sleep, food, hydration, and workload.",
       title: "Energy pattern",
-      type: "energy"
+      type: "energy",
     });
   }
 
   if (digestion) {
     insights.push({
-      message: "You logged digestion notes recently. Food notes may help you spot patterns.",
+      message:
+        "You logged digestion notes recently. Food notes may help you spot patterns.",
       title: "Digestion notes",
-      type: "digestion"
+      type: "digestion",
     });
   }
 
   if (glucose) {
     insights.push({
-      message: "Blood glucose logs are shown for tracking only. Follow healthcare guidance for interpretation.",
+      message:
+        "Blood glucose logs are shown for tracking only. Follow healthcare guidance for interpretation.",
       title: "Glucose tracking",
-      type: "blood_glucose"
+      type: "blood_glucose",
     });
   }
 
@@ -655,10 +733,11 @@ export async function getNutritionBiometricInsights(): Promise<BiometricsInsight
 export async function getWeightGoalProgress() {
   const [target, weightTrend] = await Promise.all([
     getActiveNutritionTarget(),
-    calculateBiometricTrend("weight")
+    calculateBiometricTrend("weight"),
   ]);
 
-  if (!weightTrend.latestValue) return "Track weight over time to support your goals.";
+  if (!weightTrend.latestValue)
+    return "Track weight over time to support your goals.";
 
   if (target?.goalWeightKg) {
     return `Latest logged weight is ${weightTrend.latestValue} kg. Goal weight is ${target.goalWeightKg} kg.`;
@@ -669,7 +748,8 @@ export async function getWeightGoalProgress() {
 
 export async function getEnergyFoodPatternSummary() {
   const energyLogs = await getBiometricLogsByType("energy");
-  const recentLowEnergy = energyLogs.slice(0, 5).filter((log) => (log.value ?? 3) <= 2).length >= 2;
+  const recentLowEnergy =
+    energyLogs.slice(0, 5).filter((log) => (log.value ?? 3) <= 2).length >= 2;
 
   return recentLowEnergy
     ? "Energy has been logged as low recently. Review sleep, food, hydration, and workload."
@@ -687,21 +767,22 @@ export async function getDigestionFoodNotesSummary() {
 export async function getWorkoutReadinessSummary(): Promise<WorkoutReadinessSummary> {
   const [sleep, energy] = await Promise.all([
     getLatestBiometricLog("sleep"),
-    getLatestBiometricLog("energy")
+    getLatestBiometricLog("energy"),
   ]);
 
   return {
     energyLabel: energy?.label,
-    message: "Your energy and sleep logs can help you choose a suitable workout intensity.",
+    message:
+      "Your energy and sleep logs can help you choose a suitable workout intensity.",
     sleepDurationMinutes: sleep?.value,
-    title: "Workout readiness"
+    title: "Workout readiness",
   };
 }
 
 export async function getTrainingBodyProgressSummary(): Promise<TrainingBodyProgressSummary> {
   const [weight, body] = await Promise.all([
     calculateBiometricTrend("weight"),
-    calculateBiometricTrend("body_measurement")
+    calculateBiometricTrend("body_measurement"),
   ]);
 
   return {
@@ -710,7 +791,7 @@ export async function getTrainingBodyProgressSummary(): Promise<TrainingBodyProg
       : "Body measurements can support muscle or fat-loss goals over time.",
     weightMessage: weight.latestValue
       ? `Latest weight log is ${weight.latestValue} ${weight.unit ?? "kg"}.`
-      : "Weight trend can show next to goal weight when logs exist."
+      : "Weight trend can show next to goal weight when logs exist.",
   };
 }
 
@@ -723,7 +804,9 @@ export function formatBiometricLogValue(log: BiometricLog) {
     case "heart_rate":
       return log.value ? `${Math.round(log.value)} bpm` : "No value";
     case "blood_pressure":
-      return log.value && log.secondaryValue ? `${Math.round(log.value)}/${Math.round(log.secondaryValue)} mmHg` : "No value";
+      return log.value && log.secondaryValue
+        ? `${Math.round(log.value)}/${Math.round(log.secondaryValue)} mmHg`
+        : "No value";
     case "blood_glucose":
       return log.value ? `${log.value} ${log.unit ?? "mmol/L"}` : "No value";
     case "energy":
@@ -731,9 +814,13 @@ export function formatBiometricLogValue(log: BiometricLog) {
     case "digestion":
       return log.label ?? "Logged";
     case "symptom":
-      return log.label ? `${log.label}${log.severity ? ` ${log.severity}/10` : ""}` : "Logged";
+      return log.label
+        ? `${log.label}${log.severity ? ` ${log.severity}/10` : ""}`
+        : "Logged";
     case "body_measurement":
-      return log.value ? `${log.value} ${log.unit ?? "cm"}` : "Measurements logged";
+      return log.value
+        ? `${log.value} ${log.unit ?? "cm"}`
+        : "Measurements logged";
     default:
       return "Logged";
   }
@@ -767,19 +854,31 @@ function getLogsWithinDays(logs: BiometricLog[], days: number) {
 }
 
 function averageLogValue(logs: BiometricLog[]) {
-  const values = logs.map((log) => log.value).filter((value): value is number => typeof value === "number");
+  const values = logs
+    .map((log) => log.value)
+    .filter((value): value is number => typeof value === "number");
 
   if (!values.length) return undefined;
 
-  return Math.round((values.reduce((total, value) => total + value, 0) / values.length) * 10) / 10;
+  return (
+    Math.round(
+      (values.reduce((total, value) => total + value, 0) / values.length) * 10,
+    ) / 10
+  );
 }
 
-function buildTrendMessage(type: BiometricType, latest?: BiometricLog, change?: number) {
+function buildTrendMessage(
+  type: BiometricType,
+  latest?: BiometricLog,
+  change?: number,
+) {
   if (!latest) return BIOMETRIC_TYPE_EMPTY_TEXT[type];
 
-  if (change === undefined) return "Latest log is saved. Add more logs to see trends.";
+  if (change === undefined)
+    return "Latest log is saved. Add more logs to see trends.";
 
-  if (Math.abs(change) < 0.1) return "Latest value appears similar to the previous log.";
+  if (Math.abs(change) < 0.1)
+    return "Latest value appears similar to the previous log.";
 
   const direction = change > 0 ? "up" : "down";
 

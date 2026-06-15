@@ -19,13 +19,17 @@ export function ReminderTypeChip({ type }: ReminderTypeChipProps) {
         flexDirection: "row",
         gap: 6,
         paddingHorizontal: 10,
-        paddingVertical: 6
+        paddingVertical: 6,
       }}
     >
-      <Text style={{ color: definition.colour, fontSize: 11, fontWeight: "900" }}>
+      <Text
+        style={{ color: definition.colour, fontSize: 11, fontWeight: "900" }}
+      >
         {definition.emoji}
       </Text>
-      <Text style={{ color: definition.colour, fontSize: 12, fontWeight: "800" }}>
+      <Text
+        style={{ color: definition.colour, fontSize: 12, fontWeight: "800" }}
+      >
         {definition.label}
       </Text>
     </View>

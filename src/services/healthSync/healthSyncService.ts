@@ -6,9 +6,12 @@ import {
   createBloodGlucoseLog,
   createBloodPressureLog,
   createSleepLog,
-  createWeightLog
+  createWeightLog,
 } from "@/lib/biometricsStorage";
-import { completeWorkoutSession, createWorkoutSession } from "@/lib/fitnessStorage";
+import {
+  completeWorkoutSession,
+  createWorkoutSession,
+} from "@/lib/fitnessStorage";
 import { addWaterLog } from "@/lib/nutritionStorage";
 import type { WidgetKey } from "@/types/app";
 import type {
@@ -23,10 +26,16 @@ import type {
   HealthSyncSource,
   HealthSyncSourceOption,
   HealthSyncStatus,
-  SyncedHealthSample
+  SyncedHealthSample,
 } from "@/types/healthSync";
-import { getAppleHealthSource, syncAppleHealthData } from "./appleHealthAdapter";
-import { getHealthConnectSource, syncHealthConnectData } from "./healthConnectAdapter";
+import {
+  getAppleHealthSource,
+  syncAppleHealthData,
+} from "./appleHealthAdapter";
+import {
+  getHealthConnectSource,
+  syncHealthConnectData,
+} from "./healthConnectAdapter";
 import { getManualSyncSource, syncManualHealthData } from "./manualSyncAdapter";
 import { syncMockHealthData } from "./mockHealthSyncAdapter";
 
@@ -36,7 +45,11 @@ const CONNECTION_STORAGE_KEY = "family_health_sync_connection";
 const SAMPLES_STORAGE_KEY = "family_health_synced_samples";
 const ERRORS_STORAGE_KEY = "family_health_sync_errors";
 
-export const HEALTH_SYNC_DATA_TYPES: Array<{ key: HealthSyncDataType; label: string; later?: boolean }> = [
+export const HEALTH_SYNC_DATA_TYPES: Array<{
+  key: HealthSyncDataType;
+  label: string;
+  later?: boolean;
+}> = [
   { key: "steps", label: "Steps" },
   { key: "distance", label: "Distance" },
   { key: "workout", label: "Workouts" },
@@ -47,7 +60,7 @@ export const HEALTH_SYNC_DATA_TYPES: Array<{ key: HealthSyncDataType; label: str
   { key: "active_calories", label: "Active calories" },
   { key: "water", label: "Water" },
   { key: "blood_pressure", label: "Blood pressure later", later: true },
-  { key: "blood_glucose", label: "Blood glucose later", later: true }
+  { key: "blood_glucose", label: "Blood glucose later", later: true },
 ];
 
 export const DEVICE_SYNC_WIDGET_KEYS = [
@@ -57,7 +70,7 @@ export const DEVICE_SYNC_WIDGET_KEYS = [
   "sleep_last_night",
   "active_calories",
   "synced_weight",
-  "sync_status"
+  "sync_status",
 ] as const satisfies WidgetKey[];
 
 async function readJsonArray<T>(key: string, fallback: T[] = []) {
@@ -91,7 +104,10 @@ async function writeConnection(connection: HealthSyncConnection | null) {
     return null;
   }
 
-  await AsyncStorage.setItem(CONNECTION_STORAGE_KEY, JSON.stringify(connection));
+  await AsyncStorage.setItem(
+    CONNECTION_STORAGE_KEY,
+    JSON.stringify(connection),
+  );
   return connection;
 }
 
@@ -103,24 +119,30 @@ export function isDeviceSyncWidget(widgetKey: WidgetKey) {
   return DEVICE_SYNC_WIDGET_KEYS.includes(widgetKey as DeviceSyncWidgetKey);
 }
 
-export async function getAvailableHealthSources(): Promise<HealthSyncSourceOption[]> {
+export async function getAvailableHealthSources(): Promise<
+  HealthSyncSourceOption[]
+> {
   const platformSource = getPlatformHealthSource();
 
   return [
     getAppleHealthSource(),
     getHealthConnectSource(),
     {
-      description: "Development-only local samples for testing the sync pipeline.",
+      description:
+        "Development-only local samples for testing the sync pipeline.",
       isAvailable: true,
       source: "mock" as const,
-      title: "Mock Sync"
+      title: "Mock Sync",
     },
-    getManualSyncSource()
+    getManualSyncSource(),
   ].map((source) => ({
     ...source,
-    isAvailable: source.source === platformSource || source.source === "mock" || source.source === "manual"
-      ? source.isAvailable
-      : false
+    isAvailable:
+      source.source === platformSource ||
+      source.source === "mock" ||
+      source.source === "manual"
+        ? source.isAvailable
+        : false,
   }));
 }
 
@@ -134,7 +156,10 @@ export async function getHealthSyncConnection() {
   return readConnection();
 }
 
-export async function createHealthSyncConnection(source: HealthSyncSource, enabledDataTypes: HealthSyncDataType[] = []) {
+export async function createHealthSyncConnection(
+  source: HealthSyncSource,
+  enabledDataTypes: HealthSyncDataType[] = [],
+) {
   const now = new Date().toISOString();
   const connection: HealthSyncConnection = {
     createdAt: now,
@@ -145,27 +170,31 @@ export async function createHealthSyncConnection(source: HealthSyncSource, enabl
     profileId: LOCAL_PROFILE_ID,
     source,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
 
   await writeConnection(connection);
   return connection;
 }
 
-export async function updateHealthSyncConnection(partial: Partial<HealthSyncConnection>) {
+export async function updateHealthSyncConnection(
+  partial: Partial<HealthSyncConnection>,
+) {
   const current = await readConnection();
   const now = new Date().toISOString();
   const connection: HealthSyncConnection = {
     createdAt: current?.createdAt ?? now,
-    enabledDataTypes: partial.enabledDataTypes ?? current?.enabledDataTypes ?? [],
+    enabledDataTypes:
+      partial.enabledDataTypes ?? current?.enabledDataTypes ?? [],
     id: current?.id ?? id("health-sync-connection"),
     isConnected: partial.isConnected ?? current?.isConnected ?? false,
     lastSyncAt: partial.lastSyncAt ?? current?.lastSyncAt,
-    permissionStatus: partial.permissionStatus ?? current?.permissionStatus ?? "not_requested",
+    permissionStatus:
+      partial.permissionStatus ?? current?.permissionStatus ?? "not_requested",
     profileId: current?.profileId ?? LOCAL_PROFILE_ID,
     source: partial.source ?? current?.source ?? getPlatformHealthSource(),
     updatedAt: now,
-    userId: current?.userId ?? LOCAL_USER_ID
+    userId: current?.userId ?? LOCAL_USER_ID,
   };
 
   await writeConnection(connection);
@@ -179,18 +208,21 @@ export async function disconnectHealthSource() {
   return updateHealthSyncConnection({
     enabledDataTypes: [],
     isConnected: false,
-    permissionStatus: "not_requested"
+    permissionStatus: "not_requested",
   });
 }
 
-export async function requestHealthPermissions({ dataTypes, source }: HealthSyncPermissionRequest) {
+export async function requestHealthPermissions({
+  dataTypes,
+  source,
+}: HealthSyncPermissionRequest) {
   const status = getRequestedPermissionStatus(source, dataTypes);
 
   return updateHealthSyncConnection({
     enabledDataTypes: dataTypes,
     isConnected: status === "granted" || status === "partial",
     permissionStatus: status,
-    source
+    source,
   });
 }
 
@@ -211,35 +243,41 @@ export async function getLastSyncStatus(): Promise<HealthSyncStatus> {
     lastSyncAt: connection?.lastSyncAt,
     message: getStatusMessage(connection, selected),
     permissionStatus: connection?.permissionStatus ?? "not_requested",
-    source
+    source,
   };
 }
 
-export async function syncSelectedHealthData(dateRange = getTodayDateRange()): Promise<HealthSyncResult> {
+export async function syncSelectedHealthData(
+  dateRange = getTodayDateRange(),
+): Promise<HealthSyncResult> {
   const connection = await readConnection();
 
   if (!connection || !connection.enabledDataTypes.length) {
     const error = await logHealthSyncError({
       errorCode: "no_data_types",
       errorMessage: "No data types selected for sync.",
-      source: connection?.source ?? getPlatformHealthSource()
+      source: connection?.source ?? getPlatformHealthSource(),
     });
 
     return {
       errors: [error],
       importedCount: 0,
       samples: [],
-      status: await getLastSyncStatus()
+      status: await getLastSyncStatus(),
     };
   }
 
-  return syncHealthData(dateRange, connection.enabledDataTypes, connection.source);
+  return syncHealthData(
+    dateRange,
+    connection.enabledDataTypes,
+    connection.source,
+  );
 }
 
 export async function syncHealthData(
   dateRange: HealthSyncDateRange,
   dataTypes: HealthSyncDataType[],
-  source: HealthSyncSource
+  source: HealthSyncSource,
 ): Promise<HealthSyncResult> {
   try {
     const rawSamples = await syncBySource(source, dataTypes, dateRange);
@@ -248,34 +286,37 @@ export async function syncHealthData(
     await Promise.all([
       mapSyncedSamplesToBiometrics(samples),
       mapSyncedSamplesToWorkout(samples),
-      mapSyncedSamplesToNutrition(samples)
+      mapSyncedSamplesToNutrition(samples),
     ]);
 
     await updateHealthSyncConnection({
       isConnected: true,
       lastSyncAt: new Date().toISOString(),
       permissionStatus: dataTypes.length ? "granted" : "not_requested",
-      source
+      source,
     });
 
     return {
       errors: [],
       importedCount: samples.length,
       samples,
-      status: await getLastSyncStatus()
+      status: await getLastSyncStatus(),
     };
   } catch (error) {
     const syncError = await logHealthSyncError({
       errorCode: "sync_failed",
-      errorMessage: error instanceof Error ? error.message : "Sync could not complete right now. Your manual logs are still safe.",
-      source
+      errorMessage:
+        error instanceof Error
+          ? error.message
+          : "Sync could not complete right now. Your manual logs are still safe.",
+      source,
     });
 
     return {
       errors: [syncError],
       importedCount: 0,
       samples: [],
-      status: await getLastSyncStatus()
+      status: await getLastSyncStatus(),
     };
   }
 }
@@ -315,7 +356,9 @@ export function syncWater(dateRange: HealthSyncDateRange) {
 export async function saveSyncedHealthSamples(samples: SyncedHealthSample[]) {
   const existing = await getSyncedHealthSamples();
   const existingKeys = new Set(existing.map(getSampleDedupeKey));
-  const newSamples = samples.filter((sample) => !existingKeys.has(getSampleDedupeKey(sample)));
+  const newSamples = samples.filter(
+    (sample) => !existingKeys.has(getSampleDedupeKey(sample)),
+  );
   const deduped = dedupeSyncedSamples([...existing, ...newSamples]);
 
   await writeJsonArray(SAMPLES_STORAGE_KEY, deduped);
@@ -325,17 +368,22 @@ export async function saveSyncedHealthSamples(samples: SyncedHealthSample[]) {
 
 export async function getSyncedHealthSamples() {
   const samples = await readJsonArray<SyncedHealthSample>(SAMPLES_STORAGE_KEY);
-  return samples.sort((left, right) => new Date(right.startTime).getTime() - new Date(left.startTime).getTime());
+  return samples.sort(
+    (left, right) =>
+      new Date(right.startTime).getTime() - new Date(left.startTime).getTime(),
+  );
 }
 
-export async function getSyncedHealthSamplesByType(dataType: HealthSyncDataType) {
+export async function getSyncedHealthSamplesByType(
+  dataType: HealthSyncDataType,
+) {
   const samples = await getSyncedHealthSamples();
   return samples.filter((sample) => sample.dataType === dataType);
 }
 
 export async function getSyncedHealthSamplesByDateRange(
   dataType: HealthSyncDataType | "all",
-  dateRange: HealthSyncDateRange
+  dateRange: HealthSyncDateRange,
 ) {
   const samples = await getSyncedHealthSamples();
   const start = dateRange.startDate.getTime();
@@ -343,7 +391,11 @@ export async function getSyncedHealthSamplesByDateRange(
 
   return samples.filter((sample) => {
     const time = new Date(sample.startTime).getTime();
-    return (dataType === "all" || sample.dataType === dataType) && time >= start && time <= end;
+    return (
+      (dataType === "all" || sample.dataType === dataType) &&
+      time >= start &&
+      time <= end
+    );
   });
 }
 
@@ -365,81 +417,102 @@ function getSampleDedupeKey(sample: SyncedHealthSample) {
     : `${sample.source}:${sample.dataType}:${sample.startTime}:${sample.endTime ?? ""}:${sample.value}`;
 }
 
-export async function mapSyncedSamplesToBiometrics(samples: SyncedHealthSample[]) {
-  await Promise.all(samples.map(async (sample) => {
-    switch (sample.dataType) {
-      case "sleep":
-        await createSleepLog({
-          durationMinutes: Math.round(sample.value),
-          loggedAt: sample.startTime,
-          notes: getSourceNote(sample)
-        });
-        break;
-      case "weight":
-        await createWeightLog({
-          loggedAt: sample.startTime,
-          notes: getSourceNote(sample),
-          weightKg: sample.value
-        });
-        break;
-      case "heart_rate":
-      case "resting_heart_rate":
-        await createBiometricLog({
-          loggedAt: sample.startTime,
-          metadata: { source: sample.source, sourceSampleId: sample.sourceSampleId },
-          notes: getSourceNote(sample),
-          type: "heart_rate",
-          unit: "bpm",
-          value: sample.value
-        });
-        break;
-      case "blood_pressure":
-        await createBloodPressureLog({
-          diastolic: Number(sample.metadata?.diastolic) || 0,
-          loggedAt: sample.startTime,
-          notes: getSourceNote(sample),
-          systolic: sample.value
-        });
-        break;
-      case "blood_glucose":
-        await createBloodGlucoseLog({
-          glucoseValue: sample.value,
-          loggedAt: sample.startTime,
-          notes: getSourceNote(sample),
-          timing: "other",
-          unit: sample.unit === "mg/dL" ? "mg/dL" : "mmol/L"
-        });
-        break;
-      default:
-        break;
-    }
-  }));
+export async function mapSyncedSamplesToBiometrics(
+  samples: SyncedHealthSample[],
+) {
+  await Promise.all(
+    samples.map(async (sample) => {
+      switch (sample.dataType) {
+        case "sleep":
+          await createSleepLog({
+            durationMinutes: Math.round(sample.value),
+            loggedAt: sample.startTime,
+            notes: getSourceNote(sample),
+          });
+          break;
+        case "weight":
+          await createWeightLog({
+            loggedAt: sample.startTime,
+            notes: getSourceNote(sample),
+            weightKg: sample.value,
+          });
+          break;
+        case "heart_rate":
+        case "resting_heart_rate":
+          await createBiometricLog({
+            loggedAt: sample.startTime,
+            metadata: {
+              source: sample.source,
+              sourceSampleId: sample.sourceSampleId,
+            },
+            notes: getSourceNote(sample),
+            type: "heart_rate",
+            unit: "bpm",
+            value: sample.value,
+          });
+          break;
+        case "blood_pressure":
+          await createBloodPressureLog({
+            diastolic: Number(sample.metadata?.diastolic) || 0,
+            loggedAt: sample.startTime,
+            notes: getSourceNote(sample),
+            systolic: sample.value,
+          });
+          break;
+        case "blood_glucose":
+          await createBloodGlucoseLog({
+            glucoseValue: sample.value,
+            loggedAt: sample.startTime,
+            notes: getSourceNote(sample),
+            timing: "other",
+            unit: sample.unit === "mg/dL" ? "mg/dL" : "mmol/L",
+          });
+          break;
+        default:
+          break;
+      }
+    }),
+  );
 }
 
 export async function mapSyncedSamplesToWorkout(samples: SyncedHealthSample[]) {
-  const workoutSamples = samples.filter((sample) => sample.dataType === "workout" || sample.dataType === "running");
+  const workoutSamples = samples.filter(
+    (sample) => sample.dataType === "workout" || sample.dataType === "running",
+  );
 
-  await Promise.all(workoutSamples.map(async (sample) => {
-    const session = await createWorkoutSession({
-      caloriesEstimate: Number(sample.metadata?.activeCalories) || undefined,
-      durationSeconds: Math.round(sample.value * 60),
-      intensity: "moderate",
-      notes: getSourceNote(sample),
-      startedAt: sample.startTime,
-      title: String(sample.metadata?.title ?? "Synced workout"),
-      workoutType: sample.dataType === "running" ? "running" : "cardio"
-    });
+  await Promise.all(
+    workoutSamples.map(async (sample) => {
+      const session = await createWorkoutSession({
+        caloriesEstimate: Number(sample.metadata?.activeCalories) || undefined,
+        durationSeconds: Math.round(sample.value * 60),
+        intensity: "moderate",
+        notes: getSourceNote(sample),
+        startedAt: sample.startTime,
+        title: String(sample.metadata?.title ?? "Synced workout"),
+        workoutType: sample.dataType === "running" ? "running" : "cardio",
+      });
 
-    await completeWorkoutSession(session.id, {
-      endedAt: sample.endTime ?? new Date(new Date(sample.startTime).getTime() + sample.value * 60 * 1000).toISOString()
-    });
-  }));
+      await completeWorkoutSession(session.id, {
+        endedAt:
+          sample.endTime ??
+          new Date(
+            new Date(sample.startTime).getTime() + sample.value * 60 * 1000,
+          ).toISOString(),
+      });
+    }),
+  );
 }
 
-export async function mapSyncedSamplesToNutrition(samples: SyncedHealthSample[]) {
+export async function mapSyncedSamplesToNutrition(
+  samples: SyncedHealthSample[],
+) {
   const waterSamples = samples.filter((sample) => sample.dataType === "water");
 
-  await Promise.all(waterSamples.map((sample) => addWaterLog(Math.round(sample.value), sample.startTime)));
+  await Promise.all(
+    waterSamples.map((sample) =>
+      addWaterLog(Math.round(sample.value), sample.startTime),
+    ),
+  );
 }
 
 export async function calculateDailyStepsFromSamples(date = new Date()) {
@@ -451,32 +524,47 @@ export async function calculateDailyDistanceFromSamples(date = new Date()) {
 }
 
 export async function calculateSleepSummaryFromSamples(date = new Date()) {
-  const samples = await getSyncedHealthSamplesByDateRange("sleep", getDateRangeForDay(date));
-  const totalMinutes = samples.reduce((total, sample) => total + sample.value, 0);
+  const samples = await getSyncedHealthSamplesByDateRange(
+    "sleep",
+    getDateRangeForDay(date),
+  );
+  const totalMinutes = samples.reduce(
+    (total, sample) => total + sample.value,
+    0,
+  );
 
   return {
     latest: samples[0],
-    totalMinutes
+    totalMinutes,
   };
 }
 
 export async function calculateHeartRateSummaryFromSamples(date = new Date()) {
-  const samples = await getSyncedHealthSamplesByDateRange("heart_rate", getDateRangeForDay(date));
+  const samples = await getSyncedHealthSamplesByDateRange(
+    "heart_rate",
+    getDateRangeForDay(date),
+  );
   const values = samples.map((sample) => sample.value);
 
   return {
-    averageBpm: values.length ? Math.round(values.reduce((total, value) => total + value, 0) / values.length) : undefined,
-    latest: samples[0]
+    averageBpm: values.length
+      ? Math.round(
+          values.reduce((total, value) => total + value, 0) / values.length,
+        )
+      : undefined,
+    latest: samples[0],
   };
 }
 
 export async function getAvailableDeviceSyncWidgets() {
-  return Promise.all(DEVICE_SYNC_WIDGET_KEYS.map(async (widgetKey) => ({
-    route: getDeviceSyncWidgetRoute(widgetKey),
-    title: getDeviceSyncWidgetTitle(widgetKey),
-    value: await calculateDeviceSyncWidgetValue(widgetKey),
-    widgetKey
-  })));
+  return Promise.all(
+    DEVICE_SYNC_WIDGET_KEYS.map(async (widgetKey) => ({
+      route: getDeviceSyncWidgetRoute(widgetKey),
+      title: getDeviceSyncWidgetTitle(widgetKey),
+      value: await calculateDeviceSyncWidgetValue(widgetKey),
+      widgetKey,
+    })),
+  );
 }
 
 export async function calculateDeviceSyncWidgetValue(widgetKey: WidgetKey) {
@@ -489,11 +577,19 @@ export async function calculateDeviceSyncWidgetValue(widgetKey: WidgetKey) {
     case "last_synced_workout": {
       const workouts = await getSyncedHealthSamplesByType("workout");
       const running = await getSyncedHealthSamplesByType("running");
-      const latest = [...workouts, ...running].sort((left, right) => new Date(right.startTime).getTime() - new Date(left.startTime).getTime())[0];
-      return latest ? String(latest.metadata?.title ?? "Synced workout") : "No sync";
+      const latest = [...workouts, ...running].sort(
+        (left, right) =>
+          new Date(right.startTime).getTime() -
+          new Date(left.startTime).getTime(),
+      )[0];
+      return latest
+        ? String(latest.metadata?.title ?? "Synced workout")
+        : "No sync";
     }
     case "sleep_last_night":
-      return formatMinutes((await calculateSleepSummaryFromSamples()).totalMinutes);
+      return formatMinutes(
+        (await calculateSleepSummaryFromSamples()).totalMinutes,
+      );
     case "active_calories":
       return `${Math.round(await sumSamples("active_calories", getDateRangeForDay(new Date())))} kcal`;
     case "synced_weight": {
@@ -513,7 +609,7 @@ export async function logHealthSyncError({
   dataType,
   errorCode,
   errorMessage,
-  source
+  source,
 }: {
   dataType?: HealthSyncDataType;
   errorCode: string;
@@ -530,7 +626,7 @@ export async function logHealthSyncError({
     occurredAt: now,
     profileId: LOCAL_PROFILE_ID,
     source,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const errors = await readJsonArray<HealthSyncError>(ERRORS_STORAGE_KEY);
 
@@ -576,20 +672,35 @@ export function getDeviceSyncWidgetTitle(widgetKey: WidgetKey) {
   }
 }
 
-function getRequestedPermissionStatus(source: HealthSyncSource, dataTypes: HealthSyncDataType[]): HealthSyncPermissionStatus {
+function getRequestedPermissionStatus(
+  source: HealthSyncSource,
+  dataTypes: HealthSyncDataType[],
+): HealthSyncPermissionStatus {
   if (!dataTypes.length) return "not_requested";
   if (source === "manual") return "unavailable";
   if (source === "apple_health" && Platform.OS !== "ios") return "unavailable";
-  if (source === "health_connect" && Platform.OS !== "android") return "unavailable";
+  if (source === "health_connect" && Platform.OS !== "android")
+    return "unavailable";
   return "granted";
 }
 
-async function syncSingleType(dataType: HealthSyncDataType, dateRange: HealthSyncDateRange) {
+async function syncSingleType(
+  dataType: HealthSyncDataType,
+  dateRange: HealthSyncDateRange,
+) {
   const connection = await readConnection();
-  return syncHealthData(dateRange, [dataType], connection?.source ?? getPlatformHealthSource());
+  return syncHealthData(
+    dateRange,
+    [dataType],
+    connection?.source ?? getPlatformHealthSource(),
+  );
 }
 
-async function syncBySource(source: HealthSyncSource, dataTypes: HealthSyncDataType[], dateRange: HealthSyncDateRange) {
+async function syncBySource(
+  source: HealthSyncSource,
+  dataTypes: HealthSyncDataType[],
+  dateRange: HealthSyncDateRange,
+) {
   switch (source) {
     case "apple_health":
       return syncAppleHealthData(dataTypes, dateRange);
@@ -604,11 +715,18 @@ async function syncBySource(source: HealthSyncSource, dataTypes: HealthSyncDataT
   }
 }
 
-function getStatusMessage(connection: HealthSyncConnection | null, source?: HealthSyncSourceOption) {
-  if (!source?.isAvailable) return "Device sync is not available on this device yet. You can still log health data manually.";
-  if (!connection || connection.permissionStatus === "not_requested") return "Choose what health data to sync.";
-  if (connection.permissionStatus === "denied") return "Permission was not granted. You can change this in your device health settings.";
-  if (connection.permissionStatus === "partial") return "Some data types are connected. You can update permissions anytime.";
+function getStatusMessage(
+  connection: HealthSyncConnection | null,
+  source?: HealthSyncSourceOption,
+) {
+  if (!source?.isAvailable)
+    return "Device sync is not available on this device yet. You can still log health data manually.";
+  if (!connection || connection.permissionStatus === "not_requested")
+    return "Choose what health data to sync.";
+  if (connection.permissionStatus === "denied")
+    return "Permission was not granted. You can change this in your device health settings.";
+  if (connection.permissionStatus === "partial")
+    return "Some data types are connected. You can update permissions anytime.";
   return "You control what data is imported. You can disconnect device sync anytime.";
 }
 
@@ -624,7 +742,10 @@ function getDateRangeForDay(date: Date): HealthSyncDateRange {
   return { endDate, startDate };
 }
 
-async function sumSamples(dataType: HealthSyncDataType, dateRange: HealthSyncDateRange) {
+async function sumSamples(
+  dataType: HealthSyncDataType,
+  dateRange: HealthSyncDateRange,
+) {
   const samples = await getSyncedHealthSamplesByDateRange(dataType, dateRange);
   return samples.reduce((total, sample) => total + sample.value, 0);
 }

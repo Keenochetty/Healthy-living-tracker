@@ -23,18 +23,28 @@ export function EmptyStateCard({
   onAction,
   onSecondaryAction,
   secondaryActionLabel,
-  title
+  title,
 }: EmptyStateCardProps) {
   return (
     <AppCard style={{ alignItems: "flex-start", gap: appSpacing.md }}>
       <AppIcon container name={icon} size={22} variant="primary" />
       <View style={{ gap: appSpacing.xs }}>
-        <Text style={[typography.cardTitle, { color: appColors.text }]}>{title}</Text>
-        <Text style={[typography.body, { color: appColors.textSecondary }]}>{message}</Text>
+        <Text style={[typography.cardTitle, { color: appColors.text }]}>
+          {title}
+        </Text>
+        <Text style={[typography.body, { color: appColors.textSecondary }]}>
+          {message}
+        </Text>
       </View>
-      {actionLabel && onAction ? <AppButton onPress={onAction} title={actionLabel} /> : null}
+      {actionLabel && onAction ? (
+        <AppButton onPress={onAction} title={actionLabel} />
+      ) : null}
       {secondaryActionLabel && onSecondaryAction ? (
-        <AppButton onPress={onSecondaryAction} title={secondaryActionLabel} variant="ghost" />
+        <AppButton
+          onPress={onSecondaryAction}
+          title={secondaryActionLabel}
+          variant="ghost"
+        />
       ) : null}
     </AppCard>
   );

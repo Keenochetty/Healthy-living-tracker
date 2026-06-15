@@ -19,7 +19,7 @@ import {
   AppSection,
   AppStatusPill,
   AppToggleRow,
-  AppWidgetCard
+  AppWidgetCard,
 } from "@/components/ui";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
@@ -39,7 +39,10 @@ export default function UiKitScreen() {
 
       <AppSection title="Buttons">
         <View style={{ gap: 10 }}>
-          <AppButton iconLeft={<Plus color="#ffffff" size={18} />} title="Primary" />
+          <AppButton
+            iconLeft={<Plus color="#ffffff" size={18} />}
+            title="Primary"
+          />
           <AppButton title="Secondary" variant="secondary" />
           <AppButton title="Outline" variant="outline" />
           <AppButton title="Ghost" variant="ghost" />
@@ -50,7 +53,12 @@ export default function UiKitScreen() {
 
       <AppSection title="Chips and status">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          <AppChip icon={<AppIcon name="water" size={15} variant="primary" />} label="Water" selected variant="primary" />
+          <AppChip
+            icon={<AppIcon name="water" size={15} variant="primary" />}
+            label="Water"
+            selected
+            variant="primary"
+          />
           <AppChip label="Private" variant="private" />
           <AppChip label="Warning" variant="warning" />
           <AppChip label="Success" variant="success" />
@@ -84,11 +92,42 @@ export default function UiKitScreen() {
       </AppSection>
 
       <AppSection title="Widgets">
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between" }}>
-          <AppWidgetCard helper="good recovery" iconName="sleep" title="Sleep" value="7h 25m" variant="purple" />
-          <AppWidgetCard helper="2 meals logged" iconName="food" title="Food" value="820 kcal" variant="green" />
-          <AppWidgetCard helper="review drafts" iconName="ai_assistant" title="AI helper" value="Ready" variant="blue" />
-          <AppWidgetCard helper="check-in" iconName="mood" title="Mind" value="Calm" variant="pink" />
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 12,
+            justifyContent: "space-between",
+          }}
+        >
+          <AppWidgetCard
+            helper="good recovery"
+            iconName="sleep"
+            title="Sleep"
+            value="7h 25m"
+            variant="purple"
+          />
+          <AppWidgetCard
+            helper="2 meals logged"
+            iconName="food"
+            title="Food"
+            value="820 kcal"
+            variant="green"
+          />
+          <AppWidgetCard
+            helper="review drafts"
+            iconName="ai_assistant"
+            title="AI helper"
+            value="Ready"
+            variant="blue"
+          />
+          <AppWidgetCard
+            helper="check-in"
+            iconName="mood"
+            title="Mind"
+            value="Calm"
+            variant="pink"
+          />
         </View>
       </AppSection>
 
@@ -113,7 +152,11 @@ export default function UiKitScreen() {
           <AppAvatar initials="AK" size={48} status="okay" />
           <AppAvatar initials="BB" size={48} status="scheduled" />
           <AppIconButton icon={<Bell size={20} />} onPress={() => undefined} />
-          <AppFloatingActionButton icon={<Sparkles size={20} />} label="Ask AI" onPress={() => undefined} />
+          <AppFloatingActionButton
+            icon={<Sparkles size={20} />}
+            label="Ask AI"
+            onPress={() => undefined}
+          />
         </View>
       </AppSection>
 

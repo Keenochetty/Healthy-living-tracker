@@ -1,6 +1,13 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { hasCompletedOnboarding, signIn } from "@/lib/auth";
 
@@ -20,7 +27,9 @@ export default function SignInScreen() {
 
       router.replace(onboardingComplete ? "/tabs/home" : "/auth/onboarding");
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to sign in.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unable to sign in.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -47,7 +56,11 @@ export default function SignInScreen() {
       />
 
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
-      {isSubmitting ? <ActivityIndicator /> : <Button onPress={handleSubmit} title="Sign in" />}
+      {isSubmitting ? (
+        <ActivityIndicator />
+      ) : (
+        <Button onPress={handleSubmit} title="Sign in" />
+      )}
 
       <Link href="/auth/sign-up" style={styles.link}>
         Create an account
@@ -61,24 +74,24 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 12,
     justifyContent: "center",
-    padding: 24
+    padding: 24,
   },
   error: {
-    color: "#b91c1c"
+    color: "#b91c1c",
   },
   input: {
     borderColor: "#cbd5e1",
     borderRadius: 8,
     borderWidth: 1,
-    padding: 12
+    padding: 12,
   },
   link: {
     color: "#2563eb",
-    marginTop: 8
+    marginTop: 8,
   },
   title: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 8
-  }
+    marginBottom: 8,
+  },
 });

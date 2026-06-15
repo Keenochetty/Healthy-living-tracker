@@ -17,10 +17,12 @@ export function ProfileAvatar({ label, size = 42 }: ProfileAvatarProps) {
         borderRadius: appRadius.pill,
         height: size,
         justifyContent: "center",
-        width: size
+        width: size,
       }}
     >
-      <Text style={[typography.helper, { color: appColors.primary }]}>{label.slice(0, 1).toUpperCase()}</Text>
+      <Text style={[typography.helper, { color: appColors.primary }]}>
+        {label.slice(0, 1).toUpperCase()}
+      </Text>
     </View>
   );
 }

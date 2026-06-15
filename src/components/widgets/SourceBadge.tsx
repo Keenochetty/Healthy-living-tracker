@@ -1,7 +1,12 @@
 import { Text, View } from "react-native";
 
 import { AppIcon } from "@/components/ui";
-import { appColors, appRadius, appSpacing, typography } from "@/theme/designSystem";
+import {
+  appColors,
+  appRadius,
+  appSpacing,
+  typography,
+} from "@/theme/designSystem";
 
 type SourceBadgeProps = {
   label: string;
@@ -19,7 +24,7 @@ export function SourceBadge({ label, qualityLabel }: SourceBadgeProps) {
         flexDirection: "row",
         gap: appSpacing.xs,
         minHeight: 28,
-        paddingHorizontal: appSpacing.sm
+        paddingHorizontal: appSpacing.sm,
       }}
     >
       <AppIcon name="documents" size={13} variant="muted" />

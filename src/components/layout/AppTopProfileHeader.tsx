@@ -33,7 +33,7 @@ export function AppTopProfileHeader({
   showNotification = true,
   showQuickAction = true,
   relationship,
-  userName
+  userName,
 }: AppTopProfileHeaderProps) {
   return (
     <View
@@ -41,12 +41,22 @@ export function AppTopProfileHeader({
         alignItems: "center",
         flexDirection: "row",
         gap: spacing.md,
-        justifyContent: "space-between"
+        justifyContent: "space-between",
       }}
     >
-      <HealthSyncIdentityControl avatarUri={avatarUri} initials={avatarInitials} name={userName} onOpenPeopleAccount={onOpenPeopleAccount} onOpenProfile={onOpenProfile} pageTitle={greeting} relationship={relationship} />
+      <HealthSyncIdentityControl
+        avatarUri={avatarUri}
+        initials={avatarInitials}
+        name={userName}
+        onOpenPeopleAccount={onOpenPeopleAccount}
+        onOpenProfile={onOpenProfile}
+        pageTitle={greeting}
+        relationship={relationship}
+      />
 
-      <View style={{ alignItems: "center", flexDirection: "row", gap: spacing.sm }}>
+      <View
+        style={{ alignItems: "center", flexDirection: "row", gap: spacing.sm }}
+      >
         {rightActions}
         {showNotification ? (
           <AppIconButton

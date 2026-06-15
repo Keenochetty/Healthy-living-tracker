@@ -1,5 +1,11 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/states";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -12,7 +18,14 @@ type PageSectionProps = {
   emptyMessage: string;
 };
 
-export function PageSection({ title, description, badge, cards, emptyTitle, emptyMessage }: PageSectionProps) {
+export function PageSection({
+  title,
+  description,
+  badge,
+  cards,
+  emptyTitle,
+  emptyMessage,
+}: PageSectionProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -20,7 +33,9 @@ export function PageSection({ title, description, badge, cards, emptyTitle, empt
           <Badge>{badge}</Badge>
           <div>
             <h1 className="text-2xl font-semibold tracking-normal">{title}</h1>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              {description}
+            </p>
           </div>
         </div>
       </div>
@@ -44,7 +59,9 @@ export function PageSection({ title, description, badge, cards, emptyTitle, empt
         <Card>
           <CardHeader>
             <CardTitle>Reactive states</CardTitle>
-            <CardDescription>Reusable loading and error patterns for this section.</CardDescription>
+            <CardDescription>
+              Reusable loading and error patterns for this section.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg border">

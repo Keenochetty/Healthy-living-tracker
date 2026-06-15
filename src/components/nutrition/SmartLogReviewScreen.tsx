@@ -5,10 +5,13 @@ import { AppCard } from "@/components/ui/AppCard";
 import { NUTRITION_MEAL_GROUP_OPTIONS } from "@/constants/nutritionOptions";
 import {
   removeSmartLogSuggestedEntry,
-  updateSmartLogSuggestedEntry
+  updateSmartLogSuggestedEntry,
 } from "@/services/nutrition/smartLoggingService";
 import type { NutritionMealGroup } from "@/types/nutrition";
-import type { SmartLogSession, SmartLogSuggestedEntry } from "@/types/smartLogging";
+import type {
+  SmartLogSession,
+  SmartLogSuggestedEntry,
+} from "@/types/smartLogging";
 
 const INPUT_STYLE = {
   backgroundColor: "#ffffff",
@@ -17,7 +20,7 @@ const INPUT_STYLE = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 46,
-  paddingHorizontal: 12
+  paddingHorizontal: 12,
 };
 
 export function SmartLogReviewScreen({
@@ -27,7 +30,7 @@ export function SmartLogReviewScreen({
   onConfirm,
   onEntriesChanged,
   saving,
-  session
+  session,
 }: {
   entries: SmartLogSuggestedEntry[];
   onAddEntry: () => void;
@@ -45,18 +48,23 @@ export function SmartLogReviewScreen({
           calories: total.calories + entry.calories,
           carbsG: total.carbsG + entry.carbsG,
           fatG: total.fatG + entry.fatG,
-          proteinG: total.proteinG + entry.proteinG
+          proteinG: total.proteinG + entry.proteinG,
         }),
-        { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 }
+        { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 },
       ),
-    [activeEntries]
+    [activeEntries],
   );
 
-  async function updateEntry(id: string, partial: Partial<SmartLogSuggestedEntry>) {
+  async function updateEntry(
+    id: string,
+    partial: Partial<SmartLogSuggestedEntry>,
+  ) {
     const updatedEntry = await updateSmartLogSuggestedEntry(id, partial);
 
     if (updatedEntry) {
-      onEntriesChanged(entries.map((entry) => (entry.id === id ? updatedEntry : entry)));
+      onEntriesChanged(
+        entries.map((entry) => (entry.id === id ? updatedEntry : entry)),
+      );
     }
   }
 
@@ -64,7 +72,9 @@ export function SmartLogReviewScreen({
     const removedEntry = await removeSmartLogSuggestedEntry(id);
 
     if (removedEntry) {
-      onEntriesChanged(entries.map((entry) => (entry.id === id ? removedEntry : entry)));
+      onEntriesChanged(
+        entries.map((entry) => (entry.id === id ? removedEntry : entry)),
+      );
     }
   }
 
@@ -76,10 +86,13 @@ export function SmartLogReviewScreen({
             Review before saving
           </Text>
           <Text style={{ color: "#92400e", lineHeight: 21 }}>
-            Please confirm the food, quantity, serving, and nutrition values before adding anything to your diary.
+            Please confirm the food, quantity, serving, and nutrition values
+            before adding anything to your diary.
           </Text>
           {session.message ? (
-            <Text style={{ color: "#92400e", lineHeight: 21 }}>{session.message}</Text>
+            <Text style={{ color: "#92400e", lineHeight: 21 }}>
+              {session.message}
+            </Text>
           ) : null}
         </View>
       </AppCard>
@@ -111,16 +124,31 @@ export function SmartLogReviewScreen({
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={onAddEntry}
-        style={{ alignItems: "center", backgroundColor: "#fffbeb", borderRadius: 16, minHeight: 50, justifyContent: "center" }}
+        style={{
+          alignItems: "center",
+          backgroundColor: "#fffbeb",
+          borderRadius: 16,
+          minHeight: 50,
+          justifyContent: "center",
+        }}
       >
-        <Text style={{ color: "#92400e", fontWeight: "900" }}>Add draft item</Text>
+        <Text style={{ color: "#92400e", fontWeight: "900" }}>
+          Add draft item
+        </Text>
       </TouchableOpacity>
 
       <View style={{ flexDirection: "row", gap: 10 }}>
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={onCancel}
-          style={{ alignItems: "center", backgroundColor: "#f1f5f9", borderRadius: 18, flex: 1, minHeight: 52, justifyContent: "center" }}
+          style={{
+            alignItems: "center",
+            backgroundColor: "#f1f5f9",
+            borderRadius: 18,
+            flex: 1,
+            minHeight: 52,
+            justifyContent: "center",
+          }}
         >
           <Text style={{ color: "#475569", fontWeight: "900" }}>Cancel</Text>
         </TouchableOpacity>
@@ -135,15 +163,18 @@ export function SmartLogReviewScreen({
             flex: 1,
             justifyContent: "center",
             minHeight: 52,
-            opacity: saving || activeEntries.length === 0 ? 0.55 : 1
+            opacity: saving || activeEntries.length === 0 ? 0.55 : 1,
           }}
         >
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>{saving ? "Saving..." : "Confirm + Save"}</Text>
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            {saving ? "Saving..." : "Confirm + Save"}
+          </Text>
         </TouchableOpacity>
       </View>
 
       <Text style={{ color: "#64748b", fontSize: 12, lineHeight: 18 }}>
-        Smart logging may use photos, voice, or text you provide to create draft food entries. Review all suggestions before saving.
+        Smart logging may use photos, voice, or text you provide to create draft
+        food entries. Review all suggestions before saving.
       </Text>
     </View>
   );
@@ -152,7 +183,7 @@ export function SmartLogReviewScreen({
 function EditableSuggestionCard({
   entry,
   onRemove,
-  onUpdate
+  onUpdate,
 }: {
   entry: SmartLogSuggestedEntry;
   onRemove: () => void;
@@ -174,14 +205,20 @@ function EditableSuggestionCard({
       foodName,
       proteinG: Number(proteinG) || 0,
       quantity: Number(quantity) || 1,
-      unit
+      unit,
     });
   }
 
   return (
     <AppCard>
       <View style={{ gap: 10 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
           <View style={{ flex: 1 }}>
             <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>
               {entry.foodName || "Draft food"}
@@ -195,22 +232,39 @@ function EditableSuggestionCard({
           </TouchableOpacity>
         </View>
 
-        <TextInput onBlur={commit} onChangeText={setFoodName} placeholder="Food name" placeholderTextColor="#94a3b8" style={INPUT_STYLE} value={foodName} />
+        <TextInput
+          onBlur={commit}
+          onChangeText={setFoodName}
+          placeholder="Food name"
+          placeholderTextColor="#94a3b8"
+          style={INPUT_STYLE}
+          value={foodName}
+        />
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {NUTRITION_MEAL_GROUP_OPTIONS.filter((option) => option.key !== "notes").map((option) => (
+          {NUTRITION_MEAL_GROUP_OPTIONS.filter(
+            (option) => option.key !== "notes",
+          ).map((option) => (
             <TouchableOpacity
               activeOpacity={0.85}
               key={option.key}
-              onPress={() => onUpdate({ mealGroup: option.key as NutritionMealGroup })}
+              onPress={() =>
+                onUpdate({ mealGroup: option.key as NutritionMealGroup })
+              }
               style={{
-                backgroundColor: entry.mealGroup === option.key ? "#f59e0b" : "#fffbeb",
+                backgroundColor:
+                  entry.mealGroup === option.key ? "#f59e0b" : "#fffbeb",
                 borderRadius: 999,
                 paddingHorizontal: 12,
-                paddingVertical: 9
+                paddingVertical: 9,
               }}
             >
-              <Text style={{ color: entry.mealGroup === option.key ? "#ffffff" : "#92400e", fontWeight: "900" }}>
+              <Text
+                style={{
+                  color: entry.mealGroup === option.key ? "#ffffff" : "#92400e",
+                  fontWeight: "900",
+                }}
+              >
                 {option.label}
               </Text>
             </TouchableOpacity>
@@ -218,18 +272,65 @@ function EditableSuggestionCard({
         </View>
 
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <TextInput keyboardType="numeric" onBlur={commit} onChangeText={setQuantity} placeholder="Quantity" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={quantity} />
-          <TextInput onBlur={commit} onChangeText={setUnit} placeholder="Unit" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={unit} />
+          <TextInput
+            keyboardType="numeric"
+            onBlur={commit}
+            onChangeText={setQuantity}
+            placeholder="Quantity"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, flex: 1 }}
+            value={quantity}
+          />
+          <TextInput
+            onBlur={commit}
+            onChangeText={setUnit}
+            placeholder="Unit"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, flex: 1 }}
+            value={unit}
+          />
         </View>
 
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <TextInput keyboardType="numeric" onBlur={commit} onChangeText={setCalories} placeholder="Calories" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={calories} />
-          <TextInput keyboardType="numeric" onBlur={commit} onChangeText={setProteinG} placeholder="Protein g" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={proteinG} />
+          <TextInput
+            keyboardType="numeric"
+            onBlur={commit}
+            onChangeText={setCalories}
+            placeholder="Calories"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, flex: 1 }}
+            value={calories}
+          />
+          <TextInput
+            keyboardType="numeric"
+            onBlur={commit}
+            onChangeText={setProteinG}
+            placeholder="Protein g"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, flex: 1 }}
+            value={proteinG}
+          />
         </View>
 
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <TextInput keyboardType="numeric" onBlur={commit} onChangeText={setCarbsG} placeholder="Carbs g" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={carbsG} />
-          <TextInput keyboardType="numeric" onBlur={commit} onChangeText={setFatG} placeholder="Fat g" placeholderTextColor="#94a3b8" style={{ ...INPUT_STYLE, flex: 1 }} value={fatG} />
+          <TextInput
+            keyboardType="numeric"
+            onBlur={commit}
+            onChangeText={setCarbsG}
+            placeholder="Carbs g"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, flex: 1 }}
+            value={carbsG}
+          />
+          <TextInput
+            keyboardType="numeric"
+            onBlur={commit}
+            onChangeText={setFatG}
+            placeholder="Fat g"
+            placeholderTextColor="#94a3b8"
+            style={{ ...INPUT_STYLE, flex: 1 }}
+            value={fatG}
+          />
         </View>
       </View>
     </AppCard>
@@ -238,9 +339,30 @@ function EditableSuggestionCard({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ backgroundColor: "#ffffff", borderColor: "#fde68a", borderRadius: 18, borderWidth: 1, flexGrow: 1, minWidth: "45%", padding: 14 }}>
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900", marginTop: 4 }}>{value}</Text>
+    <View
+      style={{
+        backgroundColor: "#ffffff",
+        borderColor: "#fde68a",
+        borderRadius: 18,
+        borderWidth: 1,
+        flexGrow: 1,
+        minWidth: "45%",
+        padding: 14,
+      }}
+    >
+      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 20,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
+        {value}
+      </Text>
     </View>
   );
 }

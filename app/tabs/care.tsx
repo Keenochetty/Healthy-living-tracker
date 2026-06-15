@@ -12,7 +12,7 @@ import {
   StatusSurface,
   StatusPill,
   WidgetCard,
-  type AppIconName
+  type AppIconName,
 } from "@/components/ui";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
@@ -26,24 +26,90 @@ type HealthShortcut = {
 };
 
 const healthShortcuts: HealthShortcut[] = [
-  { icon: "medication", label: "Medication", route: "/health/medication", subtitle: "Reminder-level summary only", tone: colors.status.warning },
-  { icon: "doctor", label: "Conditions", route: "/health/conditions", subtitle: "Safe condition overview", tone: colors.status.warning },
-  { icon: "documents", label: "Documents", route: "/health/documents", subtitle: "Protected file access", tone: colors.status.system },
-  { icon: "calendar", label: "Health events", route: "/tabs/calendar", subtitle: "Appointments and reminders", tone: colors.brand.primary }
+  {
+    icon: "medication",
+    label: "Medication",
+    route: "/health/medication",
+    subtitle: "Reminder-level summary only",
+    tone: colors.status.warning,
+  },
+  {
+    icon: "doctor",
+    label: "Conditions",
+    route: "/health/conditions",
+    subtitle: "Safe condition overview",
+    tone: colors.status.warning,
+  },
+  {
+    icon: "documents",
+    label: "Documents",
+    route: "/health/documents",
+    subtitle: "Protected file access",
+    tone: colors.status.system,
+  },
+  {
+    icon: "calendar",
+    label: "Health events",
+    route: "/tabs/calendar",
+    subtitle: "Appointments and reminders",
+    tone: colors.brand.primary,
+  },
 ];
 
 const upcomingHealth = [
-  { label: "Doctor appointment", meta: "Tomorrow, 10:00", tone: colors.status.warning },
-  { label: "Medication reminder", meta: "Today, 18:00", tone: colors.status.warning },
-  { label: "Wellness check-in", meta: "Friday, 09:30", tone: colors.brand.secondary }
+  {
+    label: "Doctor appointment",
+    meta: "Tomorrow, 10:00",
+    tone: colors.status.warning,
+  },
+  {
+    label: "Medication reminder",
+    meta: "Today, 18:00",
+    tone: colors.status.warning,
+  },
+  {
+    label: "Wellness check-in",
+    meta: "Friday, 09:30",
+    tone: colors.brand.secondary,
+  },
 ];
 
-const permissionImports: Array<{ icon: AppIconName; label: string; note: string; tone: "ai" | "private" | "success" | "system" }> = [
-  { icon: "camera", label: "Camera", note: "Profile photos and document capture.", tone: "private" },
-  { icon: "voice", label: "Microphone", note: "Health AI voice capture placeholder.", tone: "ai" },
-  { icon: "calendar", label: "Device calendars", note: "Apple/Google calendar import placeholder.", tone: "success" },
-  { icon: "documents", label: "Documents", note: "File upload placeholder.", tone: "system" },
-  { icon: "sync", label: "Import info", note: "Birthdays and current info import placeholder.", tone: "success" }
+const permissionImports: Array<{
+  icon: AppIconName;
+  label: string;
+  note: string;
+  tone: "ai" | "private" | "success" | "system";
+}> = [
+  {
+    icon: "camera",
+    label: "Camera",
+    note: "Profile photos and document capture.",
+    tone: "private",
+  },
+  {
+    icon: "voice",
+    label: "Microphone",
+    note: "Health AI voice capture placeholder.",
+    tone: "ai",
+  },
+  {
+    icon: "calendar",
+    label: "Device calendars",
+    note: "Apple/Google calendar import placeholder.",
+    tone: "success",
+  },
+  {
+    icon: "documents",
+    label: "Documents",
+    note: "File upload placeholder.",
+    tone: "system",
+  },
+  {
+    icon: "sync",
+    label: "Import info",
+    note: "Birthdays and current info import placeholder.",
+    tone: "success",
+  },
 ];
 
 function openRoute(route: string) {
@@ -51,7 +117,9 @@ function openRoute(route: string) {
 }
 
 export default function HealthMonitorScreen() {
-  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(null);
+  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(
+    null,
+  );
 
   return (
     <View style={styles.root}>
@@ -104,10 +172,22 @@ export default function HealthMonitorScreen() {
                 accessibilityRole="button"
                 key={shortcut.label}
                 onPress={() => openRoute(shortcut.route)}
-                style={({ pressed }) => [styles.shortcutCard, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.shortcutCard,
+                  pressed && styles.pressed,
+                ]}
               >
-                <View style={[styles.iconShell, { backgroundColor: `${shortcut.tone}20` }]}>
-                  <AppIcon color={shortcut.tone} name={shortcut.icon} size={22} />
+                <View
+                  style={[
+                    styles.iconShell,
+                    { backgroundColor: `${shortcut.tone}20` },
+                  ]}
+                >
+                  <AppIcon
+                    color={shortcut.tone}
+                    name={shortcut.icon}
+                    size={22}
+                  />
                 </View>
                 <View style={styles.shortcutCopy}>
                   <Text style={styles.cardTitle}>{shortcut.label}</Text>
@@ -132,7 +212,11 @@ export default function HealthMonitorScreen() {
                   <Text style={styles.cardTitle}>{item.label}</Text>
                   <Text style={styles.muted}>{item.meta}</Text>
                 </View>
-                <QuickActionButton label="Open" onPress={() => openRoute("/tabs/calendar")} toneColor={item.tone} />
+                <QuickActionButton
+                  label="Open"
+                  onPress={() => openRoute("/tabs/calendar")}
+                  toneColor={item.tone}
+                />
               </View>
             ))}
           </View>
@@ -151,7 +235,11 @@ export default function HealthMonitorScreen() {
                 icon={item.icon}
                 key={item.label}
                 label={item.label}
-                onPress={() => setPlaceholderMessage(`${item.label} permission request will connect later. ${item.note}`)}
+                onPress={() =>
+                  setPlaceholderMessage(
+                    `${item.label} permission request will connect later. ${item.note}`,
+                  )
+                }
                 statusLabel="Later"
                 tone={item.tone}
               />
@@ -166,23 +254,49 @@ export default function HealthMonitorScreen() {
           title="Emergency access"
         >
           <View style={styles.rowCard}>
-            <View style={[styles.iconShell, { backgroundColor: colors.status.emergencySoft }]}>
-              <AppIcon color={colors.status.emergency} name="emergency" size={22} />
+            <View
+              style={[
+                styles.iconShell,
+                { backgroundColor: colors.status.emergencySoft },
+              ]}
+            >
+              <AppIcon
+                color={colors.status.emergency}
+                name="emergency"
+                size={22}
+              />
             </View>
             <View style={styles.shortcutCopy}>
               <Text style={styles.cardTitle}>Emergency contacts</Text>
-              <Text style={styles.muted}>Open approved emergency contacts and urgent instructions.</Text>
+              <Text style={styles.muted}>
+                Open approved emergency contacts and urgent instructions.
+              </Text>
             </View>
-            <QuickActionButton label="Open" onPress={() => openRoute("/settings/emergency-contacts")} toneColor={colors.status.emergency} />
+            <QuickActionButton
+              label="Open"
+              onPress={() => openRoute("/settings/emergency-contacts")}
+              toneColor={colors.status.emergency}
+            />
           </View>
         </WidgetCard>
 
-        <Modal transparent visible={Boolean(placeholderMessage)} animationType="fade">
-          <Pressable style={styles.modalBackdrop} onPress={() => setPlaceholderMessage(null)}>
+        <Modal
+          transparent
+          visible={Boolean(placeholderMessage)}
+          animationType="fade"
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setPlaceholderMessage(null)}
+          >
             <View style={styles.modalCard}>
               <Text style={styles.modalTitle}>Permission placeholder</Text>
               <Text style={styles.modalText}>{placeholderMessage}</Text>
-              <QuickActionButton label="Close" onPress={() => setPlaceholderMessage(null)} toneColor={colors.brand.primary} />
+              <QuickActionButton
+                label="Close"
+                onPress={() => setPlaceholderMessage(null)}
+                toneColor={colors.brand.primary}
+              />
             </View>
           </Pressable>
         </Modal>
@@ -195,38 +309,38 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: colors.text.primary,
     fontSize: 16,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   dot: {
     borderRadius: 999,
     height: 12,
-    width: 12
+    width: 12,
   },
   iconShell: {
     alignItems: "center",
     borderRadius: 14,
     height: 40,
     justifyContent: "center",
-    width: 40
+    width: 40,
   },
   list: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   metricItem: {
     flex: 1,
-    minWidth: 220
+    minWidth: 220,
   },
   metricsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md
+    gap: spacing.md,
   },
   modalBackdrop: {
     alignItems: "center",
     backgroundColor: "rgba(15, 23, 42, 0.32)",
     flex: 1,
     justifyContent: "center",
-    padding: spacing.xl
+    padding: spacing.xl,
   },
   modalCard: {
     backgroundColor: colors.card.background,
@@ -236,30 +350,30 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     maxWidth: 420,
     padding: spacing.xl,
-    width: "100%"
+    width: "100%",
   },
   modalText: {
     color: colors.text.secondary,
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
   },
   modalTitle: {
     color: colors.text.primary,
     fontSize: 22,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   muted: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   pressed: {
     opacity: 0.84,
-    transform: [{ scale: 0.99 }]
+    transform: [{ scale: 0.99 }],
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
+    flex: 1,
   },
   rowCard: {
     alignItems: "center",
@@ -270,7 +384,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
-    padding: spacing.md
+    padding: spacing.md,
   },
   shortcutCard: {
     alignItems: "center",
@@ -281,16 +395,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
     minHeight: 66,
-    padding: spacing.md
+    padding: spacing.md,
   },
   shortcutCopy: {
     flex: 1,
     gap: spacing.xs,
-    minWidth: 0
+    minWidth: 0,
   },
   shortcutGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md
-  }
+    gap: spacing.md,
+  },
 });

@@ -6,6 +6,7 @@ Deno.serve(async (req) => {
 
   return jsonResponse({
     status: "placeholder",
-    message: "Trusted content refresh should validate source allowlists and record reviewer/last-checked metadata."
+    message:
+      "Trusted content refresh should validate source allowlists and record reviewer/last-checked metadata.",
   });
 });

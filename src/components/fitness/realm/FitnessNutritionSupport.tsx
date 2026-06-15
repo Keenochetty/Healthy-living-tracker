@@ -12,12 +12,22 @@ export function FitnessNutritionSupport({
 }) {
   const { theme } = useAppTheme();
   return (
-    <AppCard style={[styles.card, { backgroundColor: theme.card ?? theme.surface, borderColor: theme.border }]}>
+    <AppCard
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.card ?? theme.surface,
+          borderColor: theme.border,
+        },
+      ]}
+    >
       <View style={[styles.icon, { backgroundColor: theme.primarySoft }]}>
         <AppIcon color={theme.warning} decorative name="nutrition" size={24} />
       </View>
       <View style={styles.copy}>
-        <Text style={[styles.eyebrow, { color: theme.warning }]}>Workout-linked nutrition</Text>
+        <Text style={[styles.eyebrow, { color: theme.warning }]}>
+          Workout-linked nutrition
+        </Text>
         <Text style={[styles.title, { color: theme.text }]}>
           {suggestion ?? "Strength day: protein-focused recovery meal"}
         </Text>
@@ -25,7 +35,9 @@ export function FitnessNutritionSupport({
           Get recovery guidance here, then use Food to plan or log meals.
         </Text>
         <Pressable onPress={onOpenFood}>
-          <Text style={[styles.link, { color: theme.primary }]}>Open Food realm</Text>
+          <Text style={[styles.link, { color: theme.primary }]}>
+            Open Food realm
+          </Text>
         </Pressable>
       </View>
     </AppCard>

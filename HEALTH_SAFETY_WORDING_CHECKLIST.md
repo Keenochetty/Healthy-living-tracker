@@ -1,7 +1,9 @@
 # Health Safety Wording Checklist
 
 ## Blocked Wording
+
 Do not use these phrases in user-facing health guidance:
+
 - safe day
 - unsafe day
 - you are fertile
@@ -22,6 +24,7 @@ Do not use these phrases in user-facing health guidance:
 - diagnosed
 
 ## Preferred Wording
+
 - Could not save. Try again.
 - Review this with a healthcare professional.
 - This may need professional confirmation.
@@ -31,6 +34,7 @@ Do not use these phrases in user-facing health guidance:
 - Follow the label or healthcare professional’s instructions.
 
 ## Realm-Specific Rules
+
 - Women’s Health: fertile windows, ovulation, and period predictions are estimates.
 - Pregnancy: activation and positive test notes never diagnose pregnancy.
 - Baby / Child: growth, milestones, symptoms, and solids are tracking-only.

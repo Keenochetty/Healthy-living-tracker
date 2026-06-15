@@ -11,7 +11,12 @@ export type CaregiverServiceType =
   | "overnight_care"
   | "general_care";
 
-export type CaregiverRateType = "hourly" | "daily" | "weekly" | "monthly" | "custom";
+export type CaregiverRateType =
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "custom";
 export type CaregiverConnectionStatus =
   | "draft"
   | "pending"
@@ -25,7 +30,11 @@ export type CaregiverBookingStatus =
   | "declined"
   | "cancelled"
   | "completed";
-export type CaregiverCheckInStatus = "checked_in" | "checked_out" | "missed" | "cancelled";
+export type CaregiverCheckInStatus =
+  | "checked_in"
+  | "checked_out"
+  | "missed"
+  | "cancelled";
 
 export type CaregiverProfile = {
   bio?: string;

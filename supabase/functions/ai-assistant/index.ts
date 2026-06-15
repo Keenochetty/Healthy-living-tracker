@@ -6,6 +6,7 @@ Deno.serve(async (req) => {
 
   return jsonResponse({
     status: "placeholder",
-    message: "AI assistant requests must enforce consent, data minimization, permission filtering, safety classification, and draft-only responses."
+    message:
+      "AI assistant requests must enforce consent, data minimization, permission filtering, safety classification, and draft-only responses.",
   });
 });

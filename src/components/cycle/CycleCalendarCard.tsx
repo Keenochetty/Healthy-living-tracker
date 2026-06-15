@@ -45,8 +45,17 @@ export function CycleCalendarCard() {
 
         {logs.length ? (
           logs.slice(0, 8).map((log) => (
-            <View key={log.id} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-              <Text style={{ color: "#0f172a", fontWeight: "900" }}>{log.date}</Text>
+            <View
+              key={log.id}
+              style={{
+                backgroundColor: "#f8fafc",
+                borderRadius: 16,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+                {log.date}
+              </Text>
               <Text style={{ color: "#64748b", marginTop: 3 }}>
                 Flow: {log.flowLevel} {log.mood ? `- Mood: ${log.mood}` : ""}
               </Text>

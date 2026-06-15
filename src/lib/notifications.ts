@@ -2,7 +2,7 @@ import {
   cancelLocalNotification,
   initializeNotifications,
   requestNotificationPermission as requestCentralNotificationPermission,
-  scheduleLocalNotification
+  scheduleLocalNotification,
 } from "@/services/reminders/notificationService";
 import type { AppReminder } from "@/types/reminders";
 
@@ -20,13 +20,21 @@ export async function scheduleReminderNotification(reminder: AppReminder) {
 
   const record = await scheduleLocalNotification({
     body: getLegacyNotificationBody(reminder),
-    category: reminder.type === "medication" ? "medication" : reminder.type === "fitness" ? "workout" : reminder.type === "food" ? "food_meal" : "custom",
+    category:
+      reminder.type === "medication"
+        ? "medication"
+        : reminder.type === "fitness"
+          ? "workout"
+          : reminder.type === "food"
+            ? "food_meal"
+            : "custom",
     detailLevel: reminder.type === "medication" ? "category" : "detailed",
     params: { reminderId: reminder.id },
     reminderId: reminder.id,
     route: `/reminders/${reminder.id}`,
     scheduledAt: reminder.dueAt,
-    title: reminder.type === "medication" ? "Medication reminder" : reminder.title
+    title:
+      reminder.type === "medication" ? "Medication reminder" : reminder.title,
   });
 
   return record.notificationId ?? null;
@@ -36,7 +44,9 @@ export async function scheduleMedicationNotification(reminder: AppReminder) {
   return scheduleReminderNotification(reminder);
 }
 
-export async function cancelReminderNotification(notificationId?: string | null) {
+export async function cancelReminderNotification(
+  notificationId?: string | null,
+) {
   if (!notificationId) return null;
   return cancelLocalNotification(notificationId);
 }

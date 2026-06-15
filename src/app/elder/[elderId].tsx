@@ -18,7 +18,9 @@ import type { ElderSummary } from "@/types/elder";
 
 export default function ElderDetailScreen() {
   const params = useLocalSearchParams<{ elderId?: string }>();
-  const elderId = Array.isArray(params.elderId) ? params.elderId[0] : params.elderId;
+  const elderId = Array.isArray(params.elderId)
+    ? params.elderId[0]
+    : params.elderId;
   const [summary, setSummary] = useState<ElderSummary | null>(null);
 
   const loadSummary = useCallback(async () => {

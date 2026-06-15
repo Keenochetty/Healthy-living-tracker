@@ -6,7 +6,7 @@ import {
   getRecipes,
   getSavedMeals,
   getWaterGoal,
-  toNutritionDateKey
+  toNutritionDateKey,
 } from "@/lib/nutritionStorage";
 import { NUTRITION_MEAL_GROUP_OPTIONS } from "@/constants/nutritionOptions";
 import type {
@@ -22,7 +22,7 @@ import type {
   NutritionTarget,
   ReportRange,
   WaterTrendReport,
-  WorkoutFoodConnectionReport
+  WorkoutFoodConnectionReport,
 } from "@/types/nutrition";
 
 type DayReportData = {
@@ -38,7 +38,7 @@ type DayReportData = {
 const REPORT_DAY_COUNTS: Record<ReportRange, number> = {
   "30_days": 30,
   "7_days": 7,
-  today: 1
+  today: 1,
 };
 
 const MEAL_GROUPS = NUTRITION_MEAL_GROUP_OPTIONS.map((option) => option.key);
@@ -52,7 +52,7 @@ export function getDateRangeForReport(range: ReportRange) {
   return {
     dates: getDatesBetween(start, end),
     endDate: toNutritionDateKey(end),
-    startDate: toNutritionDateKey(start)
+    startDate: toNutritionDateKey(start),
   };
 }
 
@@ -64,7 +64,7 @@ export function calculateAverage(values: number[]) {
 
 export function calculateTargetHitRate(
   values: Array<{ target?: number; value: number }>,
-  mode: "near" | "at_least" = "near"
+  mode: "near" | "at_least" = "near",
 ) {
   const targetValues = values.filter((item) => item.target && item.target > 0);
 
@@ -79,13 +79,18 @@ export function calculateTargetHitRate(
   return Math.round((hitCount / targetValues.length) * 100);
 }
 
-export function calculateLoggingConsistency(daysLogged: number, totalDays: number) {
+export function calculateLoggingConsistency(
+  daysLogged: number,
+  totalDays: number,
+) {
   if (!totalDays) return 0;
 
   return Math.round((daysLogged / totalDays) * 100);
 }
 
-export function calculateMacroTrendData(days: DayReportData[]): DailyMacroTrend[] {
+export function calculateMacroTrendData(
+  days: DayReportData[],
+): DailyMacroTrend[] {
   return days.map((day) => {
     const totals = getEntryTotals(day.entries);
 
@@ -99,58 +104,91 @@ export function calculateMacroTrendData(days: DayReportData[]): DailyMacroTrend[
       proteinG: totals.proteinG,
       proteinTargetG: day.target?.proteinTargetG,
       waterMl: day.waterCurrentMl,
-      waterTargetMl: day.waterTargetMl
+      waterTargetMl: day.waterTargetMl,
     };
   });
 }
 
-export function buildInsightMessage(type: NutritionInsight["type"], message: string) {
+export function buildInsightMessage(
+  type: NutritionInsight["type"],
+  message: string,
+) {
   return `${message} This is based on your logged nutrition data.`;
 }
 
-export async function getNutritionReportSummary(range: ReportRange): Promise<NutritionReportSummary> {
+export async function getNutritionReportSummary(
+  range: ReportRange,
+): Promise<NutritionReportSummary> {
   const days = await getReportDays(range);
   const trends = calculateMacroTrendData(days);
   const daysLogged = days.filter((day) => day.entries.length > 0).length;
   const proteinBest = trends.reduce<DailyMacroTrend | null>(
     (best, trend) => (!best || trend.proteinG > best.proteinG ? trend : best),
-    null
+    null,
   );
-  const loggedTrends = trends.filter((trend) => trend.calories > 0 || trend.proteinG > 0);
+  const loggedTrends = trends.filter(
+    (trend) => trend.calories > 0 || trend.proteinG > 0,
+  );
   const lowLoggingDay = loggedTrends.reduce<DailyMacroTrend | null>(
-    (lowest, trend) => (!lowest || trend.calories < lowest.calories ? trend : lowest),
-    null
+    (lowest, trend) =>
+      !lowest || trend.calories < lowest.calories ? trend : lowest,
+    null,
   );
   const workoutsByDate = await getWorkoutDateKeys(days);
   const workoutDaysWithFoodLogs = days.filter(
-    (day) => workoutsByDate.has(day.dateKey) && day.entries.length > 0
+    (day) => workoutsByDate.has(day.dateKey) && day.entries.length > 0,
   ).length;
 
   return {
-    bestProteinDay: proteinBest && proteinBest.proteinG > 0 ? proteinBest.date : undefined,
-    caloriesAverage: Math.round(calculateAverage(trends.map((trend) => trend.calories))),
-    caloriesTargetAverage: roundedAverageTarget(trends.map((trend) => trend.caloriesTarget)),
-    carbsAverageG: Math.round(calculateAverage(trends.map((trend) => trend.carbsG))),
+    bestProteinDay:
+      proteinBest && proteinBest.proteinG > 0 ? proteinBest.date : undefined,
+    caloriesAverage: Math.round(
+      calculateAverage(trends.map((trend) => trend.calories)),
+    ),
+    caloriesTargetAverage: roundedAverageTarget(
+      trends.map((trend) => trend.caloriesTarget),
+    ),
+    carbsAverageG: Math.round(
+      calculateAverage(trends.map((trend) => trend.carbsG)),
+    ),
     daysLogged,
     endDate: days[days.length - 1]?.dateKey ?? toNutritionDateKey(new Date()),
-    fatAverageG: Math.round(calculateAverage(trends.map((trend) => trend.fatG))),
-    fiberAverageG: Math.round(calculateAverage(trends.map((trend) => trend.fiberG))),
-    foodLoggingConsistencyPercent: calculateLoggingConsistency(daysLogged, days.length),
+    fatAverageG: Math.round(
+      calculateAverage(trends.map((trend) => trend.fatG)),
+    ),
+    fiberAverageG: Math.round(
+      calculateAverage(trends.map((trend) => trend.fiberG)),
+    ),
+    foodLoggingConsistencyPercent: calculateLoggingConsistency(
+      daysLogged,
+      days.length,
+    ),
     lowLoggingDay: lowLoggingDay?.date,
     mealsLogged: days.reduce((total, day) => total + day.entries.length, 0),
     notesLogged: days.filter((day) => day.hasNote).length,
-    proteinAverageG: Math.round(calculateAverage(trends.map((trend) => trend.proteinG))),
-    proteinTargetAverageG: roundedAverageTarget(trends.map((trend) => trend.proteinTargetG)),
+    proteinAverageG: Math.round(
+      calculateAverage(trends.map((trend) => trend.proteinG)),
+    ),
+    proteinTargetAverageG: roundedAverageTarget(
+      trends.map((trend) => trend.proteinTargetG),
+    ),
     range,
     startDate: days[0]?.dateKey ?? toNutritionDateKey(new Date()),
     targetHitRatePercent: calculateTargetHitRate(
-      trends.map((trend) => ({ target: trend.caloriesTarget, value: trend.calories }))
+      trends.map((trend) => ({
+        target: trend.caloriesTarget,
+        value: trend.calories,
+      })),
     ),
     totalDays: days.length,
-    waterAverageMl: Math.round(calculateAverage(trends.map((trend) => trend.waterMl))),
-    waterTargetAverageMl: roundedAverageTarget(trends.map((trend) => trend.waterTargetMl)),
+    waterAverageMl: Math.round(
+      calculateAverage(trends.map((trend) => trend.waterMl)),
+    ),
+    waterTargetAverageMl: roundedAverageTarget(
+      trends.map((trend) => trend.waterTargetMl),
+    ),
     workoutDays: workoutsByDate.size,
-    workoutDaysWithFoodLogs
+    workoutDaysWithFoodLogs,
   };
 }
 
@@ -158,67 +196,101 @@ export async function getDailyMacroTrends(range: ReportRange) {
   return calculateMacroTrendData(await getReportDays(range));
 }
 
-export async function getWaterTrends(range: ReportRange): Promise<WaterTrendReport> {
+export async function getWaterTrends(
+  range: ReportRange,
+): Promise<WaterTrendReport> {
   const trends = await getDailyMacroTrends(range);
   const bestHydrationDay = trends.reduce<DailyMacroTrend | null>(
     (best, trend) => (!best || trend.waterMl > best.waterMl ? trend : best),
-    null
+    null,
   );
 
   return {
-    averageMl: Math.round(calculateAverage(trends.map((trend) => trend.waterMl))),
-    bestHydrationDay: bestHydrationDay && bestHydrationDay.waterMl > 0 ? bestHydrationDay.date : undefined,
-    daysUnderTarget: trends.filter((trend) => trend.waterTargetMl && trend.waterMl < trend.waterTargetMl).length,
-    targetAverageMl: roundedAverageTarget(trends.map((trend) => trend.waterTargetMl)),
-    trends
+    averageMl: Math.round(
+      calculateAverage(trends.map((trend) => trend.waterMl)),
+    ),
+    bestHydrationDay:
+      bestHydrationDay && bestHydrationDay.waterMl > 0
+        ? bestHydrationDay.date
+        : undefined,
+    daysUnderTarget: trends.filter(
+      (trend) => trend.waterTargetMl && trend.waterMl < trend.waterTargetMl,
+    ).length,
+    targetAverageMl: roundedAverageTarget(
+      trends.map((trend) => trend.waterTargetMl),
+    ),
+    trends,
   };
 }
 
-export async function getGoalProgressReport(range: ReportRange): Promise<GoalProgressReport> {
+export async function getGoalProgressReport(
+  range: ReportRange,
+): Promise<GoalProgressReport> {
   const [target, trends, workoutConnection] = await Promise.all([
     getActiveNutritionTarget(),
     getDailyMacroTrends(range),
-    getWorkoutFoodConnectionReport(range)
+    getWorkoutFoodConnectionReport(range),
   ]);
 
   if (!target) {
     return {
       goalMessage: "Set nutrition targets to compare your progress.",
-      hasTarget: false
+      hasTarget: false,
     };
   }
 
   return {
     caloriesConsistencyPercent: calculateTargetHitRate(
-      trends.map((trend) => ({ target: trend.caloriesTarget, value: trend.calories }))
+      trends.map((trend) => ({
+        target: trend.caloriesTarget,
+        value: trend.calories,
+      })),
     ),
     carbsConsistencyPercent: calculateTargetHitRate(
-      trends.map((trend) => ({ target: target.carbsTargetG, value: trend.carbsG }))
+      trends.map((trend) => ({
+        target: target.carbsTargetG,
+        value: trend.carbsG,
+      })),
     ),
     currentWeightKg: target.currentWeightKg,
     fiberConsistencyPercent: calculateTargetHitRate(
-      trends.map((trend) => ({ target: target.fiberTargetG, value: trend.fiberG })),
-      "at_least"
+      trends.map((trend) => ({
+        target: target.fiberTargetG,
+        value: trend.fiberG,
+      })),
+      "at_least",
     ),
     goalMessage: getGoalReportMessage(target, workoutConnection),
     goalType: target.goalType,
     goalWeightKg: target.goalWeightKg,
     hasTarget: true,
     proteinConsistencyPercent: calculateTargetHitRate(
-      trends.map((trend) => ({ target: trend.proteinTargetG, value: trend.proteinG })),
-      "at_least"
+      trends.map((trend) => ({
+        target: trend.proteinTargetG,
+        value: trend.proteinG,
+      })),
+      "at_least",
     ),
     waterConsistencyPercent: calculateTargetHitRate(
-      trends.map((trend) => ({ target: trend.waterTargetMl, value: trend.waterMl })),
-      "at_least"
+      trends.map((trend) => ({
+        target: trend.waterTargetMl,
+        value: trend.waterMl,
+      })),
+      "at_least",
     ),
     workoutFoodConsistencyPercent: workoutConnection.workoutDays
-      ? Math.round((workoutConnection.workoutDaysWithFoodLogs / workoutConnection.workoutDays) * 100)
-      : undefined
+      ? Math.round(
+          (workoutConnection.workoutDaysWithFoodLogs /
+            workoutConnection.workoutDays) *
+            100,
+        )
+      : undefined,
   };
 }
 
-export async function getDiaryConsistencyReport(range: ReportRange): Promise<DiaryConsistencyReport> {
+export async function getDiaryConsistencyReport(
+  range: ReportRange,
+): Promise<DiaryConsistencyReport> {
   const days = await getReportDays(range);
   const mealCounts = new Map<NutritionMealGroup, number>();
   const missedMealGroups = new Set<NutritionMealGroup>();
@@ -237,7 +309,9 @@ export async function getDiaryConsistencyReport(range: ReportRange): Promise<Dia
     });
   });
 
-  const mostConsistentMealGroup = [...mealCounts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0];
+  const mostConsistentMealGroup = [...mealCounts.entries()].sort(
+    (left, right) => right[1] - left[1],
+  )[0]?.[0];
 
   return {
     currentLoggingStreakDays: calculateCurrentLoggingStreak(days),
@@ -245,150 +319,318 @@ export async function getDiaryConsistencyReport(range: ReportRange): Promise<Dia
     missedMealGroups: [...missedMealGroups],
     mostConsistentMealGroup,
     totalDays: days.length,
-    totalMealsLogged: days.reduce((total, day) => total + day.entries.length, 0)
+    totalMealsLogged: days.reduce(
+      (total, day) => total + day.entries.length,
+      0,
+    ),
   };
 }
 
-export async function getWorkoutFoodConnectionReport(range: ReportRange): Promise<WorkoutFoodConnectionReport> {
+export async function getWorkoutFoodConnectionReport(
+  range: ReportRange,
+): Promise<WorkoutFoodConnectionReport> {
   const days = await getReportDays(range);
   const workoutDateKeys = await getWorkoutDateKeys(days);
   const workoutDays = days.filter((day) => workoutDateKeys.has(day.dateKey));
   const workoutTrends = calculateMacroTrendData(workoutDays);
-  const workoutDaysWithFoodLogs = workoutDays.filter((day) => day.entries.length > 0).length;
+  const workoutDaysWithFoodLogs = workoutDays.filter(
+    (day) => day.entries.length > 0,
+  ).length;
 
   if (!workoutDays.length) {
     return {
       hasWorkoutData: false,
       message: "Log workouts to connect food with training.",
       workoutDays: 0,
-      workoutDaysWithFoodLogs: 0
+      workoutDaysWithFoodLogs: 0,
     };
   }
 
   return {
-    averageCaloriesOnWorkoutDays: Math.round(calculateAverage(workoutTrends.map((trend) => trend.calories))),
-    averageProteinGOnWorkoutDays: Math.round(calculateAverage(workoutTrends.map((trend) => trend.proteinG))),
-    averageWaterMlOnWorkoutDays: Math.round(calculateAverage(workoutTrends.map((trend) => trend.waterMl))),
+    averageCaloriesOnWorkoutDays: Math.round(
+      calculateAverage(workoutTrends.map((trend) => trend.calories)),
+    ),
+    averageProteinGOnWorkoutDays: Math.round(
+      calculateAverage(workoutTrends.map((trend) => trend.proteinG)),
+    ),
+    averageWaterMlOnWorkoutDays: Math.round(
+      calculateAverage(workoutTrends.map((trend) => trend.waterMl)),
+    ),
     hasWorkoutData: true,
     message: `Based on your logs, food was logged on ${workoutDaysWithFoodLogs} of ${workoutDays.length} workout days. This may help you spot training-day patterns.`,
     proteinTargetHitPercent: calculateTargetHitRate(
-      workoutTrends.map((trend) => ({ target: trend.proteinTargetG, value: trend.proteinG })),
-      "at_least"
+      workoutTrends.map((trend) => ({
+        target: trend.proteinTargetG,
+        value: trend.proteinG,
+      })),
+      "at_least",
     ),
     waterTargetHitPercent: calculateTargetHitRate(
-      workoutTrends.map((trend) => ({ target: trend.waterTargetMl, value: trend.waterMl })),
-      "at_least"
+      workoutTrends.map((trend) => ({
+        target: trend.waterTargetMl,
+        value: trend.waterMl,
+      })),
+      "at_least",
     ),
     workoutDays: workoutDays.length,
-    workoutDaysWithFoodLogs
+    workoutDaysWithFoodLogs,
   };
 }
 
-export async function getMostLoggedFoods(range: ReportRange): Promise<MostLoggedFood[]> {
+export async function getMostLoggedFoods(
+  range: ReportRange,
+): Promise<MostLoggedFood[]> {
   const days = await getReportDays(range);
   const groups = new Map<string, NutritionDiaryEntry[]>();
 
-  days.flatMap((day) => day.entries).forEach((entry) => {
-    const key = `${entry.source ?? "manual"}:${entry.sourceFoodId ?? entry.foodName.toLowerCase()}`;
-    groups.set(key, [...(groups.get(key) ?? []), entry]);
-  });
+  days
+    .flatMap((day) => day.entries)
+    .forEach((entry) => {
+      const key = `${entry.source ?? "manual"}:${entry.sourceFoodId ?? entry.foodName.toLowerCase()}`;
+      groups.set(key, [...(groups.get(key) ?? []), entry]);
+    });
 
   return [...groups.values()]
     .map((items) => {
       const latest = items.reduce((nextLatest, item) =>
-        new Date(item.createdAt).getTime() > new Date(nextLatest.createdAt).getTime() ? item : nextLatest
+        new Date(item.createdAt).getTime() >
+        new Date(nextLatest.createdAt).getTime()
+          ? item
+          : nextLatest,
       );
 
       return {
-        averageQuantity: Math.round(calculateAverage(items.map((item) => item.quantity)) * 10) / 10,
+        averageQuantity:
+          Math.round(
+            calculateAverage(items.map((item) => item.quantity)) * 10,
+          ) / 10,
         averageUnit: latest.unit,
         brand: latest.brand,
         foodName: latest.foodName,
         lastLoggedAt: latest.createdAt,
         source: latest.source,
-        timesLogged: items.length
+        timesLogged: items.length,
       };
     })
     .sort((left, right) => right.timesLogged - left.timesLogged)
     .slice(0, 8);
 }
 
-export async function getMostUsedSavedMeals(range: ReportRange): Promise<MostUsedMealItem[]> {
+export async function getMostUsedSavedMeals(
+  range: ReportRange,
+): Promise<MostUsedMealItem[]> {
   const [days, savedMeals, recipes] = await Promise.all([
     getReportDays(range),
     getSavedMeals(),
-    getRecipes()
+    getRecipes(),
   ]);
   const usage = new Map<string, MostUsedMealItem>();
 
-  days.flatMap((day) => day.entries).forEach((entry) => {
-    if (entry.entrySource !== "saved_meal" && entry.entrySource !== "recipe") return;
+  days
+    .flatMap((day) => day.entries)
+    .forEach((entry) => {
+      if (entry.entrySource !== "saved_meal" && entry.entrySource !== "recipe")
+        return;
 
-    const itemType = entry.entrySource;
-    const id = entry.sourceRefId;
-    const matchingSavedMeal = itemType === "saved_meal" ? savedMeals.find((meal) => meal.id === id) : undefined;
-    const matchingRecipe = itemType === "recipe" ? recipes.find((recipe) => recipe.id === id) : undefined;
-    const name = matchingSavedMeal?.name ?? matchingRecipe?.name ?? entry.foodName;
-    const key = `${itemType}:${id ?? name}`;
-    const current = usage.get(key);
+      const itemType = entry.entrySource;
+      const id = entry.sourceRefId;
+      const matchingSavedMeal =
+        itemType === "saved_meal"
+          ? savedMeals.find((meal) => meal.id === id)
+          : undefined;
+      const matchingRecipe =
+        itemType === "recipe"
+          ? recipes.find((recipe) => recipe.id === id)
+          : undefined;
+      const name =
+        matchingSavedMeal?.name ?? matchingRecipe?.name ?? entry.foodName;
+      const key = `${itemType}:${id ?? name}`;
+      const current = usage.get(key);
 
-    usage.set(key, {
-      id,
-      itemType,
-      name,
-      timesUsed: (current?.timesUsed ?? 0) + 1
+      usage.set(key, {
+        id,
+        itemType,
+        name,
+        timesUsed: (current?.timesUsed ?? 0) + 1,
+      });
     });
-  });
 
-  return [...usage.values()].sort((left, right) => right.timesUsed - left.timesUsed).slice(0, 6);
+  return [...usage.values()]
+    .sort((left, right) => right.timesUsed - left.timesUsed)
+    .slice(0, 6);
 }
 
-export async function generateNutritionInsights(range: ReportRange): Promise<NutritionInsight[]> {
+export async function generateNutritionInsights(
+  range: ReportRange,
+): Promise<NutritionInsight[]> {
   const [summary, water, goal, diary, workout, foods] = await Promise.all([
     getNutritionReportSummary(range),
     getWaterTrends(range),
     getGoalProgressReport(range),
     getDiaryConsistencyReport(range),
     getWorkoutFoodConnectionReport(range),
-    getMostLoggedFoods(range)
+    getMostLoggedFoods(range),
   ]);
   const now = new Date().toISOString();
   const insights: NutritionInsight[] = [];
 
   if (summary.daysLogged === 0) {
-    insights.push(makeInsight(range, now, "logging", "Start with one log", "Log meals to unlock nutrition reports.", "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "logging",
+        "Start with one log",
+        "Log meals to unlock nutrition reports.",
+        "info",
+      ),
+    );
   } else if (summary.foodLoggingConsistencyPercent >= 70) {
-    insights.push(makeInsight(range, now, "logging", "Steady logging", buildInsightMessage("logging", "Your food diary appears consistent for this range."), "positive"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "logging",
+        "Steady logging",
+        buildInsightMessage(
+          "logging",
+          "Your food diary appears consistent for this range.",
+        ),
+        "positive",
+      ),
+    );
   } else {
-    insights.push(makeInsight(range, now, "logging", "Diary consistency", buildInsightMessage("logging", "Adding one meal log each day could make these reports more useful."), "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "logging",
+        "Diary consistency",
+        buildInsightMessage(
+          "logging",
+          "Adding one meal log each day could make these reports more useful.",
+        ),
+        "info",
+      ),
+    );
   }
 
   if (water.trends.every((trend) => trend.waterMl === 0)) {
-    insights.push(makeInsight(range, now, "water", "Hydration trend", "Add water logs to see hydration trends.", "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "water",
+        "Hydration trend",
+        "Add water logs to see hydration trends.",
+        "info",
+      ),
+    );
   } else if ((goal.waterConsistencyPercent ?? 0) >= 70) {
-    insights.push(makeInsight(range, now, "water", "Hydration pattern", buildInsightMessage("water", "Your logged water intake appears close to your target on many days."), "positive"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "water",
+        "Hydration pattern",
+        buildInsightMessage(
+          "water",
+          "Your logged water intake appears close to your target on many days.",
+        ),
+        "positive",
+      ),
+    );
   } else {
-    insights.push(makeInsight(range, now, "water", "Hydration pattern", buildInsightMessage("water", "Your logs suggest some days may be below your water target."), "gentle_warning"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "water",
+        "Hydration pattern",
+        buildInsightMessage(
+          "water",
+          "Your logs suggest some days may be below your water target.",
+        ),
+        "gentle_warning",
+      ),
+    );
   }
 
   if (!goal.hasTarget) {
-    insights.push(makeInsight(range, now, "goal", "Targets", "Set nutrition targets to compare your progress.", "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "goal",
+        "Targets",
+        "Set nutrition targets to compare your progress.",
+        "info",
+      ),
+    );
   } else if ((goal.proteinConsistencyPercent ?? 0) < 50) {
-    insights.push(makeInsight(range, now, "protein", "Protein trend", buildInsightMessage("protein", "Protein appears below your target on several logged days."), "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "protein",
+        "Protein trend",
+        buildInsightMessage(
+          "protein",
+          "Protein appears below your target on several logged days.",
+        ),
+        "info",
+      ),
+    );
   }
 
   if (!workout.hasWorkoutData) {
-    insights.push(makeInsight(range, now, "workout_food", "Workout connection", "Log workouts to connect food with training.", "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "workout_food",
+        "Workout connection",
+        "Log workouts to connect food with training.",
+        "info",
+      ),
+    );
   } else {
-    insights.push(makeInsight(range, now, "workout_food", "Workout connection", workout.message, "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "workout_food",
+        "Workout connection",
+        workout.message,
+        "info",
+      ),
+    );
   }
 
   if (foods[0]) {
-    insights.push(makeInsight(range, now, "general", "Most logged food", `${foods[0].foodName} appears most often in this report range.`, "info"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "general",
+        "Most logged food",
+        `${foods[0].foodName} appears most often in this report range.`,
+        "info",
+      ),
+    );
   }
 
   if (diary.currentLoggingStreakDays >= 2) {
-    insights.push(makeInsight(range, now, "logging", "Current streak", `You have a ${diary.currentLoggingStreakDays}-day food logging streak based on your logs.`, "positive"));
+    insights.push(
+      makeInsight(
+        range,
+        now,
+        "logging",
+        "Current streak",
+        `You have a ${diary.currentLoggingStreakDays}-day food logging streak based on your logs.`,
+        "positive",
+      ),
+    );
   }
 
   return insights.slice(0, 6);
@@ -404,7 +646,7 @@ async function getReportDays(range: ReportRange): Promise<DayReportData[]> {
       const [entries, note, waterGoal] = await Promise.all([
         getNutritionEntriesByDate(dateKey),
         getNutritionDailyNote(dateKey),
-        getWaterGoal(date)
+        getWaterGoal(date),
       ]);
 
       return {
@@ -414,9 +656,9 @@ async function getReportDays(range: ReportRange): Promise<DayReportData[]> {
         hasNote: Boolean(note?.note.trim()),
         target: activeTarget,
         waterCurrentMl: waterGoal.currentMl,
-        waterTargetMl: waterGoal.targetMl
+        waterTargetMl: waterGoal.targetMl,
       };
-    })
+    }),
   );
 }
 
@@ -426,8 +668,10 @@ async function getWorkoutDateKeys(days: DayReportData[]) {
 
   return new Set(
     sessions
-      .filter((session) => validDateKeys.has(toNutritionDateKey(new Date(session.startedAt))))
-      .map((session) => toNutritionDateKey(new Date(session.startedAt)))
+      .filter((session) =>
+        validDateKeys.has(toNutritionDateKey(new Date(session.startedAt))),
+      )
+      .map((session) => toNutritionDateKey(new Date(session.startedAt))),
   );
 }
 
@@ -438,15 +682,15 @@ function getEntryTotals(entries: NutritionDiaryEntry[]) {
       carbsG: totals.carbsG + entry.carbsG,
       fatG: totals.fatG + entry.fatG,
       fiberG: totals.fiberG + (entry.fiberG ?? 0),
-      proteinG: totals.proteinG + entry.proteinG
+      proteinG: totals.proteinG + entry.proteinG,
     }),
     {
       calories: 0,
       carbsG: 0,
       fatG: 0,
       fiberG: 0,
-      proteinG: 0
-    }
+      proteinG: 0,
+    },
   );
 }
 
@@ -465,7 +709,9 @@ function getDatesBetween(start: Date, end: Date) {
 }
 
 function roundedAverageTarget(values: Array<number | undefined>) {
-  const validValues = values.filter((value): value is number => value !== undefined && value > 0);
+  const validValues = values.filter(
+    (value): value is number => value !== undefined && value > 0,
+  );
 
   if (!validValues.length) return undefined;
 
@@ -483,7 +729,10 @@ function calculateCurrentLoggingStreak(days: DayReportData[]) {
   return streak;
 }
 
-function getGoalReportMessage(target: NutritionTarget, workoutConnection: WorkoutFoodConnectionReport) {
+function getGoalReportMessage(
+  target: NutritionTarget,
+  workoutConnection: WorkoutFoodConnectionReport,
+) {
   switch (target.goalType) {
     case "lose_weight":
       return "For your weight goal, calories, protein, water, and steady logging are the main comparison points.";
@@ -510,7 +759,7 @@ function makeInsight(
   type: NutritionInsight["type"],
   title: string,
   message: string,
-  severity: NutritionInsight["severity"]
+  severity: NutritionInsight["severity"],
 ): NutritionInsight {
   return {
     createdAt: now,
@@ -519,6 +768,6 @@ function makeInsight(
     message,
     severity,
     title,
-    type
+    type,
   };
 }

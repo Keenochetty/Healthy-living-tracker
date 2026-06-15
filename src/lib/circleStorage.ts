@@ -6,7 +6,7 @@ import type {
   CircleMember,
   CirclePermissionKey,
   CircleRole,
-  FamilyCircle
+  FamilyCircle,
 } from "@/types/circle";
 
 const MOCK_CIRCLE_STORAGE_KEY = "family_health_mock_circle";
@@ -31,7 +31,7 @@ function createDefaultPendingRequest({
   displayName,
   message,
   role,
-  requestedAt
+  requestedAt,
 }: {
   displayName: string;
   message: string;
@@ -47,7 +47,7 @@ function createDefaultPendingRequest({
     permissions: permissionsForRole(role),
     requestedAt,
     role,
-    status: "pending"
+    status: "pending",
   };
 }
 
@@ -68,8 +68,8 @@ export function createDefaultMockCircle(): FamilyCircle {
         permissions: [],
         requestedAt: now,
         role: "other_family",
-        status: "active"
-      }
+        status: "active",
+      },
     ],
     name: "My Care Circle",
     ownerName: "You",
@@ -78,15 +78,15 @@ export function createDefaultMockCircle(): FamilyCircle {
         displayName: "Maya Care",
         message: "Available for check-ins and care notes.",
         requestedAt: yesterday,
-        role: "caregiver"
+        role: "caregiver",
       }),
       createDefaultPendingRequest({
         displayName: "Sam Partner",
         message: "Would like to help with shared planning.",
         requestedAt: now,
-        role: "partner"
-      })
-    ]
+        role: "partner",
+      }),
+    ],
   };
 }
 
@@ -101,17 +101,19 @@ function normaliseCircle(circle: FamilyCircle): FamilyCircle {
     ...circle,
     members: circle.members.map((member) => ({
       ...member,
-      avatarInitials: member.avatarInitials || getAvatarInitials(member.displayName),
+      avatarInitials:
+        member.avatarInitials || getAvatarInitials(member.displayName),
       circleId: member.circleId || circle.id,
-      status: member.status ?? "active"
+      status: member.status ?? "active",
     })),
     ownerName: circle.ownerName || "You",
     pendingRequests: (circle.pendingRequests ?? []).map((request) => ({
       ...request,
-      avatarInitials: request.avatarInitials || getAvatarInitials(request.displayName),
+      avatarInitials:
+        request.avatarInitials || getAvatarInitials(request.displayName),
       circleId: request.circleId || circle.id,
-      status: request.status ?? "pending"
-    }))
+      status: request.status ?? "pending",
+    })),
   };
 }
 
@@ -136,21 +138,24 @@ export async function saveMockCircle(circle: FamilyCircle) {
 export async function getPendingRequests() {
   const circle = await getMockCircle();
 
-  return circle.pendingRequests.filter((request) => request.status === "pending");
+  return circle.pendingRequests.filter(
+    (request) => request.status === "pending",
+  );
 }
 
 export async function addPendingRequest(request: CircleJoinRequest) {
   const circle = await getMockCircle();
   const nextRequest: CircleJoinRequest = {
     ...request,
-    avatarInitials: request.avatarInitials || getAvatarInitials(request.displayName),
+    avatarInitials:
+      request.avatarInitials || getAvatarInitials(request.displayName),
     circleId: request.circleId || circle.id,
     requestedAt: request.requestedAt || new Date().toISOString(),
-    status: "pending"
+    status: "pending",
   };
   const pendingRequests = [
     nextRequest,
-    ...circle.pendingRequests.filter((item) => item.id !== nextRequest.id)
+    ...circle.pendingRequests.filter((item) => item.id !== nextRequest.id),
   ];
 
   return saveMockCircle({ ...circle, pendingRequests });
@@ -173,13 +178,18 @@ export async function approveJoinRequest(requestId: string) {
     permissions: [...request.permissions],
     requestedAt: request.requestedAt,
     role: request.role,
-    status: "active"
+    status: "active",
   };
 
   return saveMockCircle({
     ...circle,
-    members: [member, ...circle.members.filter((item) => item.id !== member.id)],
-    pendingRequests: circle.pendingRequests.filter((item) => item.id !== requestId)
+    members: [
+      member,
+      ...circle.members.filter((item) => item.id !== member.id),
+    ],
+    pendingRequests: circle.pendingRequests.filter(
+      (item) => item.id !== requestId,
+    ),
   });
 }
 
@@ -189,14 +199,14 @@ export async function declineJoinRequest(requestId: string) {
   return saveMockCircle({
     ...circle,
     pendingRequests: circle.pendingRequests.map((request) =>
-      request.id === requestId ? { ...request, status: "declined" } : request
-    )
+      request.id === requestId ? { ...request, status: "declined" } : request,
+    ),
   });
 }
 
 export async function updateMemberPermissions(
   memberId: string,
-  permissions: CirclePermissionKey[]
+  permissions: CirclePermissionKey[],
 ) {
   const circle = await getMockCircle();
 
@@ -205,8 +215,8 @@ export async function updateMemberPermissions(
     members: circle.members.map((member) =>
       member.id === memberId
         ? { ...member, permissions: Array.from(new Set(permissions)) }
-        : member
-    )
+        : member,
+    ),
   });
 }
 
@@ -221,7 +231,7 @@ export async function removeCircleMember(memberId: string) {
   return saveMockCircle({
     ...circle,
     members: circle.members.map((item) =>
-      item.id === memberId ? { ...item, status: "removed" } : item
-    )
+      item.id === memberId ? { ...item, status: "removed" } : item,
+    ),
   });
 }

@@ -13,8 +13,8 @@ export function ChildDisclaimerCard() {
         {CHILD_SAFETY_DISCLAIMER}
       </Text>
       <Text style={{ color: "#9a3412", lineHeight: 21, marginTop: 6 }}>
-        Child information is private by default. Sharing with a circle member should be
-        explicit and permission-based.
+        Child information is private by default. Sharing with a circle member
+        should be explicit and permission-based.
       </Text>
     </AppCard>
   );

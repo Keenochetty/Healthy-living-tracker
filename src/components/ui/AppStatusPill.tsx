@@ -21,7 +21,7 @@ export function AppStatusPill({ label, status }: AppStatusPillProps) {
         overflow: "hidden",
         paddingHorizontal: 10,
         paddingVertical: 5,
-        textTransform: "capitalize"
+        textTransform: "capitalize",
       }}
     >
       {label ?? status}

@@ -1,6 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { AppHeader, AppIcon, AppScreen, StatusPill, WidgetCard } from "@/components/ui";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  StatusPill,
+  WidgetCard,
+} from "@/components/ui";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 
@@ -8,18 +14,18 @@ const scanOptions = [
   {
     description: "Capture meals and nutrition labels for assisted logging.",
     label: "Food",
-    tone: colors.status.success
+    tone: colors.status.success,
   },
   {
     description: "Capture medication packaging and prescription details.",
     label: "Medication",
-    tone: colors.status.warning
+    tone: colors.status.warning,
   },
   {
     description: "Capture health documents and records for review.",
     label: "Records",
-    tone: colors.status.ai
-  }
+    tone: colors.status.ai,
+  },
 ] as const;
 
 export default function ScanScreen() {
@@ -41,8 +47,18 @@ export default function ScanScreen() {
           <View style={styles.list}>
             {scanOptions.map((option) => (
               <View key={option.label} style={styles.option}>
-                <View style={[styles.iconShell, { backgroundColor: `${option.tone}20` }]}>
-                  <AppIcon color={option.tone} name="camera" size={24} variant="filled" />
+                <View
+                  style={[
+                    styles.iconShell,
+                    { backgroundColor: `${option.tone}20` },
+                  ]}
+                >
+                  <AppIcon
+                    color={option.tone}
+                    name="camera"
+                    size={24}
+                    variant="filled"
+                  />
                 </View>
                 <View style={styles.copy}>
                   <Text style={styles.label}>{option.label}</Text>
@@ -61,27 +77,27 @@ const styles = StyleSheet.create({
   copy: {
     flex: 1,
     gap: spacing.xs,
-    minWidth: 0
+    minWidth: 0,
   },
   description: {
     color: colors.text.muted,
     fontSize: 13,
-    lineHeight: 18
+    lineHeight: 18,
   },
   iconShell: {
     alignItems: "center",
     borderRadius: 16,
     height: 44,
     justifyContent: "center",
-    width: 44
+    width: 44,
   },
   label: {
     color: colors.text.primary,
     fontSize: 16,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   list: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   option: {
     alignItems: "center",
@@ -92,10 +108,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
     minHeight: 68,
-    padding: spacing.md
+    padding: spacing.md,
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
-  }
+    flex: 1,
+  },
 });

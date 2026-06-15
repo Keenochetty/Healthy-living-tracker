@@ -1,14 +1,20 @@
-import { getDefaultAgeAccessStage, getDefaultPrivacyStatus } from "@/constants/care-profiles";
+import {
+  getDefaultAgeAccessStage,
+  getDefaultPrivacyStatus,
+} from "@/constants/care-profiles";
 import type {
   AgeAccessStage,
   CareProfile,
   CareProfilePrivacyStatus,
   CareProfileType,
-  CreateCareProfileInput
+  CreateCareProfileInput,
 } from "@/types/care-profiles";
 import type { CircleRelationship } from "@/types/circles";
 
-export function calculateAge(dateOfBirth: string | null | undefined, today = new Date()) {
+export function calculateAge(
+  dateOfBirth: string | null | undefined,
+  today = new Date(),
+) {
   if (!dateOfBirth) {
     return null;
   }
@@ -22,7 +28,8 @@ export function calculateAge(dateOfBirth: string | null | undefined, today = new
   let age = today.getFullYear() - birthDate.getFullYear();
   const hasHadBirthday =
     today.getMonth() > birthDate.getMonth() ||
-    (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+    (today.getMonth() === birthDate.getMonth() &&
+      today.getDate() >= birthDate.getDate());
 
   if (!hasHadBirthday) {
     age -= 1;
@@ -31,11 +38,15 @@ export function calculateAge(dateOfBirth: string | null | undefined, today = new
   return age >= 0 ? age : null;
 }
 
-export function determineDefaultAgeAccessStage(age: number | null): AgeAccessStage {
+export function determineDefaultAgeAccessStage(
+  age: number | null,
+): AgeAccessStage {
   return getDefaultAgeAccessStage(age);
 }
 
-export function formatCareProfileAge(profile: Pick<CareProfile, "age" | "dateOfBirth">) {
+export function formatCareProfileAge(
+  profile: Pick<CareProfile, "age" | "dateOfBirth">,
+) {
   const age = profile.age ?? calculateAge(profile.dateOfBirth);
 
   if (age === null) {
@@ -45,8 +56,15 @@ export function formatCareProfileAge(profile: Pick<CareProfile, "age" | "dateOfB
   return age === 1 ? "1 year old" : `${age} years old`;
 }
 
-export function isAdultCareProfile(profile: Pick<CareProfile, "ageAccessStage" | "profileType">) {
-  return profile.ageAccessStage === "adult_controlled" || profile.profileType === "adult_member" || profile.profileType === "adult_dependent" || profile.profileType === "elderly_dependent";
+export function isAdultCareProfile(
+  profile: Pick<CareProfile, "ageAccessStage" | "profileType">,
+) {
+  return (
+    profile.ageAccessStage === "adult_controlled" ||
+    profile.profileType === "adult_member" ||
+    profile.profileType === "adult_dependent" ||
+    profile.profileType === "elderly_dependent"
+  );
 }
 
 type BuildCareProfileInput = CreateCareProfileInput & {
@@ -63,19 +81,23 @@ export function buildCareProfile(input: BuildCareProfileInput): CareProfile {
   return {
     age,
     ageAccessStage,
-    caregiverAssignmentStatus: input.caregiverAssignmentStatus ?? "not_assigned",
+    caregiverAssignmentStatus:
+      input.caregiverAssignmentStatus ?? "not_assigned",
     circleId: input.circleId,
     dateOfBirth: input.dateOfBirth ?? null,
     displayName: input.displayName,
     id: input.id,
     notes: input.notes ?? null,
-    privacyStatus: input.privacyStatus ?? getDefaultPrivacyStatus(ageAccessStage),
+    privacyStatus:
+      input.privacyStatus ?? getDefaultPrivacyStatus(ageAccessStage),
     profileType: input.profileType,
-    relationship: input.relationship
+    relationship: input.relationship,
   };
 }
 
-export function getCareProfileRelationshipFallback(profileType: CareProfileType): CircleRelationship {
+export function getCareProfileRelationshipFallback(
+  profileType: CareProfileType,
+): CircleRelationship {
   if (profileType === "child" || profileType === "teen") {
     return "other";
   }

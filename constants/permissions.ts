@@ -1,4 +1,9 @@
-import type { PermissionCategory, PermissionGroupKey, PermissionPresetName, PrivacyLevel } from "@/types/permissions";
+import type {
+  PermissionCategory,
+  PermissionGroupKey,
+  PermissionPresetName,
+  PrivacyLevel,
+} from "@/types/permissions";
 
 export const PERMISSION_CATEGORIES = [
   "view_calendar",
@@ -15,7 +20,7 @@ export const PERMISSION_CATEGORIES = [
   "assign_caregivers",
   "manage_privacy",
   "approve_events",
-  "view_activity_logs"
+  "view_activity_logs",
 ] as const satisfies readonly PermissionCategory[];
 
 export const PRIVACY_LEVELS = [
@@ -23,7 +28,7 @@ export const PRIVACY_LEVELS = [
   "circle_shared",
   "partner_shared",
   "caregiver_shared",
-  "emergency_only"
+  "emergency_only",
 ] as const satisfies readonly PrivacyLevel[];
 
 export const permissionCategoryLabels = {
@@ -41,7 +46,7 @@ export const permissionCategoryLabels = {
   view_documents: "View documents",
   view_emergency_info: "View emergency info",
   view_health_summary: "View health summary",
-  view_medication: "View medication"
+  view_medication: "View medication",
 } as const satisfies Record<PermissionCategory, string>;
 
 export const permissionCategoryDescriptions = {
@@ -59,7 +64,7 @@ export const permissionCategoryDescriptions = {
   view_documents: "See shared documents.",
   view_emergency_info: "See emergency contacts and critical notes.",
   view_health_summary: "See safe health summaries.",
-  view_medication: "See medication reminders and summaries."
+  view_medication: "See medication reminders and summaries.",
 } as const satisfies Record<PermissionCategory, string>;
 
 export const privacyLevelLabels = {
@@ -67,7 +72,7 @@ export const privacyLevelLabels = {
   circle_shared: "Circle shared",
   emergency_only: "Emergency only",
   partner_shared: "Partner shared",
-  private: "Private"
+  private: "Private",
 } as const satisfies Record<PrivacyLevel, string>;
 
 export const privacyLevelDescriptions = {
@@ -75,7 +80,7 @@ export const privacyLevelDescriptions = {
   circle_shared: "Circle members see granted fields.",
   emergency_only: "Only emergency information is visible.",
   partner_shared: "Shared with a partner or explicitly selected trusted adult.",
-  private: "Private unless the adult owner grants access."
+  private: "Private unless the adult owner grants access.",
 } as const satisfies Record<PrivacyLevel, string>;
 
 export const childManagedPermissions = [
@@ -88,7 +93,7 @@ export const childManagedPermissions = [
   "create_care_logs",
   "edit_care_logs",
   "manage_profile",
-  "manage_privacy"
+  "manage_privacy",
 ] as const satisfies readonly PermissionCategory[];
 
 export const teenTransitionPermissions = [
@@ -96,11 +101,11 @@ export const teenTransitionPermissions = [
   "view_health_summary",
   "view_emergency_info",
   "view_care_notes",
-  "create_care_logs"
+  "create_care_logs",
 ] as const satisfies readonly PermissionCategory[];
 
 export const adultControlledPermissions = [
-  "view_emergency_info"
+  "view_emergency_info",
 ] as const satisfies readonly PermissionCategory[];
 
 export const circleAdminPermissions = [
@@ -108,7 +113,7 @@ export const circleAdminPermissions = [
   "invite_members",
   "assign_caregivers",
   "approve_events",
-  "view_activity_logs"
+  "view_activity_logs",
 ] as const satisfies readonly PermissionCategory[];
 
 export const permissionGroupLabels = {
@@ -117,7 +122,7 @@ export const permissionGroupLabels = {
   documents: "Documents",
   emergency: "Emergency",
   health: "Health",
-  management: "Management"
+  management: "Management",
 } as const satisfies Record<PermissionGroupKey, string>;
 
 export const permissionGroups = {
@@ -126,7 +131,14 @@ export const permissionGroups = {
   documents: ["view_documents"],
   emergency: ["view_emergency_info"],
   health: ["view_health_summary", "view_medication"],
-  management: ["manage_profile", "manage_circle", "invite_members", "assign_caregivers", "manage_privacy", "view_activity_logs"]
+  management: [
+    "manage_profile",
+    "manage_circle",
+    "invite_members",
+    "assign_caregivers",
+    "manage_privacy",
+    "view_activity_logs",
+  ],
 } as const satisfies Record<PermissionGroupKey, readonly PermissionCategory[]>;
 
 export const PERMISSION_PRESETS = [
@@ -135,7 +147,7 @@ export const PERMISSION_PRESETS = [
   "teen_limited_sharing",
   "caregiver_assigned_only",
   "viewer",
-  "custom"
+  "custom",
 ] as const satisfies readonly PermissionPresetName[];
 
 export const permissionPresetLabels = {
@@ -144,21 +156,30 @@ export const permissionPresetLabels = {
   custom: "Custom",
   parent_guardian: "Parent / Guardian",
   teen_limited_sharing: "Teen Limited Sharing",
-  viewer: "Viewer"
+  viewer: "Viewer",
 } as const satisfies Record<PermissionPresetName, string>;
 
 export const permissionPresetDescriptions = {
-  adult_family_member: "Shared calendar and safe updates only. Adult private health details stay private unless consent is granted.",
-  caregiver_assigned_only: "Assigned care profiles only, with granted care fields. No full circle access.",
+  adult_family_member:
+    "Shared calendar and safe updates only. Adult private health details stay private unless consent is granted.",
+  caregiver_assigned_only:
+    "Assigned care profiles only, with granted care fields. No full circle access.",
   custom: "Manual placeholder for future granular permission editing.",
-  parent_guardian: "Parent-managed access for children and dependents, including emergency info and schedule management.",
-  teen_limited_sharing: "Gradual sharing for teens with clear transition controls.",
-  viewer: "Read-only shared circle context with no private health access."
+  parent_guardian:
+    "Parent-managed access for children and dependents, including emergency info and schedule management.",
+  teen_limited_sharing:
+    "Gradual sharing for teens with clear transition controls.",
+  viewer: "Read-only shared circle context with no private health access.",
 } as const satisfies Record<PermissionPresetName, string>;
 
 export const permissionPresetGrants = {
   adult_family_member: ["view_calendar", "view_emergency_info"],
-  caregiver_assigned_only: ["view_calendar", "view_emergency_info", "view_care_notes", "create_care_logs"],
+  caregiver_assigned_only: [
+    "view_calendar",
+    "view_emergency_info",
+    "view_care_notes",
+    "create_care_logs",
+  ],
   custom: [],
   parent_guardian: [
     "view_calendar",
@@ -170,8 +191,16 @@ export const permissionPresetGrants = {
     "create_care_logs",
     "edit_care_logs",
     "manage_profile",
-    "manage_privacy"
+    "manage_privacy",
   ],
-  teen_limited_sharing: ["view_calendar", "view_health_summary", "view_emergency_info", "view_care_notes"],
-  viewer: ["view_calendar"]
-} as const satisfies Record<PermissionPresetName, readonly PermissionCategory[]>;
+  teen_limited_sharing: [
+    "view_calendar",
+    "view_health_summary",
+    "view_emergency_info",
+    "view_care_notes",
+  ],
+  viewer: ["view_calendar"],
+} as const satisfies Record<
+  PermissionPresetName,
+  readonly PermissionCategory[]
+>;

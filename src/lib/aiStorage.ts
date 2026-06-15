@@ -39,7 +39,8 @@ async function writeJobs(jobs: AiJob[]) {
 
 function sortNewest(jobs: AiJob[]) {
   return [...jobs].sort(
-    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
   );
 }
 
@@ -52,7 +53,10 @@ export async function getAiJob(jobId: string) {
 }
 
 export async function createAiJob(
-  input: Omit<AiJob, "id" | "createdAt" | "updatedAt" | "warnings" | "confidence" | "safetyLevel">
+  input: Omit<
+    AiJob,
+    "id" | "createdAt" | "updatedAt" | "warnings" | "confidence" | "safetyLevel"
+  >,
 ) {
   const now = new Date().toISOString();
   const job: AiJob = {
@@ -62,7 +66,7 @@ export async function createAiJob(
     id: id("ai-job"),
     safetyLevel: "normal",
     updatedAt: now,
-    warnings: ["Review everything before saving. AI can make mistakes."]
+    warnings: ["Review everything before saving. AI can make mistakes."],
   };
   await writeJobs([job, ...(await readJobs())]);
   return job;
@@ -71,7 +75,9 @@ export async function createAiJob(
 export async function updateAiJob(jobId: string, partial: Partial<AiJob>) {
   const jobs = await readJobs();
   const updated = jobs.map((job) =>
-    job.id === jobId ? { ...job, ...partial, updatedAt: new Date().toISOString() } : job
+    job.id === jobId
+      ? { ...job, ...partial, updatedAt: new Date().toISOString() }
+      : job,
   );
   await writeJobs(updated);
   return updated.find((job) => job.id === jobId) ?? null;
@@ -84,7 +90,7 @@ export async function deleteAiJob(jobId: string) {
 export async function discardAiJob(jobId: string) {
   return updateAiJob(jobId, {
     discardedAt: new Date().toISOString(),
-    status: "discarded"
+    status: "discarded",
   });
 }
 
@@ -92,7 +98,7 @@ export async function approveAiJob(jobId: string) {
   return updateAiJob(jobId, {
     approvedAt: new Date().toISOString(),
     reviewedAt: new Date().toISOString(),
-    status: "approved"
+    status: "approved",
   });
 }
 
@@ -115,6 +121,6 @@ export async function attachDraftToJob(jobId: string, draft: AiExtractedDraft) {
     reviewedAt: new Date().toISOString(),
     safetyLevel: draft.warnings.length > 1 ? "caution" : "normal",
     status: "needs_review",
-    warnings: draft.warnings
+    warnings: draft.warnings,
   });
 }

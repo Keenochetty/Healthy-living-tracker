@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import {
   getNotificationColorToken,
-  type NotificationType
+  type NotificationType,
 } from "@/constants/notification-colors";
 import { componentRadius } from "@/constants/radius";
 import { spacing } from "@/constants/spacing";
@@ -13,9 +13,14 @@ type NotificationBadgeProps = {
   type: NotificationType;
 };
 
-export function NotificationBadge({ count, label, type }: NotificationBadgeProps) {
+export function NotificationBadge({
+  count,
+  label,
+  type,
+}: NotificationBadgeProps) {
   const token = getNotificationColorToken(type);
-  const text = label ?? (typeof count === "number" ? String(count) : token.meaning);
+  const text =
+    label ?? (typeof count === "number" ? String(count) : token.meaning);
 
   return (
     <View
@@ -24,8 +29,8 @@ export function NotificationBadge({ count, label, type }: NotificationBadgeProps
         styles.badge,
         {
           backgroundColor: token.backgroundColor,
-          borderColor: token.borderColor
-        }
+          borderColor: token.borderColor,
+        },
       ]}
     >
       <View style={[styles.dot, { backgroundColor: token.accentColor }]} />
@@ -44,15 +49,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     minHeight: 32,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs
+    paddingVertical: spacing.xs,
   },
   dot: {
     borderRadius: 999,
     height: 8,
-    width: 8
+    width: 8,
   },
   text: {
     fontSize: 13,
-    fontWeight: "700"
-  }
+    fontWeight: "700",
+  },
 });

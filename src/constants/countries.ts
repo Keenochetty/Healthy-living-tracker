@@ -20,9 +20,9 @@ export const COUNTRY_OPTIONS: CountryOption[] = [
       liquidUnit: "ml",
       speedUnit: "kmh",
       temperatureUnit: "celsius",
-      weightUnit: "kg"
+      weightUnit: "kg",
     },
-    timezone: "Africa/Johannesburg"
+    timezone: "Africa/Johannesburg",
   },
   {
     code: "US",
@@ -35,9 +35,9 @@ export const COUNTRY_OPTIONS: CountryOption[] = [
       liquidUnit: "oz",
       speedUnit: "mph",
       temperatureUnit: "fahrenheit",
-      weightUnit: "lb"
+      weightUnit: "lb",
     },
-    timezone: "America/New_York"
+    timezone: "America/New_York",
   },
   {
     code: "GB",
@@ -50,9 +50,9 @@ export const COUNTRY_OPTIONS: CountryOption[] = [
       liquidUnit: "ml",
       speedUnit: "mph",
       temperatureUnit: "celsius",
-      weightUnit: "kg"
+      weightUnit: "kg",
     },
-    timezone: "Europe/London"
+    timezone: "Europe/London",
   },
   {
     code: "EU",
@@ -65,16 +65,19 @@ export const COUNTRY_OPTIONS: CountryOption[] = [
       liquidUnit: "ml",
       speedUnit: "kmh",
       temperatureUnit: "celsius",
-      weightUnit: "kg"
+      weightUnit: "kg",
     },
-    timezone: "Europe/Paris"
-  }
+    timezone: "Europe/Paris",
+  },
 ];
 
 export const DEFAULT_COUNTRY = COUNTRY_OPTIONS[0];
 
 export function getCountryByName(country: string) {
-  return COUNTRY_OPTIONS.find((option) => option.country === country) ?? DEFAULT_COUNTRY;
+  return (
+    COUNTRY_OPTIONS.find((option) => option.country === country) ??
+    DEFAULT_COUNTRY
+  );
 }
 
 export function getCountryByCode(code?: string | null) {
@@ -82,5 +85,8 @@ export function getCountryByCode(code?: string | null) {
     return DEFAULT_COUNTRY;
   }
 
-  return COUNTRY_OPTIONS.find((option) => option.code === code.toUpperCase()) ?? DEFAULT_COUNTRY;
+  return (
+    COUNTRY_OPTIONS.find((option) => option.code === code.toUpperCase()) ??
+    DEFAULT_COUNTRY
+  );
 }

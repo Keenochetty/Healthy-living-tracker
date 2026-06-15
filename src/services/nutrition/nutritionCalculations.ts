@@ -4,7 +4,7 @@ import type {
   Recipe,
   RecipeIngredient,
   SavedMealItem,
-  ServingOption
+  ServingOption,
 } from "@/types/nutrition";
 
 export function convertServingMultiplier({
@@ -12,7 +12,7 @@ export function convertServingMultiplier({
   baseUnit,
   quantity,
   serving,
-  servingOptions
+  servingOptions,
 }: {
   baseQuantity: number;
   baseUnit: string;
@@ -29,17 +29,22 @@ export function convertServingMultiplier({
   }
 
   const selectedServing = servingOptions?.find(
-    (option) => option.quantity === serving.quantity && option.unit === serving.unit
+    (option) =>
+      option.quantity === serving.quantity && option.unit === serving.unit,
   );
   const baseServing = servingOptions?.find(
-    (option) => option.quantity === baseQuantity && option.unit === baseUnit
+    (option) => option.quantity === baseQuantity && option.unit === baseUnit,
   );
 
-  if (selectedServing?.gramsEquivalent && baseServing?.gramsEquivalent && serving.quantity) {
+  if (
+    selectedServing?.gramsEquivalent &&
+    baseServing?.gramsEquivalent &&
+    serving.quantity
+  ) {
     return Math.max(
       0,
       (quantity * selectedServing.gramsEquivalent) /
-        (serving.quantity * baseServing.gramsEquivalent)
+        (serving.quantity * baseServing.gramsEquivalent),
     );
   }
 
@@ -49,7 +54,7 @@ export function convertServingMultiplier({
 export function calculateFoodNutritionByQuantity({
   food,
   quantity,
-  serving
+  serving,
 }: {
   food: FoodDetails;
   quantity: number;
@@ -60,44 +65,48 @@ export function calculateFoodNutritionByQuantity({
     baseUnit: food.defaultServingUnit,
     quantity,
     serving,
-    servingOptions: food.servingOptions
+    servingOptions: food.servingOptions,
   });
 
   return {
     calories: food.calories * multiplier,
     carbsG: food.carbsG * multiplier,
     fatG: food.fatG * multiplier,
-    proteinG: food.proteinG * multiplier
+    proteinG: food.proteinG * multiplier,
   };
 }
 
-export function calculateSavedMealTotals(items: SavedMealItem[]): NutritionTotals {
+export function calculateSavedMealTotals(
+  items: SavedMealItem[],
+): NutritionTotals {
   return items.reduce(
     (totals, item) => ({
       calories: totals.calories + item.calories,
       carbsG: totals.carbsG + item.carbsG,
       fatG: totals.fatG + item.fatG,
-      proteinG: totals.proteinG + item.proteinG
+      proteinG: totals.proteinG + item.proteinG,
     }),
-    emptyTotals()
+    emptyTotals(),
   );
 }
 
-export function calculateRecipeTotals(ingredients: RecipeIngredient[]): NutritionTotals {
+export function calculateRecipeTotals(
+  ingredients: RecipeIngredient[],
+): NutritionTotals {
   return ingredients.reduce(
     (totals, ingredient) => ({
       calories: totals.calories + ingredient.calories,
       carbsG: totals.carbsG + ingredient.carbsG,
       fatG: totals.fatG + ingredient.fatG,
-      proteinG: totals.proteinG + ingredient.proteinG
+      proteinG: totals.proteinG + ingredient.proteinG,
     }),
-    emptyTotals()
+    emptyTotals(),
   );
 }
 
 export function calculateRecipePerServing(
   recipe: Pick<Recipe, "servings">,
-  ingredients: RecipeIngredient[]
+  ingredients: RecipeIngredient[],
 ): NutritionTotals {
   const servings = Math.max(1, recipe.servings || 1);
   const totals = calculateRecipeTotals(ingredients);
@@ -106,16 +115,19 @@ export function calculateRecipePerServing(
     calories: totals.calories / servings,
     carbsG: totals.carbsG / servings,
     fatG: totals.fatG / servings,
-    proteinG: totals.proteinG / servings
+    proteinG: totals.proteinG / servings,
   };
 }
 
-export function multiplyTotals(totals: NutritionTotals, multiplier: number): NutritionTotals {
+export function multiplyTotals(
+  totals: NutritionTotals,
+  multiplier: number,
+): NutritionTotals {
   return {
     calories: totals.calories * multiplier,
     carbsG: totals.carbsG * multiplier,
     fatG: totals.fatG * multiplier,
-    proteinG: totals.proteinG * multiplier
+    proteinG: totals.proteinG * multiplier,
   };
 }
 
@@ -124,7 +136,7 @@ export function emptyTotals(): NutritionTotals {
     calories: 0,
     carbsG: 0,
     fatG: 0,
-    proteinG: 0
+    proteinG: 0,
   };
 }
 

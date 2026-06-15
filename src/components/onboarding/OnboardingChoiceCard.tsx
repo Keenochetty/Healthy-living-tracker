@@ -17,7 +17,7 @@ export function OnboardingChoiceCard({
   emoji,
   onPress,
   selected,
-  title
+  title,
 }: OnboardingChoiceCardProps) {
   const { theme } = useAppTheme();
   return (
@@ -34,7 +34,7 @@ export function OnboardingChoiceCard({
         flexDirection: "row",
         gap: 14,
         opacity: disabled ? 0.78 : 1,
-        padding: 16
+        padding: 16,
       }}
     >
       <View
@@ -44,7 +44,7 @@ export function OnboardingChoiceCard({
           borderRadius: 18,
           height: 48,
           justifyContent: "center",
-          width: 48
+          width: 48,
         }}
       >
         <Text style={{ fontSize: 24 }}>{emoji}</Text>
@@ -66,7 +66,7 @@ export function OnboardingChoiceCard({
           borderRadius: 13,
           height: 26,
           justifyContent: "center",
-          width: 26
+          width: 26,
         }}
       >
         {selected ? <Check color="#ffffff" size={16} /> : null}

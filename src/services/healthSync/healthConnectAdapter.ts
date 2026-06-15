@@ -4,7 +4,7 @@ import type {
   HealthSyncDateRange,
   HealthSyncDataType,
   HealthSyncSourceOption,
-  SyncedHealthSample
+  SyncedHealthSample,
 } from "@/types/healthSync";
 
 export function getHealthConnectSource(): HealthSyncSourceOption {
@@ -20,13 +20,13 @@ export function getHealthConnectSource(): HealthSyncSourceOption {
       ? "Native Health Connect sync is prepared but not active in this Expo build."
       : "Health Connect is not available on this platform.",
     source: "health_connect",
-    title: "Android Health Connect"
+    title: "Android Health Connect",
   };
 }
 
 export async function syncHealthConnectData(
   _dataTypes: HealthSyncDataType[],
-  _dateRange: HealthSyncDateRange
+  _dateRange: HealthSyncDateRange,
 ): Promise<SyncedHealthSample[]> {
   return [];
 }

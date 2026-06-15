@@ -3,11 +3,11 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import {
   VACCINATION_DISCLAIMER,
-  VACCINATION_STATUSES
+  VACCINATION_STATUSES,
 } from "@/constants/childOptions";
 import {
   addVaccinationRecord,
-  getVaccinationRecords
+  getVaccinationRecords,
 } from "@/lib/childStorage";
 import type { VaccinationRecord, VaccinationStatus } from "@/types/child";
 import { AppCard } from "@/components/ui/AppCard";
@@ -17,7 +17,10 @@ type VaccinationRecordCardProps = {
   onChange?: () => void;
 };
 
-export function VaccinationRecordCard({ childId, onChange }: VaccinationRecordCardProps) {
+export function VaccinationRecordCard({
+  childId,
+  onChange,
+}: VaccinationRecordCardProps) {
   const [completedDate, setCompletedDate] = useState("");
   const [notes, setNotes] = useState("");
   const [records, setRecords] = useState<VaccinationRecord[]>([]);
@@ -52,7 +55,7 @@ export function VaccinationRecordCard({ childId, onChange }: VaccinationRecordCa
       notes,
       scheduledDate: scheduledDate.trim() || undefined,
       status,
-      vaccineName: vaccineName.trim()
+      vaccineName: vaccineName.trim(),
     });
 
     setCompletedDate("");
@@ -112,10 +115,15 @@ export function VaccinationRecordCard({ childId, onChange }: VaccinationRecordCa
                   borderRadius: 999,
                   borderWidth: 1,
                   paddingHorizontal: 12,
-                  paddingVertical: 9
+                  paddingVertical: 9,
                 }}
               >
-                <Text style={{ color: selected ? "#6d28d9" : "#475569", fontWeight: "800" }}>
+                <Text
+                  style={{
+                    color: selected ? "#6d28d9" : "#475569",
+                    fontWeight: "800",
+                  }}
+                >
                   {option}
                 </Text>
               </TouchableOpacity>
@@ -131,14 +139,31 @@ export function VaccinationRecordCard({ childId, onChange }: VaccinationRecordCa
           value={notes}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save record</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save record
+          </Text>
         </TouchableOpacity>
 
         {records.slice(0, 4).map((record) => (
-          <View key={record.id} style={{ backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 }}>
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>{record.vaccineName}</Text>
-            <Text style={{ color: "#64748b", marginTop: 3 }}>{record.status}</Text>
+          <View
+            key={record.id}
+            style={{
+              backgroundColor: "#f8fafc",
+              borderRadius: 16,
+              padding: 12,
+            }}
+          >
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+              {record.vaccineName}
+            </Text>
+            <Text style={{ color: "#64748b", marginTop: 3 }}>
+              {record.status}
+            </Text>
           </View>
         ))}
       </View>
@@ -153,7 +178,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -161,5 +186,5 @@ const buttonStyle = {
   backgroundColor: "#7c3aed",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 50
+  minHeight: 50,
 };

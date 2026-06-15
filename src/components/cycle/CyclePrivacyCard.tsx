@@ -15,7 +15,7 @@ export function CyclePrivacyCard() {
             borderRadius: 18,
             height: 46,
             justifyContent: "center",
-            width: 46
+            width: 46,
           }}
         >
           <Lock color="#ffffff" size={22} />

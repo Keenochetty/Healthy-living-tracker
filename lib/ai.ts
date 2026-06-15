@@ -7,12 +7,17 @@ export const aiQuickActions = [
   "Create caregiver instruction",
   "Find emergency contact",
   "Add medication reminder",
-  "Explain notification colours"
+  "Explain notification colours",
 ] as const;
 
 export type AiQuickAction = (typeof aiQuickActions)[number];
 export type AiSender = "user" | "assistant" | "system";
-export type AiActionStatus = "draft" | "confirmed" | "completed" | "cancelled" | "failed";
+export type AiActionStatus =
+  | "draft"
+  | "confirmed"
+  | "completed"
+  | "cancelled"
+  | "failed";
 
 export type AiChatSession = {
   id: string;
@@ -55,11 +60,14 @@ function makeLocalId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function createLocalAiMessage(sender: AiSender, message: string): LocalAiMessage {
+export function createLocalAiMessage(
+  sender: AiSender,
+  message: string,
+): LocalAiMessage {
   return {
     id: makeLocalId(),
     message,
-    sender
+    sender,
   };
 }
 
@@ -77,7 +85,10 @@ export function getQuickActionPlaceholder(action: AiQuickAction) {
   return `Safe ${action.toLowerCase()} placeholder created. Review details before confirming anything.`;
 }
 
-export async function getOrCreateAiChatSession(profileId: string | null | undefined, familyId?: string | null) {
+export async function getOrCreateAiChatSession(
+  profileId: string | null | undefined,
+  familyId?: string | null,
+) {
   if (!profileId) {
     throw new Error("Sign in before using the assistant.");
   }
@@ -103,7 +114,7 @@ export async function getOrCreateAiChatSession(profileId: string | null | undefi
     .insert({
       family_id: familyId ?? null,
       profile_id: profileId,
-      title: "Assistant chat"
+      title: "Assistant chat",
     })
     .select("*")
     .single();
@@ -115,7 +126,12 @@ export async function getOrCreateAiChatSession(profileId: string | null | undefi
   return data as AiChatSession;
 }
 
-export async function createAiMessage(sessionId: string, sender: AiSender, message: string, metadata = {}) {
+export async function createAiMessage(
+  sessionId: string,
+  sender: AiSender,
+  message: string,
+  metadata = {},
+) {
   const safeMessage = cleanText(message);
 
   if (!safeMessage) {
@@ -128,7 +144,7 @@ export async function createAiMessage(sessionId: string, sender: AiSender, messa
       message: safeMessage,
       metadata,
       sender,
-      session_id: sessionId
+      session_id: sessionId,
     })
     .select("*")
     .single();
@@ -145,7 +161,7 @@ export async function createAiAction(
   profileId: string,
   actionType: string,
   actionPayload: Record<string, unknown> = {},
-  status: AiActionStatus = "draft"
+  status: AiActionStatus = "draft",
 ) {
   const { data, error } = await supabase
     .from("ai_actions")
@@ -154,7 +170,7 @@ export async function createAiAction(
       action_type: actionType,
       profile_id: profileId,
       session_id: sessionId,
-      status
+      status,
     })
     .select("*")
     .single();
@@ -170,10 +186,10 @@ export async function logQuickAiAction(
   sessionId: string,
   profileId: string,
   action: AiQuickAction,
-  safeSummary: string
+  safeSummary: string,
 ) {
   return createAiAction(sessionId, profileId, action, {
     quick_action: action,
-    safe_summary: safeSummary
+    safe_summary: safeSummary,
   });
 }

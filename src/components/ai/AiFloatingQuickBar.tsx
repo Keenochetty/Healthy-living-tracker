@@ -1,4 +1,12 @@
-import { Bot, Camera, ChevronDown, History, Mic, Search, X } from "lucide-react-native";
+import {
+  Bot,
+  Camera,
+  ChevronDown,
+  History,
+  Mic,
+  Search,
+  X,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 
@@ -21,7 +29,9 @@ export function AiFloatingQuickBar({ onScanPress }: AiFloatingQuickBarProps) {
     const show = Keyboard.addListener("keyboardDidShow", (event) => {
       setKeyboardHeight(event.endCoordinates.height);
     });
-    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardHeight(0));
+    const hide = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardHeight(0),
+    );
 
     return () => {
       show.remove();
@@ -36,7 +46,7 @@ export function AiFloatingQuickBar({ onScanPress }: AiFloatingQuickBarProps) {
         bottom: keyboardHeight + 104,
         position: "absolute",
         right: spacing.xl,
-        zIndex: 20
+        zIndex: 20,
       }}
     >
       {message ? (
@@ -47,10 +57,12 @@ export function AiFloatingQuickBar({ onScanPress }: AiFloatingQuickBarProps) {
             borderRadius: radius.lg,
             marginBottom: spacing.sm,
             maxWidth: 260,
-            padding: spacing.md
+            padding: spacing.md,
           }}
         >
-          <Text style={{ color: theme.text, fontWeight: "800" }}>{message}</Text>
+          <Text style={{ color: theme.text, fontWeight: "800" }}>
+            {message}
+          </Text>
         </View>
       ) : null}
 
@@ -69,7 +81,7 @@ export function AiFloatingQuickBar({ onScanPress }: AiFloatingQuickBarProps) {
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.24,
-            shadowRadius: 18
+            shadowRadius: 18,
           }}
         >
           {searchOpen ? (
@@ -80,15 +92,40 @@ export function AiFloatingQuickBar({ onScanPress }: AiFloatingQuickBarProps) {
               style={{
                 color: theme.text,
                 minWidth: 150,
-                paddingHorizontal: spacing.sm
+                paddingHorizontal: spacing.sm,
               }}
             />
           ) : null}
-          <AppIconButton icon={<Search size={18} />} onPress={() => setSearchOpen((value) => !value)} size="sm" variant="ghost" />
-          <AppIconButton icon={<Mic size={18} />} onPress={() => setMessage("Voice assistant coming soon")} size="sm" variant="ghost" />
-          <AppIconButton icon={<Camera size={18} />} onPress={onScanPress ?? (() => setMessage("AI scan placeholder"))} size="sm" variant="ghost" />
-          <AppIconButton icon={<History size={18} />} onPress={() => setMessage("Recent AI activity will appear here")} size="sm" variant="ghost" />
-          <AppIconButton icon={<X size={18} />} onPress={() => setOpen(false)} size="sm" variant="ghost" />
+          <AppIconButton
+            icon={<Search size={18} />}
+            onPress={() => setSearchOpen((value) => !value)}
+            size="sm"
+            variant="ghost"
+          />
+          <AppIconButton
+            icon={<Mic size={18} />}
+            onPress={() => setMessage("Voice assistant coming soon")}
+            size="sm"
+            variant="ghost"
+          />
+          <AppIconButton
+            icon={<Camera size={18} />}
+            onPress={onScanPress ?? (() => setMessage("AI scan placeholder"))}
+            size="sm"
+            variant="ghost"
+          />
+          <AppIconButton
+            icon={<History size={18} />}
+            onPress={() => setMessage("Recent AI activity will appear here")}
+            size="sm"
+            variant="ghost"
+          />
+          <AppIconButton
+            icon={<X size={18} />}
+            onPress={() => setOpen(false)}
+            size="sm"
+            variant="ghost"
+          />
         </View>
       ) : (
         <Pressable
@@ -108,7 +145,7 @@ export function AiFloatingQuickBar({ onScanPress }: AiFloatingQuickBarProps) {
             shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.22,
             shadowRadius: 18,
-            width: 58
+            width: 58,
           })}
         >
           <Bot color="#171b22" size={24} strokeWidth={2.3} />

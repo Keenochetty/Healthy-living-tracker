@@ -1,6 +1,11 @@
 import { Text, TouchableOpacity } from "react-native";
 
-import { appColors, appRadius, appSpacing, typography } from "@/theme/designSystem";
+import {
+  appColors,
+  appRadius,
+  appSpacing,
+  typography,
+} from "@/theme/designSystem";
 
 type TabPillProps = {
   active?: boolean;
@@ -22,10 +27,17 @@ export function TabPill({ active, label, onPress }: TabPillProps) {
         borderWidth: 1,
         minHeight: 44,
         paddingHorizontal: appSpacing.lg,
-        justifyContent: "center"
+        justifyContent: "center",
       }}
     >
-      <Text style={[typography.helper, { color: active ? appColors.primary : appColors.textSecondary }]}>{label}</Text>
+      <Text
+        style={[
+          typography.helper,
+          { color: active ? appColors.primary : appColors.textSecondary },
+        ]}
+      >
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }

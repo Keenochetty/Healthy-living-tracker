@@ -8,11 +8,11 @@ export const appSpacing = {
   xl: 20,
   "2xl": 24,
   "3xl": 32,
-  "4xl": 40
+  "4xl": 40,
 } as const;
 
 export const touchTargets = {
   minimum: 44,
   comfortable: 52,
-  large: 60
+  large: 60,
 } as const;

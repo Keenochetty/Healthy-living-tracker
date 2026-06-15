@@ -5,7 +5,7 @@ export function getSystemPrompt() {
     "You do not diagnose, prescribe, recommend medication changes, pressure vaccination choices, or provide medical certainty.",
     "If information is unclear, mark it as uncertain.",
     "Always advise review by the user and contacting a healthcare professional for concerns.",
-    "Return JSON only. Do not include chain-of-thought."
+    "Return JSON only. Do not include chain-of-thought.",
   ].join(" ");
 }
 

@@ -11,10 +11,10 @@ export const doctorVisitDraftSchema = {
     summary: { type: "string" },
     title: { type: "string" },
     visitDate: { type: ["string", "null"] },
-    warnings: { items: { type: "string" }, type: "array" }
+    warnings: { items: { type: "string" }, type: "array" },
   },
   required: ["draftType", "title", "summary", "warnings", "confidence"],
-  type: "object"
+  type: "object",
 };
 
 export const medicationScheduleDraftSchema = {
@@ -29,10 +29,10 @@ export const medicationScheduleDraftSchema = {
     reminderTimes: { items: { type: "string" }, type: "array" },
     requiresUserReview: { const: true },
     takeWithFood: { type: ["boolean", "null"] },
-    warnings: { items: { type: "string" }, type: "array" }
+    warnings: { items: { type: "string" }, type: "array" },
   },
   required: ["draftType", "warnings", "confidence", "requiresUserReview"],
-  type: "object"
+  type: "object",
 };
 
 export const foodLogDraftSchema = {
@@ -48,10 +48,10 @@ export const foodLogDraftSchema = {
     mealType: { type: ["string", "null"] },
     portionEstimate: { type: ["string", "null"] },
     proteinEstimate: { type: ["number", "null"] },
-    warnings: { items: { type: "string" }, type: "array" }
+    warnings: { items: { type: "string" }, type: "array" },
   },
   required: ["draftType", "estimateOnly", "warnings", "confidence"],
-  type: "object"
+  type: "object",
 };
 
 export const formulaInfoDraftSchema = {
@@ -63,10 +63,10 @@ export const formulaInfoDraftSchema = {
     formulaName: { type: ["string", "null"] },
     preparationInstructions: { type: ["string", "null"] },
     servingInfo: { type: ["string", "null"] },
-    warnings: { items: { type: "string" }, type: "array" }
+    warnings: { items: { type: "string" }, type: "array" },
   },
   required: ["draftType", "warnings", "confidence"],
-  type: "object"
+  type: "object",
 };
 
 export const vaccinationRecordDraftSchema = {
@@ -79,10 +79,10 @@ export const vaccinationRecordDraftSchema = {
     draftType: { const: "vaccination_record" },
     status: { type: ["string", "null"] },
     vaccineName: { type: ["string", "null"] },
-    warnings: { items: { type: "string" }, type: "array" }
+    warnings: { items: { type: "string" }, type: "array" },
   },
   required: ["draftType", "warnings", "confidence"],
-  type: "object"
+  type: "object",
 };
 
 export const symptomNoteDraftSchema = {
@@ -95,8 +95,8 @@ export const symptomNoteDraftSchema = {
     symptomsMentioned: { items: { type: "string" }, type: "array" },
     timeline: { type: ["string", "null"] },
     title: { type: "string" },
-    warnings: { items: { type: "string" }, type: "array" }
+    warnings: { items: { type: "string" }, type: "array" },
   },
   required: ["draftType", "title", "summary", "warnings", "confidence"],
-  type: "object"
+  type: "object",
 };

@@ -25,15 +25,20 @@ import type {
   SavedMeal,
   SavedMealItem,
   WaterGoal,
-  WaterLog
+  WaterLog,
 } from "@/types/nutrition";
-import { createCustomDetails, getCommonFoods, searchLocalFoods as searchSeedFoods, toSearchResult } from "@/services/nutrition/localFoodProvider";
+import {
+  createCustomDetails,
+  getCommonFoods,
+  searchLocalFoods as searchSeedFoods,
+  toSearchResult,
+} from "@/services/nutrition/localFoodProvider";
 import {
   calculateFoodNutritionByQuantity,
   calculateRecipePerServing,
   calculateRecipeTotals,
   calculateSavedMealTotals,
-  multiplyTotals
+  multiplyTotals,
 } from "@/services/nutrition/nutritionCalculations";
 
 const NUTRITION_ENTRIES_STORAGE_KEY = "family_health_nutrition_entries";
@@ -176,7 +181,9 @@ function numberOrZero(value?: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }
 
-function toMealGroup(mealType: MealType | NutritionMealGroup): NutritionMealGroup {
+function toMealGroup(
+  mealType: MealType | NutritionMealGroup,
+): NutritionMealGroup {
   switch (mealType) {
     case "snack":
       return "snacks";
@@ -210,7 +217,7 @@ function createId(prefix: string) {
 export async function getNutritionEntries() {
   const [entries, legacyLogs] = await Promise.all([
     readJsonArray<NutritionDiaryEntry>(NUTRITION_ENTRIES_STORAGE_KEY),
-    readJsonArray<FoodLog>(LEGACY_FOOD_LOGS_STORAGE_KEY)
+    readJsonArray<FoodLog>(LEGACY_FOOD_LOGS_STORAGE_KEY),
   ]);
   const migratedLegacyEntries = legacyLogs
     .filter((log) => !entries.some((entry) => entry.id === log.id))
@@ -218,7 +225,7 @@ export async function getNutritionEntries() {
 
   return [...entries, ...migratedLegacyEntries].sort(
     (left, right) =>
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
   );
 }
 
@@ -239,7 +246,7 @@ function legacyFoodLogToNutritionEntry(log: FoodLog): NutritionDiaryEntry {
     quantity: 1,
     unit: log.portionDescription ?? "serving",
     updatedAt: log.updatedAt,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
 }
 
@@ -257,11 +264,11 @@ function nutritionEntryToFoodLog(entry: NutritionDiaryEntry): FoodLog {
       carbsGrams: entry.carbsG,
       fatGrams: entry.fatG,
       fibreGrams: entry.fiberG,
-      proteinGrams: entry.proteinG
+      proteinGrams: entry.proteinG,
     },
     portionDescription: `${entry.quantity} ${entry.unit}`.trim(),
     source: "manual",
-    updatedAt: entry.updatedAt ?? entry.createdAt
+    updatedAt: entry.updatedAt ?? entry.createdAt,
   };
 }
 
@@ -296,7 +303,7 @@ export async function createNutritionEntry(input: CreateNutritionEntryInput) {
     smartLogSessionId: input.smartLogSessionId,
     unit: input.unit?.trim() || "serving",
     updatedAt: now,
-    userId: input.userId ?? LOCAL_USER_ID
+    userId: input.userId ?? LOCAL_USER_ID,
   };
   const entries = await getNutritionEntries();
 
@@ -314,7 +321,7 @@ export async function getNutritionEntriesByDate(date: Date | string) {
 
 export async function updateNutritionEntry(
   id: string,
-  partial: Partial<Omit<NutritionDiaryEntry, "id" | "createdAt">>
+  partial: Partial<Omit<NutritionDiaryEntry, "id" | "createdAt">>,
 ) {
   const entries = await getNutritionEntries();
   const updatedEntries = entries.map((entry) =>
@@ -322,9 +329,9 @@ export async function updateNutritionEntry(
       ? {
           ...entry,
           ...partial,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : entry
+      : entry,
   );
 
   await writeJsonArray(NUTRITION_ENTRIES_STORAGE_KEY, updatedEntries);
@@ -338,13 +345,16 @@ export async function deleteNutritionEntry(id: string) {
 
   await writeJsonArray(
     NUTRITION_ENTRIES_STORAGE_KEY,
-    entries.filter((item) => item.id !== id)
+    entries.filter((item) => item.id !== id),
   );
 
   return entry;
 }
 
-export async function addWaterLog(amountMl: number, loggedAt = new Date().toISOString()) {
+export async function addWaterLog(
+  amountMl: number,
+  loggedAt = new Date().toISOString(),
+) {
   const now = new Date().toISOString();
   const waterLog: WaterLog = {
     amountMl: Math.max(0, Math.round(amountMl)),
@@ -352,7 +362,7 @@ export async function addWaterLog(amountMl: number, loggedAt = new Date().toISOS
     id: createId("water"),
     loggedAt,
     profileId: LOCAL_PROFILE_ID,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const logs = await readJsonArray<WaterLog>(WATER_LOGS_STORAGE_KEY);
 
@@ -365,7 +375,7 @@ export async function getWaterLogsByDate(date: Date | string) {
   const dateKey = typeof date === "string" ? date : toNutritionDateKey(date);
   const [logs, legacyGoals] = await Promise.all([
     readJsonArray<WaterLog>(WATER_LOGS_STORAGE_KEY),
-    readJsonArray<WaterGoal>(LEGACY_WATER_GOALS_STORAGE_KEY)
+    readJsonArray<WaterGoal>(LEGACY_WATER_GOALS_STORAGE_KEY),
   ]);
   const legacyGoal = legacyGoals.find((goal) => goal.date === dateKey);
   const legacyLog =
@@ -377,16 +387,23 @@ export async function getWaterLogsByDate(date: Date | string) {
             id: `legacy-water-${dateKey}`,
             loggedAt: `${dateKey}T12:00:00.000Z`,
             profileId: LOCAL_PROFILE_ID,
-            userId: LOCAL_USER_ID
-          }
+            userId: LOCAL_USER_ID,
+          },
         ]
       : [];
 
-  return [...logs, ...legacyLog].filter((log) => toNutritionDateKey(new Date(log.loggedAt)) === dateKey);
+  return [...logs, ...legacyLog].filter(
+    (log) => toNutritionDateKey(new Date(log.loggedAt)) === dateKey,
+  );
 }
 
-export async function saveNutritionDailyNote(note: string, entryDate = getTodayDateKey()) {
-  const notes = await readJsonArray<NutritionDailyNote>(DAILY_NOTES_STORAGE_KEY);
+export async function saveNutritionDailyNote(
+  note: string,
+  entryDate = getTodayDateKey(),
+) {
+  const notes = await readJsonArray<NutritionDailyNote>(
+    DAILY_NOTES_STORAGE_KEY,
+  );
   const now = new Date().toISOString();
   const currentNote = notes.find((item) => item.entryDate === entryDate);
   const nextNote: NutritionDailyNote = {
@@ -396,19 +413,21 @@ export async function saveNutritionDailyNote(note: string, entryDate = getTodayD
     note: note.trim(),
     profileId: currentNote?.profileId ?? LOCAL_PROFILE_ID,
     updatedAt: now,
-    userId: currentNote?.userId ?? LOCAL_USER_ID
+    userId: currentNote?.userId ?? LOCAL_USER_ID,
   };
 
   await writeJsonArray(DAILY_NOTES_STORAGE_KEY, [
     nextNote,
-    ...notes.filter((item) => item.entryDate !== entryDate)
+    ...notes.filter((item) => item.entryDate !== entryDate),
   ]);
 
   return nextNote;
 }
 
 export async function getNutritionDailyNote(entryDate = getTodayDateKey()) {
-  const notes = await readJsonArray<NutritionDailyNote>(DAILY_NOTES_STORAGE_KEY);
+  const notes = await readJsonArray<NutritionDailyNote>(
+    DAILY_NOTES_STORAGE_KEY,
+  );
 
   return notes.find((item) => item.entryDate === entryDate) ?? null;
 }
@@ -419,18 +438,26 @@ async function getWaterTargets() {
 
 export async function getWaterGoal(date: Date) {
   const dateKey = toNutritionDateKey(date);
-  const [targets, waterLogs, legacyGoals, activeNutritionTarget] = await Promise.all([
-    getWaterTargets(),
-    getWaterLogsByDate(dateKey),
-    readJsonArray<WaterGoal>(LEGACY_WATER_GOALS_STORAGE_KEY),
-    getActiveNutritionTarget()
-  ]);
+  const [targets, waterLogs, legacyGoals, activeNutritionTarget] =
+    await Promise.all([
+      getWaterTargets(),
+      getWaterLogsByDate(dateKey),
+      readJsonArray<WaterGoal>(LEGACY_WATER_GOALS_STORAGE_KEY),
+      getActiveNutritionTarget(),
+    ]);
   const legacyGoal = legacyGoals.find((item) => item.date === dateKey);
 
   return {
-    currentMl: waterLogs.reduce((total, log) => total + numberOrZero(log.amountMl), 0),
+    currentMl: waterLogs.reduce(
+      (total, log) => total + numberOrZero(log.amountMl),
+      0,
+    ),
     date: dateKey,
-    targetMl: targets[dateKey] ?? legacyGoal?.targetMl ?? activeNutritionTarget?.waterTargetMl ?? DEFAULT_WATER_TARGET_ML
+    targetMl:
+      targets[dateKey] ??
+      legacyGoal?.targetMl ??
+      activeNutritionTarget?.waterTargetMl ??
+      DEFAULT_WATER_TARGET_ML,
   };
 }
 
@@ -440,7 +467,7 @@ export async function setWaterGoal(targetMl: number) {
 
   await writeJsonRecord(WATER_TARGETS_STORAGE_KEY, {
     ...targets,
-    [dateKey]: Math.max(0, Math.round(targetMl))
+    [dateKey]: Math.max(0, Math.round(targetMl)),
   });
 
   return getWaterGoal(new Date());
@@ -452,21 +479,35 @@ export async function addWaterFromNutrition(amountMl: number) {
   return getWaterGoal(new Date());
 }
 
-export async function getDailyNutritionSummary(date: Date): Promise<DailyNutritionSummary> {
+export async function getDailyNutritionSummary(
+  date: Date,
+): Promise<DailyNutritionSummary> {
   const [entries, waterGoal] = await Promise.all([
     getNutritionEntriesByDate(date),
-    getWaterGoal(date)
+    getWaterGoal(date),
   ]);
 
   return {
-    calories: entries.reduce((total, entry) => total + numberOrZero(entry.calories), 0),
-    carbsGrams: entries.reduce((total, entry) => total + numberOrZero(entry.carbsG), 0),
+    calories: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.calories),
+      0,
+    ),
+    carbsGrams: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.carbsG),
+      0,
+    ),
     date: toNutritionDateKey(date),
     estimateOnly: false,
-    fatGrams: entries.reduce((total, entry) => total + numberOrZero(entry.fatG), 0),
+    fatGrams: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.fatG),
+      0,
+    ),
     foodLogCount: entries.length,
-    proteinGrams: entries.reduce((total, entry) => total + numberOrZero(entry.proteinG), 0),
-    waterMl: waterGoal.currentMl
+    proteinGrams: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.proteinG),
+      0,
+    ),
+    waterMl: waterGoal.currentMl,
   };
 }
 
@@ -474,15 +515,25 @@ export async function getTodayNutritionSummary() {
   return getDailyNutritionSummary(new Date());
 }
 
-export function calculateTargetProgressPercent(consumed?: number, target?: number) {
+export function calculateTargetProgressPercent(
+  consumed?: number,
+  target?: number,
+) {
   if (!target || target <= 0) {
     return 0;
   }
 
-  return Math.max(0, Math.min(100, Math.round((numberOrZero(consumed) / target) * 100)));
+  return Math.max(
+    0,
+    Math.min(100, Math.round((numberOrZero(consumed) / target) * 100)),
+  );
 }
 
-export function formatMacroProgress(consumed: number, target: number, unit: string) {
+export function formatMacroProgress(
+  consumed: number,
+  target: number,
+  unit: string,
+) {
   return `${Math.round(numberOrZero(consumed)).toLocaleString()} / ${Math.round(numberOrZero(target)).toLocaleString()} ${unit}`;
 }
 
@@ -507,16 +558,27 @@ export function suggestGoalMessage(goalType?: NutritionGoalType) {
   }
 }
 
-export function getNutritionGoalMessage(target: NutritionTarget | null, progress?: DailyNutritionProgress | null) {
+export function getNutritionGoalMessage(
+  target: NutritionTarget | null,
+  progress?: DailyNutritionProgress | null,
+) {
   if (!target) {
     return "Choose a nutrition goal to personalize your food dashboard.";
   }
 
-  if (target.goalType === "gain_muscle" && progress && progress.proteinConsumedG < progress.proteinTargetG) {
+  if (
+    target.goalType === "gain_muscle" &&
+    progress &&
+    progress.proteinConsumedG < progress.proteinTargetG
+  ) {
     return "Protein is still below your target today. You can log another meal or adjust your target if needed.";
   }
 
-  if (target.goalType === "lose_weight" && progress && progress.caloriesConsumed < progress.caloriesTarget * 0.45) {
+  if (
+    target.goalType === "lose_weight" &&
+    progress &&
+    progress.caloriesConsumed < progress.caloriesTarget * 0.45
+  ) {
     return "Your logged intake looks low today. Make sure your plan is sustainable and speak to a healthcare professional if you have concerns.";
   }
 
@@ -535,8 +597,13 @@ export function suggestNutritionTargetsFromGoal(input: {
 }) {
   const weightKg = Math.max(45, numberOrZero(input.currentWeightKg) || 75);
   const activityMultiplier = getActivityMultiplier(input.activityLevel);
-  const trainingBoost = Math.min(250, Math.max(0, numberOrZero(input.trainingDaysPerWeek)) * 25);
-  const maintenanceCalories = Math.round(weightKg * 28 * activityMultiplier + trainingBoost);
+  const trainingBoost = Math.min(
+    250,
+    Math.max(0, numberOrZero(input.trainingDaysPerWeek)) * 25,
+  );
+  const maintenanceCalories = Math.round(
+    weightKg * 28 * activityMultiplier + trainingBoost,
+  );
 
   switch (input.goalType) {
     case "lose_weight":
@@ -546,7 +613,7 @@ export function suggestNutritionTargetsFromGoal(input: {
         fatTargetG: Math.round(weightKg * 0.8),
         fiberTargetG: 30,
         proteinTargetG: Math.round(weightKg * 1.8),
-        waterTargetMl: Math.round(Math.max(2000, weightKg * 35))
+        waterTargetMl: Math.round(Math.max(2000, weightKg * 35)),
       };
     case "gain_muscle":
       return {
@@ -555,7 +622,7 @@ export function suggestNutritionTargetsFromGoal(input: {
         fatTargetG: Math.round(weightKg * 0.9),
         fiberTargetG: 30,
         proteinTargetG: Math.round(weightKg * 2),
-        waterTargetMl: Math.round(Math.max(2400, weightKg * 38))
+        waterTargetMl: Math.round(Math.max(2400, weightKg * 38)),
       };
     case "improve_running":
       return {
@@ -564,7 +631,7 @@ export function suggestNutritionTargetsFromGoal(input: {
         fatTargetG: Math.round(weightKg * 0.8),
         fiberTargetG: 28,
         proteinTargetG: Math.round(weightKg * 1.6),
-        waterTargetMl: Math.round(Math.max(2400, weightKg * 40))
+        waterTargetMl: Math.round(Math.max(2400, weightKg * 40)),
       };
     case "workout_recovery":
       return {
@@ -573,7 +640,7 @@ export function suggestNutritionTargetsFromGoal(input: {
         fatTargetG: Math.round(weightKg * 0.85),
         fiberTargetG: 30,
         proteinTargetG: Math.round(weightKg * 1.9),
-        waterTargetMl: Math.round(Math.max(2300, weightKg * 38))
+        waterTargetMl: Math.round(Math.max(2300, weightKg * 38)),
       };
     case "maintain_weight":
       return {
@@ -582,7 +649,7 @@ export function suggestNutritionTargetsFromGoal(input: {
         fatTargetG: Math.round(weightKg * 0.85),
         fiberTargetG: 30,
         proteinTargetG: Math.round(weightKg * 1.5),
-        waterTargetMl: Math.round(Math.max(2000, weightKg * 35))
+        waterTargetMl: Math.round(Math.max(2000, weightKg * 35)),
       };
     case "general_health":
     case "custom":
@@ -593,7 +660,7 @@ export function suggestNutritionTargetsFromGoal(input: {
         fatTargetG: Math.round(weightKg * 0.8),
         fiberTargetG: 30,
         proteinTargetG: Math.round(weightKg * 1.4),
-        waterTargetMl: Math.round(Math.max(2000, weightKg * 35))
+        waterTargetMl: Math.round(Math.max(2000, weightKg * 35)),
       };
   }
 }
@@ -631,17 +698,32 @@ export function applyRestDayAdjustment(target: NutritionTarget) {
   return applyDayAdjustment(target, target.restDayAdjustment);
 }
 
-function applyDayAdjustment(target: NutritionTarget, adjustment?: NutritionDayAdjustment) {
+function applyDayAdjustment(
+  target: NutritionTarget,
+  adjustment?: NutritionDayAdjustment,
+) {
   if (!adjustment || adjustment.mode === "same") {
     return target;
   }
 
   return {
     ...target,
-    caloriesTarget: applyPercent(target.caloriesTarget, adjustment.caloriesAdjustmentPercent),
-    carbsTargetG: applyPercent(target.carbsTargetG, adjustment.carbsAdjustmentPercent),
-    fatTargetG: applyPercent(target.fatTargetG, adjustment.fatAdjustmentPercent),
-    proteinTargetG: applyPercent(target.proteinTargetG, adjustment.proteinAdjustmentPercent)
+    caloriesTarget: applyPercent(
+      target.caloriesTarget,
+      adjustment.caloriesAdjustmentPercent,
+    ),
+    carbsTargetG: applyPercent(
+      target.carbsTargetG,
+      adjustment.carbsAdjustmentPercent,
+    ),
+    fatTargetG: applyPercent(
+      target.fatTargetG,
+      adjustment.fatAdjustmentPercent,
+    ),
+    proteinTargetG: applyPercent(
+      target.proteinTargetG,
+      adjustment.proteinAdjustmentPercent,
+    ),
   };
 }
 
@@ -654,14 +736,19 @@ export async function getDailyTargetForDate(_date: Date | string) {
 }
 
 export async function createNutritionTarget(
-  input: Omit<NutritionTarget, "id" | "userId" | "profileId" | "createdAt" | "updatedAt" | "isActive"> & {
+  input: Omit<
+    NutritionTarget,
+    "id" | "userId" | "profileId" | "createdAt" | "updatedAt" | "isActive"
+  > & {
     isActive?: boolean;
     profileId?: string;
     userId?: string;
-  }
+  },
 ) {
   const now = new Date().toISOString();
-  const targets = await readJsonArray<NutritionTarget>(NUTRITION_TARGETS_STORAGE_KEY);
+  const targets = await readJsonArray<NutritionTarget>(
+    NUTRITION_TARGETS_STORAGE_KEY,
+  );
   const shouldActivate = input.isActive ?? true;
   const target: NutritionTarget = {
     ...input,
@@ -669,7 +756,10 @@ export async function createNutritionTarget(
     carbsTargetG: Math.max(0, Math.round(input.carbsTargetG)),
     createdAt: now,
     fatTargetG: Math.max(0, Math.round(input.fatTargetG)),
-    fiberTargetG: input.fiberTargetG === undefined ? undefined : Math.max(0, Math.round(input.fiberTargetG)),
+    fiberTargetG:
+      input.fiberTargetG === undefined
+        ? undefined
+        : Math.max(0, Math.round(input.fiberTargetG)),
     id: createId("nutrition-target"),
     isActive: shouldActivate,
     preferredUnits: input.preferredUnits ?? "metric",
@@ -677,7 +767,7 @@ export async function createNutritionTarget(
     proteinTargetG: Math.max(0, Math.round(input.proteinTargetG)),
     updatedAt: now,
     userId: input.userId ?? LOCAL_USER_ID,
-    waterTargetMl: Math.max(0, Math.round(input.waterTargetMl))
+    waterTargetMl: Math.max(0, Math.round(input.waterTargetMl)),
   };
   const nextTargets = shouldActivate
     ? targets.map((item) => ({ ...item, isActive: false }))
@@ -689,24 +779,30 @@ export async function createNutritionTarget(
 }
 
 export async function getActiveNutritionTarget() {
-  const targets = await readJsonArray<NutritionTarget>(NUTRITION_TARGETS_STORAGE_KEY);
+  const targets = await readJsonArray<NutritionTarget>(
+    NUTRITION_TARGETS_STORAGE_KEY,
+  );
 
   return targets.find((target) => target.isActive) ?? null;
 }
 
 export async function updateNutritionTarget(
   id: string,
-  partial: Partial<Omit<NutritionTarget, "id" | "userId" | "profileId" | "createdAt">>
+  partial: Partial<
+    Omit<NutritionTarget, "id" | "userId" | "profileId" | "createdAt">
+  >,
 ) {
-  const targets = await readJsonArray<NutritionTarget>(NUTRITION_TARGETS_STORAGE_KEY);
+  const targets = await readJsonArray<NutritionTarget>(
+    NUTRITION_TARGETS_STORAGE_KEY,
+  );
   const updatedTargets = targets.map((target) =>
     target.id === id
       ? {
           ...target,
           ...partial,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : target
+      : target,
   );
 
   await writeJsonArray(NUTRITION_TARGETS_STORAGE_KEY, updatedTargets);
@@ -715,23 +811,27 @@ export async function updateNutritionTarget(
 }
 
 export async function deleteNutritionTarget(id: string) {
-  const targets = await readJsonArray<NutritionTarget>(NUTRITION_TARGETS_STORAGE_KEY);
+  const targets = await readJsonArray<NutritionTarget>(
+    NUTRITION_TARGETS_STORAGE_KEY,
+  );
   const target = targets.find((item) => item.id === id) ?? null;
 
   await writeJsonArray(
     NUTRITION_TARGETS_STORAGE_KEY,
-    targets.filter((item) => item.id !== id)
+    targets.filter((item) => item.id !== id),
   );
 
   return target;
 }
 
 export async function setActiveNutritionTarget(id: string) {
-  const targets = await readJsonArray<NutritionTarget>(NUTRITION_TARGETS_STORAGE_KEY);
+  const targets = await readJsonArray<NutritionTarget>(
+    NUTRITION_TARGETS_STORAGE_KEY,
+  );
   const updatedTargets = targets.map((target) => ({
     ...target,
     isActive: target.id === id,
-    updatedAt: target.id === id ? new Date().toISOString() : target.updatedAt
+    updatedAt: target.id === id ? new Date().toISOString() : target.updatedAt,
   }));
 
   await writeJsonArray(NUTRITION_TARGETS_STORAGE_KEY, updatedTargets);
@@ -739,12 +839,15 @@ export async function setActiveNutritionTarget(id: string) {
   return updatedTargets.find((target) => target.id === id) ?? null;
 }
 
-export async function calculateDailyNutritionProgress(date: Date | string): Promise<DailyNutritionProgress | null> {
-  const dateValue = typeof date === "string" ? new Date(`${date}T12:00:00.000Z`) : date;
+export async function calculateDailyNutritionProgress(
+  date: Date | string,
+): Promise<DailyNutritionProgress | null> {
+  const dateValue =
+    typeof date === "string" ? new Date(`${date}T12:00:00.000Z`) : date;
   const [target, entries, waterGoal] = await Promise.all([
     getDailyTargetForDate(date),
     getNutritionEntriesByDate(date),
-    getWaterGoal(dateValue)
+    getWaterGoal(dateValue),
   ]);
 
   if (!target) {
@@ -752,19 +855,34 @@ export async function calculateDailyNutritionProgress(date: Date | string): Prom
   }
 
   return {
-    caloriesConsumed: entries.reduce((total, entry) => total + numberOrZero(entry.calories), 0),
+    caloriesConsumed: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.calories),
+      0,
+    ),
     caloriesTarget: target.caloriesTarget,
-    carbsConsumedG: entries.reduce((total, entry) => total + numberOrZero(entry.carbsG), 0),
+    carbsConsumedG: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.carbsG),
+      0,
+    ),
     carbsTargetG: target.carbsTargetG,
     date: typeof date === "string" ? date : toNutritionDateKey(date),
-    fatConsumedG: entries.reduce((total, entry) => total + numberOrZero(entry.fatG), 0),
+    fatConsumedG: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.fatG),
+      0,
+    ),
     fatTargetG: target.fatTargetG,
-    fiberConsumedG: entries.reduce((total, entry) => total + numberOrZero(entry.fiberG), 0),
+    fiberConsumedG: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.fiberG),
+      0,
+    ),
     fiberTargetG: target.fiberTargetG,
-    proteinConsumedG: entries.reduce((total, entry) => total + numberOrZero(entry.proteinG), 0),
+    proteinConsumedG: entries.reduce(
+      (total, entry) => total + numberOrZero(entry.proteinG),
+      0,
+    ),
     proteinTargetG: target.proteinTargetG,
     waterConsumedMl: waterGoal.currentMl,
-    waterTargetMl: target.waterTargetMl
+    waterTargetMl: target.waterTargetMl,
   };
 }
 
@@ -786,18 +904,26 @@ export async function searchLocalFoods(query: string) {
   return [...customResults, ...seedResults];
 }
 
-export async function getStoredFoodDetails(source: FoodSource, sourceFoodId: string) {
+export async function getStoredFoodDetails(
+  source: FoodSource,
+  sourceFoodId: string,
+) {
   if (source === "custom") {
     const customFoods = await getStoredCustomFoodDetails();
 
-    return customFoods.find((food) => food.sourceFoodId === sourceFoodId) ?? null;
+    return (
+      customFoods.find((food) => food.sourceFoodId === sourceFoodId) ?? null
+    );
   }
 
   return null;
 }
 
 export async function createCustomFood(
-  input: Omit<CustomFood, "id" | "userId" | "profileId" | "createdAt" | "updatedAt">
+  input: Omit<
+    CustomFood,
+    "id" | "userId" | "profileId" | "createdAt" | "updatedAt"
+  >,
 ) {
   const now = new Date().toISOString();
   const customFood: CustomFood = {
@@ -813,7 +939,7 @@ export async function createCustomFood(
     servingSize: Math.max(0, input.servingSize),
     servingUnit: input.servingUnit.trim(),
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const customFoods = await getCustomFoods();
 
@@ -823,12 +949,14 @@ export async function createCustomFood(
 }
 
 export async function getCustomFoods() {
-  const storedItems = await readJsonArray<CustomFood | FoodDetails>(CUSTOM_FOODS_STORAGE_KEY);
+  const storedItems = await readJsonArray<CustomFood | FoodDetails>(
+    CUSTOM_FOODS_STORAGE_KEY,
+  );
   const customFoods = storedItems.filter(isCustomFood);
 
   return customFoods.sort(
     (left, right) =>
-      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
   );
 }
 
@@ -840,7 +968,9 @@ export async function getCustomFoodById(id: string) {
 
 export async function updateCustomFood(
   id: string,
-  partial: Partial<Omit<CustomFood, "id" | "userId" | "profileId" | "createdAt">>
+  partial: Partial<
+    Omit<CustomFood, "id" | "userId" | "profileId" | "createdAt">
+  >,
 ) {
   const customFoods = await getCustomFoods();
   const updatedFoods = customFoods.map((food) =>
@@ -848,9 +978,9 @@ export async function updateCustomFood(
       ? {
           ...food,
           ...partial,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : food
+      : food,
   );
 
   await writeJsonArray(CUSTOM_FOODS_STORAGE_KEY, updatedFoods);
@@ -864,7 +994,7 @@ export async function deleteCustomFood(id: string) {
 
   await writeJsonArray(
     CUSTOM_FOODS_STORAGE_KEY,
-    customFoods.filter((food) => food.id !== id)
+    customFoods.filter((food) => food.id !== id),
   );
 
   return customFood;
@@ -873,7 +1003,7 @@ export async function deleteCustomFood(id: string) {
 export async function addCustomFoodToDiary({
   customFood,
   mealGroup,
-  quantity
+  quantity,
 }: {
   customFood: CustomFood;
   mealGroup: NutritionMealGroup;
@@ -883,7 +1013,7 @@ export async function addCustomFoodToDiary({
   const totals = calculateFoodNutritionByQuantity({
     food: details,
     quantity,
-    serving: { quantity: customFood.servingSize, unit: customFood.servingUnit }
+    serving: { quantity: customFood.servingSize, unit: customFood.servingUnit },
   });
 
   return createNutritionEntry({
@@ -891,19 +1021,24 @@ export async function addCustomFoodToDiary({
     carbsG: totals.carbsG,
     entrySource: "custom_food",
     fatG: totals.fatG,
-    fiberG: numberOrZero(customFood.fiberG) * Math.max(0, quantity / Math.max(1, customFood.servingSize)),
+    fiberG:
+      numberOrZero(customFood.fiberG) *
+      Math.max(0, quantity / Math.max(1, customFood.servingSize)),
     foodName: customFood.name,
     mealGroup,
     notes: customFood.notes,
     proteinG: totals.proteinG,
     quantity,
     sourceRefId: customFood.id,
-    unit: customFood.servingUnit
+    unit: customFood.servingUnit,
   });
 }
 
 export async function createSavedMeal(
-  input: Omit<SavedMeal, "id" | "userId" | "profileId" | "createdAt" | "updatedAt">
+  input: Omit<
+    SavedMeal,
+    "id" | "userId" | "profileId" | "createdAt" | "updatedAt"
+  >,
 ) {
   const now = new Date().toISOString();
   const savedMeal: SavedMeal = {
@@ -913,7 +1048,7 @@ export async function createSavedMeal(
     name: input.name.trim(),
     profileId: LOCAL_PROFILE_ID,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const savedMeals = await getSavedMeals();
 
@@ -927,12 +1062,15 @@ export async function getSavedMeals() {
 
   return savedMeals.sort(
     (left, right) =>
-      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
   );
 }
 
 export async function getSavedMealById(id: string) {
-  const [savedMeals, items] = await Promise.all([getSavedMeals(), getSavedMealItems(id)]);
+  const [savedMeals, items] = await Promise.all([
+    getSavedMeals(),
+    getSavedMealItems(id),
+  ]);
   const savedMeal = savedMeals.find((meal) => meal.id === id) ?? null;
 
   return savedMeal ? { savedMeal, items } : null;
@@ -940,7 +1078,9 @@ export async function getSavedMealById(id: string) {
 
 export async function updateSavedMeal(
   id: string,
-  partial: Partial<Omit<SavedMeal, "id" | "userId" | "profileId" | "createdAt">>
+  partial: Partial<
+    Omit<SavedMeal, "id" | "userId" | "profileId" | "createdAt">
+  >,
 ) {
   const savedMeals = await getSavedMeals();
   const updatedMeals = savedMeals.map((meal) =>
@@ -948,9 +1088,9 @@ export async function updateSavedMeal(
       ? {
           ...meal,
           ...partial,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : meal
+      : meal,
   );
 
   await writeJsonArray(SAVED_MEALS_STORAGE_KEY, updatedMeals);
@@ -961,39 +1101,47 @@ export async function updateSavedMeal(
 export async function deleteSavedMeal(id: string) {
   const [savedMeals, items] = await Promise.all([
     getSavedMeals(),
-    readJsonArray<SavedMealItem>(SAVED_MEAL_ITEMS_STORAGE_KEY)
+    readJsonArray<SavedMealItem>(SAVED_MEAL_ITEMS_STORAGE_KEY),
   ]);
   const savedMeal = savedMeals.find((meal) => meal.id === id) ?? null;
 
   await Promise.all([
     writeJsonArray(
       SAVED_MEALS_STORAGE_KEY,
-      savedMeals.filter((meal) => meal.id !== id)
+      savedMeals.filter((meal) => meal.id !== id),
     ),
     writeJsonArray(
       SAVED_MEAL_ITEMS_STORAGE_KEY,
-      items.filter((item) => item.savedMealId !== id)
-    )
+      items.filter((item) => item.savedMealId !== id),
+    ),
   ]);
 
   return savedMeal;
 }
 
 export async function getSavedMealItems(savedMealId: string) {
-  const items = await readJsonArray<SavedMealItem>(SAVED_MEAL_ITEMS_STORAGE_KEY);
+  const items = await readJsonArray<SavedMealItem>(
+    SAVED_MEAL_ITEMS_STORAGE_KEY,
+  );
 
   return items
     .filter((item) => item.savedMealId === savedMealId)
     .sort((left, right) => left.orderIndex - right.orderIndex);
 }
 
-export async function addItemToSavedMeal(input: Omit<SavedMealItem, "id" | "orderIndex">) {
-  const items = await readJsonArray<SavedMealItem>(SAVED_MEAL_ITEMS_STORAGE_KEY);
-  const mealItems = items.filter((item) => item.savedMealId === input.savedMealId);
+export async function addItemToSavedMeal(
+  input: Omit<SavedMealItem, "id" | "orderIndex">,
+) {
+  const items = await readJsonArray<SavedMealItem>(
+    SAVED_MEAL_ITEMS_STORAGE_KEY,
+  );
+  const mealItems = items.filter(
+    (item) => item.savedMealId === input.savedMealId,
+  );
   const item: SavedMealItem = {
     ...input,
     id: createId("saved-meal-item"),
-    orderIndex: mealItems.length
+    orderIndex: mealItems.length,
   };
 
   await writeJsonArray(SAVED_MEAL_ITEMS_STORAGE_KEY, [...items, item]);
@@ -1003,12 +1151,14 @@ export async function addItemToSavedMeal(input: Omit<SavedMealItem, "id" | "orde
 }
 
 export async function removeItemFromSavedMeal(itemId: string) {
-  const items = await readJsonArray<SavedMealItem>(SAVED_MEAL_ITEMS_STORAGE_KEY);
+  const items = await readJsonArray<SavedMealItem>(
+    SAVED_MEAL_ITEMS_STORAGE_KEY,
+  );
   const item = items.find((mealItem) => mealItem.id === itemId) ?? null;
 
   await writeJsonArray(
     SAVED_MEAL_ITEMS_STORAGE_KEY,
-    items.filter((mealItem) => mealItem.id !== itemId)
+    items.filter((mealItem) => mealItem.id !== itemId),
   );
 
   if (item) {
@@ -1020,11 +1170,13 @@ export async function removeItemFromSavedMeal(itemId: string) {
 
 export async function updateSavedMealItem(
   itemId: string,
-  partial: Partial<Omit<SavedMealItem, "id" | "savedMealId">>
+  partial: Partial<Omit<SavedMealItem, "id" | "savedMealId">>,
 ) {
-  const items = await readJsonArray<SavedMealItem>(SAVED_MEAL_ITEMS_STORAGE_KEY);
+  const items = await readJsonArray<SavedMealItem>(
+    SAVED_MEAL_ITEMS_STORAGE_KEY,
+  );
   const updatedItems = items.map((item) =>
-    item.id === itemId ? { ...item, ...partial } : item
+    item.id === itemId ? { ...item, ...partial } : item,
   );
   const updatedItem = updatedItems.find((item) => item.id === itemId) ?? null;
 
@@ -1037,7 +1189,10 @@ export async function updateSavedMealItem(
   return updatedItem;
 }
 
-export async function addSavedMealToDiary(savedMealId: string, mealGroup?: NutritionMealGroup) {
+export async function addSavedMealToDiary(
+  savedMealId: string,
+  mealGroup?: NutritionMealGroup,
+) {
   const savedMealWithItems = await getSavedMealById(savedMealId);
 
   if (!savedMealWithItems) {
@@ -1045,7 +1200,8 @@ export async function addSavedMealToDiary(savedMealId: string, mealGroup?: Nutri
   }
 
   const sourceGroupId = createId("saved-meal-group");
-  const targetMealGroup = mealGroup ?? savedMealWithItems.savedMeal.defaultMealGroup;
+  const targetMealGroup =
+    mealGroup ?? savedMealWithItems.savedMeal.defaultMealGroup;
   const entries = [];
 
   for (const item of savedMealWithItems.items) {
@@ -1062,8 +1218,8 @@ export async function addSavedMealToDiary(savedMealId: string, mealGroup?: Nutri
         sourceGroupId,
         sourceItemId: item.id,
         sourceRefId: savedMealWithItems.savedMeal.id,
-        unit: item.unit
-      })
+        unit: item.unit,
+      }),
     );
   }
 
@@ -1071,7 +1227,10 @@ export async function addSavedMealToDiary(savedMealId: string, mealGroup?: Nutri
 }
 
 export async function createRecipe(
-  input: Omit<Recipe, "id" | "userId" | "profileId" | "createdAt" | "updatedAt">
+  input: Omit<
+    Recipe,
+    "id" | "userId" | "profileId" | "createdAt" | "updatedAt"
+  >,
 ) {
   const now = new Date().toISOString();
   const recipe: Recipe = {
@@ -1082,7 +1241,7 @@ export async function createRecipe(
     profileId: LOCAL_PROFILE_ID,
     servings: Math.max(1, input.servings || 1),
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const recipes = await getRecipes();
 
@@ -1096,12 +1255,15 @@ export async function getRecipes() {
 
   return recipes.sort(
     (left, right) =>
-      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
   );
 }
 
 export async function getRecipeById(id: string) {
-  const [recipes, ingredients] = await Promise.all([getRecipes(), getRecipeIngredients(id)]);
+  const [recipes, ingredients] = await Promise.all([
+    getRecipes(),
+    getRecipeIngredients(id),
+  ]);
   const recipe = recipes.find((item) => item.id === id) ?? null;
 
   return recipe ? { recipe, ingredients } : null;
@@ -1109,7 +1271,7 @@ export async function getRecipeById(id: string) {
 
 export async function updateRecipe(
   id: string,
-  partial: Partial<Omit<Recipe, "id" | "userId" | "profileId" | "createdAt">>
+  partial: Partial<Omit<Recipe, "id" | "userId" | "profileId" | "createdAt">>,
 ) {
   const recipes = await getRecipes();
   const updatedRecipes = recipes.map((recipe) =>
@@ -1117,10 +1279,12 @@ export async function updateRecipe(
       ? {
           ...recipe,
           ...partial,
-          servings: partial.servings ? Math.max(1, partial.servings) : recipe.servings,
-          updatedAt: new Date().toISOString()
+          servings: partial.servings
+            ? Math.max(1, partial.servings)
+            : recipe.servings,
+          updatedAt: new Date().toISOString(),
         }
-      : recipe
+      : recipe,
   );
 
   await writeJsonArray(RECIPES_STORAGE_KEY, updatedRecipes);
@@ -1131,54 +1295,68 @@ export async function updateRecipe(
 export async function deleteRecipe(id: string) {
   const [recipes, ingredients] = await Promise.all([
     getRecipes(),
-    readJsonArray<RecipeIngredient>(RECIPE_INGREDIENTS_STORAGE_KEY)
+    readJsonArray<RecipeIngredient>(RECIPE_INGREDIENTS_STORAGE_KEY),
   ]);
   const recipe = recipes.find((item) => item.id === id) ?? null;
 
   await Promise.all([
     writeJsonArray(
       RECIPES_STORAGE_KEY,
-      recipes.filter((item) => item.id !== id)
+      recipes.filter((item) => item.id !== id),
     ),
     writeJsonArray(
       RECIPE_INGREDIENTS_STORAGE_KEY,
-      ingredients.filter((ingredient) => ingredient.recipeId !== id)
-    )
+      ingredients.filter((ingredient) => ingredient.recipeId !== id),
+    ),
   ]);
 
   return recipe;
 }
 
 export async function getRecipeIngredients(recipeId: string) {
-  const ingredients = await readJsonArray<RecipeIngredient>(RECIPE_INGREDIENTS_STORAGE_KEY);
+  const ingredients = await readJsonArray<RecipeIngredient>(
+    RECIPE_INGREDIENTS_STORAGE_KEY,
+  );
 
   return ingredients
     .filter((ingredient) => ingredient.recipeId === recipeId)
     .sort((left, right) => left.orderIndex - right.orderIndex);
 }
 
-export async function addIngredientToRecipe(input: Omit<RecipeIngredient, "id" | "orderIndex">) {
-  const ingredients = await readJsonArray<RecipeIngredient>(RECIPE_INGREDIENTS_STORAGE_KEY);
-  const recipeIngredients = ingredients.filter((ingredient) => ingredient.recipeId === input.recipeId);
+export async function addIngredientToRecipe(
+  input: Omit<RecipeIngredient, "id" | "orderIndex">,
+) {
+  const ingredients = await readJsonArray<RecipeIngredient>(
+    RECIPE_INGREDIENTS_STORAGE_KEY,
+  );
+  const recipeIngredients = ingredients.filter(
+    (ingredient) => ingredient.recipeId === input.recipeId,
+  );
   const ingredient: RecipeIngredient = {
     ...input,
     id: createId("recipe-ingredient"),
-    orderIndex: recipeIngredients.length
+    orderIndex: recipeIngredients.length,
   };
 
-  await writeJsonArray(RECIPE_INGREDIENTS_STORAGE_KEY, [...ingredients, ingredient]);
+  await writeJsonArray(RECIPE_INGREDIENTS_STORAGE_KEY, [
+    ...ingredients,
+    ingredient,
+  ]);
   await updateRecipe(input.recipeId, {});
 
   return ingredient;
 }
 
 export async function removeIngredientFromRecipe(ingredientId: string) {
-  const ingredients = await readJsonArray<RecipeIngredient>(RECIPE_INGREDIENTS_STORAGE_KEY);
-  const ingredient = ingredients.find((item) => item.id === ingredientId) ?? null;
+  const ingredients = await readJsonArray<RecipeIngredient>(
+    RECIPE_INGREDIENTS_STORAGE_KEY,
+  );
+  const ingredient =
+    ingredients.find((item) => item.id === ingredientId) ?? null;
 
   await writeJsonArray(
     RECIPE_INGREDIENTS_STORAGE_KEY,
-    ingredients.filter((item) => item.id !== ingredientId)
+    ingredients.filter((item) => item.id !== ingredientId),
   );
 
   if (ingredient) {
@@ -1190,14 +1368,17 @@ export async function removeIngredientFromRecipe(ingredientId: string) {
 
 export async function updateRecipeIngredient(
   ingredientId: string,
-  partial: Partial<Omit<RecipeIngredient, "id" | "recipeId">>
+  partial: Partial<Omit<RecipeIngredient, "id" | "recipeId">>,
 ) {
-  const ingredients = await readJsonArray<RecipeIngredient>(RECIPE_INGREDIENTS_STORAGE_KEY);
+  const ingredients = await readJsonArray<RecipeIngredient>(
+    RECIPE_INGREDIENTS_STORAGE_KEY,
+  );
   const updatedIngredients = ingredients.map((ingredient) =>
-    ingredient.id === ingredientId ? { ...ingredient, ...partial } : ingredient
+    ingredient.id === ingredientId ? { ...ingredient, ...partial } : ingredient,
   );
   const updatedIngredient =
-    updatedIngredients.find((ingredient) => ingredient.id === ingredientId) ?? null;
+    updatedIngredients.find((ingredient) => ingredient.id === ingredientId) ??
+    null;
 
   await writeJsonArray(RECIPE_INGREDIENTS_STORAGE_KEY, updatedIngredients);
 
@@ -1212,19 +1393,25 @@ export async function calculateRecipeNutrition(recipeId: string) {
   const recipeWithIngredients = await getRecipeById(recipeId);
 
   if (!recipeWithIngredients) {
-    return { perServing: { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 }, totals: { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 } };
+    return {
+      perServing: { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 },
+      totals: { calories: 0, carbsG: 0, fatG: 0, proteinG: 0 },
+    };
   }
 
   return {
-    perServing: calculateRecipePerServing(recipeWithIngredients.recipe, recipeWithIngredients.ingredients),
-    totals: calculateRecipeTotals(recipeWithIngredients.ingredients)
+    perServing: calculateRecipePerServing(
+      recipeWithIngredients.recipe,
+      recipeWithIngredients.ingredients,
+    ),
+    totals: calculateRecipeTotals(recipeWithIngredients.ingredients),
   };
 }
 
 export async function addRecipeServingToDiary({
   mealGroup,
   recipeId,
-  servings
+  servings,
 }: {
   mealGroup: NutritionMealGroup;
   recipeId: string;
@@ -1238,7 +1425,7 @@ export async function addRecipeServingToDiary({
 
   const perServing = calculateRecipePerServing(
     recipeWithIngredients.recipe,
-    recipeWithIngredients.ingredients
+    recipeWithIngredients.ingredients,
   );
   const totals = multiplyTotals(perServing, Math.max(0, servings));
 
@@ -1253,7 +1440,7 @@ export async function addRecipeServingToDiary({
     proteinG: totals.proteinG,
     quantity: servings,
     sourceRefId: recipeId,
-    unit: servings === 1 ? "serving" : "servings"
+    unit: servings === 1 ? "serving" : "servings",
   });
 }
 
@@ -1281,8 +1468,8 @@ function customFoodToFoodDetails(customFood: CustomFood): FoodDetails {
       {
         label: `${customFood.servingSize} ${customFood.servingUnit}`,
         quantity: customFood.servingSize,
-        unit: customFood.servingUnit
-      }
+        unit: customFood.servingUnit,
+      },
     ],
     sodiumMg: customFood.sodiumMg,
     source: "custom",
@@ -1290,15 +1477,17 @@ function customFoodToFoodDetails(customFood: CustomFood): FoodDetails {
     sugarG: customFood.sugarG,
     vitaminAMcg: customFood.vitaminAMcg,
     vitaminCMg: customFood.vitaminCMg,
-    vitaminDMcg: customFood.vitaminDMcg
+    vitaminDMcg: customFood.vitaminDMcg,
   };
 }
 
 async function getStoredCustomFoodDetails() {
-  const storedItems = await readJsonArray<CustomFood | FoodDetails>(CUSTOM_FOODS_STORAGE_KEY);
+  const storedItems = await readJsonArray<CustomFood | FoodDetails>(
+    CUSTOM_FOODS_STORAGE_KEY,
+  );
 
   return storedItems.map((item) =>
-    isCustomFood(item) ? customFoodToFoodDetails(item) : item
+    isCustomFood(item) ? customFoodToFoodDetails(item) : item,
   );
 }
 
@@ -1315,7 +1504,8 @@ export async function getRecentFoods() {
 
   return recentFoods.sort(
     (left, right) =>
-      new Date(right.lastUsedAt).getTime() - new Date(left.lastUsedAt).getTime()
+      new Date(right.lastUsedAt).getTime() -
+      new Date(left.lastUsedAt).getTime(),
   );
 }
 
@@ -1323,7 +1513,7 @@ export async function saveRecentFood({
   defaultMealGroup,
   defaultQuantity,
   defaultUnit,
-  details
+  details,
 }: {
   defaultMealGroup: NutritionMealGroup;
   defaultQuantity: number;
@@ -1333,7 +1523,9 @@ export async function saveRecentFood({
   const recentFoods = await getRecentFoods();
   const now = new Date().toISOString();
   const currentFood = recentFoods.find(
-    (food) => food.source === details.source && food.sourceFoodId === details.sourceFoodId
+    (food) =>
+      food.source === details.source &&
+      food.sourceFoodId === details.sourceFoodId,
   );
   const nextFood: RecentFood = {
     brand: details.brand,
@@ -1347,30 +1539,32 @@ export async function saveRecentFood({
     source: details.source,
     sourceFoodId: details.sourceFoodId,
     timesUsed: (currentFood?.timesUsed ?? 0) + 1,
-    userId: currentFood?.userId ?? LOCAL_USER_ID
+    userId: currentFood?.userId ?? LOCAL_USER_ID,
   };
 
   await writeJsonArray(RECENT_FOODS_STORAGE_KEY, [
     nextFood,
-    ...recentFoods.filter((food) => food.id !== nextFood.id)
+    ...recentFoods.filter((food) => food.id !== nextFood.id),
   ]);
 
   return nextFood;
 }
 
 export async function getFavouriteFoods() {
-  const favouriteFoods = await readJsonArray<FavouriteFood>(FAVOURITE_FOODS_STORAGE_KEY);
+  const favouriteFoods = await readJsonArray<FavouriteFood>(
+    FAVOURITE_FOODS_STORAGE_KEY,
+  );
 
   return favouriteFoods.sort(
     (left, right) =>
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
   );
 }
 
 export async function saveFavouriteFood({
   defaultQuantity,
   defaultUnit,
-  details
+  details,
 }: {
   defaultQuantity: number;
   defaultUnit: string;
@@ -1378,7 +1572,9 @@ export async function saveFavouriteFood({
 }) {
   const favouriteFoods = await getFavouriteFoods();
   const currentFood = favouriteFoods.find(
-    (food) => food.source === details.source && food.sourceFoodId === details.sourceFoodId
+    (food) =>
+      food.source === details.source &&
+      food.sourceFoodId === details.sourceFoodId,
   );
 
   if (currentFood) {
@@ -1395,22 +1591,32 @@ export async function saveFavouriteFood({
     profileId: LOCAL_PROFILE_ID,
     source: details.source,
     sourceFoodId: details.sourceFoodId,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
 
-  await writeJsonArray(FAVOURITE_FOODS_STORAGE_KEY, [favouriteFood, ...favouriteFoods]);
+  await writeJsonArray(FAVOURITE_FOODS_STORAGE_KEY, [
+    favouriteFood,
+    ...favouriteFoods,
+  ]);
 
   return favouriteFood;
 }
 
-export async function removeFavouriteFood(source: FoodSource, sourceFoodId: string) {
+export async function removeFavouriteFood(
+  source: FoodSource,
+  sourceFoodId: string,
+) {
   const favouriteFoods = await getFavouriteFoods();
   const removedFood =
-    favouriteFoods.find((food) => food.source === source && food.sourceFoodId === sourceFoodId) ?? null;
+    favouriteFoods.find(
+      (food) => food.source === source && food.sourceFoodId === sourceFoodId,
+    ) ?? null;
 
   await writeJsonArray(
     FAVOURITE_FOODS_STORAGE_KEY,
-    favouriteFoods.filter((food) => food.source !== source || food.sourceFoodId !== sourceFoodId)
+    favouriteFoods.filter(
+      (food) => food.source !== source || food.sourceFoodId !== sourceFoodId,
+    ),
   );
 
   return removedFood;
@@ -1424,7 +1630,7 @@ export async function createCustomFoodFromNoResult({
   mealGroup,
   proteinG,
   quantity,
-  unit
+  unit,
 }: {
   calories?: number;
   carbsG?: number;
@@ -1443,13 +1649,17 @@ export async function createCustomFoodFromNoResult({
     mealGroup,
     proteinG,
     quantity,
-    unit
+    unit,
   });
-  const customFoods = await readJsonArray<FoodDetails>(CUSTOM_FOODS_STORAGE_KEY);
+  const customFoods = await readJsonArray<FoodDetails>(
+    CUSTOM_FOODS_STORAGE_KEY,
+  );
 
   await writeJsonArray(CUSTOM_FOODS_STORAGE_KEY, [
     customFood,
-    ...customFoods.filter((food) => food.sourceFoodId !== customFood.sourceFoodId)
+    ...customFoods.filter(
+      (food) => food.sourceFoodId !== customFood.sourceFoodId,
+    ),
   ]);
 
   return customFood;
@@ -1459,7 +1669,7 @@ export async function addFoodDetailsToDiary({
   details,
   mealGroup,
   quantity,
-  serving
+  serving,
 }: {
   details: FoodDetails;
   mealGroup: NutritionMealGroup;
@@ -1485,14 +1695,14 @@ export async function addFoodDetailsToDiary({
     source: details.source,
     sourceFoodId: details.sourceFoodId,
     sourceRefId: details.id,
-    unit: serving.unit
+    unit: serving.unit,
   });
 
   await saveRecentFood({
     defaultMealGroup: mealGroup,
     defaultQuantity: quantity,
     defaultUnit: serving.unit,
-    details
+    details,
   });
 
   return entry;
@@ -1505,7 +1715,7 @@ export function getCommonFoodResults(): FoodSearchResult[] {
 function getServingMultiplier(
   details: FoodDetails,
   quantity: number,
-  serving: { quantity: number; unit: string }
+  serving: { quantity: number; unit: string },
 ) {
   if (details.defaultServingSize <= 0) {
     return Math.max(0, quantity);
@@ -1516,19 +1726,20 @@ function getServingMultiplier(
   }
 
   const selectedServing = details.servingOptions.find(
-    (option) => option.quantity === serving.quantity && option.unit === serving.unit
+    (option) =>
+      option.quantity === serving.quantity && option.unit === serving.unit,
   );
   const defaultServing = details.servingOptions.find(
     (option) =>
       option.quantity === details.defaultServingSize &&
-      option.unit === details.defaultServingUnit
+      option.unit === details.defaultServingUnit,
   );
 
   if (selectedServing?.gramsEquivalent && defaultServing?.gramsEquivalent) {
     return Math.max(
       0,
       (quantity * selectedServing.gramsEquivalent) /
-        (serving.quantity * defaultServing.gramsEquivalent)
+        (serving.quantity * defaultServing.gramsEquivalent),
     );
   }
 
@@ -1565,7 +1776,9 @@ export async function getTodayFoodLogs() {
 }
 
 export async function addFoodLog(input: AddFoodLogInput) {
-  const entryDate = input.loggedAt ? toNutritionDateKey(new Date(input.loggedAt)) : getTodayDateKey();
+  const entryDate = input.loggedAt
+    ? toNutritionDateKey(new Date(input.loggedAt))
+    : getTodayDateKey();
   const entry = await createNutritionEntry({
     calories: input.nutrition?.calories,
     carbsG: input.nutrition?.carbsGrams,
@@ -1576,13 +1789,16 @@ export async function addFoodLog(input: AddFoodLogInput) {
     notes: input.notes,
     proteinG: input.nutrition?.proteinGrams,
     quantity: 1,
-    unit: input.portionDescription ?? "serving"
+    unit: input.portionDescription ?? "serving",
   });
 
   return nutritionEntryToFoodLog(entry);
 }
 
-export async function updateFoodLog(id: string, partial: Partial<Omit<FoodLog, "id" | "createdAt">>) {
+export async function updateFoodLog(
+  id: string,
+  partial: Partial<Omit<FoodLog, "id" | "createdAt">>,
+) {
   const updatedEntry = await updateNutritionEntry(id, {
     calories: partial.nutrition?.calories,
     carbsG: partial.nutrition?.carbsGrams,
@@ -1591,7 +1807,7 @@ export async function updateFoodLog(id: string, partial: Partial<Omit<FoodLog, "
     mealGroup: partial.mealType ? toMealGroup(partial.mealType) : undefined,
     notes: partial.notes,
     proteinG: partial.nutrition?.proteinGrams,
-    unit: partial.portionDescription
+    unit: partial.portionDescription,
   });
 
   return updatedEntry ? nutritionEntryToFoodLog(updatedEntry) : null;

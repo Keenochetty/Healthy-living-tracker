@@ -20,6 +20,5 @@ export {
   saveSupplementIngredientMatch,
   searchSupplementIngredients,
   updateAllergySensitivityNote,
-  updateSupplementSafetyStatus
+  updateSupplementSafetyStatus,
 } from "@/lib/medicationSafetyStorage";
-

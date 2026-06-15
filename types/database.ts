@@ -1,4 +1,10 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
 export type Database = {
   public: {
@@ -19,7 +25,9 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string };
+        Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & {
+          id: string;
+        };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
         Relationships: [];
       };
@@ -32,7 +40,10 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["families"]["Row"]> & { owner_id: string; name: string };
+        Insert: Partial<Database["public"]["Tables"]["families"]["Row"]> & {
+          owner_id: string;
+          name: string;
+        };
         Update: Partial<Database["public"]["Tables"]["families"]["Row"]>;
         Relationships: [];
       };
@@ -63,7 +74,9 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["family_members"]["Row"]> & { family_id: string; name: string };
+        Insert: Partial<
+          Database["public"]["Tables"]["family_members"]["Row"]
+        > & { family_id: string; name: string };
         Update: Partial<Database["public"]["Tables"]["family_members"]["Row"]>;
         Relationships: [];
       };
@@ -77,8 +90,12 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["family_memberships"]["Row"]> & { family_id: string; user_id: string };
-        Update: Partial<Database["public"]["Tables"]["family_memberships"]["Row"]>;
+        Insert: Partial<
+          Database["public"]["Tables"]["family_memberships"]["Row"]
+        > & { family_id: string; user_id: string };
+        Update: Partial<
+          Database["public"]["Tables"]["family_memberships"]["Row"]
+        >;
         Relationships: [];
       };
       health_records: GenericTable;
@@ -148,10 +165,29 @@ export type Database = {
         | "postpartum_mother"
         | "elderly_family_member";
       gender_type: "male" | "female" | "other" | "prefer_not_to_say";
-      privacy_level: "private" | "family_shared" | "partner_shared" | "caregiver_shared";
-      notification_urgency: "normal" | "schedule" | "attention" | "important" | "emergency";
+      privacy_level:
+        | "private"
+        | "family_shared"
+        | "partner_shared"
+        | "caregiver_shared";
+      notification_urgency:
+        | "normal"
+        | "schedule"
+        | "attention"
+        | "important"
+        | "emergency";
       caregiver_access_status: "pending" | "active" | "paused" | "revoked";
-      care_activity_type: "feed" | "nap" | "medication_given" | "bathroom" | "mood" | "activity" | "incident" | "photo_update" | "note_to_parent" | "emergency_alert";
+      care_activity_type:
+        | "feed"
+        | "nap"
+        | "medication_given"
+        | "bathroom"
+        | "mood"
+        | "activity"
+        | "incident"
+        | "photo_update"
+        | "note_to_parent"
+        | "emergency_alert";
       calendar_event_type:
         | "family_event"
         | "doctor_visit"
@@ -164,7 +200,12 @@ export type Database = {
         | "parent_appointment"
         | "child_submitted";
       event_response_status: "pending" | "approved" | "declined" | "postponed";
-      ai_action_status: "pending" | "running" | "completed" | "failed" | "cancelled";
+      ai_action_status:
+        | "pending"
+        | "running"
+        | "completed"
+        | "failed"
+        | "cancelled";
       ai_action_type:
         | "summarize_health_records"
         | "draft_care_plan"

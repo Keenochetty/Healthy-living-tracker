@@ -1,4 +1,8 @@
-import type { CircleMemberRole, CirclePermission, CircleRelationship } from "@/types/circles";
+import type {
+  CircleMemberRole,
+  CirclePermission,
+  CircleRelationship,
+} from "@/types/circles";
 
 export type InviteMethod =
   | "share_link"
@@ -6,11 +10,7 @@ export type InviteMethod =
   | "email"
   | "sms_whatsapp_placeholder";
 
-export type CircleInviteStatus =
-  | "pending"
-  | "accepted"
-  | "expired"
-  | "revoked";
+export type CircleInviteStatus = "pending" | "accepted" | "expired" | "revoked";
 
 export type InvitePermissionPreset =
   | "adult_family_member"

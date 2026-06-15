@@ -19,7 +19,7 @@ export function FloatingAssistantButton({
   hiddenOnFocusedForm = false,
   minimized = false,
   sensitiveProfile = false,
-  visible = true
+  visible = true,
 }: FloatingAssistantButtonProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
@@ -34,7 +34,10 @@ export function FloatingAssistantButton({
       accessibilityRole="button"
       onPress={() => {
         lightImpact();
-        router.push({ pathname: "/ai", params: { mode: "quick_logger" } } as unknown as Href);
+        router.push({
+          pathname: "/ai",
+          params: { mode: "quick_logger" },
+        } as unknown as Href);
       }}
       style={({ pressed }) => ({
         alignItems: "center",
@@ -54,10 +57,16 @@ export function FloatingAssistantButton({
         shadowOffset: { height: 12, width: 0 },
         shadowOpacity: 0.36,
         shadowRadius: 22,
-        elevation: 12
+        elevation: 12,
       })}
     >
-      <AppIcon color={isDarkBackground(theme.background) ? theme.background : "#ffffff"} name="ai_assistant" size={24} />
+      <AppIcon
+        color={
+          isDarkBackground(theme.background) ? theme.background : "#ffffff"
+        }
+        name="ai_assistant"
+        size={24}
+      />
       {sensitiveProfile ? (
         <View style={{ position: "absolute", right: -10, top: -12 }}>
           <PrivacyBadge label="Private" type="private" />
@@ -68,5 +77,7 @@ export function FloatingAssistantButton({
 }
 
 function isDarkBackground(color: string) {
-  return color.startsWith("#0") || color.startsWith("#1") || color.includes("rgba(");
+  return (
+    color.startsWith("#0") || color.startsWith("#1") || color.includes("rgba(")
+  );
 }

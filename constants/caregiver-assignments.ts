@@ -2,7 +2,7 @@ import type {
   CaregiverAssignmentPermissionKey,
   CaregiverAssignmentPermissions,
   CaregiverAssignmentPreset,
-  CaregiverAssignmentStatus
+  CaregiverAssignmentStatus,
 } from "@/types/caregiver-assignments";
 
 export const CAREGIVER_ASSIGNMENT_PERMISSION_KEYS = [
@@ -14,7 +14,7 @@ export const CAREGIVER_ASSIGNMENT_PERMISSION_KEYS = [
   "canViewEmergencyContacts",
   "canViewMedicationReminders",
   "canViewBasicConditions",
-  "canReceiveParentNotes"
+  "canReceiveParentNotes",
 ] as const satisfies readonly CaregiverAssignmentPermissionKey[];
 
 export const CAREGIVER_ASSIGNMENT_PRESETS = [
@@ -22,14 +22,14 @@ export const CAREGIVER_ASSIGNMENT_PRESETS = [
   "emergency_ready",
   "medication_support",
   "full_assigned_care",
-  "custom"
+  "custom",
 ] as const satisfies readonly CaregiverAssignmentPreset[];
 
 export const caregiverAssignmentStatusLabels = {
   active: "Active",
   paused: "Paused",
   pending: "Pending",
-  revoked: "Revoked"
+  revoked: "Revoked",
 } as const satisfies Record<CaregiverAssignmentStatus, string>;
 
 export const caregiverAssignmentPermissionLabels = {
@@ -41,61 +41,83 @@ export const caregiverAssignmentPermissionLabels = {
   canViewCareInstructions: "View care instructions",
   canViewEmergencyContacts: "View emergency contacts",
   canViewMedicationReminders: "View medication reminders",
-  canViewSchedule: "View schedule"
+  canViewSchedule: "View schedule",
 } as const satisfies Record<CaregiverAssignmentPermissionKey, string>;
 
 export const caregiverAssignmentPermissionDescriptions = {
   canLogActivity: "Allow routine activity logs for this assigned profile.",
   canReceiveParentNotes: "Allow parent-approved handoff notes.",
   canUploadPhotos: "Allow photo updates for approved family review.",
-  canUseEmergencyButton: "Allow urgent action access. Emergency usage should be logged.",
+  canUseEmergencyButton:
+    "Allow urgent action access. Emergency usage should be logged.",
   canViewBasicConditions: "Allow basic condition names needed for safe care.",
-  canViewCareInstructions: "Allow routines, handoff notes, and care instructions.",
+  canViewCareInstructions:
+    "Allow routines, handoff notes, and care instructions.",
   canViewEmergencyContacts: "Allow approved emergency contacts.",
-  canViewMedicationReminders: "Allow reminder-level medication support, not full medication history.",
-  canViewSchedule: "Allow assigned schedule and care timing visibility."
+  canViewMedicationReminders:
+    "Allow reminder-level medication support, not full medication history.",
+  canViewSchedule: "Allow assigned schedule and care timing visibility.",
 } as const satisfies Record<CaregiverAssignmentPermissionKey, string>;
 
 export const caregiverAssignmentPermissionGroups = {
-  basics: ["canViewCareInstructions", "canViewSchedule", "canLogActivity", "canReceiveParentNotes"],
-  emergency: ["canUseEmergencyButton", "canViewEmergencyContacts", "canViewBasicConditions"],
+  basics: [
+    "canViewCareInstructions",
+    "canViewSchedule",
+    "canLogActivity",
+    "canReceiveParentNotes",
+  ],
+  emergency: [
+    "canUseEmergencyButton",
+    "canViewEmergencyContacts",
+    "canViewBasicConditions",
+  ],
   healthSupport: ["canViewMedicationReminders"],
-  updates: ["canUploadPhotos"]
-} as const satisfies Record<string, readonly CaregiverAssignmentPermissionKey[]>;
+  updates: ["canUploadPhotos"],
+} as const satisfies Record<
+  string,
+  readonly CaregiverAssignmentPermissionKey[]
+>;
 
 export const caregiverAssignmentPermissionGroupLabels = {
   basics: "Basic Care",
   emergency: "Emergency",
   healthSupport: "Health Support",
-  updates: "Updates"
-} as const satisfies Record<keyof typeof caregiverAssignmentPermissionGroups, string>;
+  updates: "Updates",
+} as const satisfies Record<
+  keyof typeof caregiverAssignmentPermissionGroups,
+  string
+>;
 
-export const emptyCaregiverAssignmentPermissions: CaregiverAssignmentPermissions = {
-  canLogActivity: false,
-  canReceiveParentNotes: false,
-  canUploadPhotos: false,
-  canUseEmergencyButton: false,
-  canViewBasicConditions: false,
-  canViewCareInstructions: false,
-  canViewEmergencyContacts: false,
-  canViewMedicationReminders: false,
-  canViewSchedule: false
-};
+export const emptyCaregiverAssignmentPermissions: CaregiverAssignmentPermissions =
+  {
+    canLogActivity: false,
+    canReceiveParentNotes: false,
+    canUploadPhotos: false,
+    canUseEmergencyButton: false,
+    canViewBasicConditions: false,
+    canViewCareInstructions: false,
+    canViewEmergencyContacts: false,
+    canViewMedicationReminders: false,
+    canViewSchedule: false,
+  };
 
 export const caregiverAssignmentPresetLabels = {
   basic_care: "Basic Care",
   custom: "Custom",
   emergency_ready: "Emergency Ready",
   full_assigned_care: "Full Assigned Care",
-  medication_support: "Medication Support"
+  medication_support: "Medication Support",
 } as const satisfies Record<CaregiverAssignmentPreset, string>;
 
 export const caregiverAssignmentPresetDescriptions = {
-  basic_care: "Care instructions, schedule, and activity logging for one assigned profile.",
+  basic_care:
+    "Care instructions, schedule, and activity logging for one assigned profile.",
   custom: "Start from no permissions and choose each granted field.",
-  emergency_ready: "Basic care plus emergency contacts, emergency button, and basic conditions.",
-  full_assigned_care: "All assigned-care permissions. Still no full family or private adult record browsing.",
-  medication_support: "Basic care plus reminder-level medication support."
+  emergency_ready:
+    "Basic care plus emergency contacts, emergency button, and basic conditions.",
+  full_assigned_care:
+    "All assigned-care permissions. Still no full family or private adult record browsing.",
+  medication_support: "Basic care plus reminder-level medication support.",
 } as const satisfies Record<CaregiverAssignmentPreset, string>;
 
 export const caregiverAssignmentPresetPermissions = {
@@ -103,10 +125,10 @@ export const caregiverAssignmentPresetPermissions = {
     ...emptyCaregiverAssignmentPermissions,
     canLogActivity: true,
     canViewCareInstructions: true,
-    canViewSchedule: true
+    canViewSchedule: true,
   },
   custom: {
-    ...emptyCaregiverAssignmentPermissions
+    ...emptyCaregiverAssignmentPermissions,
   },
   emergency_ready: {
     ...emptyCaregiverAssignmentPermissions,
@@ -115,14 +137,19 @@ export const caregiverAssignmentPresetPermissions = {
     canViewBasicConditions: true,
     canViewCareInstructions: true,
     canViewEmergencyContacts: true,
-    canViewSchedule: true
+    canViewSchedule: true,
   },
-  full_assigned_care: Object.fromEntries(CAREGIVER_ASSIGNMENT_PERMISSION_KEYS.map((key) => [key, true])) as CaregiverAssignmentPermissions,
+  full_assigned_care: Object.fromEntries(
+    CAREGIVER_ASSIGNMENT_PERMISSION_KEYS.map((key) => [key, true]),
+  ) as CaregiverAssignmentPermissions,
   medication_support: {
     ...emptyCaregiverAssignmentPermissions,
     canLogActivity: true,
     canViewCareInstructions: true,
     canViewMedicationReminders: true,
-    canViewSchedule: true
-  }
-} as const satisfies Record<CaregiverAssignmentPreset, CaregiverAssignmentPermissions>;
+    canViewSchedule: true,
+  },
+} as const satisfies Record<
+  CaregiverAssignmentPreset,
+  CaregiverAssignmentPermissions
+>;

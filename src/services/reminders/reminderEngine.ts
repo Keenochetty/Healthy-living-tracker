@@ -1,14 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import {
-  getReminders as getLegacyReminders
-} from "@/lib/reminderStorage";
+import { getReminders as getLegacyReminders } from "@/lib/reminderStorage";
 import {
   calculateTodayMedicationSchedule,
   calculateTodaySupplementSchedule,
   markDoseSkipped,
   markDoseTaken,
-  snoozeDoseReminder
+  snoozeDoseReminder,
 } from "@/lib/medicationSupplementStorage";
 import {
   getDoctorVisits,
@@ -16,7 +14,7 @@ import {
   getPrescriptionRecords,
   getUpcomingRecordReminders,
   getVaccineRecords,
-  markRecordReminderDone
+  markRecordReminderDone,
 } from "@/lib/healthRecordsStorage";
 import { getTodayFitnessSummary } from "@/lib/fitnessStorage";
 import { getTodayNutritionSummary } from "@/lib/nutritionStorage";
@@ -24,12 +22,12 @@ import { getContraceptionMethods } from "@/lib/womensHealthStorage";
 import {
   calculatePregnancyWeekSummary,
   getPregnancyAppointments,
-  getPregnancyProfile
+  getPregnancyProfile,
 } from "@/lib/pregnancyStorage";
 import {
   getBabyMedicineLogs,
   getBabyVaccineRecords,
-  getVisibleBabyProfilesForViewer
+  getVisibleBabyProfilesForViewer,
 } from "@/lib/babyChildStorage";
 import { getMensHealthRemindersByRange } from "@/lib/mensHealthStorage";
 import {
@@ -39,7 +37,7 @@ import {
   filterRemindersByPermission,
   getScheduledNotificationRecords,
   getScheduledNotifications,
-  scheduleReminderNotification
+  scheduleReminderNotification,
 } from "@/services/reminders/notificationService";
 import type { WidgetKey } from "@/types/app";
 import type {
@@ -51,7 +49,7 @@ import type {
   HealthReminderStatus,
   ReminderCategory,
   ReminderSnoozeOption,
-  UpdateHealthReminderInput
+  UpdateHealthReminderInput,
 } from "@/types/healthTimeline";
 
 const LOCAL_USER_ID = "local-user";
@@ -78,18 +76,22 @@ export const HEALTH_CALENDAR_WIDGET_KEYS = [
   "appointment_reminder",
   "water_reminder",
   "workout_reminder",
-  "caregiver_task"
+  "caregiver_task",
 ] as const satisfies WidgetKey[];
 
 export const REMINDER_SNOOZE_OPTIONS: ReminderSnoozeOption[] = [
   { label: "10 minutes", minutes: 10 },
   { label: "30 minutes", minutes: 30 },
   { label: "1 hour", minutes: 60 },
-  { label: "Tomorrow", minutes: 24 * 60 }
+  { label: "Tomorrow", minutes: 24 * 60 },
 ];
 
-export function isHealthCalendarWidget(widgetKey: WidgetKey): widgetKey is HealthCalendarWidgetKey {
-  return HEALTH_CALENDAR_WIDGET_KEYS.includes(widgetKey as HealthCalendarWidgetKey);
+export function isHealthCalendarWidget(
+  widgetKey: WidgetKey,
+): widgetKey is HealthCalendarWidgetKey {
+  return HEALTH_CALENDAR_WIDGET_KEYS.includes(
+    widgetKey as HealthCalendarWidgetKey,
+  );
 }
 
 export function getAvailableHealthCalendarWidgets() {
@@ -134,14 +136,19 @@ export async function createHealthReminder(input: CreateHealthReminderInput) {
     title: input.title.trim(),
     type: input.type,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const reminders = await readStoredReminders();
 
-  await writeStoredReminders(sortReminders([reminder, ...dedupeBySource(reminders, reminder)]));
+  await writeStoredReminders(
+    sortReminders([reminder, ...dedupeBySource(reminders, reminder)]),
+  );
   if (reminder.notificationEnabled && canScheduleReminderForUser(reminder)) {
     const record = await scheduleReminderNotification(reminder);
-    await updateHealthReminder(reminder.id, { notificationId: record.notificationId, notificationRecordId: record.id });
+    await updateHealthReminder(reminder.id, {
+      notificationId: record.notificationId,
+      notificationRecordId: record.id,
+    });
   }
 
   return reminder;
@@ -152,7 +159,9 @@ export async function getHealthReminders() {
   const generated = await generateRemindersFromSchedules(new Date());
   const legacy = await getLegacyHealthReminders();
 
-  return filterRemindersByPermission(mergeReminders([...stored, ...generated, ...legacy]));
+  return filterRemindersByPermission(
+    mergeReminders([...stored, ...generated, ...legacy]),
+  );
 }
 
 export async function getHealthReminderById(id: string) {
@@ -161,18 +170,27 @@ export async function getHealthReminderById(id: string) {
   return reminders.find((reminder) => reminder.id === id) ?? null;
 }
 
-export async function updateHealthReminder(id: string, partial: UpdateHealthReminderInput) {
+export async function updateHealthReminder(
+  id: string,
+  partial: UpdateHealthReminderInput,
+) {
   const reminders = await readStoredReminders();
   const updated = reminders.map((reminder) =>
     reminder.id === id
       ? {
           ...reminder,
           ...partial,
-          notes: partial.notes === undefined ? reminder.notes : clean(partial.notes),
-          status: partial.status ?? calculateReminderDueStatus(partial.dueAt ?? reminder.dueAt, partial.snoozedUntil ?? reminder.snoozedUntil),
-          updatedAt: new Date().toISOString()
+          notes:
+            partial.notes === undefined ? reminder.notes : clean(partial.notes),
+          status:
+            partial.status ??
+            calculateReminderDueStatus(
+              partial.dueAt ?? reminder.dueAt,
+              partial.snoozedUntil ?? reminder.snoozedUntil,
+            ),
+          updatedAt: new Date().toISOString(),
         }
-      : reminder
+      : reminder,
   );
 
   await writeStoredReminders(sortReminders(updated));
@@ -180,9 +198,19 @@ export async function updateHealthReminder(id: string, partial: UpdateHealthRemi
 
   if (result?.notificationEnabled && canScheduleReminderForUser(result)) {
     const record = await scheduleReminderNotification(result);
-    await writeStoredReminders(sortReminders(updated.map((reminder) =>
-      reminder.id === id ? { ...reminder, notificationId: record.notificationId, notificationRecordId: record.id } : reminder
-    )));
+    await writeStoredReminders(
+      sortReminders(
+        updated.map((reminder) =>
+          reminder.id === id
+            ? {
+                ...reminder,
+                notificationId: record.notificationId,
+                notificationRecordId: record.id,
+              }
+            : reminder,
+        ),
+      ),
+    );
   } else if (result) {
     await cancelNotificationsForReminder(result.id);
   }
@@ -194,7 +222,9 @@ export async function deleteHealthReminder(id: string) {
   const reminders = await readStoredReminders();
   const deleted = reminders.find((reminder) => reminder.id === id) ?? null;
 
-  await writeStoredReminders(reminders.filter((reminder) => reminder.id !== id));
+  await writeStoredReminders(
+    reminders.filter((reminder) => reminder.id !== id),
+  );
   await cancelNotificationsForReminder(id);
 
   return deleted;
@@ -219,10 +249,14 @@ export async function snoozeHealthReminder(id: string, minutes = 30) {
 
   if (reminder.type === "medication" || reminder.type === "supplement") {
     await snoozeDoseReminder({
-      itemId: String(reminder.metadata?.itemId ?? reminder.linkedEntityId ?? ""),
+      itemId: String(
+        reminder.metadata?.itemId ?? reminder.linkedEntityId ?? "",
+      ),
       itemType: reminder.type,
       scheduleId: String(reminder.metadata?.scheduleId ?? ""),
-      scheduledAt: reminder.metadata?.scheduledAt ? String(reminder.metadata.scheduledAt) : reminder.dueAt
+      scheduledAt: reminder.metadata?.scheduledAt
+        ? String(reminder.metadata.scheduledAt)
+        : reminder.dueAt,
     });
   }
 
@@ -230,13 +264,18 @@ export async function snoozeHealthReminder(id: string, minutes = 30) {
     ...reminder,
     snoozedUntil,
     status: "snoozed",
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   });
 
   if (next?.notificationEnabled) {
     await scheduleReminderNotification({ ...next, dueAt: snoozedUntil });
   }
-  await createReminderActionLog({ action: "snoozed", actionSource: "in_app", profileId: next?.profileId, reminderId: id });
+  await createReminderActionLog({
+    action: "snoozed",
+    actionSource: "in_app",
+    profileId: next?.profileId,
+    reminderId: id,
+  });
   return next;
 }
 
@@ -248,9 +287,18 @@ export const getReminderById = getHealthReminderById;
 export const markReminderCompleted = completeHealthReminder;
 export const markReminderSkipped = skipHealthReminder;
 
-export async function getRemindersForDateRange(startDate: Date | string, endDate: Date | string) {
-  const start = typeof startDate === "string" ? new Date(`${startDate.slice(0, 10)}T00:00:00`) : startDate;
-  const end = typeof endDate === "string" ? new Date(`${endDate.slice(0, 10)}T23:59:59`) : endDate;
+export async function getRemindersForDateRange(
+  startDate: Date | string,
+  endDate: Date | string,
+) {
+  const start =
+    typeof startDate === "string"
+      ? new Date(`${startDate.slice(0, 10)}T00:00:00`)
+      : startDate;
+  const end =
+    typeof endDate === "string"
+      ? new Date(`${endDate.slice(0, 10)}T23:59:59`)
+      : endDate;
   const reminders = await getHealthReminders();
   return reminders.filter((reminder) => {
     const dueAt = new Date(reminder.snoozedUntil ?? reminder.dueAt).getTime();
@@ -260,36 +308,54 @@ export async function getRemindersForDateRange(startDate: Date | string, endDate
 
 export async function getUpcomingReminders(limit = 20) {
   return (await getHealthReminders())
-    .filter((reminder) => reminder.status === "upcoming" || reminder.status === "snoozed")
+    .filter(
+      (reminder) =>
+        reminder.status === "upcoming" || reminder.status === "snoozed",
+    )
     .slice(0, limit);
 }
 
 export async function getDueReminders() {
-  return (await getHealthReminders()).filter((reminder) => reminder.status === "due");
+  return (await getHealthReminders()).filter(
+    (reminder) => reminder.status === "due",
+  );
 }
 
 export async function getRemindersForDate(date: Date | string) {
-  const dateKey = typeof date === "string" ? date.slice(0, 10) : toDateKey(date);
+  const dateKey =
+    typeof date === "string" ? date.slice(0, 10) : toDateKey(date);
   const stored = await readStoredReminders();
-  const generated = await generateRemindersFromSchedules(new Date(`${dateKey}T12:00:00`));
+  const generated = await generateRemindersFromSchedules(
+    new Date(`${dateKey}T12:00:00`),
+  );
   const legacy = await getLegacyHealthReminders();
 
-  return filterRemindersByPermission(mergeReminders([...stored, ...generated, ...legacy])).filter((reminder) =>
-    toDateKey(new Date(reminder.snoozedUntil ?? reminder.dueAt)) === dateKey
+  return filterRemindersByPermission(
+    mergeReminders([...stored, ...generated, ...legacy]),
+  ).filter(
+    (reminder) =>
+      toDateKey(new Date(reminder.snoozedUntil ?? reminder.dueAt)) === dateKey,
   );
 }
 
 export async function getOverdueReminders() {
   const reminders = await getHealthReminders();
 
-  return reminders.filter((reminder) => reminder.status === "missed" || reminder.status === "due");
+  return reminders.filter(
+    (reminder) => reminder.status === "missed" || reminder.status === "due",
+  );
 }
 
 export async function pauseReminder(id: string, pausedUntil?: string) {
   const reminder = await getHealthReminderById(id);
   if (!reminder) return null;
   await cancelNotificationsForReminder(id);
-  return upsertMaterializedReminder({ ...reminder, pausedUntil, status: "paused", updatedAt: new Date().toISOString() });
+  return upsertMaterializedReminder({
+    ...reminder,
+    pausedUntil,
+    status: "paused",
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 export async function resumeReminder(id: string) {
@@ -299,90 +365,114 @@ export async function resumeReminder(id: string) {
     ...reminder,
     pausedUntil: undefined,
     status: calculateReminderDueStatus(reminder.dueAt, reminder.snoozedUntil),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   });
   if (resumed.notificationEnabled) await scheduleReminderNotification(resumed);
   return resumed;
 }
 
 export async function rescheduleReminder(id: string, dueAt: string) {
-  const reminder = await updateHealthReminder(id, { dueAt, snoozedUntil: undefined });
+  const reminder = await updateHealthReminder(id, {
+    dueAt,
+    snoozedUntil: undefined,
+  });
   if (reminder) {
-    await createReminderActionLog({ action: "rescheduled", actionSource: "in_app", profileId: reminder.profileId, reminderId: reminder.id });
+    await createReminderActionLog({
+      action: "rescheduled",
+      actionSource: "in_app",
+      profileId: reminder.profileId,
+      reminderId: reminder.id,
+    });
   }
   return reminder;
 }
 
-export async function generateRemindersFromSchedules(date: Date | string = new Date()) {
-  const targetDate = typeof date === "string" ? new Date(`${date.slice(0, 10)}T12:00:00`) : date;
+export async function generateRemindersFromSchedules(
+  date: Date | string = new Date(),
+) {
+  const targetDate =
+    typeof date === "string" ? new Date(`${date.slice(0, 10)}T12:00:00`) : date;
   const dateKey = toDateKey(targetDate);
   const isToday = dateKey === toDateKey(new Date());
   const generated: HealthReminder[] = [];
 
   if (isToday) {
-    const [medicationSummary, supplementSummary, fitnessSummary, nutritionSummary] = await Promise.all([
+    const [
+      medicationSummary,
+      supplementSummary,
+      fitnessSummary,
+      nutritionSummary,
+    ] = await Promise.all([
       calculateTodayMedicationSchedule(),
       calculateTodaySupplementSchedule(),
       getTodayFitnessSummary(),
-      getTodayNutritionSummary()
+      getTodayNutritionSummary(),
     ]);
 
     medicationSummary.reminders.forEach((item) => {
       if (item.scheduledAt) {
-        generated.push(makeGeneratedReminder({
-          dueAt: item.scheduledAt,
-          linkedEntityId: item.itemId,
-          metadata: {
-            itemId: item.itemId,
-            scheduleId: item.scheduleId,
-            scheduledAt: item.scheduledAt
-          },
-          source: "medication_schedule",
-          sourceId: `${item.scheduleId ?? item.itemId}:${item.scheduledAt}`,
-          status: mapDoseStatus(item.status),
-          title: item.itemName,
-          type: "medication"
-        }));
+        generated.push(
+          makeGeneratedReminder({
+            dueAt: item.scheduledAt,
+            linkedEntityId: item.itemId,
+            metadata: {
+              itemId: item.itemId,
+              scheduleId: item.scheduleId,
+              scheduledAt: item.scheduledAt,
+            },
+            source: "medication_schedule",
+            sourceId: `${item.scheduleId ?? item.itemId}:${item.scheduledAt}`,
+            status: mapDoseStatus(item.status),
+            title: item.itemName,
+            type: "medication",
+          }),
+        );
       }
     });
 
     supplementSummary.reminders.forEach((item) => {
       if (item.scheduledAt) {
-        generated.push(makeGeneratedReminder({
-          dueAt: item.scheduledAt,
-          linkedEntityId: item.itemId,
-          metadata: {
-            itemId: item.itemId,
-            scheduleId: item.scheduleId,
-            scheduledAt: item.scheduledAt
-          },
-          source: "supplement_schedule",
-          sourceId: `${item.scheduleId ?? item.itemId}:${item.scheduledAt}`,
-          status: mapDoseStatus(item.status),
-          title: item.itemName,
-          type: "supplement"
-        }));
+        generated.push(
+          makeGeneratedReminder({
+            dueAt: item.scheduledAt,
+            linkedEntityId: item.itemId,
+            metadata: {
+              itemId: item.itemId,
+              scheduleId: item.scheduleId,
+              scheduledAt: item.scheduledAt,
+            },
+            source: "supplement_schedule",
+            sourceId: `${item.scheduleId ?? item.itemId}:${item.scheduledAt}`,
+            status: mapDoseStatus(item.status),
+            title: item.itemName,
+            type: "supplement",
+          }),
+        );
       }
     });
 
     if (!fitnessSummary.latestWorkout) {
-      generated.push(makeGeneratedReminder({
-        dueAt: atLocalTime(targetDate, 18, 0),
-        source: "workout",
-        sourceId: `${dateKey}:workout-plan`,
-        title: "Workout check-in",
-        type: "workout"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          dueAt: atLocalTime(targetDate, 18, 0),
+          source: "workout",
+          sourceId: `${dateKey}:workout-plan`,
+          title: "Workout check-in",
+          type: "workout",
+        }),
+      );
     }
 
     if ((nutritionSummary.waterMl ?? 0) < 2000) {
-      generated.push(makeGeneratedReminder({
-        dueAt: atLocalTime(targetDate, 15, 0),
-        source: "water",
-        sourceId: `${dateKey}:water-check`,
-        title: "Water check",
-        type: "water"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          dueAt: atLocalTime(targetDate, 15, 0),
+          source: "water",
+          sourceId: `${dateKey}:water-check`,
+          title: "Water check",
+          type: "water",
+        }),
+      );
     }
   }
 
@@ -391,60 +481,66 @@ export async function generateRemindersFromSchedules(date: Date | string = new D
   contraceptionMethods
     .filter((method) => method.nextDueAt?.slice(0, 10) === dateKey)
     .forEach((method) => {
-      generated.push(makeGeneratedReminder({
-        allDay: !method.nextDueAt?.includes("T"),
-        dueAt: normalizeDateTime(method.nextDueAt ?? dateKey),
-        linkedEntityId: method.id,
-        metadata: {
-          methodType: method.methodType,
-          reminderEnabled: method.reminderEnabled
-        },
-        source: "contraception",
-        sourceId: `${method.id}:${method.nextDueAt}`,
-        title: `${method.name} reminder`,
-        type: "contraception"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          allDay: !method.nextDueAt?.includes("T"),
+          dueAt: normalizeDateTime(method.nextDueAt ?? dateKey),
+          linkedEntityId: method.id,
+          metadata: {
+            methodType: method.methodType,
+            reminderEnabled: method.reminderEnabled,
+          },
+          source: "contraception",
+          sourceId: `${method.id}:${method.nextDueAt}`,
+          title: `${method.name} reminder`,
+          type: "contraception",
+        }),
+      );
     });
 
   const [pregnancyProfile, pregnancyAppointments] = await Promise.all([
     getPregnancyProfile(),
-    getPregnancyAppointments()
+    getPregnancyAppointments(),
   ]);
 
   if (pregnancyProfile?.status === "active") {
     pregnancyAppointments
       .filter((appointment) => appointment.scheduledAt.slice(0, 10) === dateKey)
       .forEach((appointment) => {
-        generated.push(makeGeneratedReminder({
-          allDay: !appointment.scheduledAt.includes("T"),
-          dueAt: normalizeDateTime(appointment.scheduledAt),
-          linkedEntityId: appointment.id,
-          metadata: {
-            appointmentType: appointment.appointmentType,
-            pregnancyProfileId: appointment.pregnancyProfileId
-          },
-          source: "pregnancy",
-          sourceId: appointment.id,
-          title: appointment.title,
-          type: "pregnancy"
-        }));
+        generated.push(
+          makeGeneratedReminder({
+            allDay: !appointment.scheduledAt.includes("T"),
+            dueAt: normalizeDateTime(appointment.scheduledAt),
+            linkedEntityId: appointment.id,
+            metadata: {
+              appointmentType: appointment.appointmentType,
+              pregnancyProfileId: appointment.pregnancyProfileId,
+            },
+            source: "pregnancy",
+            sourceId: appointment.id,
+            title: appointment.title,
+            type: "pregnancy",
+          }),
+        );
       });
 
     const pregnancyWeek = await calculatePregnancyWeekSummary(pregnancyProfile);
     if (pregnancyWeek.estimatedDueDate?.slice(0, 10) === dateKey) {
-      generated.push(makeGeneratedReminder({
-        allDay: true,
-        dueAt: allDayAt(dateKey),
-        linkedEntityId: pregnancyProfile.id,
-        metadata: {
-          pregnancyProfileId: pregnancyProfile.id,
-          sourceBasis: pregnancyWeek.sourceBasis
-        },
-        source: "pregnancy",
-        sourceId: `${pregnancyProfile.id}:due-date`,
-        title: "Estimated due date",
-        type: "pregnancy"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          allDay: true,
+          dueAt: allDayAt(dateKey),
+          linkedEntityId: pregnancyProfile.id,
+          metadata: {
+            pregnancyProfileId: pregnancyProfile.id,
+            sourceBasis: pregnancyWeek.sourceBasis,
+          },
+          source: "pregnancy",
+          sourceId: `${pregnancyProfile.id}:due-date`,
+          title: "Estimated due date",
+          type: "pregnancy",
+        }),
+      );
     }
   }
 
@@ -453,143 +549,183 @@ export async function generateRemindersFromSchedules(date: Date | string = new D
   for (const profile of babyProfiles) {
     const [babyMedicineLogs, babyVaccines] = await Promise.all([
       getBabyMedicineLogs(profile.id),
-      getBabyVaccineRecords(profile.id)
+      getBabyVaccineRecords(profile.id),
     ]);
 
     babyMedicineLogs
-      .filter((log) => log.status === "due" && toDateKey(new Date(log.loggedAt)) === dateKey)
+      .filter(
+        (log) =>
+          log.status === "due" && toDateKey(new Date(log.loggedAt)) === dateKey,
+      )
       .forEach((log) => {
-        generated.push(makeGeneratedReminder({
-          dueAt: log.loggedAt,
-          linkedEntityId: log.id,
-          metadata: { childProfileId: profile.id },
-          source: "baby_child",
-          sourceId: `baby-medicine:${log.id}`,
-          title: `${profile.displayName}: ${log.medicineName}`,
-          type: "baby_child"
-        }));
+        generated.push(
+          makeGeneratedReminder({
+            dueAt: log.loggedAt,
+            linkedEntityId: log.id,
+            metadata: { childProfileId: profile.id },
+            source: "baby_child",
+            sourceId: `baby-medicine:${log.id}`,
+            title: `${profile.displayName}: ${log.medicineName}`,
+            type: "baby_child",
+          }),
+        );
       });
 
     babyVaccines
-      .filter((record) => record.nextDoseDate && toDateKey(new Date(record.nextDoseDate)) === dateKey)
+      .filter(
+        (record) =>
+          record.nextDoseDate &&
+          toDateKey(new Date(record.nextDoseDate)) === dateKey,
+      )
       .forEach((record) => {
-        generated.push(makeGeneratedReminder({
-          dueAt: `${record.nextDoseDate}T09:00:00`,
-          linkedEntityId: record.id,
-          metadata: { childProfileId: profile.id },
-          source: "baby_child",
-          sourceId: `baby-vaccine:${record.id}:${record.nextDoseDate}`,
-          title: `${profile.displayName}: ${record.vaccineName}`,
-          type: "baby_child"
-        }));
+        generated.push(
+          makeGeneratedReminder({
+            dueAt: `${record.nextDoseDate}T09:00:00`,
+            linkedEntityId: record.id,
+            metadata: { childProfileId: profile.id },
+            source: "baby_child",
+            sourceId: `baby-vaccine:${record.id}:${record.nextDoseDate}`,
+            title: `${profile.displayName}: ${record.vaccineName}`,
+            type: "baby_child",
+          }),
+        );
       });
   }
 
   const mensHealthReminders = await getMensHealthRemindersByRange(
     new Date(`${dateKey}T00:00:00`),
-    new Date(`${dateKey}T23:59:59`)
+    new Date(`${dateKey}T23:59:59`),
   );
 
   mensHealthReminders.forEach((reminder) => {
-    generated.push(makeGeneratedReminder({
-      dueAt: normalizeDateTime(reminder.scheduledAt),
-      linkedEntityId: reminder.id,
-      metadata: {
-        reminderType: reminder.reminderType
-      },
-      source: "mens_health",
-      sourceId: reminder.id,
-      status: reminder.status === "completed" ? "completed" : calculateReminderDueStatus(reminder.scheduledAt),
-      title: reminder.title,
-      type: "mens_health"
-    }));
+    generated.push(
+      makeGeneratedReminder({
+        dueAt: normalizeDateTime(reminder.scheduledAt),
+        linkedEntityId: reminder.id,
+        metadata: {
+          reminderType: reminder.reminderType,
+        },
+        source: "mens_health",
+        sourceId: reminder.id,
+        status:
+          reminder.status === "completed"
+            ? "completed"
+            : calculateReminderDueStatus(reminder.scheduledAt),
+        title: reminder.title,
+        type: "mens_health",
+      }),
+    );
   });
 
-  const [recordReminders, visits, vaccines, labs, prescriptions] = await Promise.all([
-    getUpcomingRecordReminders(20),
-    getDoctorVisits(),
-    getVaccineRecords(),
-    getLabResultRecords(),
-    getPrescriptionRecords()
-  ]);
+  const [recordReminders, visits, vaccines, labs, prescriptions] =
+    await Promise.all([
+      getUpcomingRecordReminders(20),
+      getDoctorVisits(),
+      getVaccineRecords(),
+      getLabResultRecords(),
+      getPrescriptionRecords(),
+    ]);
 
   recordReminders
     .filter((reminder) => reminder.reminderDate.slice(0, 10) === dateKey)
     .forEach((reminder) => {
-      generated.push(makeGeneratedReminder({
-        allDay: true,
-        dueAt: allDayAt(dateKey),
-        linkedEntityId: reminder.relatedRecordId ?? reminder.relatedVisitId,
-        source: "health_record",
-        sourceId: reminder.id,
-        status: reminder.status === "done" || reminder.status === "dismissed"
-          ? "completed"
-          : calculateReminderDueStatus(allDayAt(dateKey)),
-        title: reminder.title,
-        type: recordReminderTypeToEventType(reminder.type)
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          allDay: true,
+          dueAt: allDayAt(dateKey),
+          linkedEntityId: reminder.relatedRecordId ?? reminder.relatedVisitId,
+          source: "health_record",
+          sourceId: reminder.id,
+          status:
+            reminder.status === "done" || reminder.status === "dismissed"
+              ? "completed"
+              : calculateReminderDueStatus(allDayAt(dateKey)),
+          title: reminder.title,
+          type: recordReminderTypeToEventType(reminder.type),
+        }),
+      );
     });
 
   visits
-    .filter((visit) => visit.visitDate?.slice(0, 10) === dateKey || visit.followUpDate?.slice(0, 10) === dateKey)
+    .filter(
+      (visit) =>
+        visit.visitDate?.slice(0, 10) === dateKey ||
+        visit.followUpDate?.slice(0, 10) === dateKey,
+    )
     .forEach((visit) => {
-      generated.push(makeGeneratedReminder({
-        allDay: !visit.visitDate?.includes("T"),
-        dueAt: normalizeDateTime(visit.visitDate || visit.followUpDate || dateKey),
-        linkedEntityId: visit.id,
-        source: "doctor_visit",
-        sourceId: visit.id,
-        title: visit.title,
-        type: "doctor_visit"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          allDay: !visit.visitDate?.includes("T"),
+          dueAt: normalizeDateTime(
+            visit.visitDate || visit.followUpDate || dateKey,
+          ),
+          linkedEntityId: visit.id,
+          source: "doctor_visit",
+          sourceId: visit.id,
+          title: visit.title,
+          type: "doctor_visit",
+        }),
+      );
     });
 
   vaccines
     .filter((vaccine) => vaccine.nextDoseDate?.slice(0, 10) === dateKey)
     .forEach((vaccine) => {
-      generated.push(makeGeneratedReminder({
-        allDay: true,
-        dueAt: allDayAt(dateKey),
-        linkedEntityId: vaccine.id,
-        source: "vaccine",
-        sourceId: vaccine.id,
-        title: `${vaccine.vaccineName} next dose`,
-        type: "vaccine"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          allDay: true,
+          dueAt: allDayAt(dateKey),
+          linkedEntityId: vaccine.id,
+          source: "vaccine",
+          sourceId: vaccine.id,
+          title: `${vaccine.vaccineName} next dose`,
+          type: "vaccine",
+        }),
+      );
     });
 
   labs
     .filter((lab) => lab.followUpDate?.slice(0, 10) === dateKey)
     .forEach((lab) => {
-      generated.push(makeGeneratedReminder({
-        allDay: true,
-        dueAt: allDayAt(dateKey),
-        linkedEntityId: lab.id,
-        source: "lab",
-        sourceId: lab.id,
-        title: `${lab.testName} review`,
-        type: "lab_review"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          allDay: true,
+          dueAt: allDayAt(dateKey),
+          linkedEntityId: lab.id,
+          source: "lab",
+          sourceId: lab.id,
+          title: `${lab.testName} review`,
+          type: "lab_review",
+        }),
+      );
     });
 
   prescriptions
-    .filter((prescription) => prescription.refillReminderDate?.slice(0, 10) === dateKey)
+    .filter(
+      (prescription) =>
+        prescription.refillReminderDate?.slice(0, 10) === dateKey,
+    )
     .forEach((prescription) => {
-      generated.push(makeGeneratedReminder({
-        allDay: true,
-        dueAt: allDayAt(dateKey),
-        linkedEntityId: prescription.id,
-        source: "prescription",
-        sourceId: prescription.id,
-        title: `${prescription.title} refill`,
-        type: "prescription_refill"
-      }));
+      generated.push(
+        makeGeneratedReminder({
+          allDay: true,
+          dueAt: allDayAt(dateKey),
+          linkedEntityId: prescription.id,
+          source: "prescription",
+          sourceId: prescription.id,
+          title: `${prescription.title} refill`,
+          type: "prescription_refill",
+        }),
+      );
     });
 
   return generated;
 }
 
-export function calculateReminderDueStatus(dueAt: string, snoozedUntil?: string): HealthReminderStatus {
+export function calculateReminderDueStatus(
+  dueAt: string,
+  snoozedUntil?: string,
+): HealthReminderStatus {
   const compareAt = new Date(snoozedUntil ?? dueAt).getTime();
   const now = Date.now();
 
@@ -608,65 +744,117 @@ export function calculateReminderDueStatus(dueAt: string, snoozedUntil?: string)
   return "missed";
 }
 
-export function calculateReminderStatus(reminder: Pick<HealthReminder, "dueAt" | "pausedUntil" | "snoozedUntil" | "status">) {
-  if (reminder.status === "completed" || reminder.status === "skipped" || reminder.status === "cancelled") return reminder.status;
-  if (reminder.pausedUntil && new Date(reminder.pausedUntil).getTime() > Date.now()) return "paused";
+export function calculateReminderStatus(
+  reminder: Pick<
+    HealthReminder,
+    "dueAt" | "pausedUntil" | "snoozedUntil" | "status"
+  >,
+) {
+  if (
+    reminder.status === "completed" ||
+    reminder.status === "skipped" ||
+    reminder.status === "cancelled"
+  )
+    return reminder.status;
+  if (
+    reminder.pausedUntil &&
+    new Date(reminder.pausedUntil).getTime() > Date.now()
+  )
+    return "paused";
   return calculateReminderDueStatus(reminder.dueAt, reminder.snoozedUntil);
 }
 
 export function markReminderMissedIfPastThreshold(reminder: HealthReminder) {
-  if (["completed", "skipped", "cancelled", "paused"].includes(reminder.status)) return reminder;
-  const thresholdMinutes = reminder.missedThresholdMinutes ?? defaultMissedThresholdMinutes(reminder.category ?? reminderCategoryFromType(reminder.type));
+  if (["completed", "skipped", "cancelled", "paused"].includes(reminder.status))
+    return reminder;
+  const thresholdMinutes =
+    reminder.missedThresholdMinutes ??
+    defaultMissedThresholdMinutes(
+      reminder.category ?? reminderCategoryFromType(reminder.type),
+    );
   if (thresholdMinutes <= 0) return reminder;
-  return Date.now() - new Date(reminder.dueAt).getTime() > thresholdMinutes * 60 * 1000
+  return Date.now() - new Date(reminder.dueAt).getTime() >
+    thresholdMinutes * 60 * 1000
     ? { ...reminder, status: "missed" as const }
     : reminder;
 }
 
 export async function updateOverdueReminders() {
   const stored = await readStoredReminders();
-  const updated = stored.map((reminder) => markReminderMissedIfPastThreshold({
-    ...reminder,
-    status: calculateReminderStatus(reminder)
-  }));
+  const updated = stored.map((reminder) =>
+    markReminderMissedIfPastThreshold({
+      ...reminder,
+      status: calculateReminderStatus(reminder),
+    }),
+  );
   await writeStoredReminders(sortReminders(updated));
   return updated;
 }
 
-export async function getCalendarDaySummaries(startDate: Date, endDate: Date): Promise<CalendarDaySummary[]> {
+export async function getCalendarDaySummaries(
+  startDate: Date,
+  endDate: Date,
+): Promise<CalendarDaySummary[]> {
   const days = eachDate(startDate, endDate);
 
-  return Promise.all(days.map(async (date) => {
-    const dateKey = toDateKey(date);
-    const reminders = await getRemindersForDate(date);
+  return Promise.all(
+    days.map(async (date) => {
+      const dateKey = toDateKey(date);
+      const reminders = await getRemindersForDate(date);
 
-    return {
-      completedCount: reminders.filter((reminder) => reminder.status === "completed").length,
-      date: dateKey,
-      dueCount: reminders.filter((reminder) => reminder.status === "due" || reminder.status === "upcoming" || reminder.status === "snoozed").length,
-      eventCount: reminders.length,
-      hasAppointment: reminders.some((reminder) => reminder.type === "doctor_visit"),
-      hasMedication: reminders.some((reminder) => reminder.type === "medication"),
-      hasSupplement: reminders.some((reminder) => reminder.type === "supplement"),
-      hasWorkout: reminders.some((reminder) => reminder.type === "workout"),
-      missedCount: reminders.filter((reminder) => reminder.status === "missed").length,
-      nextReminder: reminders.find((reminder) => reminder.status === "due" || reminder.status === "upcoming"),
-      reminderCount: reminders.length
-    };
-  }));
+      return {
+        completedCount: reminders.filter(
+          (reminder) => reminder.status === "completed",
+        ).length,
+        date: dateKey,
+        dueCount: reminders.filter(
+          (reminder) =>
+            reminder.status === "due" ||
+            reminder.status === "upcoming" ||
+            reminder.status === "snoozed",
+        ).length,
+        eventCount: reminders.length,
+        hasAppointment: reminders.some(
+          (reminder) => reminder.type === "doctor_visit",
+        ),
+        hasMedication: reminders.some(
+          (reminder) => reminder.type === "medication",
+        ),
+        hasSupplement: reminders.some(
+          (reminder) => reminder.type === "supplement",
+        ),
+        hasWorkout: reminders.some((reminder) => reminder.type === "workout"),
+        missedCount: reminders.filter(
+          (reminder) => reminder.status === "missed",
+        ).length,
+        nextReminder: reminders.find(
+          (reminder) =>
+            reminder.status === "due" || reminder.status === "upcoming",
+        ),
+        reminderCount: reminders.length,
+      };
+    }),
+  );
 }
 
 export async function getNextHealthReminder() {
   const reminders = await getHealthReminders();
 
-  return reminders.find((reminder) => reminder.status === "due" || reminder.status === "upcoming" || reminder.status === "snoozed") ?? null;
+  return (
+    reminders.find(
+      (reminder) =>
+        reminder.status === "due" ||
+        reminder.status === "upcoming" ||
+        reminder.status === "snoozed",
+    ) ?? null
+  );
 }
 
 export async function getHealthReminderWidgetValue(widgetKey: WidgetKey) {
   const [today, overdue, next] = await Promise.all([
     getRemindersForDate(new Date()),
     getOverdueReminders(),
-    getNextHealthReminder()
+    getNextHealthReminder(),
   ]);
 
   switch (widgetKey) {
@@ -680,7 +868,9 @@ export async function getHealthReminderWidgetValue(widgetKey: WidgetKey) {
     case "overdue_reminders":
       return overdue.length ? `${overdue.length} due` : "None";
     case "upcoming_appointment": {
-      const appointment = today.find((reminder) => reminder.type === "doctor_visit");
+      const appointment = today.find(
+        (reminder) => reminder.type === "doctor_visit",
+      );
       return appointment?.title ?? "None";
     }
     case "medication_schedule":
@@ -691,18 +881,35 @@ export async function getHealthReminderWidgetValue(widgetKey: WidgetKey) {
       return `${today.filter((reminder) => reminder.type === "supplement").length} supplements`;
     case "workout_plan":
     case "workout_reminder":
-      return today.find((reminder) => reminder.type === "workout")?.title ?? "No plan";
+      return (
+        today.find((reminder) => reminder.type === "workout")?.title ??
+        "No plan"
+      );
     case "water_check":
     case "water_reminder":
-      return today.find((reminder) => reminder.type === "water")?.title ?? "Water";
+      return (
+        today.find((reminder) => reminder.type === "water")?.title ?? "Water"
+      );
     case "contraception_next":
-      return today.find((reminder) => reminder.type === "contraception")?.title ?? "None";
+      return (
+        today.find((reminder) => reminder.type === "contraception")?.title ??
+        "None"
+      );
     case "baby_reminder":
-      return today.find((reminder) => reminder.type === "baby_child")?.title ?? "None";
+      return (
+        today.find((reminder) => reminder.type === "baby_child")?.title ??
+        "None"
+      );
     case "appointment_reminder":
-      return today.find((reminder) => reminder.type === "doctor_visit")?.title ?? "None";
+      return (
+        today.find((reminder) => reminder.type === "doctor_visit")?.title ??
+        "None"
+      );
     case "caregiver_task":
-      return today.find((reminder) => reminder.category === "family_caregiver")?.title ?? "None";
+      return (
+        today.find((reminder) => reminder.category === "family_caregiver")
+          ?.title ?? "None"
+      );
     case "timeline_today":
       return `${today.length} items`;
     default:
@@ -714,7 +921,10 @@ export async function calculateHealthCalendarWidgetValue(widgetKey: WidgetKey) {
   return getHealthReminderWidgetValue(widgetKey);
 }
 
-async function setHealthReminderStatus(id: string, status: HealthReminderStatus) {
+async function setHealthReminderStatus(
+  id: string,
+  status: HealthReminderStatus,
+) {
   const reminder = await getHealthReminderById(id);
 
   if (!reminder) {
@@ -724,43 +934,66 @@ async function setHealthReminderStatus(id: string, status: HealthReminderStatus)
   if (status === "completed") {
     if (reminder.type === "medication" || reminder.type === "supplement") {
       await markDoseTaken({
-        itemId: String(reminder.metadata?.itemId ?? reminder.linkedEntityId ?? ""),
+        itemId: String(
+          reminder.metadata?.itemId ?? reminder.linkedEntityId ?? "",
+        ),
         itemType: reminder.type,
         scheduleId: String(reminder.metadata?.scheduleId ?? ""),
-        scheduledAt: reminder.metadata?.scheduledAt ? String(reminder.metadata.scheduledAt) : reminder.dueAt
+        scheduledAt: reminder.metadata?.scheduledAt
+          ? String(reminder.metadata.scheduledAt)
+          : reminder.dueAt,
       });
     } else if (reminder.source === "health_record" && reminder.sourceId) {
       await markRecordReminderDone(reminder.sourceId);
     }
   }
 
-  if (status === "skipped" && (reminder.type === "medication" || reminder.type === "supplement")) {
+  if (
+    status === "skipped" &&
+    (reminder.type === "medication" || reminder.type === "supplement")
+  ) {
     await markDoseSkipped({
-      itemId: String(reminder.metadata?.itemId ?? reminder.linkedEntityId ?? ""),
+      itemId: String(
+        reminder.metadata?.itemId ?? reminder.linkedEntityId ?? "",
+      ),
       itemType: reminder.type,
       scheduleId: String(reminder.metadata?.scheduleId ?? ""),
-      scheduledAt: reminder.metadata?.scheduledAt ? String(reminder.metadata.scheduledAt) : reminder.dueAt
+      scheduledAt: reminder.metadata?.scheduledAt
+        ? String(reminder.metadata.scheduledAt)
+        : reminder.dueAt,
     });
   }
 
   const next = await upsertMaterializedReminder({
     ...reminder,
     status,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   });
-  if (status === "completed" || status === "skipped" || status === "cancelled") {
+  if (
+    status === "completed" ||
+    status === "skipped" ||
+    status === "cancelled"
+  ) {
     await cancelNotificationsForReminder(id);
   }
   await createReminderActionLog({
-    action: status === "completed" ? "completed" : status === "skipped" ? "skipped" : "dismissed",
+    action:
+      status === "completed"
+        ? "completed"
+        : status === "skipped"
+          ? "skipped"
+          : "dismissed",
     actionSource: "in_app",
     profileId: next?.profileId,
-    reminderId: id
+    reminderId: id,
   });
   return next;
 }
 
-export async function generateRepeatingReminderInstances(reminder: HealthReminder, windowDays = 7) {
+export async function generateRepeatingReminderInstances(
+  reminder: HealthReminder,
+  windowDays = 7,
+) {
   if (reminder.repeatFrequency === "none") return [reminder];
   const instances: HealthReminder[] = [];
   const start = new Date(reminder.dueAt);
@@ -771,9 +1004,18 @@ export async function generateRepeatingReminderInstances(reminder: HealthReminde
 
   while (cursor.getTime() <= end.getTime() && instances.length < 60) {
     if (cursor.getTime() >= Date.now() - 24 * 60 * 60 * 1000) {
-      instances.push({ ...reminder, dueAt: cursor.toISOString(), id: `${reminder.id}:repeat:${index}`, sourceId: `${reminder.sourceId ?? reminder.id}:repeat:${index}` });
+      instances.push({
+        ...reminder,
+        dueAt: cursor.toISOString(),
+        id: `${reminder.id}:repeat:${index}`,
+        sourceId: `${reminder.sourceId ?? reminder.id}:repeat:${index}`,
+      });
     }
-    cursor = nextRepeatDate(cursor, reminder.repeatFrequency, reminder.repeatRule);
+    cursor = nextRepeatDate(
+      cursor,
+      reminder.repeatFrequency,
+      reminder.repeatRule,
+    );
     index += 1;
   }
   return instances;
@@ -789,13 +1031,18 @@ export async function checkReminderPermissions(reminder: HealthReminder) {
 
 export async function reconcileScheduledNotifications() {
   await updateOverdueReminders();
-  const [reminders, scheduledRecords, scheduledNotifications] = await Promise.all([
-    getHealthReminders(),
-    getScheduledNotificationRecords(),
-    getScheduledNotifications()
-  ]);
+  const [reminders, scheduledRecords, scheduledNotifications] =
+    await Promise.all([
+      getHealthReminders(),
+      getScheduledNotificationRecords(),
+      getScheduledNotifications(),
+    ]);
   const activeReminderIds = new Set(reminders.map((reminder) => reminder.id));
-  const scheduledNotificationIds = new Set(scheduledNotifications.map((notification: { identifier?: string }) => notification.identifier).filter(Boolean));
+  const scheduledNotificationIds = new Set(
+    scheduledNotifications
+      .map((notification: { identifier?: string }) => notification.identifier)
+      .filter(Boolean),
+  );
   let scheduledCount = 0;
   let orphanCount = 0;
 
@@ -806,9 +1053,20 @@ export async function reconcileScheduledNotifications() {
   }
 
   for (const reminder of reminders) {
-    if (!reminder.notificationEnabled || reminder.status === "completed" || reminder.status === "skipped" || reminder.status === "cancelled" || reminder.status === "paused") continue;
-    const hasScheduledRecord = scheduledRecords.some((record) =>
-      record.reminderId === reminder.id && record.status === "scheduled" && (!record.notificationId || scheduledNotificationIds.has(record.notificationId))
+    if (
+      !reminder.notificationEnabled ||
+      reminder.status === "completed" ||
+      reminder.status === "skipped" ||
+      reminder.status === "cancelled" ||
+      reminder.status === "paused"
+    )
+      continue;
+    const hasScheduledRecord = scheduledRecords.some(
+      (record) =>
+        record.reminderId === reminder.id &&
+        record.status === "scheduled" &&
+        (!record.notificationId ||
+          scheduledNotificationIds.has(record.notificationId)),
     );
     if (!hasScheduledRecord && canScheduleReminderForUser(reminder)) {
       await scheduleReminderNotification(reminder);
@@ -821,29 +1079,40 @@ export async function reconcileScheduledNotifications() {
     lastReconciledAt: new Date().toISOString(),
     orphanCount,
     scheduledCount,
-    scheduledNotifications: scheduledNotifications.length
+    scheduledNotifications: scheduledNotifications.length,
   };
 }
 
 export async function scheduleNextReminderInstance(reminder: HealthReminder) {
-  return reminder.notificationEnabled ? scheduleReminderNotification(reminder) : null;
+  return reminder.notificationEnabled
+    ? scheduleReminderNotification(reminder)
+    : null;
 }
 
 export async function scheduleRollingReminderWindow(windowDays = 7) {
-  const reminders = await getRemindersForDateRange(new Date(), addDays(new Date(), windowDays));
-  const scheduled = await Promise.all(reminders.filter((reminder) => reminder.notificationEnabled).map(scheduleReminderNotification));
+  const reminders = await getRemindersForDateRange(
+    new Date(),
+    addDays(new Date(), windowDays),
+  );
+  const scheduled = await Promise.all(
+    reminders
+      .filter((reminder) => reminder.notificationEnabled)
+      .map(scheduleReminderNotification),
+  );
   return scheduled.length;
 }
 
 export const reconcileReminderStateOnAppStart = reconcileScheduledNotifications;
-export const reconcileReminderStateOnForeground = reconcileScheduledNotifications;
-export const reconcileReminderStateAfterProfileSwitch = reconcileScheduledNotifications;
+export const reconcileReminderStateOnForeground =
+  reconcileScheduledNotifications;
+export const reconcileReminderStateAfterProfileSwitch =
+  reconcileScheduledNotifications;
 
 async function upsertMaterializedReminder(reminder: HealthReminder) {
   const stored = await readStoredReminders();
   const exists = stored.some((item) => item.id === reminder.id);
   const next = exists
-    ? stored.map((item) => item.id === reminder.id ? reminder : item)
+    ? stored.map((item) => (item.id === reminder.id ? reminder : item))
     : [reminder, ...stored];
 
   await writeStoredReminders(sortReminders(next));
@@ -855,22 +1124,25 @@ async function getLegacyHealthReminders(): Promise<HealthReminder[]> {
   try {
     const reminders = await getLegacyReminders();
 
-    return reminders.map((reminder) => makeGeneratedReminder({
-      dueAt: reminder.dueAt,
-      linkedEntityId: reminder.linkedEntityId,
-      metadata: reminder.metadata,
-      source: "legacy",
-      sourceId: reminder.id,
-      status: reminder.status === "completed"
-        ? "completed"
-        : reminder.status === "skipped"
-          ? "skipped"
-          : reminder.status === "cancelled"
-            ? "cancelled"
-            : calculateReminderDueStatus(reminder.dueAt),
-      title: reminder.title,
-      type: legacyTypeToEventType(reminder.type)
-    }));
+    return reminders.map((reminder) =>
+      makeGeneratedReminder({
+        dueAt: reminder.dueAt,
+        linkedEntityId: reminder.linkedEntityId,
+        metadata: reminder.metadata,
+        source: "legacy",
+        sourceId: reminder.id,
+        status:
+          reminder.status === "completed"
+            ? "completed"
+            : reminder.status === "skipped"
+              ? "skipped"
+              : reminder.status === "cancelled"
+                ? "cancelled"
+                : calculateReminderDueStatus(reminder.dueAt),
+        title: reminder.title,
+        type: legacyTypeToEventType(reminder.type),
+      }),
+    );
   } catch {
     return [];
   }
@@ -917,7 +1189,7 @@ function makeGeneratedReminder(input: {
     title: input.title,
     type: input.type,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
 }
 
@@ -925,15 +1197,21 @@ function mergeReminders(reminders: HealthReminder[]) {
   const byKey = new Map<string, HealthReminder>();
 
   reminders.forEach((reminder) => {
-    const key = reminder.sourceId ? `${reminder.source}:${reminder.sourceId}` : reminder.id;
+    const key = reminder.sourceId
+      ? `${reminder.source}:${reminder.sourceId}`
+      : reminder.id;
     const existing = byKey.get(key);
 
     if (!existing || existing.source !== "manual") {
       byKey.set(key, {
         ...reminder,
-        status: reminder.status === "completed" || reminder.status === "skipped" || reminder.status === "cancelled" || reminder.status === "paused"
-          ? reminder.status
-          : calculateReminderStatus(reminder)
+        status:
+          reminder.status === "completed" ||
+          reminder.status === "skipped" ||
+          reminder.status === "cancelled" ||
+          reminder.status === "paused"
+            ? reminder.status
+            : calculateReminderStatus(reminder),
       });
     }
   });
@@ -946,7 +1224,10 @@ function dedupeBySource(reminders: HealthReminder[], reminder: HealthReminder) {
     return reminders;
   }
 
-  return reminders.filter((item) => !(item.source === reminder.source && item.sourceId === reminder.sourceId));
+  return reminders.filter(
+    (item) =>
+      !(item.source === reminder.source && item.sourceId === reminder.sourceId),
+  );
 }
 
 async function readStoredReminders() {
@@ -961,14 +1242,19 @@ async function readStoredReminders() {
 }
 
 async function writeStoredReminders(reminders: HealthReminder[]) {
-  await AsyncStorage.setItem(HEALTH_REMINDERS_STORAGE_KEY, JSON.stringify(reminders));
+  await AsyncStorage.setItem(
+    HEALTH_REMINDERS_STORAGE_KEY,
+    JSON.stringify(reminders),
+  );
 
   return reminders;
 }
 
 function sortReminders(reminders: HealthReminder[]) {
-  return [...reminders].sort((left, right) =>
-    new Date(left.snoozedUntil ?? left.dueAt).getTime() - new Date(right.snoozedUntil ?? right.dueAt).getTime()
+  return [...reminders].sort(
+    (left, right) =>
+      new Date(left.snoozedUntil ?? left.dueAt).getTime() -
+      new Date(right.snoozedUntil ?? right.dueAt).getTime(),
   );
 }
 
@@ -1075,7 +1361,11 @@ function defaultMissedThresholdMinutes(category: ReminderCategory) {
   }
 }
 
-function nextRepeatDate(date: Date, repeatFrequency: HealthReminder["repeatFrequency"], repeatRule?: string) {
+function nextRepeatDate(
+  date: Date,
+  repeatFrequency: HealthReminder["repeatFrequency"],
+  repeatRule?: string,
+) {
   const next = new Date(date);
   const interval = Number(repeatRule?.match(/\d+/)?.[0] ?? 1);
 

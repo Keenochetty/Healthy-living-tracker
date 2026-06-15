@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import {
+  Animated,
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppIcon } from "@/components/ui/AppIcon";
@@ -65,8 +75,10 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
   const expandedWidth = Math.min(width * 0.85, expandedMaxWidth);
 
   useEffect(() => {
-    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
     const showSubscription = Keyboard.addListener(showEvent, (event) => {
       setKeyboardHeight(event.endCoordinates.height);
     });
@@ -87,7 +99,7 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
       mass: 0.8,
       stiffness: 130,
       toValue: isExpanded ? 1 : 0,
-      useNativeDriver: false
+      useNativeDriver: false,
     }).start(() => {
       if (isExpanded) {
         inputRef.current?.focus();
@@ -138,7 +150,9 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
     const SpeechRecognition = getSpeechRecognition();
 
     if (!SpeechRecognition || Platform.OS !== "web") {
-      setVoiceStatus("Voice text capture is available on web browsers with speech recognition. Type your message here for now.");
+      setVoiceStatus(
+        "Voice text capture is available on web browsers with speech recognition. Type your message here for now.",
+      );
       inputRef.current?.focus();
       return;
     }
@@ -158,7 +172,9 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
     };
     recognition.onerror = () => {
       setIsListening(false);
-      setVoiceStatus("Voice capture could not start. Check microphone permissions or type your message.");
+      setVoiceStatus(
+        "Voice capture could not start. Check microphone permissions or type your message.",
+      );
       inputRef.current?.focus();
     };
     recognition.onend = () => {
@@ -174,19 +190,19 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
 
   const animatedWidth = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [collapsedSize, expandedWidth]
+    outputRange: [collapsedSize, expandedWidth],
   });
   const contentOpacity = progress.interpolate({
     inputRange: [0, 0.45, 1],
-    outputRange: [0, 0, 1]
+    outputRange: [0, 0, 1],
   });
   const collapsedOpacity = progress.interpolate({
     inputRange: [0, 0.35, 1],
-    outputRange: [1, 0, 0]
+    outputRange: [1, 0, 0],
   });
   const translateY = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [4, 0]
+    outputRange: [4, 0],
   });
 
   return (
@@ -196,8 +212,12 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
         styles.shell,
         {
           alignItems: isExpanded ? "center" : "flex-end",
-          bottom: insets.bottom + layout.floatingActionBottomOffset + keyboardHeight + (isExpanded ? 24 : 12)
-        }
+          bottom:
+            insets.bottom +
+            layout.floatingActionBottomOffset +
+            keyboardHeight +
+            (isExpanded ? 24 : 12),
+        },
       ]}
     >
       <Animated.View
@@ -207,18 +227,32 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
             backgroundColor: isExpanded ? colors.card.background : aiBlue,
             borderColor: isExpanded ? colors.border.soft : aiBlue,
             transform: [{ translateY }],
-            width: animatedWidth
-          }
+            width: animatedWidth,
+          },
         ]}
       >
         {!isExpanded ? (
-          <Pressable accessibilityRole="button" onPress={expand} style={({ pressed }) => [styles.collapsedButton, pressed && styles.pressed]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={expand}
+            style={({ pressed }) => [
+              styles.collapsedButton,
+              pressed && styles.pressed,
+            ]}
+          >
             <Animated.View style={{ opacity: collapsedOpacity }}>
-              <AppIcon color={colors.text.inverse} name="ai" size={23} variant="filled" />
+              <AppIcon
+                color={colors.text.inverse}
+                name="ai"
+                size={23}
+                variant="filled"
+              />
             </Animated.View>
           </Pressable>
         ) : (
-          <Animated.View style={[styles.expandedContent, { opacity: contentOpacity }]}>
+          <Animated.View
+            style={[styles.expandedContent, { opacity: contentOpacity }]}
+          >
             <AppIcon color={aiBlue} name="ai" size={21} variant="filled" />
             <TextInput
               accessibilityLabel="Ask Health AI"
@@ -232,20 +266,41 @@ export function FloatingAIButton({ onSubmit }: FloatingAIButtonProps) {
               value={query}
             />
             <Pressable
-              accessibilityLabel={isListening ? "Stop microphone" : "Use microphone"}
+              accessibilityLabel={
+                isListening ? "Stop microphone" : "Use microphone"
+              }
               accessibilityRole="button"
               onPress={handleMicPress}
-              style={({ pressed }) => [styles.iconButton, isListening && styles.listeningButton, pressed && styles.iconPressed]}
+              style={({ pressed }) => [
+                styles.iconButton,
+                isListening && styles.listeningButton,
+                pressed && styles.iconPressed,
+              ]}
             >
-              <AppIcon color={isListening ? aiBlue : colors.text.secondary} name="voice" size={20} variant={isListening ? "filled" : "outline"} />
+              <AppIcon
+                color={isListening ? aiBlue : colors.text.secondary}
+                name="voice"
+                size={20}
+                variant={isListening ? "filled" : "outline"}
+              />
             </Pressable>
-            <Pressable accessibilityLabel="Close Health AI" accessibilityRole="button" onPress={collapse} style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <Pressable
+              accessibilityLabel="Close Health AI"
+              accessibilityRole="button"
+              onPress={collapse}
+              style={({ pressed }) => [
+                styles.iconButton,
+                pressed && styles.iconPressed,
+              ]}
+            >
               <AppIcon color={colors.text.secondary} name="close" size={20} />
             </Pressable>
           </Animated.View>
         )}
       </Animated.View>
-      {isExpanded && voiceStatus ? <Text style={styles.voiceStatus}>{voiceStatus}</Text> : null}
+      {isExpanded && voiceStatus ? (
+        <Text style={styles.voiceStatus}>{voiceStatus}</Text>
+      ) : null}
     </View>
   );
 }
@@ -255,7 +310,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: collapsedSize,
     justifyContent: "center",
-    width: collapsedSize
+    width: collapsedSize,
   },
   expandedContent: {
     alignItems: "center",
@@ -263,18 +318,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     height: collapsedSize,
     paddingLeft: spacing.lg,
-    paddingRight: spacing.sm
+    paddingRight: spacing.sm,
   },
   iconButton: {
     alignItems: "center",
     borderRadius: 999,
     height: 40,
     justifyContent: "center",
-    width: 40
+    width: 40,
   },
   iconPressed: {
     backgroundColor: colors.background.mist,
-    opacity: 0.85
+    opacity: 0.85,
   },
   input: {
     color: colors.text.primary,
@@ -282,28 +337,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     minWidth: 0,
-    padding: 0
+    padding: 0,
   },
   pill: {
     borderRadius: 999,
     borderWidth: 1,
     height: collapsedSize,
     overflow: "hidden",
-    ...shadows.soft
+    ...shadows.soft,
   },
   pressed: {
     opacity: 0.88,
-    transform: [{ scale: 0.96 }]
+    transform: [{ scale: 0.96 }],
   },
   shell: {
     left: 0,
     paddingHorizontal: spacing["2xl"],
     position: "absolute",
     right: 0,
-    zIndex: 30
+    zIndex: 30,
   },
   listeningButton: {
-    backgroundColor: colors.brand.primarySoft
+    backgroundColor: colors.brand.primarySoft,
   },
   voiceStatus: {
     backgroundColor: colors.card.background,
@@ -319,6 +374,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     textAlign: "center",
-    width: "85%"
-  }
+    width: "85%",
+  },
 });

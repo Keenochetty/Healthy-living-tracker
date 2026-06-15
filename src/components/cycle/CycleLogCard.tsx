@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
-import { FLOW_OPTIONS, MOOD_OPTIONS, SYMPTOM_OPTIONS } from "@/constants/cycleOptions";
+import {
+  FLOW_OPTIONS,
+  MOOD_OPTIONS,
+  SYMPTOM_OPTIONS,
+} from "@/constants/cycleOptions";
 import { addCycleLog } from "@/lib/cycleStorage";
-import type { CycleFlowLevel, CycleMood, CycleSymptomType } from "@/types/cycle";
+import type {
+  CycleFlowLevel,
+  CycleMood,
+  CycleSymptomType,
+} from "@/types/cycle";
 import { AppCard } from "@/components/ui/AppCard";
 
 type CycleLogCardProps = {
@@ -27,7 +35,7 @@ export function CycleLogCard({ onChange }: CycleLogCardProps) {
       mood,
       notes,
       painLevel: clamp(Number(painLevel), 0, 10),
-      symptoms
+      symptoms,
     });
 
     setNotes("");
@@ -38,7 +46,7 @@ export function CycleLogCard({ onChange }: CycleLogCardProps) {
     setSymptoms((currentSymptoms) =>
       currentSymptoms.includes(symptom)
         ? currentSymptoms.filter((item) => item !== symptom)
-        : [...currentSymptoms, symptom]
+        : [...currentSymptoms, symptom],
     );
   }
 
@@ -128,8 +136,14 @@ export function CycleLogCard({ onChange }: CycleLogCardProps) {
           value={notes}
         />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSave} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Save private log</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleSave}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Save private log
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -139,7 +153,7 @@ export function CycleLogCard({ onChange }: CycleLogCardProps) {
 export function Chip({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
@@ -155,10 +169,12 @@ export function Chip({
         borderRadius: 999,
         borderWidth: 1,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#be185d" : "#475569", fontWeight: "800" }}>
+      <Text
+        style={{ color: selected ? "#be185d" : "#475569", fontWeight: "800" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -178,12 +194,12 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const sectionLabelStyle = {
   color: "#64748b",
-  fontWeight: "900" as const
+  fontWeight: "900" as const,
 };
 
 const buttonStyle = {
@@ -191,5 +207,5 @@ const buttonStyle = {
   backgroundColor: "#db2777",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };

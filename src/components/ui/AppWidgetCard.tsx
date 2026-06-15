@@ -16,7 +16,15 @@ type AppWidgetCardProps = {
   size?: "small" | "medium" | "large";
   title: string;
   value: string;
-  variant?: "pink" | "blue" | "green" | "purple" | "orange" | "yellow" | "neutral" | "dark";
+  variant?:
+    | "pink"
+    | "blue"
+    | "green"
+    | "purple"
+    | "orange"
+    | "yellow"
+    | "neutral"
+    | "dark";
 };
 
 export function AppWidgetCard({
@@ -28,7 +36,7 @@ export function AppWidgetCard({
   size = "medium",
   title,
   value,
-  variant = "neutral"
+  variant = "neutral",
 }: AppWidgetCardProps) {
   const { theme } = useAppTheme();
   const backgroundColor = getWidgetBackground(variant, theme);
@@ -43,19 +51,42 @@ export function AppWidgetCard({
       style={{
         justifyContent: "space-between",
         minHeight: large ? 148 : size === "small" ? 104 : 122,
-        width: large ? "100%" : "48%"
+        width: large ? "100%" : "48%",
       }}
     >
       <View style={{ gap: spacing.lg }}>
-        <View style={{ alignItems: "center", flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ color: theme.mutedText, flex: 1, fontSize: fontSizes.sm, fontWeight: "800" }}>{title}</Text>
+        <View
+          style={{
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text
+            style={{
+              color: theme.mutedText,
+              flex: 1,
+              fontSize: fontSizes.sm,
+              fontWeight: "800",
+            }}
+          >
+            {title}
+          </Text>
           {iconName ? (
             <AppIcon
               container
               containerVariant="soft"
               name={iconName}
               size={18}
-              variant={variant === "green" ? "success" : variant === "orange" || variant === "yellow" ? "warning" : variant === "pink" || variant === "purple" ? "private" : "primary"}
+              variant={
+                variant === "green"
+                  ? "success"
+                  : variant === "orange" || variant === "yellow"
+                    ? "warning"
+                    : variant === "pink" || variant === "purple"
+                      ? "private"
+                      : "primary"
+              }
             />
           ) : emoji ? (
             <Text style={{ fontSize: 18 }}>{emoji}</Text>
@@ -64,15 +95,37 @@ export function AppWidgetCard({
           )}
         </View>
         <View>
-          <Text style={{ color: theme.text, fontSize: large ? fontSizes["2xl"] : fontSizes.xl, fontWeight: "900" }}>{value}</Text>
-          {helper ? <Text style={{ color: theme.mutedText, fontSize: fontSizes.sm, lineHeight: 18, marginTop: 4 }}>{helper}</Text> : null}
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: large ? fontSizes["2xl"] : fontSizes.xl,
+              fontWeight: "900",
+            }}
+          >
+            {value}
+          </Text>
+          {helper ? (
+            <Text
+              style={{
+                color: theme.mutedText,
+                fontSize: fontSizes.sm,
+                lineHeight: 18,
+                marginTop: 4,
+              }}
+            >
+              {helper}
+            </Text>
+          ) : null}
         </View>
       </View>
     </AppCard>
   );
 }
 
-function getWidgetBackground(variant: NonNullable<AppWidgetCardProps["variant"]>, theme: ReturnType<typeof useAppTheme>["theme"]) {
+function getWidgetBackground(
+  variant: NonNullable<AppWidgetCardProps["variant"]>,
+  theme: ReturnType<typeof useAppTheme>["theme"],
+) {
   const map = {
     blue: "#eff6ff",
     dark: theme.surface,
@@ -81,7 +134,7 @@ function getWidgetBackground(variant: NonNullable<AppWidgetCardProps["variant"]>
     orange: "#fff7ed",
     pink: "#fdf2f8",
     purple: "#f5f3ff",
-    yellow: "#fefce8"
+    yellow: "#fefce8",
   } as const;
 
   return theme.background === "#0f172a" ? theme.surface : map[variant];

@@ -1,11 +1,25 @@
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import { Image, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { AppCard } from "@/components/ui/AppCard";
-import { MEAL_TYPE_OPTIONS, QUICK_FOOD_EXAMPLES } from "@/constants/nutritionOptions";
+import {
+  MEAL_TYPE_OPTIONS,
+  QUICK_FOOD_EXAMPLES,
+} from "@/constants/nutritionOptions";
 import { addFoodLog } from "@/lib/nutritionStorage";
-import type { MealType, NutritionEstimate, NutritionMealGroup } from "@/types/nutrition";
+import type {
+  MealType,
+  NutritionEstimate,
+  NutritionMealGroup,
+} from "@/types/nutrition";
 
 type AddFoodLogCardProps = {
   onSaved: () => void;
@@ -31,31 +45,37 @@ const NUTRITION_FIELDS: Array<{ key: NutritionField; label: string }> = [
   { key: "fibreGrams", label: "Fibre g" },
   { key: "sugarGrams", label: "Sugar g" },
   { key: "ironMg", label: "Iron mg" },
-  { key: "vitaminCMg", label: "Vitamin C mg" }
+  { key: "vitaminCMg", label: "Vitamin C mg" },
 ];
 
 export function AddFoodLogCard({ onSaved }: AddFoodLogCardProps) {
-  const [mealType, setMealType] = useState<MealType | NutritionMealGroup>("breakfast");
+  const [mealType, setMealType] = useState<MealType | NutritionMealGroup>(
+    "breakfast",
+  );
   const [name, setName] = useState("");
   const [portionDescription, setPortionDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [imageUri, setImageUri] = useState<string | undefined>();
   const [estimateOnly, setEstimateOnly] = useState(true);
   const [nutrition, setNutrition] = useState<Record<string, string>>({});
-  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(null);
+  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(
+    null,
+  );
 
   async function pickPhoto() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
-      setPlaceholderMessage("Photo permission was not granted. You can still log food manually.");
+      setPlaceholderMessage(
+        "Photo permission was not granted. You can still log food manually.",
+      );
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7
+      quality: 0.7,
     });
 
     if (!result.canceled) {
@@ -75,7 +95,9 @@ export function AddFoodLogCard({ onSaved }: AddFoodLogCardProps) {
 
         return Number.isFinite(value) && value >= 0;
       });
-    const parsedNutrition = Object.fromEntries(parsedNutritionEntries) as NutritionEstimate;
+    const parsedNutrition = Object.fromEntries(
+      parsedNutritionEntries,
+    ) as NutritionEstimate;
 
     await addFoodLog({
       estimateOnly,
@@ -85,7 +107,7 @@ export function AddFoodLogCard({ onSaved }: AddFoodLogCardProps) {
       notes,
       nutrition: parsedNutrition,
       portionDescription,
-      source: imageUri ? "photo_placeholder" : "manual"
+      source: imageUri ? "photo_placeholder" : "manual",
     });
 
     setName("");
@@ -106,7 +128,8 @@ export function AddFoodLogCard({ onSaved }: AddFoodLogCardProps) {
             Add food log
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Manual entries for now. Photo, barcode and AI estimates stay placeholders.
+            Manual entries for now. Photo, barcode and AI estimates stay
+            placeholders.
           </Text>
         </View>
 
@@ -184,22 +207,41 @@ export function AddFoodLogCard({ onSaved }: AddFoodLogCardProps) {
           <ToolButton label="Add photo" onPress={pickPhoto} />
           <ToolButton
             label="Scan barcode"
-            onPress={() => setPlaceholderMessage("Barcode scanning will connect later.")}
+            onPress={() =>
+              setPlaceholderMessage("Barcode scanning will connect later.")
+            }
           />
           <ToolButton
             disabled
             label="AI estimate later"
-            onPress={() => setPlaceholderMessage("AI food estimates will require approval later.")}
+            onPress={() =>
+              setPlaceholderMessage(
+                "AI food estimates will require approval later.",
+              )
+            }
           />
         </View>
 
-        <View style={{ alignItems: "center", backgroundColor: "#f8fafc", borderRadius: 18, flexDirection: "row", justifyContent: "space-between", padding: 14 }}>
-          <Text style={{ color: "#0f172a", fontWeight: "900" }}>Estimate only</Text>
+        <View
+          style={{
+            alignItems: "center",
+            backgroundColor: "#f8fafc",
+            borderRadius: 18,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            padding: 14,
+          }}
+        >
+          <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+            Estimate only
+          </Text>
           <Switch onValueChange={setEstimateOnly} value={estimateOnly} />
         </View>
 
         {placeholderMessage ? (
-          <Text style={{ color: "#64748b", lineHeight: 20 }}>{placeholderMessage}</Text>
+          <Text style={{ color: "#64748b", lineHeight: 20 }}>
+            {placeholderMessage}
+          </Text>
         ) : null}
 
         <TouchableOpacity
@@ -212,7 +254,7 @@ export function AddFoodLogCard({ onSaved }: AddFoodLogCardProps) {
             borderRadius: 18,
             justifyContent: "center",
             minHeight: 52,
-            opacity: name.trim() ? 1 : 0.55
+            opacity: name.trim() ? 1 : 0.55,
           }}
         >
           <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
@@ -231,13 +273,13 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 function ChoicePill({
   label,
   onPress,
-  selected
+  selected,
 }: {
   label: string;
   onPress: () => void;
@@ -251,10 +293,12 @@ function ChoicePill({
         backgroundColor: selected ? "#7c3aed" : "#f8fafc",
         borderRadius: 999,
         paddingHorizontal: 12,
-        paddingVertical: 9
+        paddingVertical: 9,
       }}
     >
-      <Text style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}>
+      <Text
+        style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -264,7 +308,7 @@ function ChoicePill({
 function ToolButton({
   disabled = false,
   label,
-  onPress
+  onPress,
 }: {
   disabled?: boolean;
   label: string;
@@ -279,10 +323,12 @@ function ToolButton({
         backgroundColor: disabled ? "#e2e8f0" : "#ede9fe",
         borderRadius: 14,
         paddingHorizontal: 12,
-        paddingVertical: 10
+        paddingVertical: 10,
       }}
     >
-      <Text style={{ color: disabled ? "#94a3b8" : "#6d28d9", fontWeight: "900" }}>
+      <Text
+        style={{ color: disabled ? "#94a3b8" : "#6d28d9", fontWeight: "900" }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

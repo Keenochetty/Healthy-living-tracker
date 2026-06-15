@@ -17,13 +17,16 @@ type BabyPortalButtonProps = {
   visible: boolean;
 };
 
-export function BabyPortalButton({ active = false, hasDueReminder = false, multipleProfiles = false, visible }: BabyPortalButtonProps) {
+export function BabyPortalButton({
+  active = false,
+  hasDueReminder = false,
+  multipleProfiles = false,
+  visible,
+}: BabyPortalButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
 
   const buttonStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: withSpring(isPressed ? 0.95 : 1, appMotion.spring) }
-    ]
+    transform: [{ scale: withSpring(isPressed ? 0.95 : 1, appMotion.spring) }],
   }));
 
   if (!visible) {
@@ -34,15 +37,20 @@ export function BabyPortalButton({ active = false, hasDueReminder = false, multi
     <Pressable
       accessibilityHint={[
         hasDueReminder ? "Baby care tasks are due." : undefined,
-        multipleProfiles ? "Long press to choose a child profile." : undefined
-      ].filter(Boolean).join(" ")}
+        multipleProfiles ? "Long press to choose a child profile." : undefined,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       accessibilityLabel="Open Baby / Child"
       accessibilityRole="button"
       hitSlop={10}
       onLongPress={() => {
         if (multipleProfiles) {
           lightImpact();
-          router.push({ pathname: "/baby-child", params: { tab: "settings" } } as unknown as Href);
+          router.push({
+            pathname: "/baby-child",
+            params: { tab: "settings" },
+          } as unknown as Href);
         }
       }}
       onPress={() => {
@@ -56,8 +64,20 @@ export function BabyPortalButton({ active = false, hasDueReminder = false, multi
         setIsPressed(false);
       }}
     >
-      <Animated.View style={[styles.babyButton, active ? styles.babyButtonActive : styles.babyButtonInactive, buttonStyle]}>
-        <AppIcon color={active ? "#087866" : "rgba(196, 255, 236, 0.92)"} decorative name="baby_child" size={28} strokeWidth={2.4} />
+      <Animated.View
+        style={[
+          styles.babyButton,
+          active ? styles.babyButtonActive : styles.babyButtonInactive,
+          buttonStyle,
+        ]}
+      >
+        <AppIcon
+          color={active ? "#087866" : "rgba(196, 255, 236, 0.92)"}
+          decorative
+          name="baby_child"
+          size={28}
+          strokeWidth={2.4}
+        />
         {hasDueReminder ? (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>1</Text>
@@ -75,7 +95,7 @@ const styles = StyleSheet.create({
     height: 58,
     justifyContent: "center",
     width: 58,
-    zIndex: zLayers.floatingAction
+    zIndex: zLayers.floatingAction,
   },
   babyButtonActive: {
     backgroundColor: "rgba(196, 255, 236, 0.96)",
@@ -85,13 +105,13 @@ const styles = StyleSheet.create({
     shadowColor: "#7cffd9",
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.24,
-    shadowRadius: 14
+    shadowRadius: 14,
   },
   babyButtonInactive: {
     backgroundColor: "transparent",
     borderWidth: 0,
     elevation: 0,
-    shadowOpacity: 0
+    shadowOpacity: 0,
   },
   badge: {
     alignItems: "center",
@@ -104,12 +124,12 @@ const styles = StyleSheet.create({
     minWidth: 20,
     position: "absolute",
     right: -2,
-    top: -2
+    top: -2,
   },
   badgeText: {
     color: "#ffffff",
     fontSize: 11,
     fontWeight: "900",
-    lineHeight: 14
-  }
+    lineHeight: 14,
+  },
 });

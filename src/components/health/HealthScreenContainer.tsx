@@ -1,5 +1,10 @@
 import { type ReactNode } from "react";
-import { ScrollView, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type HealthScreenContainerProps = {
@@ -15,7 +20,7 @@ export function HealthScreenContainer({
   children,
   contentStyle,
   maxWidth = 480,
-  topSpacing = 14
+  topSpacing = 14,
 }: HealthScreenContainerProps) {
   const insets = useSafeAreaInsets();
 
@@ -26,9 +31,9 @@ export function HealthScreenContainer({
         {
           maxWidth,
           paddingBottom: Math.max(insets.bottom, 20) + bottomSpacing,
-          paddingTop: Math.max(insets.top, topSpacing)
+          paddingTop: Math.max(insets.top, topSpacing),
         },
-        contentStyle
+        contentStyle,
       ]}
       showsVerticalScrollIndicator={false}
     >
@@ -42,6 +47,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     gap: 24,
     paddingHorizontal: 18,
-    width: "100%"
-  }
+    width: "100%",
+  },
 });

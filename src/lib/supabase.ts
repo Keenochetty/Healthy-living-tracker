@@ -13,7 +13,7 @@ if (!supabaseUrl) {
 
 if (!supabaseKey) {
   throw new Error(
-    "Missing EXPO_PUBLIC_SUPABASE_ANON_KEY or EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY in your Expo environment."
+    "Missing EXPO_PUBLIC_SUPABASE_ANON_KEY or EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY in your Expo environment.",
   );
 }
 

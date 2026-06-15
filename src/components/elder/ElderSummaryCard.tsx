@@ -42,7 +42,10 @@ export function ElderSummaryCard({ summary }: ElderSummaryCardProps) {
                 : "No log"
             }
           />
-          <Metric label="Active meds" value={`${summary.activeMedicationCount}`} />
+          <Metric
+            label="Active meds"
+            value={`${summary.activeMedicationCount}`}
+          />
           <Metric
             label="Next visit"
             value={summary.nextAppointment?.appointmentDate ?? "None"}
@@ -59,9 +62,25 @@ export function ElderSummaryCard({ summary }: ElderSummaryCardProps) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ backgroundColor: "#ffffff", borderRadius: 16, minWidth: "30%", padding: 12 }}>
-      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 16, fontWeight: "900", marginTop: 4 }}>
+    <View
+      style={{
+        backgroundColor: "#ffffff",
+        borderRadius: 16,
+        minWidth: "30%",
+        padding: 12,
+      }}
+    >
+      <Text style={{ color: "#64748b", fontSize: 12, fontWeight: "800" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 16,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
         {value}
       </Text>
     </View>

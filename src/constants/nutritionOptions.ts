@@ -13,7 +13,7 @@ export const MEAL_TYPE_OPTIONS: MealTypeOption[] = [
   { colour: "#8b5cf6", emoji: "PM", key: "dinner", label: "Dinner" },
   { colour: "#ec4899", emoji: "Bite", key: "snacks", label: "Snacks" },
   { colour: "#64748b", emoji: "Sup", key: "supplements", label: "Supplements" },
-  { colour: "#94a3b8", emoji: "Note", key: "notes", label: "Notes" }
+  { colour: "#94a3b8", emoji: "Note", key: "notes", label: "Notes" },
 ];
 
 export const NUTRITION_MEAL_GROUP_OPTIONS = MEAL_TYPE_OPTIONS as Array<
@@ -29,7 +29,7 @@ export const QUICK_FOOD_EXAMPLES = [
   "Salad",
   "Oats",
   "Yoghurt",
-  "Water"
+  "Water",
 ];
 
 export const QUICK_WATER_AMOUNTS = [250, 500, 750];
@@ -39,7 +39,11 @@ export const NUTRITION_DISCLAIMER =
 
 export function getMealTypeOption(mealType: MealType | NutritionMealGroup) {
   const normalisedMealType =
-    mealType === "snack" ? "snacks" : mealType === "supplement" ? "supplements" : mealType;
+    mealType === "snack"
+      ? "snacks"
+      : mealType === "supplement"
+        ? "supplements"
+        : mealType;
 
   return (
     MEAL_TYPE_OPTIONS.find((option) => option.key === normalisedMealType) ??

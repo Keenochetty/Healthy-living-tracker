@@ -7,7 +7,7 @@ export function SummaryCards({
   reminders,
   medicines,
   documents,
-  babyProfiles
+  babyProfiles,
 }: {
   members: number;
   logs: number;
@@ -22,7 +22,7 @@ export function SummaryCards({
     { title: "Reminders", value: reminders, icon: Bell },
     { title: "Medicine logs", value: medicines, icon: Pill },
     { title: "Documents", value: documents, icon: FileText },
-    { title: "Baby/child profiles", value: babyProfiles, icon: Baby }
+    { title: "Baby/child profiles", value: babyProfiles, icon: Baby },
   ];
 
   return (
@@ -32,13 +32,17 @@ export function SummaryCards({
         return (
           <Card className="overflow-hidden" key={card.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-300">{card.title}</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-300">
+                {card.title}
+              </CardTitle>
               <div className="rounded-2xl bg-sky-400/10 p-2 text-sky-200">
                 <Icon className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold text-white">{card.value}</div>
+              <div className="text-3xl font-semibold text-white">
+                {card.value}
+              </div>
             </CardContent>
           </Card>
         );

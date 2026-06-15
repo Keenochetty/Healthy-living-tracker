@@ -14,6 +14,6 @@ export async function getRxNormSafetyMatchStatus() {
   return {
     available: false,
     source: "rxnorm",
-    status: "placeholder"
+    status: "placeholder",
   };
 }

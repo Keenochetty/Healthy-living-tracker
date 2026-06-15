@@ -10,7 +10,7 @@ export const activityTypes = [
   "incident",
   "photo_update",
   "note",
-  "emergency"
+  "emergency",
 ] as const;
 
 export type ActivityType = (typeof activityTypes)[number];
@@ -75,7 +75,7 @@ export async function createActivityLog(input: CreateActivityLogInput) {
 
   const {
     data: { user },
-    error: userError
+    error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) {
@@ -104,7 +104,7 @@ export async function createActivityLog(input: CreateActivityLogInput) {
       note: cleanOptional(input.note),
       notification_type: input.notificationType ?? "green_normal_update",
       privacy_level: input.privacyLevel ?? "family_shared",
-      title
+      title,
     })
     .select("*")
     .single();
@@ -116,7 +116,9 @@ export async function createActivityLog(input: CreateActivityLogInput) {
   return data as ActivityLog;
 }
 
-export async function listActivityLogsForChild(childId: string | null | undefined) {
+export async function listActivityLogsForChild(
+  childId: string | null | undefined,
+) {
   if (!childId) {
     return [];
   }
@@ -137,7 +139,7 @@ export async function listActivityLogsForChild(childId: string | null | undefine
 export async function createActivityPhoto(input: CreateActivityPhotoInput) {
   const {
     data: { user },
-    error: userError
+    error: userError,
   } = await supabase.auth.getUser();
 
   if (userError) {
@@ -159,7 +161,7 @@ export async function createActivityPhoto(input: CreateActivityPhotoInput) {
     .insert({
       activity_log_id: input.activityLogId,
       storage_path: storagePath,
-      uploaded_by: user.id
+      uploaded_by: user.id,
     })
     .select("*")
     .single();

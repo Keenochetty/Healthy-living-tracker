@@ -5,7 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import {
   PRIORITY_COLORS,
   PRIORITY_LABELS,
-  getReminderTypeDefinition
+  getReminderTypeDefinition,
 } from "@/constants/reminderTypes";
 import { formatReminderTime } from "@/lib/reminderStorage";
 import type { AppReminder } from "@/types/reminders";
@@ -24,7 +24,7 @@ export function ReminderCard({
   onOpen,
   onSkip,
   reminder,
-  variant = "dark"
+  variant = "dark",
 }: ReminderCardProps) {
   const type = getReminderTypeDefinition(reminder.type);
   const isPending = reminder.status === "pending";
@@ -38,7 +38,7 @@ export function ReminderCard({
         borderRadius: 22,
         borderWidth: 1,
         gap: 12,
-        padding: 15
+        padding: 15,
       }}
     >
       <TouchableOpacity
@@ -53,7 +53,7 @@ export function ReminderCard({
             borderRadius: 18,
             height: 50,
             justifyContent: "center",
-            width: 56
+            width: 56,
           }}
         >
           <Text style={{ color: type.colour, fontSize: 13, fontWeight: "900" }}>
@@ -62,11 +62,23 @@ export function ReminderCard({
         </View>
 
         <View style={{ flex: 1 }}>
-          <Text style={{ color: light ? "#0f172a" : "#f8fafc", fontSize: 16, fontWeight: "900" }}>
+          <Text
+            style={{
+              color: light ? "#0f172a" : "#f8fafc",
+              fontSize: 16,
+              fontWeight: "900",
+            }}
+          >
             {reminder.title}
           </Text>
           {reminder.notes ? (
-            <Text style={{ color: light ? "#64748b" : "#cbd5e1", lineHeight: 19, marginTop: 3 }}>
+            <Text
+              style={{
+                color: light ? "#64748b" : "#cbd5e1",
+                lineHeight: 19,
+                marginTop: 3,
+              }}
+            >
               {reminder.notes}
             </Text>
           ) : null}
@@ -75,10 +87,23 @@ export function ReminderCard({
         <ChevronRight color="#94a3b8" size={20} />
       </TouchableOpacity>
 
-      <View style={{ alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+      <View
+        style={{
+          alignItems: "center",
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: 8,
+        }}
+      >
         <ReminderTypeChip type={reminder.type} />
-        <StatusChip color={PRIORITY_COLORS[reminder.priority]} label={PRIORITY_LABELS[reminder.priority]} />
-        <StatusChip color={reminder.status === "pending" ? "#6ee7c8" : "#94a3b8"} label={getStatusLabel(reminder.status)} />
+        <StatusChip
+          color={PRIORITY_COLORS[reminder.priority]}
+          label={PRIORITY_LABELS[reminder.priority]}
+        />
+        <StatusChip
+          color={reminder.status === "pending" ? "#6ee7c8" : "#94a3b8"}
+          label={getStatusLabel(reminder.status)}
+        />
       </View>
 
       {isPending ? (
@@ -108,10 +133,17 @@ function StatusChip({ color, label }: { color: string; label: string }) {
         backgroundColor: `${color}18`,
         borderRadius: 999,
         paddingHorizontal: 10,
-        paddingVertical: 6
+        paddingVertical: 6,
       }}
     >
-      <Text style={{ color, fontSize: 12, fontWeight: "800", textTransform: "capitalize" }}>
+      <Text
+        style={{
+          color,
+          fontSize: 12,
+          fontWeight: "800",
+          textTransform: "capitalize",
+        }}
+      >
         {label}
       </Text>
     </View>
@@ -123,7 +155,7 @@ function ActionButton({
   light = false,
   label,
   onPress,
-  primary = false
+  primary = false,
 }: {
   icon: ReactNode;
   light?: boolean;
@@ -137,19 +169,32 @@ function ActionButton({
       onPress={onPress}
       style={{
         alignItems: "center",
-        backgroundColor: primary ? "#6ee7c8" : light ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.10)",
-        borderColor: primary ? "#6ee7c8" : light ? "rgba(15,23,42,0.10)" : "rgba(255,255,255,0.14)",
+        backgroundColor: primary
+          ? "#6ee7c8"
+          : light
+            ? "rgba(15,23,42,0.06)"
+            : "rgba(255,255,255,0.10)",
+        borderColor: primary
+          ? "#6ee7c8"
+          : light
+            ? "rgba(15,23,42,0.10)"
+            : "rgba(255,255,255,0.14)",
         borderWidth: 1,
         borderRadius: 14,
         flex: 1,
         flexDirection: "row",
         gap: 7,
         justifyContent: "center",
-        minHeight: 42
+        minHeight: 42,
       }}
     >
       {icon}
-      <Text style={{ color: primary ? "#10201d" : light ? "#334155" : "#e2e8f0", fontWeight: "900" }}>
+      <Text
+        style={{
+          color: primary ? "#10201d" : light ? "#334155" : "#e2e8f0",
+          fontWeight: "900",
+        }}
+      >
         {label}
       </Text>
     </TouchableOpacity>

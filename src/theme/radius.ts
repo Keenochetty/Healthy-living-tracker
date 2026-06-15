@@ -5,5 +5,5 @@ export const appRadius = {
   lg: 20,
   xl: 24,
   "2xl": 32,
-  pill: 999
+  pill: 999,
 } as const;

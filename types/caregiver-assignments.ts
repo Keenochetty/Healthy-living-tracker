@@ -1,6 +1,10 @@
 import type { CareProfileType } from "@/types/care-profiles";
 
-export type CaregiverAssignmentStatus = "active" | "paused" | "revoked" | "pending";
+export type CaregiverAssignmentStatus =
+  | "active"
+  | "paused"
+  | "revoked"
+  | "pending";
 
 export type CaregiverAssignmentPermissionKey =
   | "canViewCareInstructions"
@@ -13,7 +17,10 @@ export type CaregiverAssignmentPermissionKey =
   | "canViewBasicConditions"
   | "canReceiveParentNotes";
 
-export type CaregiverAssignmentPermissions = Record<CaregiverAssignmentPermissionKey, boolean>;
+export type CaregiverAssignmentPermissions = Record<
+  CaregiverAssignmentPermissionKey,
+  boolean
+>;
 
 export type CaregiverAssignmentPreset =
   | "basic_care"

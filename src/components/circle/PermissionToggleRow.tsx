@@ -13,7 +13,7 @@ export function PermissionToggleRow({
   disabled = false,
   label,
   onValueChange,
-  value
+  value,
 }: PermissionToggleRowProps) {
   return (
     <View
@@ -23,11 +23,13 @@ export function PermissionToggleRow({
         borderBottomWidth: 1,
         flexDirection: "row",
         gap: 12,
-        paddingVertical: 12
+        paddingVertical: 12,
       }}
     >
       <View style={{ flex: 1 }}>
-        <Text style={{ color: disabled ? "#94a3b8" : "#0f172a", fontWeight: "800" }}>
+        <Text
+          style={{ color: disabled ? "#94a3b8" : "#0f172a", fontWeight: "800" }}
+        >
           {label}
         </Text>
         <Text style={{ color: "#64748b", lineHeight: 18, marginTop: 3 }}>

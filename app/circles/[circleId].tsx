@@ -9,7 +9,16 @@ import { InviteCard } from "@/components/invites/InviteCard";
 import { InviteMethodCard } from "@/components/invites/InviteMethodCard";
 import { PermissionToggleGroup } from "@/components/privacy/PermissionToggleGroup";
 import { PrivacySummaryCard } from "@/components/privacy/PrivacySummaryCard";
-import { AccessControlRow, AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, StatusSurface, WidgetCard } from "@/components/ui";
+import {
+  AccessControlRow,
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  QuickActionButton,
+  StatusPill,
+  StatusSurface,
+  WidgetCard,
+} from "@/components/ui";
 import {
   AGE_ACCESS_STAGES,
   CARE_PROFILE_TYPES,
@@ -20,18 +29,27 @@ import {
   careProfileTypeLabels,
   circlePermissionLabels,
   circleRelationshipLabels,
-  circleRoleLabels
+  circleRoleLabels,
 } from "@/constants/circles";
 import { getPlaceholderCircleInvites } from "@/lib/invites";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 import { getCircleById, listMyCirclesFromContext } from "@/lib/circles";
-import { buildPermissionSummary, createPermissionAuditPlaceholder, getSafePreview, getPrivacyLevelForCareProfile, toPermissionGrants } from "@/lib/permissions";
+import {
+  buildPermissionSummary,
+  createPermissionAuditPlaceholder,
+  getSafePreview,
+  getPrivacyLevelForCareProfile,
+  toPermissionGrants,
+} from "@/lib/permissions";
 import { useProfileContext } from "@/lib/profile-context";
 import type { CareProfile } from "@/types/care-profiles";
 import type { CircleMember } from "@/types/circles";
 import type { CircleInvite } from "@/types/invites";
-import type { PermissionAuditEvent, PermissionCategory } from "@/types/permissions";
+import type {
+  PermissionAuditEvent,
+  PermissionCategory,
+} from "@/types/permissions";
 
 function openRoute(route: string) {
   router.push(route as Parameters<typeof router.push>[0]);
@@ -40,7 +58,9 @@ function openRoute(route: string) {
 export default function CircleDetailsScreen() {
   const { circleId } = useLocalSearchParams();
   const { families, selectedFamily, switchFamily } = useProfileContext();
-  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(null);
+  const [placeholderMessage, setPlaceholderMessage] = useState<string | null>(
+    null,
+  );
   const [auditEvents, setAuditEvents] = useState<PermissionAuditEvent[]>([]);
   const circles = useMemo(() => listMyCirclesFromContext(families), [families]);
   const circle = getCircleById(circles, circleId);
@@ -50,7 +70,13 @@ export default function CircleDetailsScreen() {
       <View style={styles.root}>
         <AppScreen>
           <AppHeader
-            action={<QuickActionButton label="Back" onPress={() => openRoute("/circles")} toneColor={colors.brand.primary} />}
+            action={
+              <QuickActionButton
+                label="Back"
+                onPress={() => openRoute("/circles")}
+                toneColor={colors.brand.primary}
+              />
+            }
             eyebrow="Family Circle"
             subtitle="This circle is no longer available."
             title="Circle not found"
@@ -66,9 +92,13 @@ export default function CircleDetailsScreen() {
   const circlePrivacySummary = buildPermissionSummary({
     ageAccessStage: firstCareProfile?.ageAccessStage ?? "adult_controlled",
     currentUserRole: activeCircle.currentUserRole,
-    isAssignedCaregiver: firstCareProfile ? firstCareProfile.caregiverAssignmentStatus !== "not_assigned" : false,
+    isAssignedCaregiver: firstCareProfile
+      ? firstCareProfile.caregiverAssignmentStatus !== "not_assigned"
+      : false,
     isSelfManagedAdult: false,
-    privacyLevel: firstCareProfile ? getPrivacyLevelForCareProfile(firstCareProfile) : "private"
+    privacyLevel: firstCareProfile
+      ? getPrivacyLevelForCareProfile(firstCareProfile)
+      : "private",
   });
 
   async function handleSelectCircle() {
@@ -78,7 +108,9 @@ export default function CircleDetailsScreen() {
   }
 
   function handleAddMember() {
-    setPlaceholderMessage("Add Member will support direct member creation or linking later. No invite backend is connected yet.");
+    setPlaceholderMessage(
+      "Add Member will support direct member creation or linking later. No invite backend is connected yet.",
+    );
   }
 
   function handleInviteMember() {
@@ -86,11 +118,15 @@ export default function CircleDetailsScreen() {
   }
 
   function handleManageMember(member: CircleMember) {
-    setPlaceholderMessage(`Management actions for ${member.displayName} will support role, relationship, and permission changes later.`);
+    setPlaceholderMessage(
+      `Management actions for ${member.displayName} will support role, relationship, and permission changes later.`,
+    );
   }
 
   function handleViewMember(member: CircleMember) {
-    setPlaceholderMessage(`${member.displayName} is a ${circleRoleLabels[member.role].toLowerCase()} in this circle.`);
+    setPlaceholderMessage(
+      `${member.displayName} is a ${circleRoleLabels[member.role].toLowerCase()} in this circle.`,
+    );
   }
 
   function handleAddCareProfile() {
@@ -102,7 +138,9 @@ export default function CircleDetailsScreen() {
   }
 
   function handleCareProfileAction(profile: CareProfile, action: string) {
-    setPlaceholderMessage(`${action} for ${profile.displayName} will connect when care profile workflows are built.`);
+    setPlaceholderMessage(
+      `${action} for ${profile.displayName} will connect when care profile workflows are built.`,
+    );
   }
 
   function handleOpenInvite(invite: CircleInvite) {
@@ -110,20 +148,47 @@ export default function CircleDetailsScreen() {
   }
 
   function handleInvitePlaceholder(invite: CircleInvite, action: string) {
-    setPlaceholderMessage(`${action} for ${invite.recipientLabel ?? "this invite"} will connect when invite backend state exists.`);
+    setPlaceholderMessage(
+      `${action} for ${invite.recipientLabel ?? "this invite"} will connect when invite backend state exists.`,
+    );
   }
 
-  function handlePermissionChange(category: PermissionCategory, enabled: boolean) {
-    setAuditEvents((current) => [createPermissionAuditPlaceholder(category, enabled, "local-user", firstCareProfile?.id), ...current].slice(0, 4));
-    setPlaceholderMessage(`${category} permission changed locally. Audit log placeholder created.`);
+  function handlePermissionChange(
+    category: PermissionCategory,
+    enabled: boolean,
+  ) {
+    setAuditEvents((current) =>
+      [
+        createPermissionAuditPlaceholder(
+          category,
+          enabled,
+          "local-user",
+          firstCareProfile?.id,
+        ),
+        ...current,
+      ].slice(0, 4),
+    );
+    setPlaceholderMessage(
+      `${category} permission changed locally. Audit log placeholder created.`,
+    );
   }
 
   return (
     <View style={styles.root}>
       <AppScreen>
         <AppHeader
-          action={<QuickActionButton label="Invite" onPress={handleInviteMember} toneColor={colors.brand.primary} />}
-          eyebrow={activeCircle.kind === "care_circle" ? "Care Circle" : "Family Circle"}
+          action={
+            <QuickActionButton
+              label="Invite"
+              onPress={handleInviteMember}
+              toneColor={colors.brand.primary}
+            />
+          }
+          eyebrow={
+            activeCircle.kind === "care_circle"
+              ? "Care Circle"
+              : "Family Circle"
+          }
           subtitle="Circle-level roles, relationships, permissions, care profile types, and age access stages."
           title={activeCircle.name}
         />
@@ -136,7 +201,16 @@ export default function CircleDetailsScreen() {
         />
 
         <StatusSurface
-          action={<StatusPill label={activeCircle.currentUserRole} tone={canManageCircleMembers(activeCircle.currentUserRole) ? "success" : "default"} />}
+          action={
+            <StatusPill
+              label={activeCircle.currentUserRole}
+              tone={
+                canManageCircleMembers(activeCircle.currentUserRole)
+                  ? "success"
+                  : "default"
+              }
+            />
+          }
           description="Roles, relationships, invites, and care access are managed inside this trusted circle."
           icon={activeCircle.kind === "care_circle" ? "caregiver" : "family"}
           title="Trusted circle"
@@ -145,38 +219,69 @@ export default function CircleDetailsScreen() {
 
         <WidgetCard
           accentColor={colors.brand.primary}
-          action={<StatusPill label={activeCircle.source === "database" ? "Connected" : "Placeholder"} tone={activeCircle.source === "database" ? "success" : "default"} />}
+          action={
+            <StatusPill
+              label={
+                activeCircle.source === "database" ? "Connected" : "Placeholder"
+              }
+              tone={activeCircle.source === "database" ? "success" : "default"}
+            />
+          }
           subtitle="These permissions are circle-scoped and can map to existing family tables later."
           title="Permissions"
         >
           <View style={styles.pillRow}>
             {activeCircle.permissions.map((permission) => (
-              <StatusPill key={permission} label={circlePermissionLabels[permission]} tone={permission.includes("manage") ? "success" : "default"} />
+              <StatusPill
+                key={permission}
+                label={circlePermissionLabels[permission]}
+                tone={permission.includes("manage") ? "success" : "default"}
+              />
             ))}
           </View>
         </WidgetCard>
 
         <PrivacySummaryCard
           summary={circlePrivacySummary}
-          title={firstCareProfile ? `${firstCareProfile.displayName} privacy boundary` : "Circle privacy boundary"}
+          title={
+            firstCareProfile
+              ? `${firstCareProfile.displayName} privacy boundary`
+              : "Circle privacy boundary"
+          }
         />
 
         <WidgetCard
           accentColor={colors.brand.primary}
-          action={<StatusPill label={`${auditEvents.length} audit placeholders`} tone={auditEvents.length > 0 ? "warning" : "default"} />}
+          action={
+            <StatusPill
+              label={`${auditEvents.length} audit placeholders`}
+              tone={auditEvents.length > 0 ? "warning" : "default"}
+            />
+          }
           subtitle="Circle admins can manage the circle. Adult private health data still requires consent."
           title="Circle permission foundation"
         >
           <Text style={styles.muted}>
-            {getSafePreview("Adult health notes and documents stay hidden from dashboards unless explicitly shared.", true)}
+            {getSafePreview(
+              "Adult health notes and documents stay hidden from dashboards unless explicitly shared.",
+              true,
+            )}
           </Text>
           <View style={styles.accessList}>
             <AccessControlRow
               description="Admins manage members, invites, and dependents."
               icon="settings"
               label="Circle management"
-              statusLabel={canManageCircleMembers(activeCircle.currentUserRole) ? "Allowed" : "View only"}
-              tone={canManageCircleMembers(activeCircle.currentUserRole) ? "success" : "system"}
+              statusLabel={
+                canManageCircleMembers(activeCircle.currentUserRole)
+                  ? "Allowed"
+                  : "View only"
+              }
+              tone={
+                canManageCircleMembers(activeCircle.currentUserRole)
+                  ? "success"
+                  : "system"
+              }
             />
             <AccessControlRow
               description="Adult private details require consent."
@@ -194,7 +299,10 @@ export default function CircleDetailsScreen() {
             />
           </View>
           <PermissionToggleGroup
-            grants={toPermissionGrants(circlePrivacySummary.defaultPermissions, ["view_emergency_info"])}
+            grants={toPermissionGrants(
+              circlePrivacySummary.defaultPermissions,
+              ["view_emergency_info"],
+            )}
             onChange={handlePermissionChange}
           />
         </WidgetCard>
@@ -203,7 +311,14 @@ export default function CircleDetailsScreen() {
           accentColor={colors.brand.primary}
           action={
             <QuickActionButton
-              icon={<AppIcon color={colors.brand.primary} name="family" size={20} variant="filled" />}
+              icon={
+                <AppIcon
+                  color={colors.brand.primary}
+                  name="family"
+                  size={20}
+                  variant="filled"
+                />
+              }
               label="Create invite"
               onPress={handleInviteMember}
               toneColor={colors.brand.primary}
@@ -217,7 +332,9 @@ export default function CircleDetailsScreen() {
               <InviteCard
                 invite={invite}
                 key={invite.id}
-                onApprove={(item) => handleInvitePlaceholder(item, "Admin approval")}
+                onApprove={(item) =>
+                  handleInvitePlaceholder(item, "Admin approval")
+                }
                 onCopy={(item) => handleInvitePlaceholder(item, "Copy link")}
                 onOpen={handleOpenInvite}
                 onShare={(item) => handleInvitePlaceholder(item, "Copy/share")}
@@ -245,13 +362,27 @@ export default function CircleDetailsScreen() {
           action={
             <View style={styles.memberActions}>
               <QuickActionButton
-                icon={<AppIcon color={colors.status.success} name="profiles" size={20} variant="filled" />}
+                icon={
+                  <AppIcon
+                    color={colors.status.success}
+                    name="profiles"
+                    size={20}
+                    variant="filled"
+                  />
+                }
                 label="Add member"
                 onPress={handleAddMember}
                 toneColor={colors.status.success}
               />
               <QuickActionButton
-                icon={<AppIcon color={colors.brand.primary} name="family" size={20} variant="filled" />}
+                icon={
+                  <AppIcon
+                    color={colors.brand.primary}
+                    name="family"
+                    size={20}
+                    variant="filled"
+                  />
+                }
                 label="Invite member"
                 onPress={handleInviteMember}
                 toneColor={colors.brand.primary}
@@ -282,7 +413,14 @@ export default function CircleDetailsScreen() {
           accentColor={colors.status.ai}
           action={
             <QuickActionButton
-              icon={<AppIcon color={colors.status.ai} name="child" size={20} variant="filled" />}
+              icon={
+                <AppIcon
+                  color={colors.status.ai}
+                  name="child"
+                  size={20}
+                  variant="filled"
+                />
+              }
               label="Add care profile"
               onPress={handleAddCareProfile}
               toneColor={colors.status.ai}
@@ -296,9 +434,15 @@ export default function CircleDetailsScreen() {
               {activeCircle.careProfiles.map((profile) => (
                 <CareProfileCard
                   key={profile.id}
-                  onCalendar={(item) => handleCareProfileAction(item, "Calendar")}
-                  onCareNotes={(item) => handleCareProfileAction(item, "Care notes")}
-                  onEmergency={(item) => handleCareProfileAction(item, "Emergency")}
+                  onCalendar={(item) =>
+                    handleCareProfileAction(item, "Calendar")
+                  }
+                  onCareNotes={(item) =>
+                    handleCareProfileAction(item, "Care notes")
+                  }
+                  onEmergency={(item) =>
+                    handleCareProfileAction(item, "Emergency")
+                  }
                   onView={handleViewCareProfile}
                   profile={profile}
                 />
@@ -307,17 +451,30 @@ export default function CircleDetailsScreen() {
           ) : (
             <View style={styles.emptyPanel}>
               <Text style={styles.emptyTitle}>No care profiles yet</Text>
-              <Text style={styles.muted}>Add a child, teen, adult dependent, or elderly dependent when this circle needs care tracking.</Text>
+              <Text style={styles.muted}>
+                Add a child, teen, adult dependent, or elderly dependent when
+                this circle needs care tracking.
+              </Text>
             </View>
           )}
         </WidgetCard>
 
-        <WidgetCard accentColor={colors.status.ai} subtitle="Supported foundation values for future care profile screens." title="Care profile model">
+        <WidgetCard
+          accentColor={colors.status.ai}
+          subtitle="Supported foundation values for future care profile screens."
+          title="Care profile model"
+        >
           <View style={styles.sectionGroup}>
             <Text style={styles.groupTitle}>Roles</Text>
             <View style={styles.pillRow}>
               {CIRCLE_MEMBER_ROLES.map((role) => (
-                <StatusPill key={role} label={circleRoleLabels[role]} tone={role === "owner" || role === "admin" ? "success" : "default"} />
+                <StatusPill
+                  key={role}
+                  label={circleRoleLabels[role]}
+                  tone={
+                    role === "owner" || role === "admin" ? "success" : "default"
+                  }
+                />
               ))}
             </View>
           </View>
@@ -326,7 +483,10 @@ export default function CircleDetailsScreen() {
             <Text style={styles.groupTitle}>Relationships per circle</Text>
             <View style={styles.pillRow}>
               {CIRCLE_RELATIONSHIPS.map((relationship) => (
-                <StatusPill key={relationship} label={circleRelationshipLabels[relationship]} />
+                <StatusPill
+                  key={relationship}
+                  label={circleRelationshipLabels[relationship]}
+                />
               ))}
             </View>
           </View>
@@ -335,7 +495,11 @@ export default function CircleDetailsScreen() {
             <Text style={styles.groupTitle}>Care profile types</Text>
             <View style={styles.pillRow}>
               {CARE_PROFILE_TYPES.map((profileType) => (
-                <StatusPill key={profileType} label={careProfileTypeLabels[profileType]} tone="ai" />
+                <StatusPill
+                  key={profileType}
+                  label={careProfileTypeLabels[profileType]}
+                  tone="ai"
+                />
               ))}
             </View>
           </View>
@@ -344,18 +508,33 @@ export default function CircleDetailsScreen() {
             <Text style={styles.groupTitle}>Age access stages</Text>
             <View style={styles.pillRow}>
               {AGE_ACCESS_STAGES.map((stage) => (
-                <StatusPill key={stage} label={ageAccessStageLabels[stage]} tone={stage === "adult_controlled" ? "success" : "warning"} />
+                <StatusPill
+                  key={stage}
+                  label={ageAccessStageLabels[stage]}
+                  tone={stage === "adult_controlled" ? "success" : "warning"}
+                />
               ))}
             </View>
           </View>
         </WidgetCard>
 
-        <Modal transparent visible={Boolean(placeholderMessage)} animationType="fade">
-          <Pressable style={styles.modalBackdrop} onPress={() => setPlaceholderMessage(null)}>
+        <Modal
+          transparent
+          visible={Boolean(placeholderMessage)}
+          animationType="fade"
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setPlaceholderMessage(null)}
+          >
             <View style={styles.modalCard}>
               <Text style={styles.modalTitle}>Coming next</Text>
               <Text style={styles.modalText}>{placeholderMessage}</Text>
-              <QuickActionButton label="Close" onPress={() => setPlaceholderMessage(null)} toneColor={colors.brand.primary} />
+              <QuickActionButton
+                label="Close"
+                onPress={() => setPlaceholderMessage(null)}
+                toneColor={colors.brand.primary}
+              />
             </View>
           </Pressable>
         </Modal>
@@ -366,10 +545,10 @@ export default function CircleDetailsScreen() {
 
 const styles = StyleSheet.create({
   accessList: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   careProfileList: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   emptyPanel: {
     backgroundColor: colors.background.warm,
@@ -377,43 +556,43 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     gap: spacing.xs,
-    padding: spacing.md
+    padding: spacing.md,
   },
   emptyTitle: {
     color: colors.text.primary,
     fontSize: 17,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   groupTitle: {
     color: colors.text.primary,
     fontSize: 16,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   inviteList: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   muted: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   methodGrid: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   memberList: {
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   memberActions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   modalBackdrop: {
     alignItems: "center",
     backgroundColor: "rgba(15, 23, 42, 0.32)",
     flex: 1,
     justifyContent: "center",
-    padding: spacing.xl
+    padding: spacing.xl,
   },
   modalCard: {
     backgroundColor: colors.card.background,
@@ -423,28 +602,28 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     maxWidth: 420,
     padding: spacing.xl,
-    width: "100%"
+    width: "100%",
   },
   modalText: {
     color: colors.text.secondary,
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
   },
   modalTitle: {
     color: colors.text.primary,
     fontSize: 22,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   pillRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
+    flex: 1,
   },
   sectionGroup: {
-    gap: spacing.sm
-  }
+    gap: spacing.sm,
+  },
 });

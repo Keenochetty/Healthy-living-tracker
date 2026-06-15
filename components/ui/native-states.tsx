@@ -10,7 +10,11 @@ type EmptyStateProps = {
   title: string;
 };
 
-export function NativeEmptyState({ icon = "notifications", message, title }: EmptyStateProps) {
+export function NativeEmptyState({
+  icon = "notifications",
+  message,
+  title,
+}: EmptyStateProps) {
   return (
     <View style={styles.empty}>
       <View style={styles.iconShell}>
@@ -43,7 +47,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     justifyContent: "center",
     minHeight: 160,
-    padding: spacing["2xl"]
+    padding: spacing["2xl"],
   },
   iconShell: {
     alignItems: "center",
@@ -51,14 +55,14 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     height: 54,
     justifyContent: "center",
-    width: 54
+    width: 54,
   },
   message: {
     color: colors.text.muted,
     fontSize: 15,
     lineHeight: 22,
     maxWidth: 360,
-    textAlign: "center"
+    textAlign: "center",
   },
   skeletonCard: {
     backgroundColor: colors.background.mist,
@@ -66,26 +70,26 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     gap: spacing.md,
-    padding: spacing.lg
+    padding: spacing.lg,
   },
   skeletonLine: {
     backgroundColor: colors.border.soft,
     borderRadius: 999,
     height: 14,
     opacity: 0.75,
-    width: "100%"
+    width: "100%",
   },
   skeletonMedium: {
-    width: "68%"
+    width: "68%",
   },
   skeletonShort: {
     height: 18,
-    width: "38%"
+    width: "38%",
   },
   title: {
     color: colors.text.primary,
     fontSize: 18,
     fontWeight: "900",
-    textAlign: "center"
-  }
+    textAlign: "center",
+  },
 });

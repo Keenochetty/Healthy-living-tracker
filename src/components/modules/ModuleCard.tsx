@@ -33,7 +33,10 @@ export function ModuleCard({ module, enabled, onToggle }: ModuleCardProps) {
   }
 
   return (
-    <AppCard backgroundColor={enabled ? theme.primarySoft : theme.surface} padding="md">
+    <AppCard
+      backgroundColor={enabled ? theme.primarySoft : theme.surface}
+      padding="md"
+    >
       <View style={{ alignItems: "center", flexDirection: "row", gap: 14 }}>
         <View
           style={{
@@ -41,7 +44,7 @@ export function ModuleCard({ module, enabled, onToggle }: ModuleCardProps) {
             borderRadius: 18,
             height: 46,
             justifyContent: "center",
-            width: 46
+            width: 46,
           }}
         >
           <AppIcon
@@ -55,13 +58,17 @@ export function ModuleCard({ module, enabled, onToggle }: ModuleCardProps) {
 
         <View style={{ flex: 1 }}>
           <View style={{ alignItems: "center", flexDirection: "row", gap: 8 }}>
-            <Text style={{ color: theme.text, fontSize: 16, fontWeight: "800" }}>
+            <Text
+              style={{ color: theme.text, fontSize: 16, fontWeight: "800" }}
+            >
               {module.name}
             </Text>
             <AppChip label="Core" variant="primary" />
           </View>
 
-          <Text style={{ color: theme.mutedText, lineHeight: 19, marginTop: 4 }}>
+          <Text
+            style={{ color: theme.mutedText, lineHeight: 19, marginTop: 4 }}
+          >
             {module.description}
           </Text>
         </View>

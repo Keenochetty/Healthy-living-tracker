@@ -14,7 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
   getUserPreferences,
   resetOnboarding,
-  updateUserPreferences
+  updateUserPreferences,
 } from "@/lib/userPreferences";
 import { useAppTheme } from "@/theme/ThemeProvider";
 import type { UserPreferences } from "@/types/profile";
@@ -25,7 +25,7 @@ export default function ProfileScreen() {
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const selectedTheme = getUserTheme(preferences?.themeKey ?? "soft_lavender");
   const enabledModuleNames = APP_MODULES.filter((module) =>
-    preferences?.enabledModules.includes(module.key)
+    preferences?.enabledModules.includes(module.key),
   ).map((module) => module.name);
 
   const loadPreferences = useCallback(async () => {
@@ -35,7 +35,7 @@ export default function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       loadPreferences();
-    }, [loadPreferences])
+    }, [loadPreferences]),
   );
 
   async function handleResetOnboarding() {
@@ -54,14 +54,14 @@ export default function ProfileScreen() {
             color: "#ffffff",
             fontSize: 24,
             fontWeight: "900",
-            marginTop: 8
+            marginTop: 8,
           }}
         >
           Start simple. Add more when life changes.
         </Text>
         <Text style={{ color: "#ffffff", lineHeight: 21, marginTop: 8 }}>
-          This app works for one person, couples, close friends, parents, children,
-          elders and caregivers.
+          This app works for one person, couples, close friends, parents,
+          children, elders and caregivers.
         </Text>
       </AppCard>
 
@@ -73,7 +73,10 @@ export default function ProfileScreen() {
             <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>
               Profile summary
             </Text>
-            <SummaryRow label="Name" value={preferences.displayName || "Not set"} />
+            <SummaryRow
+              label="Name"
+              value={preferences.displayName || "Not set"}
+            />
             <SummaryRow label="Country" value={preferences.country} />
             <SummaryRow label="Currency" value={preferences.currency} />
             <SummaryRow label="Timezone" value={preferences.timezone} />
@@ -174,7 +177,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
         alignItems: "center",
         flexDirection: "row",
         justifyContent: "space-between",
-        marginTop: 10
+        marginTop: 10,
       }}
     >
       <Text style={{ color: "#64748b" }}>{label}</Text>

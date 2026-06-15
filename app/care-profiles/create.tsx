@@ -2,14 +2,25 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { AppHeader, AppIcon, AppScreen, QuickActionButton, StatusPill, WidgetCard } from "@/components/ui";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  QuickActionButton,
+  StatusPill,
+  WidgetCard,
+} from "@/components/ui";
 import {
   CARE_PROFILE_TYPES,
   careProfilePrivacyLabels,
   careProfileTypeLabels,
-  getDefaultPrivacyStatus
+  getDefaultPrivacyStatus,
 } from "@/constants/care-profiles";
-import { CIRCLE_RELATIONSHIPS, ageAccessStageLabels, circleRelationshipLabels } from "@/constants/circles";
+import {
+  CIRCLE_RELATIONSHIPS,
+  ageAccessStageLabels,
+  circleRelationshipLabels,
+} from "@/constants/circles";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
 import { determineDefaultAgeAccessStage } from "@/lib/care-profiles";
@@ -35,7 +46,8 @@ export default function CreateCareProfileScreen() {
   const parsedAge = parseAge(age);
   const ageAccessStage = determineDefaultAgeAccessStage(parsedAge);
   const privacyStatus = getDefaultPrivacyStatus(ageAccessStage);
-  const backRoute = typeof circleId === "string" ? `/circles/${circleId}` : "/circles";
+  const backRoute =
+    typeof circleId === "string" ? `/circles/${circleId}` : "/circles";
 
   function handlePlaceholderCreate() {
     openRoute(backRoute);
@@ -45,7 +57,13 @@ export default function CreateCareProfileScreen() {
     <View style={styles.root}>
       <AppScreen>
         <AppHeader
-          action={<QuickActionButton label="Back" onPress={() => openRoute(backRoute)} toneColor={colors.text.muted} />}
+          action={
+            <QuickActionButton
+              label="Back"
+              onPress={() => openRoute(backRoute)}
+              toneColor={colors.text.muted}
+            />
+          }
           eyebrow="Care Profile"
           subtitle="Create care profiles for children, teens, adult members, adult dependents, and elderly dependents. Backend creation comes later."
           title="Add Care Profile"
@@ -79,10 +97,16 @@ export default function CreateCareProfileScreen() {
               {CARE_PROFILE_TYPES.map((item) => (
                 <QuickActionButton
                   key={item}
-                  icon={item === profileType ? <AppIcon color={colors.status.ai} name="sync" size={18} /> : undefined}
+                  icon={
+                    item === profileType ? (
+                      <AppIcon color={colors.status.ai} name="sync" size={18} />
+                    ) : undefined
+                  }
                   label={careProfileTypeLabels[item]}
                   onPress={() => setProfileType(item)}
-                  toneColor={item === profileType ? colors.status.ai : colors.text.muted}
+                  toneColor={
+                    item === profileType ? colors.status.ai : colors.text.muted
+                  }
                 />
               ))}
             </View>
@@ -92,25 +116,58 @@ export default function CreateCareProfileScreen() {
               {CIRCLE_RELATIONSHIPS.map((item) => (
                 <QuickActionButton
                   key={item}
-                  icon={item === relationship ? <AppIcon color={colors.brand.primary} name="sync" size={18} /> : undefined}
+                  icon={
+                    item === relationship ? (
+                      <AppIcon
+                        color={colors.brand.primary}
+                        name="sync"
+                        size={18}
+                      />
+                    ) : undefined
+                  }
                   label={circleRelationshipLabels[item]}
                   onPress={() => setRelationship(item)}
-                  toneColor={item === relationship ? colors.brand.primary : colors.text.muted}
+                  toneColor={
+                    item === relationship
+                      ? colors.brand.primary
+                      : colors.text.muted
+                  }
                 />
               ))}
             </View>
 
             <View style={styles.previewPanel}>
-              <Text style={styles.previewTitle}>{displayName.trim() || "New care profile"}</Text>
+              <Text style={styles.previewTitle}>
+                {displayName.trim() || "New care profile"}
+              </Text>
               <View style={styles.pillGrid}>
-                <StatusPill label={ageAccessStageLabels[ageAccessStage]} tone={ageAccessStage === "adult_controlled" ? "success" : "warning"} />
-                <StatusPill label={careProfilePrivacyLabels[privacyStatus]} tone={privacyStatus === "adult_private" ? "success" : "default"} />
+                <StatusPill
+                  label={ageAccessStageLabels[ageAccessStage]}
+                  tone={
+                    ageAccessStage === "adult_controlled"
+                      ? "success"
+                      : "warning"
+                  }
+                />
+                <StatusPill
+                  label={careProfilePrivacyLabels[privacyStatus]}
+                  tone={
+                    privacyStatus === "adult_private" ? "success" : "default"
+                  }
+                />
                 <StatusPill label={circleRelationshipLabels[relationship]} />
               </View>
             </View>
 
             <QuickActionButton
-              icon={<AppIcon color={colors.status.ai} name="profiles" size={20} variant="filled" />}
+              icon={
+                <AppIcon
+                  color={colors.status.ai}
+                  name="profiles"
+                  size={20}
+                  variant="filled"
+                />
+              }
               label="Save placeholder"
               onPress={handlePlaceholderCreate}
               toneColor={colors.status.ai}
@@ -124,12 +181,12 @@ export default function CreateCareProfileScreen() {
 
 const styles = StyleSheet.create({
   form: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   groupTitle: {
     color: colors.text.primary,
     fontSize: 15,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   input: {
     backgroundColor: colors.card.background,
@@ -139,12 +196,12 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontSize: 16,
     minHeight: 52,
-    padding: spacing.md
+    padding: spacing.md,
   },
   pillGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   previewPanel: {
     backgroundColor: colors.background.warm,
@@ -152,15 +209,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     gap: spacing.sm,
-    padding: spacing.md
+    padding: spacing.md,
   },
   previewTitle: {
     color: colors.text.primary,
     fontSize: 18,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
-  }
+    flex: 1,
+  },
 });

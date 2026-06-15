@@ -36,7 +36,9 @@ export function FitnessTodayHero({
         </View>
         <View style={styles.badge}>
           <AppIcon color="#dbeafe" decorative name="success" size={14} />
-          <Text style={styles.badgeText}>{workoutsThisWeek} workouts this week</Text>
+          <Text style={styles.badgeText}>
+            {workoutsThisWeek} workouts this week
+          </Text>
         </View>
       </View>
       <Text style={styles.kicker}>Weekly fitness</Text>
@@ -44,12 +46,18 @@ export function FitnessTodayHero({
       <Text style={styles.subtitle}>
         Keep your plan clean and focused. Your next session is {movementTitle}.
       </Text>
-      <View accessible accessibilityLabel={`${progress} percent of weekly fitness goal complete`} style={styles.progressBlock}>
+      <View
+        accessible
+        accessibilityLabel={`${progress} percent of weekly fitness goal complete`}
+        style={styles.progressBlock}
+      >
         <View style={styles.progressHeader}>
           <Text style={styles.progressLabel}>Weekly progress</Text>
           <Text style={styles.progressValue}>{progress}%</Text>
         </View>
-        <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${progress}%` }]} /></View>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        </View>
       </View>
       <View style={styles.metaRow}>
         <Meta icon="today" label={`${minutes} min`} />
@@ -208,10 +216,24 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
   },
   progressBlock: { marginTop: 18 },
-  progressFill: { backgroundColor: "#60a5fa", borderRadius: 999, height: "100%" },
-  progressHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  progressFill: {
+    backgroundColor: "#60a5fa",
+    borderRadius: 999,
+    height: "100%",
+  },
+  progressHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   progressLabel: { color: "#dbeafe", fontSize: 11, fontWeight: "900" },
-  progressTrack: { backgroundColor: "rgba(255,255,255,0.13)", borderRadius: 999, height: 9, marginTop: 8, overflow: "hidden" },
+  progressTrack: {
+    backgroundColor: "rgba(255,255,255,0.13)",
+    borderRadius: 999,
+    height: 9,
+    marginTop: 8,
+    overflow: "hidden",
+  },
   progressValue: { color: "#ffffff", fontSize: 12, fontWeight: "900" },
   subtitle: {
     color: "#bfdbfe",

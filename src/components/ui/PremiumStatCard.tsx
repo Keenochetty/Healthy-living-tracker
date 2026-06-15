@@ -28,7 +28,7 @@ export function PremiumStatCard({
   onPress,
   progress,
   title,
-  value
+  value,
 }: PremiumStatCardProps) {
   const { theme } = useAppTheme();
   const accent = accentColor ?? theme.primary;
@@ -47,7 +47,7 @@ export function PremiumStatCard({
         shadowOffset: { height: 10, width: 0 },
         shadowOpacity: 0.16,
         shadowRadius: 18,
-        width: "48%"
+        width: "48%",
       }}
     >
       <View style={{ gap: spacing.md }}>
@@ -60,21 +60,65 @@ export function PremiumStatCard({
             borderRadius: radius.full,
             height: 42,
             justifyContent: "center",
-            width: 42
+            width: 42,
           }}
         >
-          {iconName ? <AppIcon color={accent} name={iconName} size={20} /> : emoji ? <Text style={{ fontSize: 20 }}>{emoji}</Text> : icon}
+          {iconName ? (
+            <AppIcon color={accent} name={iconName} size={20} />
+          ) : emoji ? (
+            <Text style={{ fontSize: 20 }}>{emoji}</Text>
+          ) : (
+            icon
+          )}
         </View>
 
         <View>
-          <Text style={{ color: theme.mutedText, fontSize: 13, fontWeight: "800" }}>{title}</Text>
-          <Text style={{ color: theme.text, fontSize: 24, fontWeight: "900", marginTop: 5 }}>{value}</Text>
-          {helper ? <Text style={{ color: theme.subtleText ?? theme.mutedText, fontSize: 12, lineHeight: 17, marginTop: 4 }}>{helper}</Text> : null}
+          <Text
+            style={{ color: theme.mutedText, fontSize: 13, fontWeight: "800" }}
+          >
+            {title}
+          </Text>
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: 24,
+              fontWeight: "900",
+              marginTop: 5,
+            }}
+          >
+            {value}
+          </Text>
+          {helper ? (
+            <Text
+              style={{
+                color: theme.subtleText ?? theme.mutedText,
+                fontSize: 12,
+                lineHeight: 17,
+                marginTop: 4,
+              }}
+            >
+              {helper}
+            </Text>
+          ) : null}
         </View>
 
         {typeof progress === "number" ? (
-          <View style={{ backgroundColor: theme.surfaceSoft ?? theme.background, borderRadius: radius.full, height: 6, overflow: "hidden" }}>
-            <View style={{ backgroundColor: accent, borderRadius: radius.full, height: 6, width: `${Math.max(0, Math.min(progress, 1)) * 100}%` }} />
+          <View
+            style={{
+              backgroundColor: theme.surfaceSoft ?? theme.background,
+              borderRadius: radius.full,
+              height: 6,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: accent,
+                borderRadius: radius.full,
+                height: 6,
+                width: `${Math.max(0, Math.min(progress, 1)) * 100}%`,
+              }}
+            />
           </View>
         ) : null}
       </View>

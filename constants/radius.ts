@@ -7,7 +7,7 @@ export const radius = {
   xl: 22,
   "2xl": 28,
   "3xl": 34,
-  full: 999
+  full: 999,
 } as const;
 
 export const componentRadius = {
@@ -17,5 +17,5 @@ export const componentRadius = {
   chip: radius.full,
   avatar: radius.full,
   input: radius.md,
-  bottomSheet: radius["3xl"]
+  bottomSheet: radius["3xl"],
 } as const;

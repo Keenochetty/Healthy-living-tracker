@@ -1,6 +1,13 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { signUp } from "@/lib/auth";
 
@@ -24,9 +31,13 @@ export default function SignUpScreen() {
         return;
       }
 
-      setNotice("Account created. Check your email, then sign in to finish onboarding.");
+      setNotice(
+        "Account created. Check your email, then sign in to finish onboarding.",
+      );
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to create account.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unable to create account.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -54,7 +65,11 @@ export default function SignUpScreen() {
 
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
       {notice ? <Text style={styles.notice}>{notice}</Text> : null}
-      {isSubmitting ? <ActivityIndicator /> : <Button onPress={handleSubmit} title="Create account" />}
+      {isSubmitting ? (
+        <ActivityIndicator />
+      ) : (
+        <Button onPress={handleSubmit} title="Create account" />
+      )}
 
       <Link href="/auth/sign-in" style={styles.link}>
         Already have an account?
@@ -68,27 +83,27 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 12,
     justifyContent: "center",
-    padding: 24
+    padding: 24,
   },
   error: {
-    color: "#b91c1c"
+    color: "#b91c1c",
   },
   input: {
     borderColor: "#cbd5e1",
     borderRadius: 8,
     borderWidth: 1,
-    padding: 12
+    padding: 12,
   },
   link: {
     color: "#2563eb",
-    marginTop: 8
+    marginTop: 8,
   },
   notice: {
-    color: "#166534"
+    color: "#166534",
   },
   title: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 8
-  }
+    marginBottom: 8,
+  },
 });

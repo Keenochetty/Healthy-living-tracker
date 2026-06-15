@@ -6,7 +6,7 @@ import {
   careProfilePrivacyLabels,
   careProfileTypeLabels,
   getAgeAccessStageTone,
-  getCareProfilePrivacyTone
+  getCareProfilePrivacyTone,
 } from "@/constants/care-profiles";
 import { circleRelationshipLabels } from "@/constants/circles";
 import { spacing } from "@/constants/spacing";
@@ -31,33 +31,62 @@ function getInitials(name: string) {
     .join("");
 }
 
-export function CareProfileCard({ onCalendar, onCareNotes, onEmergency, onView, profile }: CareProfileCardProps) {
+export function CareProfileCard({
+  onCalendar,
+  onCareNotes,
+  onEmergency,
+  onView,
+  profile,
+}: CareProfileCardProps) {
   const adultProfile = isAdultCareProfile(profile);
 
   return (
-    <Pressable accessibilityRole="button" onPress={() => onView?.(profile)} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => onView?.(profile)}
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+    >
       <View style={[styles.avatar, adultProfile && styles.adultAvatar]}>
-        <Text style={[styles.avatarText, adultProfile && styles.adultAvatarText]}>{getInitials(profile.displayName) || "CP"}</Text>
+        <Text
+          style={[styles.avatarText, adultProfile && styles.adultAvatarText]}
+        >
+          {getInitials(profile.displayName) || "CP"}
+        </Text>
       </View>
 
       <View style={styles.copy}>
         <View style={styles.titleRow}>
           <Text style={styles.name}>{profile.displayName}</Text>
-          <StatusPill label={careProfileTypeLabels[profile.profileType]} tone="ai" />
+          <StatusPill
+            label={careProfileTypeLabels[profile.profileType]}
+            tone="ai"
+          />
         </View>
         <Text style={styles.ageText}>{formatCareProfileAge(profile)}</Text>
-        <Text style={styles.meta}>{profile.notes ?? "Care profile foundation"}</Text>
+        <Text style={styles.meta}>
+          {profile.notes ?? "Care profile foundation"}
+        </Text>
         <View style={styles.badges}>
-          <StatusPill label={ageAccessStageLabels[profile.ageAccessStage]} tone={getAgeAccessStageTone(profile.ageAccessStage)} />
-          <StatusPill label={careProfilePrivacyLabels[profile.privacyStatus]} tone={getCareProfilePrivacyTone(profile.privacyStatus)} />
+          <StatusPill
+            label={ageAccessStageLabels[profile.ageAccessStage]}
+            tone={getAgeAccessStageTone(profile.ageAccessStage)}
+          />
+          <StatusPill
+            label={careProfilePrivacyLabels[profile.privacyStatus]}
+            tone={getCareProfilePrivacyTone(profile.privacyStatus)}
+          />
           <StatusPill label={circleRelationshipLabels[profile.relationship]} />
-          {profile.caregiverAssignmentStatus === "placeholder" ? <StatusPill label="Caregiver placeholder" tone="warning" /> : null}
+          {profile.caregiverAssignmentStatus === "placeholder" ? (
+            <StatusPill label="Caregiver placeholder" tone="warning" />
+          ) : null}
         </View>
       </View>
 
       <View style={styles.actions}>
         <QuickActionButton
-          icon={<AppIcon color={colors.brand.primary} name="profiles" size={18} />}
+          icon={
+            <AppIcon color={colors.brand.primary} name="profiles" size={18} />
+          }
           label="View profile"
           onPress={() => onView?.(profile)}
           toneColor={colors.brand.primary}
@@ -69,7 +98,13 @@ export function CareProfileCard({ onCalendar, onCareNotes, onEmergency, onView, 
           toneColor={colors.accent.sky}
         />
         <QuickActionButton
-          icon={<AppIcon color={colors.status.emergency} name="emergency" size={18} />}
+          icon={
+            <AppIcon
+              color={colors.status.emergency}
+              name="emergency"
+              size={18}
+            />
+          }
           label="Emergency"
           onPress={() => onEmergency?.(profile)}
           toneColor={colors.status.emergency}
@@ -89,18 +124,18 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
   },
   adultAvatar: {
-    backgroundColor: colors.brand.primarySoft
+    backgroundColor: colors.brand.primarySoft,
   },
   adultAvatarText: {
-    color: colors.brand.primary
+    color: colors.brand.primary,
   },
   ageText: {
     color: colors.text.secondary,
     fontSize: 13,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   avatar: {
     alignItems: "center",
@@ -108,18 +143,18 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     height: 54,
     justifyContent: "center",
-    width: 54
+    width: 54,
   },
   avatarText: {
     color: colors.status.ai,
     fontSize: 17,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   badges: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
-    marginTop: spacing.xs
+    marginTop: spacing.xs,
   },
   card: {
     backgroundColor: colors.background.warm,
@@ -127,30 +162,30 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     gap: spacing.md,
-    padding: spacing.md
+    padding: spacing.md,
   },
   copy: {
-    gap: spacing.xs
+    gap: spacing.xs,
   },
   meta: {
     color: colors.text.muted,
     fontSize: 14,
-    lineHeight: 20
+    lineHeight: 20,
   },
   name: {
     color: colors.text.primary,
     flex: 1,
     fontSize: 18,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   pressed: {
     opacity: 0.86,
-    transform: [{ scale: 0.99 }]
+    transform: [{ scale: 0.99 }],
   },
   titleRow: {
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
-  }
+    gap: spacing.sm,
+  },
 });

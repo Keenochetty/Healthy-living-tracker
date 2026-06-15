@@ -11,7 +11,13 @@ type AppAvatarProps = {
   status?: keyof typeof statusColours;
 };
 
-export function AppAvatar({ emoji, imageUri, initials, size = 44, status }: AppAvatarProps) {
+export function AppAvatar({
+  emoji,
+  imageUri,
+  initials,
+  size = 44,
+  status,
+}: AppAvatarProps) {
   const { theme } = useAppTheme();
 
   return (
@@ -26,13 +32,23 @@ export function AppAvatar({ emoji, imageUri, initials, size = 44, status }: AppA
           height: size,
           justifyContent: "center",
           overflow: "hidden",
-          width: size
+          width: size,
         }}
       >
         {imageUri ? (
-          <Image alt={`${initials} avatar`} source={{ uri: imageUri }} style={{ height: size, width: size }} />
+          <Image
+            alt={`${initials} avatar`}
+            source={{ uri: imageUri }}
+            style={{ height: size, width: size }}
+          />
         ) : (
-          <Text style={{ color: theme.primary, fontSize: size * 0.38, fontWeight: "900" }}>
+          <Text
+            style={{
+              color: theme.primary,
+              fontSize: size * 0.38,
+              fontWeight: "900",
+            }}
+          >
             {emoji ?? initials.slice(0, 2).toUpperCase()}
           </Text>
         )}
@@ -48,7 +64,7 @@ export function AppAvatar({ emoji, imageUri, initials, size = 44, status }: AppA
             height: 12,
             position: "absolute",
             right: 0,
-            width: 12
+            width: 12,
           }}
         />
       ) : null}

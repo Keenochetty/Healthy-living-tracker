@@ -1,10 +1,19 @@
-export type MeasurementSystemPreference = "device_default" | "metric" | "imperial";
+export type MeasurementSystemPreference =
+  | "device_default"
+  | "metric"
+  | "imperial";
 export type WeightUnitPreference = "device_default" | "kg" | "lb";
 export type HeightUnitPreference = "device_default" | "cm" | "ft_in";
-export type TemperatureUnitPreference = "device_default" | "celsius" | "fahrenheit";
+export type TemperatureUnitPreference =
+  | "device_default"
+  | "celsius"
+  | "fahrenheit";
 export type DistanceUnitPreference = "device_default" | "km" | "miles";
 export type TimeFormatPreference = "device_default" | "12_hour" | "24_hour";
-export type DateFormatPreference = "device_default" | "dd_mm_yyyy" | "mm_dd_yyyy";
+export type DateFormatPreference =
+  | "device_default"
+  | "dd_mm_yyyy"
+  | "mm_dd_yyyy";
 
 export type UnitsPreferences = {
   dateFormat: DateFormatPreference;

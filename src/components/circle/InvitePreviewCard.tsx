@@ -24,7 +24,7 @@ export function InvitePreviewCard({ invite }: InvitePreviewCardProps) {
               borderRadius: 15,
               height: 42,
               justifyContent: "center",
-              width: 42
+              width: 42,
             }}
           >
             <Text style={{ fontSize: 22 }}>{role.emoji}</Text>
@@ -33,7 +33,9 @@ export function InvitePreviewCard({ invite }: InvitePreviewCardProps) {
             <Text style={{ color: "#0f172a", fontSize: 18, fontWeight: "900" }}>
               {invite.circleName}
             </Text>
-            <Text style={{ color: "#64748b", marginTop: 2 }}>Invited as {role.label}</Text>
+            <Text style={{ color: "#64748b", marginTop: 2 }}>
+              Invited as {role.label}
+            </Text>
           </View>
         </View>
 
@@ -50,7 +52,7 @@ export function InvitePreviewCard({ invite }: InvitePreviewCardProps) {
             borderRadius: 16,
             flexDirection: "row",
             gap: 10,
-            padding: 12
+            padding: 12,
           }}
         >
           <ShieldCheck color="#7c3aed" size={18} />
@@ -58,8 +60,16 @@ export function InvitePreviewCard({ invite }: InvitePreviewCardProps) {
             <Text style={{ color: "#475569", fontSize: 12, lineHeight: 18 }}>
               {role.privacyNote}
             </Text>
-            <Text style={{ color: "#475569", fontSize: 12, lineHeight: 18, marginTop: 4 }}>
-              Permissions can be changed later. Private health data is never shared automatically.
+            <Text
+              style={{
+                color: "#475569",
+                fontSize: 12,
+                lineHeight: 18,
+                marginTop: 4,
+              }}
+            >
+              Permissions can be changed later. Private health data is never
+              shared automatically.
             </Text>
           </View>
         </View>

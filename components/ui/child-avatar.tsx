@@ -11,7 +11,10 @@ type ChildAvatarProps = {
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join("");
+  const initials = parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
   return initials || "?";
 }
 
@@ -19,7 +22,11 @@ export function ChildAvatar({ name, size = 56, subtitle }: ChildAvatarProps) {
   return (
     <View style={styles.row}>
       <View style={[styles.avatar, { height: size, width: size }]}>
-        <Text style={[styles.initials, { fontSize: Math.max(16, size * 0.34) }]}>{getInitials(name)}</Text>
+        <Text
+          style={[styles.initials, { fontSize: Math.max(16, size * 0.34) }]}
+        >
+          {getInitials(name)}
+        </Text>
       </View>
       <View style={styles.copy}>
         <Text style={styles.name}>{name}</Text>
@@ -36,28 +43,28 @@ const styles = StyleSheet.create({
     borderColor: colors.card.background,
     borderRadius: 999,
     borderWidth: 3,
-    justifyContent: "center"
+    justifyContent: "center",
   },
   copy: {
     flex: 1,
-    gap: spacing.xs
+    gap: spacing.xs,
   },
   initials: {
     color: colors.status.success,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   name: {
     color: colors.text.primary,
     fontSize: 17,
-    fontWeight: "800"
+    fontWeight: "800",
   },
   row: {
     alignItems: "center",
     flexDirection: "row",
-    gap: spacing.md
+    gap: spacing.md,
   },
   subtitle: {
     color: colors.text.muted,
-    fontSize: 13
-  }
+    fontSize: 13,
+  },
 });

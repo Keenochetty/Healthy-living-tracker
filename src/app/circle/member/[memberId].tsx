@@ -10,7 +10,7 @@ import { getCircleRoleDefinition } from "@/constants/circleRoles";
 import {
   getMockCircle,
   removeCircleMember,
-  updateMemberPermissions
+  updateMemberPermissions,
 } from "@/lib/circleStorage";
 import type { CircleMember, CirclePermissionKey } from "@/types/circle";
 
@@ -18,14 +18,16 @@ export default function CircleMemberDetailScreen() {
   const { memberId: memberIdParam } = useLocalSearchParams<{
     memberId?: string | string[];
   }>();
-  const memberId = Array.isArray(memberIdParam) ? memberIdParam[0] : memberIdParam;
+  const memberId = Array.isArray(memberIdParam)
+    ? memberIdParam[0]
+    : memberIdParam;
   const [member, setMember] = useState<CircleMember | null>(null);
   const [permissions, setPermissions] = useState<CirclePermissionKey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const role = useMemo(
     () => (member ? getCircleRoleDefinition(member.role) : null),
-    [member]
+    [member],
   );
 
   useEffect(() => {
@@ -34,8 +36,9 @@ export default function CircleMemberDetailScreen() {
     getMockCircle()
       .then((circle) => {
         const nextMember =
-          circle.members.find((item) => item.id === memberId && item.status !== "removed") ??
-          null;
+          circle.members.find(
+            (item) => item.id === memberId && item.status !== "removed",
+          ) ?? null;
 
         if (isActive) {
           setMember(nextMember);
@@ -59,7 +62,8 @@ export default function CircleMemberDetailScreen() {
     }
 
     const circle = await updateMemberPermissions(member.id, permissions);
-    const updatedMember = circle.members.find((item) => item.id === member.id) ?? member;
+    const updatedMember =
+      circle.members.find((item) => item.id === member.id) ?? member;
 
     setMember(updatedMember);
     setStatusMessage("Permissions saved.");
@@ -93,7 +97,10 @@ export default function CircleMemberDetailScreen() {
             This member may have been removed from your circle.
           </Text>
         </AppCard>
-        <SecondaryButton label="Back to Circle" onPress={() => router.replace("/circle" as Href)} />
+        <SecondaryButton
+          label="Back to Circle"
+          onPress={() => router.replace("/circle" as Href)}
+        />
       </ScreenWrapper>
     );
   }
@@ -116,7 +123,7 @@ export default function CircleMemberDetailScreen() {
               borderRadius: 22,
               height: 62,
               justifyContent: "center",
-              width: 62
+              width: 62,
             }}
           >
             <Text style={{ color: "#7c3aed", fontSize: 18, fontWeight: "900" }}>
@@ -131,7 +138,13 @@ export default function CircleMemberDetailScreen() {
             <Text style={{ color: "#64748b", marginTop: 3 }}>
               {member.isOwner ? "Owner/admin" : role.label}
             </Text>
-            <Text style={{ color: "#94a3b8", marginTop: 3, textTransform: "capitalize" }}>
+            <Text
+              style={{
+                color: "#94a3b8",
+                marginTop: 3,
+                textTransform: "capitalize",
+              }}
+            >
               {member.status}
             </Text>
           </View>
@@ -139,10 +152,13 @@ export default function CircleMemberDetailScreen() {
       </AppCard>
 
       <AppCard backgroundColor="#f8fafc">
-        <View style={{ alignItems: "flex-start", flexDirection: "row", gap: 10 }}>
+        <View
+          style={{ alignItems: "flex-start", flexDirection: "row", gap: 10 }}
+        >
           <ShieldCheck color="#7c3aed" size={20} />
           <Text style={{ color: "#475569", flex: 1, lineHeight: 21 }}>
-            Changing permissions affects what this person can see in your circle.
+            Changing permissions affects what this person can see in your
+            circle.
           </Text>
         </View>
       </AppCard>
@@ -150,8 +166,8 @@ export default function CircleMemberDetailScreen() {
       {member.isOwner ? (
         <AppCard backgroundColor="#f5f3ff">
           <Text style={{ color: "#5b21b6", fontWeight: "800", lineHeight: 21 }}>
-            This is the circle owner. Owner/admin access cannot be removed from this mock
-            circle.
+            This is the circle owner. Owner/admin access cannot be removed from
+            this mock circle.
           </Text>
         </AppCard>
       ) : (
@@ -159,7 +175,9 @@ export default function CircleMemberDetailScreen() {
       )}
 
       {statusMessage ? (
-        <Text style={{ color: "#059669", fontWeight: "800" }}>{statusMessage}</Text>
+        <Text style={{ color: "#059669", fontWeight: "800" }}>
+          {statusMessage}
+        </Text>
       ) : null}
 
       {!member.isOwner ? (
@@ -172,7 +190,7 @@ export default function CircleMemberDetailScreen() {
               backgroundColor: "#7c3aed",
               borderRadius: 18,
               justifyContent: "center",
-              minHeight: 54
+              minHeight: 54,
             }}
           >
             <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "900" }}>
@@ -190,21 +208,32 @@ export default function CircleMemberDetailScreen() {
               flexDirection: "row",
               gap: 8,
               justifyContent: "center",
-              minHeight: 50
+              minHeight: 50,
             }}
           >
             <Trash2 color="#dc2626" size={18} />
-            <Text style={{ color: "#dc2626", fontWeight: "900" }}>Remove member</Text>
+            <Text style={{ color: "#dc2626", fontWeight: "900" }}>
+              Remove member
+            </Text>
           </TouchableOpacity>
         </>
       ) : null}
 
-      <SecondaryButton label="Back to Circle" onPress={() => router.replace("/circle" as Href)} />
+      <SecondaryButton
+        label="Back to Circle"
+        onPress={() => router.replace("/circle" as Href)}
+      />
     </ScreenWrapper>
   );
 }
 
-function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function SecondaryButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -214,7 +243,7 @@ function SecondaryButton({ label, onPress }: { label: string; onPress: () => voi
         backgroundColor: "#ffffff",
         borderRadius: 18,
         justifyContent: "center",
-        minHeight: 50
+        minHeight: 50,
       }}
     >
       <Text style={{ color: "#7c3aed", fontWeight: "800" }}>{label}</Text>

@@ -9,7 +9,7 @@ import {
   StatusPill,
   StatusSurface,
   WidgetCard,
-  type AppIconName
+  type AppIconName,
 } from "@/components/ui";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
@@ -31,42 +31,126 @@ const settingsSections: SettingsSection[] = [
   {
     title: "Account",
     items: [
-      { icon: "profiles", label: "Account", route: "/settings/account", subtitle: "Sign-in, account details, and identity.", tint: colors.brand.primary },
-      { icon: "profiles", label: "Profile", route: "/settings/profile", subtitle: "Personal profile basics and preferences.", tint: colors.brand.primary }
-    ]
+      {
+        icon: "profiles",
+        label: "Account",
+        route: "/settings/account",
+        subtitle: "Sign-in, account details, and identity.",
+        tint: colors.brand.primary,
+      },
+      {
+        icon: "profiles",
+        label: "Profile",
+        route: "/settings/profile",
+        subtitle: "Personal profile basics and preferences.",
+        tint: colors.brand.primary,
+      },
+    ],
   },
   {
     title: "Family & Care",
     items: [
-      { icon: "family", label: "Family/Care Circles", route: "/circles", subtitle: "Circles, members, roles, and relationships.", tint: colors.status.success },
-      { icon: "caregiver", label: "Caregiver Access", route: "/settings/caregiver-access", subtitle: "Assigned-only caregiver access and work mode.", tint: colors.brand.secondary },
-      { icon: "privacy", label: "Privacy & Sharing", route: "/privacy/permissions", subtitle: "Adult consent, teen transition, and permission presets.", tint: colors.status.system }
-    ]
+      {
+        icon: "family",
+        label: "Family/Care Circles",
+        route: "/circles",
+        subtitle: "Circles, members, roles, and relationships.",
+        tint: colors.status.success,
+      },
+      {
+        icon: "caregiver",
+        label: "Caregiver Access",
+        route: "/settings/caregiver-access",
+        subtitle: "Assigned-only caregiver access and work mode.",
+        tint: colors.brand.secondary,
+      },
+      {
+        icon: "privacy",
+        label: "Privacy & Sharing",
+        route: "/privacy/permissions",
+        subtitle: "Adult consent, teen transition, and permission presets.",
+        tint: colors.status.system,
+      },
+    ],
   },
   {
     title: "App Preferences",
     items: [
-      { icon: "notifications", label: "Notifications", route: "/settings/notifications", subtitle: "Safe previews and colour meanings.", tint: colors.status.warning },
-      { icon: "settings", label: "Appearance", route: "/settings/appearance", subtitle: "Display and visual preferences.", tint: colors.status.ai },
-      { icon: "units", label: "Units & Measurements", route: "/settings/measurement-units", subtitle: "Metric, imperial, time, and date formats.", tint: colors.brand.primary },
-      { icon: "language", label: "Language & Region", route: "/settings/language-region", subtitle: "Regional preferences and localization.", tint: colors.status.success }
-    ]
+      {
+        icon: "notifications",
+        label: "Notifications",
+        route: "/settings/notifications",
+        subtitle: "Safe previews and colour meanings.",
+        tint: colors.status.warning,
+      },
+      {
+        icon: "settings",
+        label: "Appearance",
+        route: "/settings/appearance",
+        subtitle: "Display and visual preferences.",
+        tint: colors.status.ai,
+      },
+      {
+        icon: "units",
+        label: "Units & Measurements",
+        route: "/settings/measurement-units",
+        subtitle: "Metric, imperial, time, and date formats.",
+        tint: colors.brand.primary,
+      },
+      {
+        icon: "language",
+        label: "Language & Region",
+        route: "/settings/language-region",
+        subtitle: "Regional preferences and localization.",
+        tint: colors.status.success,
+      },
+    ],
   },
   {
     title: "Connected Features",
     items: [
-      { icon: "sync", label: "Calendar Sync", route: "/settings/calendar-sync", subtitle: "Google and Apple sync placeholders.", tint: colors.brand.primary },
-      { icon: "voice", label: "Voice Assistant", route: "/settings/voice-assistant", subtitle: "Voice capture and assistant controls.", tint: colors.status.ai },
-      { icon: "ai", label: "AI Assistant", route: "/settings/ai-assistant", subtitle: "Safe AI suggestions and assistant settings.", tint: colors.status.ai }
-    ]
+      {
+        icon: "sync",
+        label: "Calendar Sync",
+        route: "/settings/calendar-sync",
+        subtitle: "Google and Apple sync placeholders.",
+        tint: colors.brand.primary,
+      },
+      {
+        icon: "voice",
+        label: "Voice Assistant",
+        route: "/settings/voice-assistant",
+        subtitle: "Voice capture and assistant controls.",
+        tint: colors.status.ai,
+      },
+      {
+        icon: "ai",
+        label: "AI Assistant",
+        route: "/settings/ai-assistant",
+        subtitle: "Safe AI suggestions and assistant settings.",
+        tint: colors.status.ai,
+      },
+    ],
   },
   {
     title: "Safety & Support",
     items: [
-      { icon: "lock", label: "Security", route: "/settings/security", subtitle: "App lock, sessions, and safety controls.", tint: colors.status.system },
-      { icon: "settings", label: "Help & About", route: "/settings/help", subtitle: "Support, legal, and app information.", tint: colors.brand.primary }
-    ]
-  }
+      {
+        icon: "lock",
+        label: "Security",
+        route: "/settings/security",
+        subtitle: "App lock, sessions, and safety controls.",
+        tint: colors.status.system,
+      },
+      {
+        icon: "settings",
+        label: "Help & About",
+        route: "/settings/help",
+        subtitle: "Support, legal, and app information.",
+        tint: colors.brand.primary,
+      },
+    ],
+  },
 ];
 
 function openRoute(route: string) {
@@ -74,7 +158,10 @@ function openRoute(route: string) {
 }
 
 export default function MoreScreen() {
-  const sectionCount = settingsSections.reduce((total, section) => total + section.items.length, 0);
+  const sectionCount = settingsSections.reduce(
+    (total, section) => total + section.items.length,
+    0,
+  );
 
   return (
     <View style={styles.root}>
@@ -97,9 +184,15 @@ export default function MoreScreen() {
         {settingsSections.map((section) => (
           <WidgetCard
             accentColor={colors.brand.primary}
-            action={<StatusPill label={`${section.items.length}`} tone="default" />}
+            action={
+              <StatusPill label={`${section.items.length}`} tone="default" />
+            }
             key={section.title}
-            subtitle={section.title === "Family & Care" ? "Caregiver work stays in Care, not the Home switcher." : "Simple rows with clear labels and short descriptions."}
+            subtitle={
+              section.title === "Family & Care"
+                ? "Caregiver work stays in Care, not the Home switcher."
+                : "Simple rows with clear labels and short descriptions."
+            }
             title={section.title}
           >
             <View style={styles.grid}>
@@ -108,9 +201,17 @@ export default function MoreScreen() {
                   accessibilityRole="button"
                   key={item.label}
                   onPress={() => openRoute(item.route)}
-                  style={({ pressed }) => [styles.item, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.item,
+                    pressed && styles.pressed,
+                  ]}
                 >
-                  <View style={[styles.iconShell, { backgroundColor: `${item.tint}20` }]}>
+                  <View
+                    style={[
+                      styles.iconShell,
+                      { backgroundColor: `${item.tint}20` },
+                    ]}
+                  >
                     <AppIcon color={item.tint} name={item.icon} size={23} />
                   </View>
                   <View style={styles.copy}>
@@ -158,7 +259,9 @@ export default function MoreScreen() {
           </View>
         </WidgetCard>
 
-        <Text style={styles.footerNote}>{sectionCount} settings shortcuts grouped for faster scanning.</Text>
+        <Text style={styles.footerNote}>
+          {sectionCount} settings shortcuts grouped for faster scanning.
+        </Text>
       </AppScreen>
     </View>
   );
@@ -168,23 +271,23 @@ const styles = StyleSheet.create({
   copy: {
     flex: 1,
     gap: spacing.xs,
-    minWidth: 0
+    minWidth: 0,
   },
   footerNote: {
     color: colors.text.muted,
     fontSize: 13,
     fontWeight: "700",
-    textAlign: "center"
+    textAlign: "center",
   },
   grid: {
-    gap: spacing.md
+    gap: spacing.md,
   },
   iconShell: {
     alignItems: "center",
     borderRadius: 14,
     height: 40,
     justifyContent: "center",
-    width: 40
+    width: 40,
   },
   item: {
     alignItems: "center",
@@ -195,24 +298,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
     minHeight: 64,
-    padding: spacing.md
+    padding: spacing.md,
   },
   itemLabel: {
     color: colors.text.primary,
     fontSize: 16,
-    fontWeight: "900"
+    fontWeight: "900",
   },
   itemSubtitle: {
     color: colors.text.muted,
     fontSize: 13,
-    lineHeight: 18
+    lineHeight: 18,
   },
   pressed: {
     opacity: 0.82,
-    transform: [{ scale: 0.99 }]
+    transform: [{ scale: 0.99 }],
   },
   root: {
     backgroundColor: colors.background.app,
-    flex: 1
-  }
+    flex: 1,
+  },
 });

@@ -22,7 +22,7 @@ export function AppScreen({
   safeBottom = true,
   safeTop = true,
   scroll = true,
-  style
+  style,
 }: AppScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
@@ -31,11 +31,17 @@ export function AppScreen({
     paddingBottom: (safeBottom ? insets.bottom : 0) + 180,
     paddingHorizontal: padded ? spacing.xl : 0,
     paddingTop: (safeTop ? insets.top : 0) + spacing.lg,
-    ...style
+    ...style,
   };
 
   return (
-    <View style={{ backgroundColor: backgroundColor ?? theme.background, flex: 1, overflow: "hidden" }}>
+    <View
+      style={{
+        backgroundColor: backgroundColor ?? theme.background,
+        flex: 1,
+        overflow: "hidden",
+      }}
+    >
       <View
         pointerEvents="none"
         style={{
@@ -46,7 +52,7 @@ export function AppScreen({
           opacity: 0.08,
           position: "absolute",
           top: -150,
-          width: 230
+          width: 230,
         }}
       />
       <View
@@ -59,7 +65,7 @@ export function AppScreen({
           position: "absolute",
           right: -105,
           top: -95,
-          width: 180
+          width: 180,
         }}
       />
       {scroll ? (

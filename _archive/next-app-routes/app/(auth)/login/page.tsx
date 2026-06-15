@@ -10,7 +10,10 @@ export default function LoginPage() {
       footer={
         <p className="text-sm text-muted-foreground">
           New here?{" "}
-          <Link className="font-medium text-primary hover:underline" href="/signup">
+          <Link
+            className="font-medium text-primary hover:underline"
+            href="/signup"
+          >
             Create an account
           </Link>
         </p>

@@ -1,11 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { cancelReminderNotification, scheduleMedicationNotification } from "@/lib/notifications";
+import {
+  cancelReminderNotification,
+  scheduleMedicationNotification,
+} from "@/lib/notifications";
 import {
   cancelRemindersByLinkedEntity,
   createMedicationReminder,
   getRemindersByLinkedEntity,
-  updateReminder
+  updateReminder,
 } from "@/lib/reminderStorage";
 import type {
   MedicationDetail,
@@ -13,7 +16,7 @@ import type {
   MedicationItem,
   MedicationReminderTime,
   MedicationSchedule,
-  MedicationTakenLog
+  MedicationTakenLog,
 } from "@/types/medication";
 
 const MEDICATIONS_STORAGE_KEY = "family_health_medications";
@@ -27,7 +30,9 @@ type CreateMedicationInput = {
   name: string;
 };
 
-export function subscribeToMedications(listener: (medications: MedicationItem[]) => void) {
+export function subscribeToMedications(
+  listener: (medications: MedicationItem[]) => void,
+) {
   medicationListeners.add(listener);
 
   return () => {
@@ -49,7 +54,7 @@ function createStarterMedication(): MedicationItem {
     id: "starter-medication",
     instructions: "Follow your healthcare professional's instructions.",
     name: "Medication reminder",
-    updatedAt: now
+    updatedAt: now,
   };
 }
 
@@ -76,7 +81,10 @@ async function writeJsonArray<T>(key: string, value: T[]) {
 }
 
 export async function getMedications() {
-  const medications = await readJsonArray<MedicationItem>(MEDICATIONS_STORAGE_KEY, []);
+  const medications = await readJsonArray<MedicationItem>(
+    MEDICATIONS_STORAGE_KEY,
+    [],
+  );
 
   if (!medications.length) {
     const starterMedication = createStarterMedication();
@@ -105,7 +113,7 @@ export async function createMedication(input: CreateMedicationInput) {
     id: `medication-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     instructions: input.instructions?.trim() || undefined,
     name: input.name.trim(),
-    updatedAt: now
+    updatedAt: now,
   };
   const medications = await getMedications();
 
@@ -122,7 +130,7 @@ export async function getMedicationById(id: string) {
 
 export async function updateMedication(
   id: string,
-  partial: Partial<Omit<MedicationItem, "id" | "createdAt">>
+  partial: Partial<Omit<MedicationItem, "id" | "createdAt">>,
 ) {
   const medications = await getMedications();
   const updatedMedications = medications.map((medication) =>
@@ -130,9 +138,9 @@ export async function updateMedication(
       ? {
           ...medication,
           ...partial,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         }
-      : medication
+      : medication,
   );
 
   await saveMedications(updatedMedications);
@@ -141,13 +149,20 @@ export async function updateMedication(
 }
 
 export async function getMedicationSchedules() {
-  return readJsonArray<MedicationSchedule>(MEDICATION_SCHEDULES_STORAGE_KEY, []);
+  return readJsonArray<MedicationSchedule>(
+    MEDICATION_SCHEDULES_STORAGE_KEY,
+    [],
+  );
 }
 
-export async function getMedicationScheduleByMedicationId(medicationId: string) {
+export async function getMedicationScheduleByMedicationId(
+  medicationId: string,
+) {
   const schedules = await getMedicationSchedules();
 
-  return schedules.find((schedule) => schedule.medicationId === medicationId) ?? null;
+  return (
+    schedules.find((schedule) => schedule.medicationId === medicationId) ?? null
+  );
 }
 
 function defaultTimesForFrequency(frequency: MedicationFrequency): string[] {
@@ -164,17 +179,21 @@ function defaultTimesForFrequency(frequency: MedicationFrequency): string[] {
 
 function buildReminderTimes(
   frequency: MedicationFrequency,
-  existingTimes?: MedicationReminderTime[]
+  existingTimes?: MedicationReminderTime[],
 ) {
-  const times = frequency === "custom" && existingTimes?.length
-    ? existingTimes.map((time) => time.time)
-    : defaultTimesForFrequency(frequency);
+  const times =
+    frequency === "custom" && existingTimes?.length
+      ? existingTimes.map((time) => time.time)
+      : defaultTimesForFrequency(frequency);
 
   return times.map((time, index) => ({
     enabled: existingTimes?.find((item) => item.time === time)?.enabled ?? true,
-    id: existingTimes?.find((item) => item.time === time)?.id ?? `time-${index}-${time}`,
-    notificationId: existingTimes?.find((item) => item.time === time)?.notificationId,
-    time
+    id:
+      existingTimes?.find((item) => item.time === time)?.id ??
+      `time-${index}-${time}`,
+    notificationId: existingTimes?.find((item) => item.time === time)
+      ?.notificationId,
+    time,
   }));
 }
 
@@ -202,7 +221,7 @@ export async function createDefaultScheduleForMedication(medicationId: string) {
     medicationId,
     reminderTimes: buildReminderTimes("daily"),
     takeWithFood: false,
-    updatedAt: now
+    updatedAt: now,
   };
 }
 
@@ -219,11 +238,13 @@ async function syncScheduleReminders(schedule: MedicationSchedule) {
 
   const existingReminders = await getRemindersByLinkedEntity(
     "medication",
-    medication.id
+    medication.id,
   );
 
   await Promise.all(
-    existingReminders.map((reminder) => cancelReminderNotification(reminder.notificationId))
+    existingReminders.map((reminder) =>
+      cancelReminderNotification(reminder.notificationId),
+    ),
   );
   await cancelRemindersByLinkedEntity("medication", medication.id);
 
@@ -232,8 +253,8 @@ async function syncScheduleReminders(schedule: MedicationSchedule) {
       ...schedule,
       reminderTimes: schedule.reminderTimes.map((time) => ({
         ...time,
-        notificationId: undefined
-      }))
+        notificationId: undefined,
+      })),
     };
   }
 
@@ -251,26 +272,26 @@ async function syncScheduleReminders(schedule: MedicationSchedule) {
       instructions: schedule.instructions || medication.instructions,
       medicationId: medication.id,
       medicationName: medication.name,
-      notify: true
+      notify: true,
     });
     const notificationId = await scheduleMedicationNotification({
       ...reminder,
-      notify: true
+      notify: true,
     });
     const savedReminder = await updateReminder(reminder.id, {
       notificationId: notificationId ?? undefined,
-      notify: Boolean(notificationId)
+      notify: Boolean(notificationId),
     });
 
     nextReminderTimes.push({
       ...reminderTime,
-      notificationId: savedReminder?.notificationId
+      notificationId: savedReminder?.notificationId,
     });
   }
 
   return {
     ...schedule,
-    reminderTimes: nextReminderTimes
+    reminderTimes: nextReminderTimes,
   };
 }
 
@@ -278,13 +299,16 @@ export async function saveMedicationSchedule(schedule: MedicationSchedule) {
   const schedules = await getMedicationSchedules();
   const normalisedSchedule: MedicationSchedule = {
     ...schedule,
-    reminderTimes: buildReminderTimes(schedule.frequency, schedule.reminderTimes),
-    updatedAt: new Date().toISOString()
+    reminderTimes: buildReminderTimes(
+      schedule.frequency,
+      schedule.reminderTimes,
+    ),
+    updatedAt: new Date().toISOString(),
   };
   const syncedSchedule = await syncScheduleReminders(normalisedSchedule);
   const nextSchedules = [
     syncedSchedule,
-    ...schedules.filter((item) => item.id !== syncedSchedule.id)
+    ...schedules.filter((item) => item.id !== syncedSchedule.id),
   ];
 
   await saveSchedules(nextSchedules);
@@ -294,7 +318,7 @@ export async function saveMedicationSchedule(schedule: MedicationSchedule) {
 
 export async function updateMedicationSchedule(
   scheduleId: string,
-  partial: Partial<Omit<MedicationSchedule, "id" | "createdAt">>
+  partial: Partial<Omit<MedicationSchedule, "id" | "createdAt">>,
 ) {
   const schedules = await getMedicationSchedules();
   const schedule = schedules.find((item) => item.id === scheduleId);
@@ -306,7 +330,7 @@ export async function updateMedicationSchedule(
   return saveMedicationSchedule({
     ...schedule,
     ...partial,
-    reminderTimes: partial.reminderTimes ?? schedule.reminderTimes
+    reminderTimes: partial.reminderTimes ?? schedule.reminderTimes,
   });
 }
 
@@ -317,11 +341,13 @@ export async function deleteMedicationSchedule(scheduleId: string) {
   if (schedule) {
     const linkedReminders = await getRemindersByLinkedEntity(
       "medication",
-      schedule.medicationId
+      schedule.medicationId,
     );
 
     await Promise.all(
-      linkedReminders.map((reminder) => cancelReminderNotification(reminder.notificationId))
+      linkedReminders.map((reminder) =>
+        cancelReminderNotification(reminder.notificationId),
+      ),
     );
     await cancelRemindersByLinkedEntity("medication", schedule.medicationId);
   }
@@ -332,12 +358,15 @@ export async function deleteMedicationSchedule(scheduleId: string) {
 }
 
 export async function markMedicationTaken(medicationId: string, note?: string) {
-  const logs = await readJsonArray<MedicationTakenLog>(MEDICATION_TAKEN_LOGS_STORAGE_KEY, []);
+  const logs = await readJsonArray<MedicationTakenLog>(
+    MEDICATION_TAKEN_LOGS_STORAGE_KEY,
+    [],
+  );
   const log: MedicationTakenLog = {
     id: `taken-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     medicationId,
     note: note?.trim() || undefined,
-    takenAt: new Date().toISOString()
+    takenAt: new Date().toISOString(),
   };
 
   await writeJsonArray(MEDICATION_TAKEN_LOGS_STORAGE_KEY, [log, ...logs]);
@@ -345,14 +374,19 @@ export async function markMedicationTaken(medicationId: string, note?: string) {
   return log;
 }
 
-export async function getMedicationTakenLogsByMedicationId(medicationId: string) {
-  const logs = await readJsonArray<MedicationTakenLog>(MEDICATION_TAKEN_LOGS_STORAGE_KEY, []);
+export async function getMedicationTakenLogsByMedicationId(
+  medicationId: string,
+) {
+  const logs = await readJsonArray<MedicationTakenLog>(
+    MEDICATION_TAKEN_LOGS_STORAGE_KEY,
+    [],
+  );
 
   return logs.filter((log) => log.medicationId === medicationId);
 }
 
 export async function getMedicationDetail(
-  medicationId: string
+  medicationId: string,
 ): Promise<MedicationDetail | null> {
   const medication = await getMedicationById(medicationId);
 
@@ -362,12 +396,12 @@ export async function getMedicationDetail(
 
   const [schedule, takenLogs] = await Promise.all([
     getMedicationScheduleByMedicationId(medicationId),
-    getMedicationTakenLogsByMedicationId(medicationId)
+    getMedicationTakenLogsByMedicationId(medicationId),
   ]);
 
   return {
     medication,
     schedule: schedule ?? undefined,
-    takenLogs
+    takenLogs,
   };
 }

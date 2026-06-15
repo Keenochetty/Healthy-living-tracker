@@ -39,7 +39,7 @@ import {
   Upload,
   UserRoundCheck,
   UsersRound,
-  Watch
+  Watch,
 } from "lucide-react-native";
 import type { ComponentType } from "react";
 
@@ -165,5 +165,5 @@ export const appIcons: Record<AppIconName, IconComponent> = {
   source: FileText,
   ai_draft: Sparkles,
   warning: TriangleAlert,
-  success: CircleCheck
+  success: CircleCheck,
 };

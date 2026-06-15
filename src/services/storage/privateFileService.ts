@@ -44,7 +44,12 @@ export type PrivateFileMetadata = {
 };
 
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "pdf", "webp"]);
-const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const ALLOWED_CONTENT_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+]);
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const SIGNED_URL_EXPIRY_SECONDS = 60 * 5;
 
@@ -59,7 +64,7 @@ export async function uploadPrivateHealthFile(input: PrivateHealthFileInput) {
     .from(input.bucket)
     .upload(metadata.path, input.bytes, {
       contentType: input.contentType,
-      upsert: false
+      upsert: false,
     });
 
   if (error) {
@@ -74,9 +79,9 @@ export async function uploadPrivateHealthFile(input: PrivateHealthFileInput) {
       operation: "upload_private_health_file",
       path: metadata.path,
       realm: input.realm,
-      recordId: input.recordId
+      recordId: input.recordId,
     },
-    targetProfileId: input.profileId
+    targetProfileId: input.profileId,
   });
 
   return { data, metadata };
@@ -86,14 +91,19 @@ export async function getPrivateFileSignedUrl({
   bucket,
   path,
   profileId,
-  recordId
+  recordId,
 }: {
   bucket: PrivateHealthBucket;
   path: string;
   profileId: string;
   recordId?: string;
 }) {
-  const allowed = await validateFileAccessPermission({ bucket, path, profileId, recordId });
+  const allowed = await validateFileAccessPermission({
+    bucket,
+    path,
+    profileId,
+    recordId,
+  });
   if (!allowed) {
     throw new Error("You do not have permission to view this file.");
   }
@@ -105,7 +115,7 @@ export async function generateShortLivedSignedUrl({
   bucket,
   path,
   profileId,
-  recordId
+  recordId,
 }: {
   bucket: PrivateHealthBucket;
   path: string;
@@ -128,9 +138,9 @@ export async function generateShortLivedSignedUrl({
       expiresInSeconds: SIGNED_URL_EXPIRY_SECONDS,
       operation: "private_file_signed_url",
       path,
-      recordId
+      recordId,
     },
-    targetProfileId: profileId
+    targetProfileId: profileId,
   });
 
   return data.signedUrl;
@@ -140,14 +150,19 @@ export async function deletePrivateHealthFile({
   bucket,
   path,
   profileId,
-  recordId
+  recordId,
 }: {
   bucket: PrivateHealthBucket;
   path: string;
   profileId: string;
   recordId?: string;
 }) {
-  const allowed = await validateFileAccessPermission({ bucket, path, profileId, recordId });
+  const allowed = await validateFileAccessPermission({
+    bucket,
+    path,
+    profileId,
+    recordId,
+  });
   if (!allowed) {
     throw new Error("You do not have permission to delete this file.");
   }
@@ -165,7 +180,7 @@ export async function listPrivateFilesForRecord({
   profileId,
   realm,
   recordId,
-  userId
+  userId,
 }: {
   bucket: PrivateHealthBucket;
   profileId: string;
@@ -174,7 +189,12 @@ export async function listPrivateFilesForRecord({
   userId: string;
 }) {
   const prefix = `${sanitizePathPart(userId)}/${sanitizePathPart(profileId)}/${realm}/${sanitizePathPart(recordId)}`;
-  const allowed = await validateFileAccessPermission({ bucket, path: prefix, profileId, recordId });
+  const allowed = await validateFileAccessPermission({
+    bucket,
+    path: prefix,
+    profileId,
+    recordId,
+  });
   if (!allowed) {
     throw new Error("You do not have permission to list these files.");
   }
@@ -189,7 +209,7 @@ export async function listPrivateFilesForRecord({
 
 export async function validateFileAccessPermission({
   path,
-  profileId
+  profileId,
 }: {
   bucket: PrivateHealthBucket;
   path: string;
@@ -198,13 +218,20 @@ export async function validateFileAccessPermission({
 }) {
   // Client-side validation is a convenience gate only. Production access must be
   // enforced by storage.objects RLS and, for server-created URLs, Edge Functions.
-  return Boolean(profileId && path.includes(`/${sanitizePathPart(profileId)}/`));
+  return Boolean(
+    profileId && path.includes(`/${sanitizePathPart(profileId)}/`),
+  );
 }
 
-export function validatePrivateHealthFile(input: Pick<PrivateHealthFileInput, "bytes" | "contentType" | "fileName">) {
+export function validatePrivateHealthFile(
+  input: Pick<PrivateHealthFileInput, "bytes" | "contentType" | "fileName">,
+) {
   const extension = getFileExtension(input.fileName);
   if (!ALLOWED_EXTENSIONS.has(extension)) {
-    return { reason: "Unsupported file type. Use jpg, jpeg, png, pdf, or webp.", valid: false };
+    return {
+      reason: "Unsupported file type. Use jpg, jpeg, png, pdf, or webp.",
+      valid: false,
+    };
   }
   if (!ALLOWED_CONTENT_TYPES.has(input.contentType)) {
     return { reason: "Unsupported content type.", valid: false };
@@ -216,7 +243,9 @@ export function validatePrivateHealthFile(input: Pick<PrivateHealthFileInput, "b
   return { valid: true };
 }
 
-export function buildPrivateFileMetadata(input: Omit<PrivateHealthFileInput, "bytes">): PrivateFileMetadata {
+export function buildPrivateFileMetadata(
+  input: Omit<PrivateHealthFileInput, "bytes">,
+): PrivateFileMetadata {
   const sanitizedFileName = sanitizeFileName(input.fileName);
   return {
     bucket: input.bucket,
@@ -227,23 +256,24 @@ export function buildPrivateFileMetadata(input: Omit<PrivateHealthFileInput, "by
       sanitizePathPart(input.profileId),
       input.realm,
       sanitizePathPart(input.recordId),
-      sanitizedFileName
+      sanitizedFileName,
     ].join("/"),
     profileId: input.profileId,
     realm: input.realm,
     recordId: input.recordId,
     sanitizedFileName,
-    uploadedByUserId: input.userId
+    uploadedByUserId: input.userId,
   };
 }
 
 export function sanitizeFileName(fileName: string) {
   const extension = getFileExtension(fileName);
-  const baseName = fileName
-    .replace(/\.[^.]+$/, "")
-    .replace(/[^a-zA-Z0-9-_]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80) || "file";
+  const baseName =
+    fileName
+      .replace(/\.[^.]+$/, "")
+      .replace(/[^a-zA-Z0-9-_]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "file";
   return `${baseName}.${extension}`;
 }
 

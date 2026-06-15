@@ -21,11 +21,12 @@ export function MedicationTakenHistory({ logs }: MedicationTakenHistoryProps) {
             style={{
               backgroundColor: "#ffffff",
               borderRadius: 18,
-              padding: 14
+              padding: 14,
             }}
           >
             <Text style={{ color: "#0f172a", fontWeight: "900" }}>
-              {formatReminderDate(log.takenAt)} at {formatReminderTime(log.takenAt)}
+              {formatReminderDate(log.takenAt)} at{" "}
+              {formatReminderTime(log.takenAt)}
             </Text>
             {log.note ? (
               <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
@@ -35,7 +36,9 @@ export function MedicationTakenHistory({ logs }: MedicationTakenHistoryProps) {
           </View>
         ))
       ) : (
-        <View style={{ backgroundColor: "#ffffff", borderRadius: 18, padding: 14 }}>
+        <View
+          style={{ backgroundColor: "#ffffff", borderRadius: 18, padding: 14 }}
+        >
           <Text style={{ color: "#64748b" }}>No taken logs yet.</Text>
         </View>
       )}

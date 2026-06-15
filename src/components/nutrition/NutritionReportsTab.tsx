@@ -13,7 +13,7 @@ import {
   getMostUsedSavedMeals,
   getNutritionReportSummary,
   getWaterTrends,
-  getWorkoutFoodConnectionReport
+  getWorkoutFoodConnectionReport,
 } from "@/services/nutrition/nutritionReportsService";
 import type {
   DailyMacroTrend,
@@ -25,7 +25,7 @@ import type {
   NutritionReportSummary,
   ReportRange,
   WaterTrendReport,
-  WorkoutFoodConnectionReport
+  WorkoutFoodConnectionReport,
 } from "@/types/nutrition";
 import type { BiometricsInsight } from "@/types/biometrics";
 
@@ -45,7 +45,7 @@ type ReportsState = {
 const RANGES: Array<{ key: ReportRange; label: string }> = [
   { key: "today", label: "Today" },
   { key: "7_days", label: "7 Days" },
-  { key: "30_days", label: "30 Days" }
+  { key: "30_days", label: "30 Days" },
 ];
 
 export function NutritionReportsTab() {
@@ -68,7 +68,7 @@ export function NutritionReportsTab() {
       mostLoggedFoods,
       mostUsedMeals,
       insights,
-      biometricInsights
+      biometricInsights,
     ] = await Promise.all([
       getNutritionReportSummary(range),
       getDailyMacroTrends(range),
@@ -79,7 +79,7 @@ export function NutritionReportsTab() {
       getMostLoggedFoods(range),
       getMostUsedSavedMeals(range),
       generateNutritionInsights(range),
-      getNutritionBiometricInsights()
+      getNutritionBiometricInsights(),
     ]);
 
     setReports({
@@ -92,7 +92,7 @@ export function NutritionReportsTab() {
       mostUsedMeals,
       summary,
       waterTrends,
-      workoutFood
+      workoutFood,
     });
     setLoading(false);
   }, [range]);
@@ -109,7 +109,9 @@ export function NutritionReportsTab() {
   if (loading) {
     return (
       <AppCard>
-        <Text style={{ color: "#64748b", lineHeight: 21 }}>Loading nutrition reports...</Text>
+        <Text style={{ color: "#64748b", lineHeight: 21 }}>
+          Loading nutrition reports...
+        </Text>
       </AppCard>
     );
   }
@@ -138,10 +140,15 @@ export function NutritionReportsTab() {
               borderRadius: 999,
               borderWidth: 1,
               paddingHorizontal: 14,
-              paddingVertical: 10
+              paddingVertical: 10,
             }}
           >
-            <Text style={{ color: range === option.key ? "#ffffff" : "#92400e", fontWeight: "900" }}>
+            <Text
+              style={{
+                color: range === option.key ? "#ffffff" : "#92400e",
+                fontWeight: "900",
+              }}
+            >
               {option.label}
             </Text>
           </TouchableOpacity>
@@ -162,36 +169,62 @@ export function NutritionReportsTab() {
 
       <AppCard>
         <View style={{ gap: 10 }}>
-          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>Export Report</Text>
+          <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+            Export Report
+          </Text>
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            {exportMessage ?? "Create a nutrition report export later from this view."}
+            {exportMessage ??
+              "Create a nutrition report export later from this view."}
           </Text>
           <ReportButton
             label="Export Report"
-            onPress={() => setExportMessage("Exporting reports will be added in a later phase.")}
+            onPress={() =>
+              setExportMessage(
+                "Exporting reports will be added in a later phase.",
+              )
+            }
           />
         </View>
       </AppCard>
 
       <Text style={{ color: "#64748b", fontSize: 12, lineHeight: 18 }}>
-        Reports are based on the information you log and are for general wellness tracking only.
-        They are not medical advice. For medical conditions, pregnancy, children, medication
-        concerns, or eating concerns, speak to a healthcare professional.
+        Reports are based on the information you log and are for general
+        wellness tracking only. They are not medical advice. For medical
+        conditions, pregnancy, children, medication concerns, or eating
+        concerns, speak to a healthcare professional.
       </Text>
     </View>
   );
 }
 
-function BiometricInsightsCard({ insights }: { insights: BiometricsInsight[] }) {
+function BiometricInsightsCard({
+  insights,
+}: {
+  insights: BiometricsInsight[];
+}) {
   return (
     <AppCard backgroundColor="#f8fafc">
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle="Weight, sleep, energy and symptoms" title="Biometrics Connection" />
+        <SectionHeader
+          subtitle="Weight, sleep, energy and symptoms"
+          title="Biometrics Connection"
+        />
         {insights.length ? (
           insights.map((insight) => (
-            <View key={`${insight.type}-${insight.title}`} style={{ backgroundColor: "#ffffff", borderRadius: 16, padding: 12 }}>
-              <Text style={{ color: "#0f172a", fontWeight: "900" }}>{insight.title}</Text>
-              <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>{insight.message}</Text>
+            <View
+              key={`${insight.type}-${insight.title}`}
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 16,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+                {insight.title}
+              </Text>
+              <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
+                {insight.message}
+              </Text>
             </View>
           ))
         ) : (
@@ -208,28 +241,46 @@ function TodaySummaryCard({ summary }: { summary: NutritionReportSummary }) {
   return (
     <AppCard>
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle={`${summary.startDate} to ${summary.endDate}`} title="Today Summary" />
+        <SectionHeader
+          subtitle={`${summary.startDate} to ${summary.endDate}`}
+          title="Today Summary"
+        />
         {!summary.daysLogged ? (
           <EmptyText text="Log meals to unlock nutrition reports." />
         ) : null}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
           <MetricTile
             label="Calories"
-            value={formatTargetValue(summary.caloriesAverage, summary.caloriesTargetAverage, "kcal")}
+            value={formatTargetValue(
+              summary.caloriesAverage,
+              summary.caloriesTargetAverage,
+              "kcal",
+            )}
           />
           <MetricTile
             label="Protein"
-            value={formatTargetValue(summary.proteinAverageG, summary.proteinTargetAverageG, "g")}
+            value={formatTargetValue(
+              summary.proteinAverageG,
+              summary.proteinTargetAverageG,
+              "g",
+            )}
           />
           <MetricTile label="Carbs" value={`${summary.carbsAverageG} g`} />
           <MetricTile label="Fat" value={`${summary.fatAverageG} g`} />
           <MetricTile label="Fiber" value={`${summary.fiberAverageG} g`} />
           <MetricTile
             label="Water"
-            value={formatTargetValue(summary.waterAverageMl, summary.waterTargetAverageMl, "ml")}
+            value={formatTargetValue(
+              summary.waterAverageMl,
+              summary.waterTargetAverageMl,
+              "ml",
+            )}
           />
           <MetricTile label="Meals" value={`${summary.mealsLogged}`} />
-          <MetricTile label="Note" value={summary.notesLogged ? "Logged" : "No note"} />
+          <MetricTile
+            label="Note"
+            value={summary.notesLogged ? "Logged" : "No note"}
+          />
         </View>
         {!isToday ? (
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
@@ -245,14 +296,32 @@ function RangeSummaryCard({ summary }: { summary: NutritionReportSummary }) {
   return (
     <AppCard backgroundColor="#fffbeb">
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle={`${summary.totalDays} day${summary.totalDays === 1 ? "" : "s"}`} title="Range Summary" />
+        <SectionHeader
+          subtitle={`${summary.totalDays} day${summary.totalDays === 1 ? "" : "s"}`}
+          title="Range Summary"
+        />
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          <MetricTile label="Days logged" value={`${summary.daysLogged} / ${summary.totalDays}`} />
-          <MetricTile label="Consistency" value={`${summary.foodLoggingConsistencyPercent}%`} />
+          <MetricTile
+            label="Days logged"
+            value={`${summary.daysLogged} / ${summary.totalDays}`}
+          />
+          <MetricTile
+            label="Consistency"
+            value={`${summary.foodLoggingConsistencyPercent}%`}
+          />
           <MetricTile label="Meals logged" value={`${summary.mealsLogged}`} />
-          <MetricTile label="Target near-hit" value={formatOptionalPercent(summary.targetHitRatePercent)} />
-          <MetricTile label="Best protein day" value={summary.bestProteinDay ?? "No data"} />
-          <MetricTile label="Low logging day" value={summary.lowLoggingDay ?? "No data"} />
+          <MetricTile
+            label="Target near-hit"
+            value={formatOptionalPercent(summary.targetHitRatePercent)}
+          />
+          <MetricTile
+            label="Best protein day"
+            value={summary.bestProteinDay ?? "No data"}
+          />
+          <MetricTile
+            label="Low logging day"
+            value={summary.lowLoggingDay ?? "No data"}
+          />
         </View>
       </View>
     </AppCard>
@@ -260,7 +329,9 @@ function RangeSummaryCard({ summary }: { summary: NutritionReportSummary }) {
 }
 
 function MacroTrendsCard({ trends }: { trends: DailyMacroTrend[] }) {
-  const hasMeals = trends.some((trend) => trend.calories > 0 || trend.proteinG > 0);
+  const hasMeals = trends.some(
+    (trend) => trend.calories > 0 || trend.proteinG > 0,
+  );
 
   return (
     <AppCard>
@@ -268,11 +339,51 @@ function MacroTrendsCard({ trends }: { trends: DailyMacroTrend[] }) {
         <SectionHeader subtitle="Daily totals" title="Macro Trends" />
         {hasMeals ? (
           <>
-            <MiniBarChart color="#f59e0b" label="Calories" suffix="kcal" values={trends.map((trend) => ({ label: shortDate(trend.date), value: trend.calories }))} />
-            <MiniBarChart color="#22c55e" label="Protein" suffix="g" values={trends.map((trend) => ({ label: shortDate(trend.date), value: trend.proteinG }))} />
-            <MiniBarChart color="#3b82f6" label="Carbs" suffix="g" values={trends.map((trend) => ({ label: shortDate(trend.date), value: trend.carbsG }))} />
-            <MiniBarChart color="#a855f7" label="Fat" suffix="g" values={trends.map((trend) => ({ label: shortDate(trend.date), value: trend.fatG }))} />
-            <MiniBarChart color="#14b8a6" label="Fiber" suffix="g" values={trends.map((trend) => ({ label: shortDate(trend.date), value: trend.fiberG }))} />
+            <MiniBarChart
+              color="#f59e0b"
+              label="Calories"
+              suffix="kcal"
+              values={trends.map((trend) => ({
+                label: shortDate(trend.date),
+                value: trend.calories,
+              }))}
+            />
+            <MiniBarChart
+              color="#22c55e"
+              label="Protein"
+              suffix="g"
+              values={trends.map((trend) => ({
+                label: shortDate(trend.date),
+                value: trend.proteinG,
+              }))}
+            />
+            <MiniBarChart
+              color="#3b82f6"
+              label="Carbs"
+              suffix="g"
+              values={trends.map((trend) => ({
+                label: shortDate(trend.date),
+                value: trend.carbsG,
+              }))}
+            />
+            <MiniBarChart
+              color="#a855f7"
+              label="Fat"
+              suffix="g"
+              values={trends.map((trend) => ({
+                label: shortDate(trend.date),
+                value: trend.fatG,
+              }))}
+            />
+            <MiniBarChart
+              color="#14b8a6"
+              label="Fiber"
+              suffix="g"
+              values={trends.map((trend) => ({
+                label: shortDate(trend.date),
+                value: trend.fiberG,
+              }))}
+            />
           </>
         ) : (
           <EmptyText text="Log meals to unlock nutrition reports." />
@@ -288,15 +399,39 @@ function WaterTrendsCard({ report }: { report: WaterTrendReport }) {
   return (
     <AppCard backgroundColor="#eff6ff">
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle={`${report.daysUnderTarget} day${report.daysUnderTarget === 1 ? "" : "s"} under target`} title="Water Trends" />
+        <SectionHeader
+          subtitle={`${report.daysUnderTarget} day${report.daysUnderTarget === 1 ? "" : "s"} under target`}
+          title="Water Trends"
+        />
         {hasWater ? (
           <>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-              <MetricTile label="Average" value={formatWater(report.averageMl)} />
-              <MetricTile label="Target" value={report.targetAverageMl ? formatWater(report.targetAverageMl) : "No target"} />
-              <MetricTile label="Best day" value={report.bestHydrationDay ?? "No data"} />
+              <MetricTile
+                label="Average"
+                value={formatWater(report.averageMl)}
+              />
+              <MetricTile
+                label="Target"
+                value={
+                  report.targetAverageMl
+                    ? formatWater(report.targetAverageMl)
+                    : "No target"
+                }
+              />
+              <MetricTile
+                label="Best day"
+                value={report.bestHydrationDay ?? "No data"}
+              />
             </View>
-            <MiniBarChart color="#3b82f6" label="Water" suffix="ml" values={report.trends.map((trend) => ({ label: shortDate(trend.date), value: trend.waterMl }))} />
+            <MiniBarChart
+              color="#3b82f6"
+              label="Water"
+              suffix="ml"
+              values={report.trends.map((trend) => ({
+                label: shortDate(trend.date),
+                value: trend.waterMl,
+              }))}
+            />
           </>
         ) : (
           <EmptyText text="Add water logs to see hydration trends." />
@@ -319,16 +454,45 @@ function GoalProgressCard({ report }: { report: GoalProgressReport }) {
   return (
     <AppCard>
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle={formatGoalType(report.goalType)} title="Goal Progress" />
-        <Text style={{ color: "#64748b", lineHeight: 21 }}>{report.goalMessage}</Text>
+        <SectionHeader
+          subtitle={formatGoalType(report.goalType)}
+          title="Goal Progress"
+        />
+        <Text style={{ color: "#64748b", lineHeight: 21 }}>
+          {report.goalMessage}
+        </Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          <MetricTile label="Calories" value={formatOptionalPercent(report.caloriesConsistencyPercent)} />
-          <MetricTile label="Protein" value={formatOptionalPercent(report.proteinConsistencyPercent)} />
-          <MetricTile label="Carbs" value={formatOptionalPercent(report.carbsConsistencyPercent)} />
-          <MetricTile label="Fiber" value={formatOptionalPercent(report.fiberConsistencyPercent)} />
-          <MetricTile label="Water" value={formatOptionalPercent(report.waterConsistencyPercent)} />
-          <MetricTile label="Workout food" value={formatOptionalPercent(report.workoutFoodConsistencyPercent)} />
-          <MetricTile label="Goal weight" value={formatWeightProgress(report.currentWeightKg, report.goalWeightKg)} />
+          <MetricTile
+            label="Calories"
+            value={formatOptionalPercent(report.caloriesConsistencyPercent)}
+          />
+          <MetricTile
+            label="Protein"
+            value={formatOptionalPercent(report.proteinConsistencyPercent)}
+          />
+          <MetricTile
+            label="Carbs"
+            value={formatOptionalPercent(report.carbsConsistencyPercent)}
+          />
+          <MetricTile
+            label="Fiber"
+            value={formatOptionalPercent(report.fiberConsistencyPercent)}
+          />
+          <MetricTile
+            label="Water"
+            value={formatOptionalPercent(report.waterConsistencyPercent)}
+          />
+          <MetricTile
+            label="Workout food"
+            value={formatOptionalPercent(report.workoutFoodConsistencyPercent)}
+          />
+          <MetricTile
+            label="Goal weight"
+            value={formatWeightProgress(
+              report.currentWeightKg,
+              report.goalWeightKg,
+            )}
+          />
         </View>
       </View>
     </AppCard>
@@ -339,19 +503,49 @@ function WorkoutFoodCard({ report }: { report: WorkoutFoodConnectionReport }) {
   return (
     <AppCard backgroundColor="#f0fdf4">
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle="Correlation only" title="Workout + Food Connection" />
+        <SectionHeader
+          subtitle="Correlation only"
+          title="Workout + Food Connection"
+        />
         {!report.hasWorkoutData ? (
           <EmptyText text="Log workouts to connect food with training." />
         ) : (
           <>
-            <Text style={{ color: "#166534", lineHeight: 21 }}>{report.message}</Text>
+            <Text style={{ color: "#166534", lineHeight: 21 }}>
+              {report.message}
+            </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-              <MetricTile label="Workout days" value={`${report.workoutDays}`} />
-              <MetricTile label="With food logs" value={`${report.workoutDaysWithFoodLogs}`} />
-              <MetricTile label="Avg protein" value={formatOptionalNumber(report.averageProteinGOnWorkoutDays, "g")} />
-              <MetricTile label="Avg water" value={report.averageWaterMlOnWorkoutDays ? formatWater(report.averageWaterMlOnWorkoutDays) : "No data"} />
-              <MetricTile label="Protein target" value={formatOptionalPercent(report.proteinTargetHitPercent)} />
-              <MetricTile label="Water target" value={formatOptionalPercent(report.waterTargetHitPercent)} />
+              <MetricTile
+                label="Workout days"
+                value={`${report.workoutDays}`}
+              />
+              <MetricTile
+                label="With food logs"
+                value={`${report.workoutDaysWithFoodLogs}`}
+              />
+              <MetricTile
+                label="Avg protein"
+                value={formatOptionalNumber(
+                  report.averageProteinGOnWorkoutDays,
+                  "g",
+                )}
+              />
+              <MetricTile
+                label="Avg water"
+                value={
+                  report.averageWaterMlOnWorkoutDays
+                    ? formatWater(report.averageWaterMlOnWorkoutDays)
+                    : "No data"
+                }
+              />
+              <MetricTile
+                label="Protein target"
+                value={formatOptionalPercent(report.proteinTargetHitPercent)}
+              />
+              <MetricTile
+                label="Water target"
+                value={formatOptionalPercent(report.waterTargetHitPercent)}
+              />
             </View>
           </>
         )}
@@ -366,16 +560,34 @@ function DiaryConsistencyCard({ report }: { report: DiaryConsistencyReport }) {
       <View style={{ gap: 12 }}>
         <SectionHeader subtitle="Food diary" title="Diary Consistency" />
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          <MetricTile label="Days logged" value={`${report.daysLogged} / ${report.totalDays}`} />
-          <MetricTile label="Meals logged" value={`${report.totalMealsLogged}`} />
+          <MetricTile
+            label="Days logged"
+            value={`${report.daysLogged} / ${report.totalDays}`}
+          />
+          <MetricTile
+            label="Meals logged"
+            value={`${report.totalMealsLogged}`}
+          />
           <MetricTile
             label="Top meal"
-            value={report.mostConsistentMealGroup ? getMealTypeOption(report.mostConsistentMealGroup).label : "No data"}
+            value={
+              report.mostConsistentMealGroup
+                ? getMealTypeOption(report.mostConsistentMealGroup).label
+                : "No data"
+            }
           />
-          <MetricTile label="Streak" value={`${report.currentLoggingStreakDays} day${report.currentLoggingStreakDays === 1 ? "" : "s"}`} />
+          <MetricTile
+            label="Streak"
+            value={`${report.currentLoggingStreakDays} day${report.currentLoggingStreakDays === 1 ? "" : "s"}`}
+          />
         </View>
         <Text style={{ color: "#64748b", lineHeight: 21 }}>
-          Missed groups: {report.missedMealGroups.length ? report.missedMealGroups.map((group) => getMealTypeOption(group).label).join(", ") : "None in this range"}
+          Missed groups:{" "}
+          {report.missedMealGroups.length
+            ? report.missedMealGroups
+                .map((group) => getMealTypeOption(group).label)
+                .join(", ")
+            : "None in this range"}
         </Text>
       </View>
     </AppCard>
@@ -386,7 +598,10 @@ function InsightsCard({ insights }: { insights: NutritionInsight[] }) {
   return (
     <AppCard>
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle="Rule-based, non-medical" title="Nutrition Insights" />
+        <SectionHeader
+          subtitle="Rule-based, non-medical"
+          title="Nutrition Insights"
+        />
         {insights.map((insight) => (
           <View
             key={insight.id}
@@ -394,11 +609,15 @@ function InsightsCard({ insights }: { insights: NutritionInsight[] }) {
               backgroundColor: getInsightBackground(insight.severity),
               borderRadius: 16,
               gap: 4,
-              padding: 12
+              padding: 12,
             }}
           >
-            <Text style={{ color: "#0f172a", fontWeight: "900" }}>{insight.title}</Text>
-            <Text style={{ color: "#64748b", lineHeight: 20 }}>{insight.message}</Text>
+            <Text style={{ color: "#0f172a", fontWeight: "900" }}>
+              {insight.title}
+            </Text>
+            <Text style={{ color: "#64748b", lineHeight: 20 }}>
+              {insight.message}
+            </Text>
           </View>
         ))}
       </View>
@@ -416,7 +635,9 @@ function MostLoggedFoodsCard({ foods }: { foods: MostLoggedFood[] }) {
             <ReportListRow
               key={`${food.source ?? "manual"}-${food.foodName}`}
               meta={`${food.timesLogged} log${food.timesLogged === 1 ? "" : "s"} - avg ${food.averageQuantity ?? 0} ${food.averageUnit ?? ""}`}
-              title={food.brand ? `${food.foodName} (${food.brand})` : food.foodName}
+              title={
+                food.brand ? `${food.foodName} (${food.brand})` : food.foodName
+              }
             />
           ))
         ) : (
@@ -431,7 +652,10 @@ function MealUsageCard({ meals }: { meals: MostUsedMealItem[] }) {
   return (
     <AppCard>
       <View style={{ gap: 12 }}>
-        <SectionHeader subtitle="Saved meal and recipe diary use" title="Favourite Meals / Recipes" />
+        <SectionHeader
+          subtitle="Saved meal and recipe diary use"
+          title="Favourite Meals / Recipes"
+        />
         {meals.length ? (
           meals.map((meal) => (
             <ReportListRow
@@ -448,11 +672,21 @@ function MealUsageCard({ meals }: { meals: MostUsedMealItem[] }) {
   );
 }
 
-function SectionHeader({ subtitle, title }: { subtitle?: string; title: string }) {
+function SectionHeader({
+  subtitle,
+  title,
+}: {
+  subtitle?: string;
+  title: string;
+}) {
   return (
     <View style={{ gap: 3 }}>
-      <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>{title}</Text>
-      {subtitle ? <Text style={{ color: "#64748b", lineHeight: 20 }}>{subtitle}</Text> : null}
+      <Text style={{ color: "#0f172a", fontSize: 20, fontWeight: "900" }}>
+        {title}
+      </Text>
+      {subtitle ? (
+        <Text style={{ color: "#64748b", lineHeight: 20 }}>{subtitle}</Text>
+      ) : null}
     </View>
   );
 }
@@ -467,11 +701,20 @@ function MetricTile({ label, value }: { label: string; value: string }) {
         borderWidth: 1,
         flexGrow: 1,
         minWidth: "45%",
-        padding: 12
+        padding: 12,
       }}
     >
-      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>{label}</Text>
-      <Text style={{ color: "#0f172a", fontSize: 17, fontWeight: "900", marginTop: 4 }}>
+      <Text style={{ color: "#92400e", fontSize: 12, fontWeight: "900" }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          color: "#0f172a",
+          fontSize: 17,
+          fontWeight: "900",
+          marginTop: 4,
+        }}
+      >
         {value}
       </Text>
     </View>
@@ -482,7 +725,7 @@ function MiniBarChart({
   color,
   label,
   suffix,
-  values
+  values,
 }: {
   color: string;
   label: string;
@@ -501,19 +744,29 @@ function MiniBarChart({
           return (
             <View
               key={`${item.label}-${index}`}
-              style={{ alignItems: "center", flex: 1, gap: 5, justifyContent: "flex-end", minWidth: 8 }}
+              style={{
+                alignItems: "center",
+                flex: 1,
+                gap: 5,
+                justifyContent: "flex-end",
+                minWidth: 8,
+              }}
             >
-              <Text style={{ color: "#64748b", fontSize: 10 }}>{Math.round(item.value)}</Text>
+              <Text style={{ color: "#64748b", fontSize: 10 }}>
+                {Math.round(item.value)}
+              </Text>
               <View
                 style={{
                   backgroundColor: color,
                   borderRadius: 999,
                   height,
                   opacity: item.value > 0 ? 1 : 0.25,
-                  width: "100%"
+                  width: "100%",
                 }}
               />
-              <Text style={{ color: "#94a3b8", fontSize: 9 }}>{values.length > 10 ? "" : item.label}</Text>
+              <Text style={{ color: "#94a3b8", fontSize: 9 }}>
+                {values.length > 10 ? "" : item.label}
+              </Text>
             </View>
           );
         })}
@@ -530,7 +783,7 @@ function ReportListRow({ meta, title }: { meta: string; title: string }) {
         backgroundColor: "#f8fafc",
         borderRadius: 16,
         gap: 3,
-        padding: 12
+        padding: 12,
       }}
     >
       <Text style={{ color: "#0f172a", fontWeight: "900" }}>{title}</Text>
@@ -543,7 +796,13 @@ function EmptyText({ text }: { text: string }) {
   return <Text style={{ color: "#64748b", lineHeight: 21 }}>{text}</Text>;
 }
 
-function ReportButton({ label, onPress }: { label: string; onPress: () => void }) {
+function ReportButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -554,7 +813,7 @@ function ReportButton({ label, onPress }: { label: string; onPress: () => void }
         borderRadius: 18,
         justifyContent: "center",
         minHeight: 50,
-        paddingHorizontal: 14
+        paddingHorizontal: 14,
       }}
     >
       <Text style={{ color: "#ffffff", fontWeight: "900" }}>{label}</Text>
@@ -562,8 +821,14 @@ function ReportButton({ label, onPress }: { label: string; onPress: () => void }
   );
 }
 
-function formatTargetValue(value: number, target: number | undefined, unit: string) {
-  return target ? `${Math.round(value)} / ${Math.round(target)} ${unit}` : `${Math.round(value)} ${unit}`;
+function formatTargetValue(
+  value: number,
+  target: number | undefined,
+  unit: string,
+) {
+  return target
+    ? `${Math.round(value)} / ${Math.round(target)} ${unit}`
+    : `${Math.round(value)} ${unit}`;
 }
 
 function formatOptionalNumber(value: number | undefined, unit: string) {
@@ -575,7 +840,9 @@ function formatOptionalPercent(value: number | undefined) {
 }
 
 function formatWater(amountMl: number) {
-  return amountMl >= 1000 ? `${(amountMl / 1000).toFixed(1)} L` : `${Math.round(amountMl)} ml`;
+  return amountMl >= 1000
+    ? `${(amountMl / 1000).toFixed(1)} L`
+    : `${Math.round(amountMl)} ml`;
 }
 
 function formatWeightProgress(currentWeightKg?: number, goalWeightKg?: number) {

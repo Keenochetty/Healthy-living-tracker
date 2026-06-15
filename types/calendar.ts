@@ -41,7 +41,12 @@ export type CalendarEventColour =
   | "teal"
   | "navy";
 
-export type CalendarApprovalStatus = "pending" | "approved" | "declined" | "postponed" | "none";
+export type CalendarApprovalStatus =
+  | "pending"
+  | "approved"
+  | "declined"
+  | "postponed"
+  | "none";
 
 export type CalendarFilterKey =
   | "all"
@@ -99,12 +104,25 @@ export type SmartRouteEventInput = {
   circleId?: string | null;
   careProfileId?: string | null;
   profileId?: string | null;
-  linkedProfileType?: "child" | "teen" | "adult_member" | "adult_dependent" | "elderly_dependent" | "personal";
+  linkedProfileType?:
+    | "child"
+    | "teen"
+    | "adult_member"
+    | "adult_dependent"
+    | "elderly_dependent"
+    | "personal";
 };
 
 export type CreateCalendarEventInput = Omit<
   CalendarEvent,
-  "id" | "safePreview" | "colour" | "icon" | "approvalStatus" | "isSensitive" | "createdAt" | "updatedAt"
+  | "id"
+  | "safePreview"
+  | "colour"
+  | "icon"
+  | "approvalStatus"
+  | "isSensitive"
+  | "createdAt"
+  | "updatedAt"
 > & {
   approvalStatus?: CalendarApprovalStatus;
 };

@@ -8,7 +8,7 @@ import type {
   ElderMedicationTakenLog,
   ElderProfile,
   ElderSummary,
-  ElderVitalsLog
+  ElderVitalsLog,
 } from "@/types/elder";
 
 const ELDER_PROFILES_KEY = "family_health_elder_profiles";
@@ -21,7 +21,10 @@ const ELDER_APPOINTMENTS_KEY = "family_health_elder_appointments";
 
 const elderListeners = new Set<() => void>();
 
-type CreateElderProfileInput = Omit<ElderProfile, "id" | "createdAt" | "updatedAt">;
+type CreateElderProfileInput = Omit<
+  ElderProfile,
+  "id" | "createdAt" | "updatedAt"
+>;
 
 export function subscribeToElders(listener: () => void) {
   elderListeners.add(listener);
@@ -60,13 +63,17 @@ async function writeJsonArray<T>(key: string, value: T[]) {
   return value;
 }
 
-function sortByTime<T extends { appointmentDate?: string; loggedAt?: string; createdAt: string }>(
-  items: T[]
-) {
+function sortByTime<
+  T extends { appointmentDate?: string; loggedAt?: string; createdAt: string },
+>(items: T[]) {
   return [...items].sort(
     (left, right) =>
-      new Date(right.appointmentDate ?? right.loggedAt ?? right.createdAt).getTime() -
-      new Date(left.appointmentDate ?? left.loggedAt ?? left.createdAt).getTime()
+      new Date(
+        right.appointmentDate ?? right.loggedAt ?? right.createdAt,
+      ).getTime() -
+      new Date(
+        left.appointmentDate ?? left.loggedAt ?? left.createdAt,
+      ).getTime(),
   );
 }
 
@@ -89,7 +96,7 @@ export async function createElderProfile(input: CreateElderProfileInput) {
     displayName: input.displayName.trim(),
     id: id("elder"),
     medicalNotes: input.medicalNotes?.trim() || undefined,
-    updatedAt: now
+    updatedAt: now,
   };
   const elders = await getElderProfiles();
 
@@ -100,11 +107,13 @@ export async function createElderProfile(input: CreateElderProfileInput) {
 
 export async function updateElderProfile(
   elderId: string,
-  partial: Partial<Omit<ElderProfile, "id" | "createdAt">>
+  partial: Partial<Omit<ElderProfile, "id" | "createdAt">>,
 ) {
   const elders = await getElderProfiles();
   const updatedElders = elders.map((elder) =>
-    elder.id === elderId ? { ...elder, ...partial, updatedAt: new Date().toISOString() } : elder
+    elder.id === elderId
+      ? { ...elder, ...partial, updatedAt: new Date().toISOString() }
+      : elder,
   );
 
   await writeJsonArray(ELDER_PROFILES_KEY, updatedElders);
@@ -115,7 +124,10 @@ export async function updateElderProfile(
 export async function deleteElderProfile(elderId: string) {
   const elders = await getElderProfiles();
 
-  await writeJsonArray(ELDER_PROFILES_KEY, elders.filter((elder) => elder.id !== elderId));
+  await writeJsonArray(
+    ELDER_PROFILES_KEY,
+    elders.filter((elder) => elder.id !== elderId),
+  );
 }
 
 export async function getElderCheckIns(elderId: string) {
@@ -125,7 +137,7 @@ export async function getElderCheckIns(elderId: string) {
 }
 
 export async function addElderCheckIn(
-  input: Omit<ElderCheckIn, "id" | "loggedAt" | "createdAt">
+  input: Omit<ElderCheckIn, "id" | "loggedAt" | "createdAt">,
 ) {
   const now = new Date().toISOString();
   const checkIn: ElderCheckIn = {
@@ -133,7 +145,7 @@ export async function addElderCheckIn(
     createdAt: now,
     id: id("elder-check-in"),
     loggedAt: now,
-    notes: input.notes?.trim() || undefined
+    notes: input.notes?.trim() || undefined,
   };
   const checkIns = await readJsonArray<ElderCheckIn>(ELDER_CHECK_INS_KEY);
 
@@ -150,7 +162,7 @@ export async function getTodayElderCheckIns(elderId: string) {
   const today = new Date().toDateString();
 
   return (await getElderCheckIns(elderId)).filter(
-    (checkIn) => new Date(checkIn.loggedAt).toDateString() === today
+    (checkIn) => new Date(checkIn.loggedAt).toDateString() === today,
   );
 }
 
@@ -161,7 +173,7 @@ export async function getElderVitals(elderId: string) {
 }
 
 export async function addElderVitals(
-  input: Omit<ElderVitalsLog, "id" | "loggedAt" | "createdAt">
+  input: Omit<ElderVitalsLog, "id" | "loggedAt" | "createdAt">,
 ) {
   const now = new Date().toISOString();
   const vitals: ElderVitalsLog = {
@@ -169,7 +181,7 @@ export async function addElderVitals(
     createdAt: now,
     id: id("elder-vitals"),
     loggedAt: now,
-    notes: input.notes?.trim() || undefined
+    notes: input.notes?.trim() || undefined,
   };
   const logs = await readJsonArray<ElderVitalsLog>(ELDER_VITALS_KEY);
 
@@ -183,13 +195,15 @@ export async function getLatestElderVitals(elderId: string) {
 }
 
 export async function getElderMedications(elderId: string) {
-  const medications = await readJsonArray<ElderMedicationItem>(ELDER_MEDICATIONS_KEY);
+  const medications = await readJsonArray<ElderMedicationItem>(
+    ELDER_MEDICATIONS_KEY,
+  );
 
   return medications.filter((medication) => medication.elderId === elderId);
 }
 
 export async function addElderMedication(
-  input: Omit<ElderMedicationItem, "id" | "active" | "createdAt" | "updatedAt">
+  input: Omit<ElderMedicationItem, "id" | "active" | "createdAt" | "updatedAt">,
 ) {
   const now = new Date().toISOString();
   const medication: ElderMedicationItem = {
@@ -197,9 +211,11 @@ export async function addElderMedication(
     active: true,
     createdAt: now,
     id: id("elder-medication"),
-    updatedAt: now
+    updatedAt: now,
   };
-  const medications = await readJsonArray<ElderMedicationItem>(ELDER_MEDICATIONS_KEY);
+  const medications = await readJsonArray<ElderMedicationItem>(
+    ELDER_MEDICATIONS_KEY,
+  );
 
   await writeJsonArray(ELDER_MEDICATIONS_KEY, [medication, ...medications]);
 
@@ -208,18 +224,23 @@ export async function addElderMedication(
 
 export async function updateElderMedication(
   medicationId: string,
-  partial: Partial<Omit<ElderMedicationItem, "id" | "elderId" | "createdAt">>
+  partial: Partial<Omit<ElderMedicationItem, "id" | "elderId" | "createdAt">>,
 ) {
-  const medications = await readJsonArray<ElderMedicationItem>(ELDER_MEDICATIONS_KEY);
+  const medications = await readJsonArray<ElderMedicationItem>(
+    ELDER_MEDICATIONS_KEY,
+  );
   const updatedMedications = medications.map((medication) =>
     medication.id === medicationId
       ? { ...medication, ...partial, updatedAt: new Date().toISOString() }
-      : medication
+      : medication,
   );
 
   await writeJsonArray(ELDER_MEDICATIONS_KEY, updatedMedications);
 
-  return updatedMedications.find((medication) => medication.id === medicationId) ?? null;
+  return (
+    updatedMedications.find((medication) => medication.id === medicationId) ??
+    null
+  );
 }
 
 export async function deactivateElderMedication(medicationId: string) {
@@ -227,16 +248,18 @@ export async function deactivateElderMedication(medicationId: string) {
 }
 
 export async function logElderMedicationTaken(
-  input: Omit<ElderMedicationTakenLog, "id" | "takenAt" | "createdAt">
+  input: Omit<ElderMedicationTakenLog, "id" | "takenAt" | "createdAt">,
 ) {
   const now = new Date().toISOString();
   const log: ElderMedicationTakenLog = {
     ...input,
     createdAt: now,
     id: id("elder-medication-taken"),
-    takenAt: now
+    takenAt: now,
   };
-  const logs = await readJsonArray<ElderMedicationTakenLog>(ELDER_MEDICATION_TAKEN_KEY);
+  const logs = await readJsonArray<ElderMedicationTakenLog>(
+    ELDER_MEDICATION_TAKEN_KEY,
+  );
 
   await writeJsonArray(ELDER_MEDICATION_TAKEN_KEY, [log, ...logs]);
 
@@ -244,7 +267,9 @@ export async function logElderMedicationTaken(
 }
 
 export async function getElderMedicationTakenLogs(elderId: string) {
-  const logs = await readJsonArray<ElderMedicationTakenLog>(ELDER_MEDICATION_TAKEN_KEY);
+  const logs = await readJsonArray<ElderMedicationTakenLog>(
+    ELDER_MEDICATION_TAKEN_KEY,
+  );
 
   return sortByTime(logs.filter((log) => log.elderId === elderId));
 }
@@ -256,7 +281,7 @@ export async function getElderCareNotes(elderId: string) {
 }
 
 export async function addElderCareNote(
-  input: Omit<ElderCareNote, "id" | "createdAt" | "updatedAt">
+  input: Omit<ElderCareNote, "id" | "createdAt" | "updatedAt">,
 ) {
   const now = new Date().toISOString();
   const note: ElderCareNote = {
@@ -265,7 +290,7 @@ export async function addElderCareNote(
     id: id("elder-care-note"),
     note: input.note.trim(),
     title: input.title.trim(),
-    updatedAt: now
+    updatedAt: now,
   };
   const notes = await readJsonArray<ElderCareNote>(ELDER_CARE_NOTES_KEY);
 
@@ -276,11 +301,13 @@ export async function addElderCareNote(
 
 export async function updateElderCareNote(
   noteId: string,
-  partial: Partial<Omit<ElderCareNote, "id" | "elderId" | "createdAt">>
+  partial: Partial<Omit<ElderCareNote, "id" | "elderId" | "createdAt">>,
 ) {
   const notes = await readJsonArray<ElderCareNote>(ELDER_CARE_NOTES_KEY);
   const updatedNotes = notes.map((note) =>
-    note.id === noteId ? { ...note, ...partial, updatedAt: new Date().toISOString() } : note
+    note.id === noteId
+      ? { ...note, ...partial, updatedAt: new Date().toISOString() }
+      : note,
   );
 
   await writeJsonArray(ELDER_CARE_NOTES_KEY, updatedNotes);
@@ -291,17 +318,24 @@ export async function updateElderCareNote(
 export async function deleteElderCareNote(noteId: string) {
   const notes = await readJsonArray<ElderCareNote>(ELDER_CARE_NOTES_KEY);
 
-  await writeJsonArray(ELDER_CARE_NOTES_KEY, notes.filter((note) => note.id !== noteId));
+  await writeJsonArray(
+    ELDER_CARE_NOTES_KEY,
+    notes.filter((note) => note.id !== noteId),
+  );
 }
 
 export async function getElderAppointments(elderId: string) {
-  const appointments = await readJsonArray<ElderAppointment>(ELDER_APPOINTMENTS_KEY);
+  const appointments = await readJsonArray<ElderAppointment>(
+    ELDER_APPOINTMENTS_KEY,
+  );
 
-  return sortByTime(appointments.filter((appointment) => appointment.elderId === elderId));
+  return sortByTime(
+    appointments.filter((appointment) => appointment.elderId === elderId),
+  );
 }
 
 export async function addElderAppointment(
-  input: Omit<ElderAppointment, "id" | "createdAt" | "updatedAt">
+  input: Omit<ElderAppointment, "id" | "createdAt" | "updatedAt">,
 ) {
   const now = new Date().toISOString();
   const appointment: ElderAppointment = {
@@ -309,9 +343,11 @@ export async function addElderAppointment(
     createdAt: now,
     id: id("elder-appointment"),
     notes: input.notes?.trim() || undefined,
-    updatedAt: now
+    updatedAt: now,
   };
-  const appointments = await readJsonArray<ElderAppointment>(ELDER_APPOINTMENTS_KEY);
+  const appointments = await readJsonArray<ElderAppointment>(
+    ELDER_APPOINTMENTS_KEY,
+  );
 
   await writeJsonArray(ELDER_APPOINTMENTS_KEY, [appointment, ...appointments]);
 
@@ -320,52 +356,67 @@ export async function addElderAppointment(
 
 export async function updateElderAppointment(
   appointmentId: string,
-  partial: Partial<Omit<ElderAppointment, "id" | "elderId" | "createdAt">>
+  partial: Partial<Omit<ElderAppointment, "id" | "elderId" | "createdAt">>,
 ) {
-  const appointments = await readJsonArray<ElderAppointment>(ELDER_APPOINTMENTS_KEY);
+  const appointments = await readJsonArray<ElderAppointment>(
+    ELDER_APPOINTMENTS_KEY,
+  );
   const updatedAppointments = appointments.map((appointment) =>
     appointment.id === appointmentId
       ? { ...appointment, ...partial, updatedAt: new Date().toISOString() }
-      : appointment
+      : appointment,
   );
 
   await writeJsonArray(ELDER_APPOINTMENTS_KEY, updatedAppointments);
 
-  return updatedAppointments.find((appointment) => appointment.id === appointmentId) ?? null;
-}
-
-export async function deleteElderAppointment(appointmentId: string) {
-  const appointments = await readJsonArray<ElderAppointment>(ELDER_APPOINTMENTS_KEY);
-
-  await writeJsonArray(
-    ELDER_APPOINTMENTS_KEY,
-    appointments.filter((appointment) => appointment.id !== appointmentId)
+  return (
+    updatedAppointments.find(
+      (appointment) => appointment.id === appointmentId,
+    ) ?? null
   );
 }
 
-export async function getElderSummary(elderId: string): Promise<ElderSummary | null> {
+export async function deleteElderAppointment(appointmentId: string) {
+  const appointments = await readJsonArray<ElderAppointment>(
+    ELDER_APPOINTMENTS_KEY,
+  );
+
+  await writeJsonArray(
+    ELDER_APPOINTMENTS_KEY,
+    appointments.filter((appointment) => appointment.id !== appointmentId),
+  );
+}
+
+export async function getElderSummary(
+  elderId: string,
+): Promise<ElderSummary | null> {
   const elder = await getElderProfile(elderId);
 
   if (!elder) return null;
 
-  const [latestCheckIn, latestVitals, medications, notes, appointments] = await Promise.all([
-    getLatestElderCheckIn(elderId),
-    getLatestElderVitals(elderId),
-    getElderMedications(elderId),
-    getElderCareNotes(elderId),
-    getElderAppointments(elderId)
-  ]);
+  const [latestCheckIn, latestVitals, medications, notes, appointments] =
+    await Promise.all([
+      getLatestElderCheckIn(elderId),
+      getLatestElderVitals(elderId),
+      getElderMedications(elderId),
+      getElderCareNotes(elderId),
+      getElderAppointments(elderId),
+    ]);
 
   const nextAppointment = appointments
-    .filter((appointment) => new Date(appointment.appointmentDate).getTime() >= Date.now())
+    .filter(
+      (appointment) =>
+        new Date(appointment.appointmentDate).getTime() >= Date.now(),
+    )
     .sort(
       (left, right) =>
         new Date(left.appointmentDate).getTime() -
-        new Date(right.appointmentDate).getTime()
+        new Date(right.appointmentDate).getTime(),
     )[0];
 
   return {
-    activeMedicationCount: medications.filter((medication) => medication.active).length,
+    activeMedicationCount: medications.filter((medication) => medication.active)
+      .length,
     elder,
     latestCareNote: notes[0],
     latestCheckIn,
@@ -374,13 +425,17 @@ export async function getElderSummary(elderId: string): Promise<ElderSummary | n
       latestCheckIn?.status === "needs_attention" ||
       latestCheckIn?.status === "missed" ||
       latestCheckIn?.status === "urgent",
-    nextAppointment
+    nextAppointment,
   };
 }
 
 export async function getAllElderSummaries() {
   const elders = await getElderProfiles();
-  const summaries = await Promise.all(elders.map((elder) => getElderSummary(elder.id)));
+  const summaries = await Promise.all(
+    elders.map((elder) => getElderSummary(elder.id)),
+  );
 
-  return summaries.filter((summary): summary is ElderSummary => Boolean(summary));
+  return summaries.filter((summary): summary is ElderSummary =>
+    Boolean(summary),
+  );
 }

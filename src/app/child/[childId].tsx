@@ -7,10 +7,15 @@ import { AppCard } from "@/components/ui";
 
 export default function ChildDetailCompatibilityScreen() {
   const params = useLocalSearchParams<{ childId?: string }>();
-  const childId = Array.isArray(params.childId) ? params.childId[0] : params.childId;
+  const childId = Array.isArray(params.childId)
+    ? params.childId[0]
+    : params.childId;
 
   useEffect(() => {
-    router.replace({ pathname: "/baby-child", params: childId ? { childId } : undefined } as unknown as Href);
+    router.replace({
+      pathname: "/baby-child",
+      params: childId ? { childId } : undefined,
+    } as unknown as Href);
   }, [childId]);
 
   return (

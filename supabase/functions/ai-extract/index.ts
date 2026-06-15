@@ -11,7 +11,7 @@ const VALID_JOB_TYPES = new Set([
   "vaccination_card_scan",
   "symptom_summary",
   "care_note_summary",
-  "general_note_organise"
+  "general_note_organise",
 ]);
 
 const VALID_INPUT_TYPES = new Set(["text", "image", "document"]);
@@ -30,7 +30,7 @@ type AiExtractRequest = {
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status
+    status,
   });
 }
 
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         draft: createMockDraft(jobType, body.textInput),
         jobId: body.jobId,
         mode: "mock",
-        ok: true
+        ok: true,
       });
     }
 
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       fileUrl: body.filePath,
       inputType,
       jobType,
-      textInput: body.textInput
+      textInput: body.textInput,
     });
 
     return jsonResponse({
@@ -84,15 +84,18 @@ Deno.serve(async (req) => {
       draft,
       jobId: body.jobId,
       mode: "real",
-      ok: true
+      ok: true,
     });
   } catch (error) {
     return jsonResponse(
       {
-        error: error instanceof Error ? error.message : "Unknown AI extraction error.",
-        ok: false
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown AI extraction error.",
+        ok: false,
       },
-      500
+      500,
     );
   }
 });

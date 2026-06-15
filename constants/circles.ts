@@ -1,13 +1,13 @@
 import type {
   CircleMemberRole,
   CirclePermission,
-  CircleRelationship
+  CircleRelationship,
 } from "@/types/circles";
 export {
   AGE_ACCESS_STAGES,
   CARE_PROFILE_TYPES,
   ageAccessStageLabels,
-  careProfileTypeLabels
+  careProfileTypeLabels,
 } from "@/constants/care-profiles";
 
 export const CIRCLE_MEMBER_ROLES = [
@@ -16,7 +16,7 @@ export const CIRCLE_MEMBER_ROLES = [
   "member",
   "dependent",
   "caregiver",
-  "viewer"
+  "viewer",
 ] as const satisfies readonly CircleMemberRole[];
 
 export const CIRCLE_RELATIONSHIPS = [
@@ -32,7 +32,7 @@ export const CIRCLE_RELATIONSHIPS = [
   "sibling",
   "in_law",
   "caregiver",
-  "other"
+  "other",
 ] as const satisfies readonly CircleRelationship[];
 
 export const CIRCLE_PERMISSIONS = [
@@ -41,7 +41,7 @@ export const CIRCLE_PERMISSIONS = [
   "manage_dependents",
   "invite_caregivers",
   "view_safe_summary",
-  "view_private_records"
+  "view_private_records",
 ] as const satisfies readonly CirclePermission[];
 
 export const circleRoleLabels = {
@@ -50,7 +50,7 @@ export const circleRoleLabels = {
   dependent: "Dependent",
   member: "Member",
   owner: "Owner",
-  viewer: "Viewer"
+  viewer: "Viewer",
 } as const satisfies Record<CircleMemberRole, string>;
 
 export const circleRelationshipLabels = {
@@ -66,7 +66,7 @@ export const circleRelationshipLabels = {
   partner: "Partner",
   sibling: "Sibling",
   son: "Son",
-  wife: "Wife"
+  wife: "Wife",
 } as const satisfies Record<CircleRelationship, string>;
 
 export const circlePermissionLabels = {
@@ -75,7 +75,7 @@ export const circlePermissionLabels = {
   manage_dependents: "Manage dependents",
   manage_members: "Manage members",
   view_private_records: "View private records",
-  view_safe_summary: "View safe summary"
+  view_safe_summary: "View safe summary",
 } as const satisfies Record<CirclePermission, string>;
 
 export function canManageCircleMembers(role: CircleMemberRole) {

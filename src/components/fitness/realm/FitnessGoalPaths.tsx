@@ -21,10 +21,20 @@ export function FitnessGoalPaths({
     <View style={styles.section}>
       <View style={styles.headingRow}>
         <View>
-          <Text style={[styles.eyebrow, { color: theme.primary }]}>Build towards something</Text>
-          <Text style={[styles.heading, { color: theme.text }]}>Goal Paths</Text>
+          <Text style={[styles.eyebrow, { color: theme.primary }]}>
+            Build towards something
+          </Text>
+          <Text style={[styles.heading, { color: theme.text }]}>
+            Goal Paths
+          </Text>
         </View>
-        {onViewAll ? <Pressable onPress={onViewAll}><Text style={[styles.viewAll, { color: theme.primary }]}>View all</Text></Pressable> : null}
+        {onViewAll ? (
+          <Pressable onPress={onViewAll}>
+            <Text style={[styles.viewAll, { color: theme.primary }]}>
+              View all
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
       <ScrollView
         horizontal
@@ -80,7 +90,11 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   heading: { color: "#0f172a", fontSize: 22, fontWeight: "900", marginTop: 3 },
-  headingRow: { alignItems: "flex-end", flexDirection: "row", justifyContent: "space-between" },
+  headingRow: {
+    alignItems: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   icon: {
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.14)",

@@ -1,11 +1,17 @@
 import { Activity } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function AuthCard({
   title,
   description,
   children,
-  footer
+  footer,
 }: {
   title: string;
   description: string;
@@ -23,7 +29,9 @@ export function AuthCard({
       </CardHeader>
       <CardContent className="space-y-5">
         {children}
-        <div className="border-t border-white/10 pt-4 text-center">{footer}</div>
+        <div className="border-t border-white/10 pt-4 text-center">
+          {footer}
+        </div>
       </CardContent>
     </Card>
   );

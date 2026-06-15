@@ -5,11 +5,16 @@ import { MedicationSupplementDetail } from "@/components/medication/MedicationSu
 
 export default function SupplementDetailScreen() {
   const params = useLocalSearchParams<{ supplementId?: string | string[] }>();
-  const supplementId = Array.isArray(params.supplementId) ? params.supplementId[0] : params.supplementId;
+  const supplementId = Array.isArray(params.supplementId)
+    ? params.supplementId[0]
+    : params.supplementId;
 
   return (
     <ScreenWrapper backgroundColor="#f0fdfa">
-      <MedicationSupplementDetail itemId={supplementId ?? ""} itemType="supplement" />
+      <MedicationSupplementDetail
+        itemId={supplementId ?? ""}
+        itemType="supplement"
+      />
     </ScreenWrapper>
   );
 }

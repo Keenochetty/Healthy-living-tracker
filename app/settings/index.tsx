@@ -1,7 +1,15 @@
 import { router } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
-import { AppHeader, AppIcon, AppScreen, SettingsRow, StatusPill, WidgetCard, type AppIconName } from "@/components/ui";
+import {
+  AppHeader,
+  AppIcon,
+  AppScreen,
+  SettingsRow,
+  StatusPill,
+  WidgetCard,
+  type AppIconName,
+} from "@/components/ui";
 import { settingsSections } from "@/constants/settings";
 import { spacing } from "@/constants/spacing";
 import { colors } from "@/constants/theme";
@@ -29,7 +37,13 @@ export default function SettingsScreen() {
           <View style={styles.section}>
             {section.items.map((item) => (
               <SettingsRow
-                icon={<AppIcon color={getSectionColor(section.title)} name={getItemIcon(item.label)} size={20} />}
+                icon={
+                  <AppIcon
+                    color={getSectionColor(section.title)}
+                    name={getItemIcon(item.label)}
+                    size={20}
+                  />
+                }
                 key={`${section.title}-${item.href}-${item.label}`}
                 label={item.label}
                 onPress={() => openSettingsRoute(item.href)}
@@ -65,21 +79,24 @@ function getItemIcon(label: string): AppIconName {
 
   if (lowerLabel.includes("calendar")) return "calendar";
   if (lowerLabel.includes("caregiver")) return "caregiver";
-  if (lowerLabel.includes("privacy") || lowerLabel.includes("sensitive")) return "privacy";
+  if (lowerLabel.includes("privacy") || lowerLabel.includes("sensitive"))
+    return "privacy";
   if (lowerLabel.includes("notification")) return "notifications";
   if (lowerLabel.includes("appearance")) return "settings";
   if (lowerLabel.includes("unit")) return "units";
   if (lowerLabel.includes("language")) return "language";
   if (lowerLabel.includes("voice")) return "voice";
   if (lowerLabel.includes("ai")) return "ai";
-  if (lowerLabel.includes("lock") || lowerLabel.includes("audit")) return "lock";
-  if (lowerLabel.includes("family") || lowerLabel.includes("emergency")) return "family";
+  if (lowerLabel.includes("lock") || lowerLabel.includes("audit"))
+    return "lock";
+  if (lowerLabel.includes("family") || lowerLabel.includes("emergency"))
+    return "family";
 
   return "profiles";
 }
 
 const styles = StyleSheet.create({
   section: {
-    gap: spacing.md
-  }
+    gap: spacing.md,
+  },
 });

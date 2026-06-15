@@ -2,7 +2,7 @@ import type {
   ElderCareNoteType,
   ElderCareQuality,
   ElderCheckInStatus,
-  ElderConsentStatus
+  ElderConsentStatus,
 } from "@/types/elder";
 
 export const ELDER_CHECK_IN_STATUS_OPTIONS: Array<{
@@ -14,13 +14,16 @@ export const ELDER_CHECK_IN_STATUS_OPTIONS: Array<{
   { key: "needs_attention", label: "Needs attention", marker: "!" },
   { key: "missed", label: "Missed", marker: "Late" },
   { key: "urgent", label: "Urgent", marker: "Urgent" },
-  { key: "not_sure", label: "Not sure", marker: "?" }
+  { key: "not_sure", label: "Not sure", marker: "?" },
 ];
 
-export const ELDER_QUALITY_OPTIONS: Array<{ key: ElderCareQuality; label: string }> = [
+export const ELDER_QUALITY_OPTIONS: Array<{
+  key: ElderCareQuality;
+  label: string;
+}> = [
   { key: "poor", label: "Poor" },
   { key: "okay", label: "Okay" },
-  { key: "good", label: "Good" }
+  { key: "good", label: "Good" },
 ];
 
 export const ELDER_CARE_NOTE_TYPE_OPTIONS: Array<{
@@ -33,7 +36,7 @@ export const ELDER_CARE_NOTE_TYPE_OPTIONS: Array<{
   { key: "mobility", label: "Mobility" },
   { key: "incident", label: "Incident" },
   { key: "appointment", label: "Appointment" },
-  { key: "caregiver", label: "Caregiver" }
+  { key: "caregiver", label: "Caregiver" },
 ];
 
 export const ELDER_CONSENT_STATUS_OPTIONS: Array<{
@@ -43,7 +46,7 @@ export const ELDER_CONSENT_STATUS_OPTIONS: Array<{
   { key: "not_requested", label: "Not requested" },
   { key: "requested", label: "Requested" },
   { key: "granted", label: "Granted" },
-  { key: "declined", label: "Declined" }
+  { key: "declined", label: "Declined" },
 ];
 
 export const ELDER_CARE_DISCLAIMER =
@@ -60,7 +63,7 @@ export const ELDER_CONSENT_DISCLAIMER =
 
 export function getElderCheckInStatusLabel(status?: ElderCheckInStatus) {
   return (
-    ELDER_CHECK_IN_STATUS_OPTIONS.find((option) => option.key === status)?.label ??
-    "No check-in"
+    ELDER_CHECK_IN_STATUS_OPTIONS.find((option) => option.key === status)
+      ?.label ?? "No check-in"
   );
 }

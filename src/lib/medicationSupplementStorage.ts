@@ -16,7 +16,7 @@ import type {
   MedicationSupplementTodaySummary,
   ScheduleTiming,
   Supplement,
-  SupplementForm
+  SupplementForm,
 } from "@/types/medication";
 
 const MEDICATIONS_STORAGE_KEY = "family_health_phase10_medications";
@@ -24,21 +24,58 @@ const SUPPLEMENTS_STORAGE_KEY = "family_health_phase10_supplements";
 const HEALTH_SCHEDULES_STORAGE_KEY = "family_health_phase10_health_schedules";
 const DOSE_LOGS_STORAGE_KEY = "family_health_phase10_dose_logs";
 const HEALTH_DOCUMENTS_STORAGE_KEY = "family_health_phase10_health_documents";
-const MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY = "family_health_phase10_medication_supplement_notes";
+const MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY =
+  "family_health_phase10_medication_supplement_notes";
 const LEGACY_MEDICATIONS_STORAGE_KEY = "family_health_medications";
-const LEGACY_MEDICATION_SCHEDULES_STORAGE_KEY = "family_health_medication_schedules";
+const LEGACY_MEDICATION_SCHEDULES_STORAGE_KEY =
+  "family_health_medication_schedules";
 const LOCAL_USER_ID = "local-user";
 const LOCAL_PROFILE_ID = "local-profile";
 
-type CreateMedicationInput = Partial<Omit<Medication, "id" | "userId" | "profileId" | "createdAt" | "updatedAt" | "isActive" | "isPrivate" | "sharedWithPartner" | "sharedWithFamily" | "sharedWithCaregiver" | "lockedPrivate">> & {
+type CreateMedicationInput = Partial<
+  Omit<
+    Medication,
+    | "id"
+    | "userId"
+    | "profileId"
+    | "createdAt"
+    | "updatedAt"
+    | "isActive"
+    | "isPrivate"
+    | "sharedWithPartner"
+    | "sharedWithFamily"
+    | "sharedWithCaregiver"
+    | "lockedPrivate"
+  >
+> & {
   name: string;
 };
 
-type CreateSupplementInput = Partial<Omit<Supplement, "id" | "userId" | "profileId" | "createdAt" | "updatedAt" | "isActive" | "isPrivate" | "sharedWithPartner" | "sharedWithFamily" | "sharedWithCaregiver" | "lockedPrivate">> & {
+type CreateSupplementInput = Partial<
+  Omit<
+    Supplement,
+    | "id"
+    | "userId"
+    | "profileId"
+    | "createdAt"
+    | "updatedAt"
+    | "isActive"
+    | "isPrivate"
+    | "sharedWithPartner"
+    | "sharedWithFamily"
+    | "sharedWithCaregiver"
+    | "lockedPrivate"
+  >
+> & {
   name: string;
 };
 
-type ScheduleInput = Partial<Omit<HealthSchedule, "id" | "userId" | "profileId" | "createdAt" | "updatedAt">> & {
+type ScheduleInput = Partial<
+  Omit<
+    HealthSchedule,
+    "id" | "userId" | "profileId" | "createdAt" | "updatedAt"
+  >
+> & {
   itemId: string;
   itemType: "medication" | "supplement";
 };
@@ -70,7 +107,7 @@ export async function createMedication(input: CreateMedicationInput) {
     startDate: input.startDate || toDateKey(new Date()),
     strength: input.strength?.trim() || undefined,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const medications = await getMedications();
 
@@ -83,7 +120,10 @@ export async function getMedications() {
   await migrateLegacyMedications();
   const medications = await readJsonArray<Medication>(MEDICATIONS_STORAGE_KEY);
 
-  return medications.sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime());
+  return medications.sort(
+    (left, right) =>
+      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
+  );
 }
 
 export async function getMedicationById(id: string) {
@@ -92,10 +132,17 @@ export async function getMedicationById(id: string) {
   return medications.find((medication) => medication.id === id) ?? null;
 }
 
-export async function updateMedication(id: string, partial: Partial<Omit<Medication, "id" | "userId" | "profileId" | "createdAt">>) {
+export async function updateMedication(
+  id: string,
+  partial: Partial<
+    Omit<Medication, "id" | "userId" | "profileId" | "createdAt">
+  >,
+) {
   const medications = await getMedications();
   const updatedMedications = medications.map((medication) =>
-    medication.id === id ? { ...medication, ...partial, updatedAt: new Date().toISOString() } : medication
+    medication.id === id
+      ? { ...medication, ...partial, updatedAt: new Date().toISOString() }
+      : medication,
   );
 
   await writeJsonArray(MEDICATIONS_STORAGE_KEY, updatedMedications);
@@ -113,16 +160,39 @@ export async function deleteMedication(id: string) {
     getHealthSchedules(),
     getDoseLogs(),
     getHealthDocuments(),
-    getMedicationSupplementNotes()
+    getMedicationSupplementNotes(),
   ]);
   const medication = medications.find((item) => item.id === id) ?? null;
 
   await Promise.all([
-    writeJsonArray(MEDICATIONS_STORAGE_KEY, medications.filter((item) => item.id !== id)),
-    writeJsonArray(HEALTH_SCHEDULES_STORAGE_KEY, schedules.filter((item) => !(item.itemType === "medication" && item.itemId === id))),
-    writeJsonArray(DOSE_LOGS_STORAGE_KEY, logs.filter((item) => !(item.itemType === "medication" && item.itemId === id))),
-    writeJsonArray(HEALTH_DOCUMENTS_STORAGE_KEY, documents.filter((item) => !(item.relatedType === "medication" && item.relatedId === id))),
-    writeJsonArray(MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY, notes.filter((item) => !(item.relatedType === "medication" && item.relatedId === id)))
+    writeJsonArray(
+      MEDICATIONS_STORAGE_KEY,
+      medications.filter((item) => item.id !== id),
+    ),
+    writeJsonArray(
+      HEALTH_SCHEDULES_STORAGE_KEY,
+      schedules.filter(
+        (item) => !(item.itemType === "medication" && item.itemId === id),
+      ),
+    ),
+    writeJsonArray(
+      DOSE_LOGS_STORAGE_KEY,
+      logs.filter(
+        (item) => !(item.itemType === "medication" && item.itemId === id),
+      ),
+    ),
+    writeJsonArray(
+      HEALTH_DOCUMENTS_STORAGE_KEY,
+      documents.filter(
+        (item) => !(item.relatedType === "medication" && item.relatedId === id),
+      ),
+    ),
+    writeJsonArray(
+      MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY,
+      notes.filter(
+        (item) => !(item.relatedType === "medication" && item.relatedId === id),
+      ),
+    ),
   ]);
 
   return medication;
@@ -137,7 +207,9 @@ export async function searchMedicationNames(query: string) {
   }
 
   return medications.filter((medication) =>
-    [medication.name, medication.genericName, medication.brandName].some((value) => value?.toLowerCase().includes(trimmedQuery))
+    [medication.name, medication.genericName, medication.brandName].some(
+      (value) => value?.toLowerCase().includes(trimmedQuery),
+    ),
   );
 }
 
@@ -166,7 +238,7 @@ export async function createSupplement(input: CreateSupplementInput) {
     startDate: input.startDate || toDateKey(new Date()),
     strength: input.strength?.trim() || undefined,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const supplements = await getSupplements();
 
@@ -178,7 +250,10 @@ export async function createSupplement(input: CreateSupplementInput) {
 export async function getSupplements() {
   const supplements = await readJsonArray<Supplement>(SUPPLEMENTS_STORAGE_KEY);
 
-  return supplements.sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime());
+  return supplements.sort(
+    (left, right) =>
+      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
+  );
 }
 
 export async function getSupplementById(id: string) {
@@ -187,10 +262,17 @@ export async function getSupplementById(id: string) {
   return supplements.find((supplement) => supplement.id === id) ?? null;
 }
 
-export async function updateSupplement(id: string, partial: Partial<Omit<Supplement, "id" | "userId" | "profileId" | "createdAt">>) {
+export async function updateSupplement(
+  id: string,
+  partial: Partial<
+    Omit<Supplement, "id" | "userId" | "profileId" | "createdAt">
+  >,
+) {
   const supplements = await getSupplements();
   const updatedSupplements = supplements.map((supplement) =>
-    supplement.id === id ? { ...supplement, ...partial, updatedAt: new Date().toISOString() } : supplement
+    supplement.id === id
+      ? { ...supplement, ...partial, updatedAt: new Date().toISOString() }
+      : supplement,
   );
 
   await writeJsonArray(SUPPLEMENTS_STORAGE_KEY, updatedSupplements);
@@ -208,16 +290,39 @@ export async function deleteSupplement(id: string) {
     getHealthSchedules(),
     getDoseLogs(),
     getHealthDocuments(),
-    getMedicationSupplementNotes()
+    getMedicationSupplementNotes(),
   ]);
   const supplement = supplements.find((item) => item.id === id) ?? null;
 
   await Promise.all([
-    writeJsonArray(SUPPLEMENTS_STORAGE_KEY, supplements.filter((item) => item.id !== id)),
-    writeJsonArray(HEALTH_SCHEDULES_STORAGE_KEY, schedules.filter((item) => !(item.itemType === "supplement" && item.itemId === id))),
-    writeJsonArray(DOSE_LOGS_STORAGE_KEY, logs.filter((item) => !(item.itemType === "supplement" && item.itemId === id))),
-    writeJsonArray(HEALTH_DOCUMENTS_STORAGE_KEY, documents.filter((item) => !(item.relatedType === "supplement" && item.relatedId === id))),
-    writeJsonArray(MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY, notes.filter((item) => !(item.relatedType === "supplement" && item.relatedId === id)))
+    writeJsonArray(
+      SUPPLEMENTS_STORAGE_KEY,
+      supplements.filter((item) => item.id !== id),
+    ),
+    writeJsonArray(
+      HEALTH_SCHEDULES_STORAGE_KEY,
+      schedules.filter(
+        (item) => !(item.itemType === "supplement" && item.itemId === id),
+      ),
+    ),
+    writeJsonArray(
+      DOSE_LOGS_STORAGE_KEY,
+      logs.filter(
+        (item) => !(item.itemType === "supplement" && item.itemId === id),
+      ),
+    ),
+    writeJsonArray(
+      HEALTH_DOCUMENTS_STORAGE_KEY,
+      documents.filter(
+        (item) => !(item.relatedType === "supplement" && item.relatedId === id),
+      ),
+    ),
+    writeJsonArray(
+      MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY,
+      notes.filter(
+        (item) => !(item.relatedType === "supplement" && item.relatedId === id),
+      ),
+    ),
   ]);
 
   return supplement;
@@ -232,7 +337,9 @@ export async function searchSupplementNames(query: string) {
   }
 
   return supplements.filter((supplement) =>
-    [supplement.name, supplement.brand, supplement.mainIngredient].some((value) => value?.toLowerCase().includes(trimmedQuery))
+    [supplement.name, supplement.brand, supplement.mainIngredient].some(
+      (value) => value?.toLowerCase().includes(trimmedQuery),
+    ),
   );
 }
 
@@ -254,7 +361,7 @@ export async function createHealthSchedule(input: ScheduleInput) {
     timing: input.timing ?? "once_daily",
     times: normalizeTimes(input.timing ?? "once_daily", input.times),
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const schedules = await getHealthSchedules();
 
@@ -263,33 +370,53 @@ export async function createHealthSchedule(input: ScheduleInput) {
   return schedule;
 }
 
-export async function getSchedulesByItem(itemType: "medication" | "supplement", itemId: string) {
+export async function getSchedulesByItem(
+  itemType: "medication" | "supplement",
+  itemId: string,
+) {
   const schedules = await getHealthSchedules();
 
-  return schedules.filter((schedule) => schedule.itemType === itemType && schedule.itemId === itemId);
-}
-
-export async function getSchedulesForDate(date: Date | string, itemType?: "medication" | "supplement") {
-  const schedules = await getHealthSchedules();
-  const dateKey = typeof date === "string" ? date : toDateKey(date);
-
-  return schedules.filter((schedule) =>
-    (!itemType || schedule.itemType === itemType) &&
-    isScheduleActiveOnDate(schedule, dateKey)
+  return schedules.filter(
+    (schedule) => schedule.itemType === itemType && schedule.itemId === itemId,
   );
 }
 
-export async function updateHealthSchedule(id: string, partial: Partial<Omit<HealthSchedule, "id" | "userId" | "profileId" | "createdAt">>) {
+export async function getSchedulesForDate(
+  date: Date | string,
+  itemType?: "medication" | "supplement",
+) {
+  const schedules = await getHealthSchedules();
+  const dateKey = typeof date === "string" ? date : toDateKey(date);
+
+  return schedules.filter(
+    (schedule) =>
+      (!itemType || schedule.itemType === itemType) &&
+      isScheduleActiveOnDate(schedule, dateKey),
+  );
+}
+
+export async function updateHealthSchedule(
+  id: string,
+  partial: Partial<
+    Omit<HealthSchedule, "id" | "userId" | "profileId" | "createdAt">
+  >,
+) {
   const schedules = await getHealthSchedules();
   const updatedSchedules = schedules.map((schedule) =>
     schedule.id === id
       ? {
           ...schedule,
           ...partial,
-          times: partial.times || partial.timing ? normalizeTimes(partial.timing ?? schedule.timing, partial.times ?? schedule.times) : schedule.times,
-          updatedAt: new Date().toISOString()
+          times:
+            partial.times || partial.timing
+              ? normalizeTimes(
+                  partial.timing ?? schedule.timing,
+                  partial.times ?? schedule.times,
+                )
+              : schedule.times,
+          updatedAt: new Date().toISOString(),
         }
-      : schedule
+      : schedule,
   );
 
   await writeJsonArray(HEALTH_SCHEDULES_STORAGE_KEY, updatedSchedules);
@@ -301,7 +428,10 @@ export async function deleteHealthSchedule(id: string) {
   const schedules = await getHealthSchedules();
   const schedule = schedules.find((item) => item.id === id) ?? null;
 
-  await writeJsonArray(HEALTH_SCHEDULES_STORAGE_KEY, schedules.filter((item) => item.id !== id));
+  await writeJsonArray(
+    HEALTH_SCHEDULES_STORAGE_KEY,
+    schedules.filter((item) => item.id !== id),
+  );
 
   return schedule;
 }
@@ -314,11 +444,15 @@ export async function calculateTodaySupplementSchedule() {
   return calculateTodaySchedule("supplement");
 }
 
-export async function createDoseLog(input: Partial<Omit<DoseLog, "id" | "userId" | "profileId" | "createdAt" | "updatedAt">> & {
-  itemId: string;
-  itemType: "medication" | "supplement";
-  status: DoseLogStatus;
-}) {
+export async function createDoseLog(
+  input: Partial<
+    Omit<DoseLog, "id" | "userId" | "profileId" | "createdAt" | "updatedAt">
+  > & {
+    itemId: string;
+    itemType: "medication" | "supplement";
+    status: DoseLogStatus;
+  },
+) {
   const now = new Date().toISOString();
   const log: DoseLog = {
     amount: numberOrUndefined(input.amount),
@@ -336,7 +470,7 @@ export async function createDoseLog(input: Partial<Omit<DoseLog, "id" | "userId"
     takenAt: input.takenAt ?? (input.status === "taken" ? now : undefined),
     unit: input.unit?.trim() || undefined,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const logs = await getDoseLogs();
 
@@ -346,7 +480,11 @@ export async function createDoseLog(input: Partial<Omit<DoseLog, "id" | "userId"
 }
 
 export async function markDoseTaken(input: DoseActionInput) {
-  return createDoseLog({ ...input, status: "taken", takenAt: new Date().toISOString() });
+  return createDoseLog({
+    ...input,
+    status: "taken",
+    takenAt: new Date().toISOString(),
+  });
 }
 
 export async function markDoseSkipped(input: DoseActionInput) {
@@ -358,7 +496,11 @@ export async function markDoseMissed(input: DoseActionInput) {
 }
 
 export async function snoozeDoseReminder(input: DoseActionInput) {
-  return createDoseLog({ ...input, notes: input.notes ?? "Snoozed reminder.", status: "snoozed" });
+  return createDoseLog({
+    ...input,
+    notes: input.notes ?? "Snoozed reminder.",
+    status: "snoozed",
+  });
 }
 
 type DoseActionInput = {
@@ -373,21 +515,31 @@ type DoseActionInput = {
   unit?: string;
 };
 
-export async function getDoseLogsByDate(date: Date | string, itemType?: "medication" | "supplement") {
+export async function getDoseLogsByDate(
+  date: Date | string,
+  itemType?: "medication" | "supplement",
+) {
   const logs = await getDoseLogs();
   const dateKey = typeof date === "string" ? date : toDateKey(date);
 
   return logs.filter((log) => {
     const logDate = log.takenAt ?? log.scheduledAt ?? log.createdAt;
 
-    return (!itemType || log.itemType === itemType) && logDate.startsWith(dateKey);
+    return (
+      (!itemType || log.itemType === itemType) && logDate.startsWith(dateKey)
+    );
   });
 }
 
-export async function getDoseLogsByItem(itemType: "medication" | "supplement", itemId: string) {
+export async function getDoseLogsByItem(
+  itemType: "medication" | "supplement",
+  itemId: string,
+) {
   const logs = await getDoseLogs();
 
-  return logs.filter((log) => log.itemType === itemType && log.itemId === itemId);
+  return logs.filter(
+    (log) => log.itemType === itemType && log.itemId === itemId,
+  );
 }
 
 export async function getMedicationAdherenceSummary(itemId?: string) {
@@ -398,9 +550,25 @@ export async function getSupplementAdherenceSummary(itemId?: string) {
   return getAdherenceSummary("supplement", itemId);
 }
 
-export async function createHealthDocument(input: Partial<Omit<HealthDocument, "id" | "userId" | "profileId" | "createdAt" | "updatedAt" | "isPrivate" | "sharedWithPartner" | "sharedWithFamily" | "sharedWithCaregiver" | "lockedPrivate">> & {
-  title: string;
-}) {
+export async function createHealthDocument(
+  input: Partial<
+    Omit<
+      HealthDocument,
+      | "id"
+      | "userId"
+      | "profileId"
+      | "createdAt"
+      | "updatedAt"
+      | "isPrivate"
+      | "sharedWithPartner"
+      | "sharedWithFamily"
+      | "sharedWithCaregiver"
+      | "lockedPrivate"
+    >
+  > & {
+    title: string;
+  },
+) {
   const now = new Date().toISOString();
   const document: HealthDocument = {
     createdAt: now,
@@ -418,7 +586,7 @@ export async function createHealthDocument(input: Partial<Omit<HealthDocument, "
     sharedWithPartner: false,
     title: input.title.trim(),
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const documents = await getHealthDocuments();
 
@@ -427,24 +595,49 @@ export async function createHealthDocument(input: Partial<Omit<HealthDocument, "
   return document;
 }
 
-export async function getHealthDocumentsByItem(relatedType: "medication" | "supplement", relatedId: string) {
+export async function getHealthDocumentsByItem(
+  relatedType: "medication" | "supplement",
+  relatedId: string,
+) {
   const documents = await getHealthDocuments();
 
-  return documents.filter((document) => document.relatedType === relatedType && document.relatedId === relatedId);
+  return documents.filter(
+    (document) =>
+      document.relatedType === relatedType && document.relatedId === relatedId,
+  );
 }
 
 export async function deleteHealthDocument(id: string) {
   const documents = await getHealthDocuments();
   const document = documents.find((item) => item.id === id) ?? null;
 
-  await writeJsonArray(HEALTH_DOCUMENTS_STORAGE_KEY, documents.filter((item) => item.id !== id));
+  await writeJsonArray(
+    HEALTH_DOCUMENTS_STORAGE_KEY,
+    documents.filter((item) => item.id !== id),
+  );
 
   return document;
 }
 
-export async function createMedicationSupplementNote(input: Partial<Omit<MedicationSupplementNote, "id" | "userId" | "profileId" | "createdAt" | "updatedAt" | "isPrivate" | "sharedWithPartner" | "sharedWithFamily" | "sharedWithCaregiver" | "lockedPrivate">> & {
-  note: string;
-}) {
+export async function createMedicationSupplementNote(
+  input: Partial<
+    Omit<
+      MedicationSupplementNote,
+      | "id"
+      | "userId"
+      | "profileId"
+      | "createdAt"
+      | "updatedAt"
+      | "isPrivate"
+      | "sharedWithPartner"
+      | "sharedWithFamily"
+      | "sharedWithCaregiver"
+      | "lockedPrivate"
+    >
+  > & {
+    note: string;
+  },
+) {
   const now = new Date().toISOString();
   const note: MedicationSupplementNote = {
     createdAt: now,
@@ -460,29 +653,42 @@ export async function createMedicationSupplementNote(input: Partial<Omit<Medicat
     sharedWithFamily: false,
     sharedWithPartner: false,
     updatedAt: now,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   };
   const notes = await getMedicationSupplementNotes();
 
-  await writeJsonArray(MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY, [note, ...notes]);
+  await writeJsonArray(MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY, [
+    note,
+    ...notes,
+  ]);
 
   return note;
 }
 
-export async function getNotesByItem(relatedType: "medication" | "supplement" | "general", relatedId?: string) {
+export async function getNotesByItem(
+  relatedType: "medication" | "supplement" | "general",
+  relatedId?: string,
+) {
   const notes = await getMedicationSupplementNotes();
 
-  return notes.filter((note) =>
-    note.relatedType === relatedType && (!relatedId || note.relatedId === relatedId)
+  return notes.filter(
+    (note) =>
+      note.relatedType === relatedType &&
+      (!relatedId || note.relatedId === relatedId),
   );
 }
 
-export async function getNotesByDate(date: Date | string, relatedType?: "medication" | "supplement" | "general") {
+export async function getNotesByDate(
+  date: Date | string,
+  relatedType?: "medication" | "supplement" | "general",
+) {
   const notes = await getMedicationSupplementNotes();
   const dateKey = typeof date === "string" ? date : toDateKey(date);
 
-  return notes.filter((note) =>
-    note.loggedAt.startsWith(dateKey) && (!relatedType || note.relatedType === relatedType)
+  return notes.filter(
+    (note) =>
+      note.loggedAt.startsWith(dateKey) &&
+      (!relatedType || note.relatedType === relatedType),
   );
 }
 
@@ -492,7 +698,7 @@ export function getAvailableMedicationWidgets() {
     "next_medication",
     "medication_taken_today",
     "missed_medication",
-    "medication_schedule_status"
+    "medication_schedule_status",
   ] as const;
 }
 
@@ -501,7 +707,7 @@ export function getAvailableSupplementWidgets() {
     "supplements_due_today",
     "next_supplement",
     "supplements_taken_today",
-    "supplement_schedule_status"
+    "supplement_schedule_status",
   ] as const;
 }
 
@@ -519,7 +725,9 @@ export async function calculateMedicationWidgetValue(widgetKey: string) {
       return `${summary.missedCount} missed`;
     case "medication":
     case "medication_schedule_status":
-      return summary.totalCount ? `${summary.takenCount} of ${summary.totalCount} taken` : "No schedule";
+      return summary.totalCount
+        ? `${summary.takenCount} of ${summary.totalCount} taken`
+        : "No schedule";
     default:
       return "Ready";
   }
@@ -536,7 +744,9 @@ export async function calculateSupplementWidgetValue(widgetKey: string) {
     case "supplements_taken_today":
       return `${summary.takenCount} / ${summary.totalCount}`;
     case "supplement_schedule_status":
-      return summary.totalCount ? `${summary.takenCount} of ${summary.totalCount} taken` : "No schedule";
+      return summary.totalCount
+        ? `${summary.takenCount} of ${summary.totalCount} taken`
+        : "No schedule";
     default:
       return "Ready";
   }
@@ -544,36 +754,54 @@ export async function calculateSupplementWidgetValue(widgetKey: string) {
 
 export async function getMedicationSupplementFoodTimingSummary() {
   const schedules = await getHealthSchedules();
-  const foodTimingSchedules = schedules.filter((schedule) => schedule.foodTiming !== "none" && schedule.reminderEnabled);
+  const foodTimingSchedules = schedules.filter(
+    (schedule) => schedule.foodTiming !== "none" && schedule.reminderEnabled,
+  );
 
   return {
     count: foodTimingSchedules.length,
     hasFoodTimingNotes: foodTimingSchedules.length > 0,
-    message: "Some medications or supplements have food timing notes. Follow the label or healthcare professional's instructions."
+    message:
+      "Some medications or supplements have food timing notes. Follow the label or healthcare professional's instructions.",
   };
 }
 
-async function calculateTodaySchedule(itemType: "medication" | "supplement"): Promise<MedicationSupplementTodaySummary> {
+async function calculateTodaySchedule(
+  itemType: "medication" | "supplement",
+): Promise<MedicationSupplementTodaySummary> {
   const today = new Date();
   const todayKey = toDateKey(today);
   const [schedules, logs, medications, supplements] = await Promise.all([
     getSchedulesForDate(todayKey, itemType),
     getDoseLogsByDate(todayKey, itemType),
     getMedications(),
-    getSupplements()
+    getSupplements(),
   ]);
-  const activeItems = itemType === "medication"
-    ? medications.filter((item) => item.isActive)
-    : supplements.filter((item) => item.isActive);
+  const activeItems =
+    itemType === "medication"
+      ? medications.filter((item) => item.isActive)
+      : supplements.filter((item) => item.isActive);
   const reminders = schedules
-    .filter((schedule) => activeItems.some((item) => item.id === schedule.itemId))
+    .filter((schedule) =>
+      activeItems.some((item) => item.id === schedule.itemId),
+    )
     .flatMap((schedule) => buildRemindersForSchedule(schedule, logs, today));
-  const dueCount = reminders.filter((reminder) => reminder.status === "due").length;
+  const dueCount = reminders.filter(
+    (reminder) => reminder.status === "due",
+  ).length;
   const takenCount = logs.filter((log) => log.status === "taken").length;
-  const missedCount = reminders.filter((reminder) => reminder.status === "missed").length + logs.filter((log) => log.status === "missed").length;
+  const missedCount =
+    reminders.filter((reminder) => reminder.status === "missed").length +
+    logs.filter((log) => log.status === "missed").length;
   const nextItem = reminders
-    .filter((reminder) => reminder.status === "upcoming" || reminder.status === "due")
-    .sort((left, right) => new Date(left.scheduledAt ?? 0).getTime() - new Date(right.scheduledAt ?? 0).getTime())[0];
+    .filter(
+      (reminder) => reminder.status === "upcoming" || reminder.status === "due",
+    )
+    .sort(
+      (left, right) =>
+        new Date(left.scheduledAt ?? 0).getTime() -
+        new Date(right.scheduledAt ?? 0).getTime(),
+    )[0];
 
   return {
     dueCount,
@@ -581,31 +809,43 @@ async function calculateTodaySchedule(itemType: "medication" | "supplement"): Pr
     nextItem,
     reminders,
     takenCount,
-    totalCount: reminders.length
+    totalCount: reminders.length,
   };
 }
 
-function buildRemindersForSchedule(schedule: HealthSchedule, logs: DoseLog[], date: Date): HealthScheduleReminder[] {
+function buildRemindersForSchedule(
+  schedule: HealthSchedule,
+  logs: DoseLog[],
+  date: Date,
+): HealthScheduleReminder[] {
   const itemName = getCachedItemName(schedule.itemType, schedule.itemId);
 
   if (schedule.timing === "as_needed") {
-    return [{
-      itemId: schedule.itemId,
-      itemName,
-      itemType: schedule.itemType,
-      scheduleId: schedule.id,
-      status: "upcoming",
-      subtitle: "As needed"
-    }];
+    return [
+      {
+        itemId: schedule.itemId,
+        itemName,
+        itemType: schedule.itemType,
+        scheduleId: schedule.id,
+        status: "upcoming",
+        subtitle: "As needed",
+      },
+    ];
   }
 
   return schedule.times.map((time) => {
     const scheduledAt = toScheduledAt(date, time);
-    const existingLog = logs.find((log) =>
-      log.scheduleId === schedule.id && log.scheduledAt === scheduledAt
-    ) ?? logs.find((log) =>
-      log.itemId === schedule.itemId && log.status !== "upcoming" && (log.scheduledAt ?? "").startsWith(toDateKey(date))
-    );
+    const existingLog =
+      logs.find(
+        (log) =>
+          log.scheduleId === schedule.id && log.scheduledAt === scheduledAt,
+      ) ??
+      logs.find(
+        (log) =>
+          log.itemId === schedule.itemId &&
+          log.status !== "upcoming" &&
+          (log.scheduledAt ?? "").startsWith(toDateKey(date)),
+      );
 
     return {
       itemId: schedule.itemId,
@@ -614,7 +854,7 @@ function buildRemindersForSchedule(schedule: HealthSchedule, logs: DoseLog[], da
       scheduleId: schedule.id,
       scheduledAt,
       status: existingLog?.status ?? inferReminderStatus(scheduledAt),
-      subtitle: schedule.customInstructions
+      subtitle: schedule.customInstructions,
     };
   });
 }
@@ -622,16 +862,29 @@ function buildRemindersForSchedule(schedule: HealthSchedule, logs: DoseLog[], da
 let itemNameCache = new Map<string, string>();
 
 async function refreshItemNameCache() {
-  const [medications, supplements] = await Promise.all([getMedications(), getSupplements()]);
+  const [medications, supplements] = await Promise.all([
+    getMedications(),
+    getSupplements(),
+  ]);
 
   itemNameCache = new Map([
-    ...medications.map((medication) => [`medication-${medication.id}`, medication.name] as const),
-    ...supplements.map((supplement) => [`supplement-${supplement.id}`, supplement.name] as const)
+    ...medications.map(
+      (medication) => [`medication-${medication.id}`, medication.name] as const,
+    ),
+    ...supplements.map(
+      (supplement) => [`supplement-${supplement.id}`, supplement.name] as const,
+    ),
   ]);
 }
 
-function getCachedItemName(itemType: "medication" | "supplement", itemId: string) {
-  return itemNameCache.get(`${itemType}-${itemId}`) ?? (itemType === "medication" ? "Medication" : "Supplement");
+function getCachedItemName(
+  itemType: "medication" | "supplement",
+  itemId: string,
+) {
+  return (
+    itemNameCache.get(`${itemType}-${itemId}`) ??
+    (itemType === "medication" ? "Medication" : "Supplement")
+  );
 }
 
 async function getHealthSchedules() {
@@ -650,29 +903,40 @@ async function getHealthDocuments() {
 }
 
 async function getMedicationSupplementNotes() {
-  return readJsonArray<MedicationSupplementNote>(MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY);
+  return readJsonArray<MedicationSupplementNote>(
+    MEDICATION_SUPPLEMENT_NOTES_STORAGE_KEY,
+  );
 }
 
-async function getAdherenceSummary(itemType: "medication" | "supplement", itemId?: string): Promise<AdherenceSummary> {
+async function getAdherenceSummary(
+  itemType: "medication" | "supplement",
+  itemId?: string,
+): Promise<AdherenceSummary> {
   const logs = await getDoseLogs();
-  const filteredLogs = logs.filter((log) => log.itemType === itemType && (!itemId || log.itemId === itemId));
+  const filteredLogs = logs.filter(
+    (log) => log.itemType === itemType && (!itemId || log.itemId === itemId),
+  );
 
   return {
     missed: filteredLogs.filter((log) => log.status === "missed").length,
     skipped: filteredLogs.filter((log) => log.status === "skipped").length,
     taken: filteredLogs.filter((log) => log.status === "taken").length,
-    total: filteredLogs.length
+    total: filteredLogs.length,
   };
 }
 
 async function migrateLegacyMedications() {
-  const existingMedications = await readJsonArray<Medication>(MEDICATIONS_STORAGE_KEY);
+  const existingMedications = await readJsonArray<Medication>(
+    MEDICATIONS_STORAGE_KEY,
+  );
 
   if (existingMedications.length) {
     return;
   }
 
-  const legacyMedications = await readJsonArray<MedicationItem>(LEGACY_MEDICATIONS_STORAGE_KEY);
+  const legacyMedications = await readJsonArray<MedicationItem>(
+    LEGACY_MEDICATIONS_STORAGE_KEY,
+  );
 
   if (!legacyMedications.length) {
     return;
@@ -695,9 +959,11 @@ async function migrateLegacyMedications() {
     sharedWithPartner: false,
     strength: item.dosage,
     updatedAt: item.updatedAt,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   }));
-  const legacySchedules = await readJsonArray<MedicationSchedule>(LEGACY_MEDICATION_SCHEDULES_STORAGE_KEY);
+  const legacySchedules = await readJsonArray<MedicationSchedule>(
+    LEGACY_MEDICATION_SCHEDULES_STORAGE_KEY,
+  );
   const schedules: HealthSchedule[] = legacySchedules.map((schedule) => ({
     createdAt: schedule.createdAt,
     customInstructions: schedule.instructions,
@@ -712,12 +978,12 @@ async function migrateLegacyMedications() {
     timing: legacyFrequencyToTiming(schedule.frequency),
     times: schedule.reminderTimes.map((time) => time.time),
     updatedAt: schedule.updatedAt,
-    userId: LOCAL_USER_ID
+    userId: LOCAL_USER_ID,
   }));
 
   await Promise.all([
     writeJsonArray(MEDICATIONS_STORAGE_KEY, medications),
-    writeJsonArray(HEALTH_SCHEDULES_STORAGE_KEY, schedules)
+    writeJsonArray(HEALTH_SCHEDULES_STORAGE_KEY, schedules),
   ]);
 }
 
@@ -832,7 +1098,10 @@ async function writeJsonArray<T>(key: string, value: T[]) {
   return value;
 }
 
-export const MEDICATION_FORM_OPTIONS: Array<{ key: MedicationForm; label: string }> = [
+export const MEDICATION_FORM_OPTIONS: Array<{
+  key: MedicationForm;
+  label: string;
+}> = [
   { key: "tablet", label: "Tablet" },
   { key: "capsule", label: "Capsule" },
   { key: "syrup", label: "Syrup" },
@@ -840,27 +1109,33 @@ export const MEDICATION_FORM_OPTIONS: Array<{ key: MedicationForm; label: string
   { key: "cream", label: "Cream" },
   { key: "drops", label: "Drops" },
   { key: "inhaler", label: "Inhaler" },
-  { key: "other", label: "Other" }
+  { key: "other", label: "Other" },
 ];
 
-export const SUPPLEMENT_FORM_OPTIONS: Array<{ key: SupplementForm; label: string }> = [
+export const SUPPLEMENT_FORM_OPTIONS: Array<{
+  key: SupplementForm;
+  label: string;
+}> = [
   { key: "tablet", label: "Tablet" },
   { key: "capsule", label: "Capsule" },
   { key: "powder", label: "Powder" },
   { key: "liquid", label: "Liquid" },
   { key: "gummy", label: "Gummy" },
   { key: "drops", label: "Drops" },
-  { key: "other", label: "Other" }
+  { key: "other", label: "Other" },
 ];
 
-export const SCHEDULE_TIMING_OPTIONS: Array<{ key: ScheduleTiming; label: string }> = [
+export const SCHEDULE_TIMING_OPTIONS: Array<{
+  key: ScheduleTiming;
+  label: string;
+}> = [
   { key: "once_daily", label: "Once daily" },
   { key: "twice_daily", label: "Twice daily" },
   { key: "three_times_daily", label: "Three times daily" },
   { key: "specific_times", label: "Specific times" },
   { key: "every_x_hours", label: "Every X hours" },
   { key: "specific_days", label: "Specific days" },
-  { key: "as_needed", label: "As needed / PRN" }
+  { key: "as_needed", label: "As needed / PRN" },
 ];
 
 export const FOOD_TIMING_OPTIONS: Array<{ key: FoodTiming; label: string }> = [
@@ -868,5 +1143,5 @@ export const FOOD_TIMING_OPTIONS: Array<{ key: FoodTiming; label: string }> = [
   { key: "with_food", label: "With food" },
   { key: "without_food", label: "Without food" },
   { key: "before_meal", label: "Before meal" },
-  { key: "after_meal", label: "After meal" }
+  { key: "after_meal", label: "After meal" },
 ];

@@ -22,7 +22,7 @@ export function HealthSyncIdentityControl({
   onOpenPeopleAccount,
   onOpenProfile,
   pageTitle,
-  relationship
+  relationship,
 }: HealthSyncIdentityControlProps) {
   const { theme } = useAppTheme();
 
@@ -32,7 +32,10 @@ export function HealthSyncIdentityControl({
         accessibilityLabel={`Open ${name}'s profile`}
         accessibilityRole="button"
         onPress={onOpenProfile}
-        style={({ pressed }) => [styles.avatarButton, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.avatarButton,
+          pressed ? styles.pressed : null,
+        ]}
       >
         <AppAvatar imageUri={avatarUri} initials={initials} size={46} />
       </Pressable>
@@ -41,13 +44,21 @@ export function HealthSyncIdentityControl({
         accessibilityLabel={`Viewing ${name}, ${relationship}`}
         accessibilityRole="button"
         onPress={onOpenPeopleAccount}
-        style={({ pressed }) => [styles.identityButton, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.identityButton,
+          pressed ? styles.pressed : null,
+        ]}
       >
         <View style={styles.copy}>
-          <Text numberOfLines={1} style={[styles.context, { color: theme.mutedText }]}>
+          <Text
+            numberOfLines={1}
+            style={[styles.context, { color: theme.mutedText }]}
+          >
             {pageTitle ? `${pageTitle} - viewing` : "Viewing"}
           </Text>
-          <Text numberOfLines={1} style={[styles.name, { color: theme.text }]}>{name}</Text>
+          <Text numberOfLines={1} style={[styles.name, { color: theme.text }]}>
+            {name}
+          </Text>
         </View>
         <ChevronDown color={theme.mutedText} size={18} strokeWidth={2.5} />
       </Pressable>
@@ -59,8 +70,20 @@ const styles = StyleSheet.create({
   avatarButton: { borderRadius: 999 },
   context: { fontSize: 12, fontWeight: "700" },
   copy: { flex: 1, minWidth: 0 },
-  identityButton: { alignItems: "center", flex: 1, flexDirection: "row", gap: spacing.xs, minHeight: 48 },
+  identityButton: {
+    alignItems: "center",
+    flex: 1,
+    flexDirection: "row",
+    gap: spacing.xs,
+    minHeight: 48,
+  },
   name: { fontSize: 18, fontWeight: "900", marginTop: 2 },
   pressed: { opacity: 0.72 },
-  root: { alignItems: "center", flex: 1, flexDirection: "row", gap: spacing.md, minWidth: 0 }
+  root: {
+    alignItems: "center",
+    flex: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    minWidth: 0,
+  },
 });

@@ -10,13 +10,15 @@ import {
   getMedicationScheduleByMedicationId,
   getMedications,
   markMedicationTaken,
-  subscribeToMedications
+  subscribeToMedications,
 } from "@/lib/medicationStorage";
 import type { MedicationItem, MedicationSchedule } from "@/types/medication";
 
 export function MedicationListCard() {
   const [medications, setMedications] = useState<MedicationItem[]>([]);
-  const [schedules, setSchedules] = useState<Record<string, MedicationSchedule | null>>({});
+  const [schedules, setSchedules] = useState<
+    Record<string, MedicationSchedule | null>
+  >({});
   const [name, setName] = useState("");
   const [dosage, setDosage] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -24,10 +26,13 @@ export function MedicationListCard() {
   const loadMedications = useCallback(async () => {
     const storedMedications = await getMedications();
     const scheduleEntries = await Promise.all(
-      storedMedications.map(async (medication) => [
-        medication.id,
-        await getMedicationScheduleByMedicationId(medication.id)
-      ] as const)
+      storedMedications.map(
+        async (medication) =>
+          [
+            medication.id,
+            await getMedicationScheduleByMedicationId(medication.id),
+          ] as const,
+      ),
     );
 
     setMedications(storedMedications);
@@ -37,20 +42,22 @@ export function MedicationListCard() {
   useEffect(() => {
     let isActive = true;
 
-    getMedications()
-      .then(async (storedMedications) => {
-        const scheduleEntries = await Promise.all(
-          storedMedications.map(async (medication) => [
-            medication.id,
-            await getMedicationScheduleByMedicationId(medication.id)
-          ] as const)
-        );
+    getMedications().then(async (storedMedications) => {
+      const scheduleEntries = await Promise.all(
+        storedMedications.map(
+          async (medication) =>
+            [
+              medication.id,
+              await getMedicationScheduleByMedicationId(medication.id),
+            ] as const,
+        ),
+      );
 
-        if (isActive) {
-          setMedications(storedMedications);
-          setSchedules(Object.fromEntries(scheduleEntries));
-        }
-      });
+      if (isActive) {
+        setMedications(storedMedications);
+        setSchedules(Object.fromEntries(scheduleEntries));
+      }
+    });
 
     const unsubscribe = subscribeToMedications(() => {
       loadMedications();
@@ -70,7 +77,7 @@ export function MedicationListCard() {
     await createMedication({
       dosage,
       instructions,
-      name
+      name,
     });
     setName("");
     setDosage("");
@@ -86,7 +93,8 @@ export function MedicationListCard() {
             Medication
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 21 }}>
-            Add only what you entered. This app does not suggest dosage or medical changes.
+            Add only what you entered. This app does not suggest dosage or
+            medical changes.
           </Text>
 
           <AppFormInput
@@ -121,9 +129,13 @@ export function MedicationListCard() {
           <MedicationCard
             key={medication.id}
             medication={medication}
-            onMarkTaken={() => markMedicationTaken(medication.id).then(loadMedications)}
+            onMarkTaken={() =>
+              markMedicationTaken(medication.id).then(loadMedications)
+            }
             onOpen={() => router.push(`/medication/${medication.id}` as Href)}
-            onSchedule={() => router.push(`/medication/${medication.id}` as Href)}
+            onSchedule={() =>
+              router.push(`/medication/${medication.id}` as Href)
+            }
             schedule={schedules[medication.id]}
           />
         ))}

@@ -10,13 +10,20 @@ export default async function RemindersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Reminders</h1>
-        <p className="text-sm text-muted-foreground">Appointment, medicine, vaccination, document, and health log reminders.</p>
+        <p className="text-sm text-muted-foreground">
+          Appointment, medicine, vaccination, document, and health log
+          reminders.
+        </p>
       </div>
       <div className="grid gap-4 xl:grid-cols-[1fr_420px]">
         <ReminderList reminders={data.reminders} />
         <Card>
-          <CardHeader><CardTitle>Create reminder</CardTitle></CardHeader>
-          <CardContent><ReminderForm members={data.members} /></CardContent>
+          <CardHeader>
+            <CardTitle>Create reminder</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReminderForm members={data.members} />
+          </CardContent>
         </Card>
       </div>
     </div>

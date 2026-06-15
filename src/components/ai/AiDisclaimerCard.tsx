@@ -9,9 +9,9 @@ export function AiDisclaimerCard() {
         AI helps organise, not diagnose
       </Text>
       <Text style={{ color: "#64748b", lineHeight: 21, marginTop: 6 }}>
-        AI can help summarise reports, labels and notes, but it can make mistakes.
-        Review everything before saving. For medical concerns, contact a healthcare
-        professional.
+        AI can help summarise reports, labels and notes, but it can make
+        mistakes. Review everything before saving. For medical concerns, contact
+        a healthcare professional.
       </Text>
     </AppCard>
   );

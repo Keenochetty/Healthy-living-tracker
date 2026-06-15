@@ -32,7 +32,7 @@ export function AiCreateJobCard({ onCreated }: AiCreateJobCardProps) {
       mimeType: input.mimeType,
       status: "processing",
       textInput: input.textInput,
-      title: title.trim() || "AI draft"
+      title: title.trim() || "AI draft",
     });
     try {
       const response = await callAiExtractFunction({
@@ -42,7 +42,7 @@ export function AiCreateJobCard({ onCreated }: AiCreateJobCardProps) {
         jobType,
         localUri: input.localUri,
         mimeType: input.mimeType,
-        textInput: input.textInput
+        textInput: input.textInput,
       });
 
       await attachDraftToJob(job.id, response.draft);
@@ -66,7 +66,8 @@ export function AiCreateJobCard({ onCreated }: AiCreateJobCardProps) {
             Create AI draft
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Uses backend extraction when available. Falls back to mock drafts for UI testing.
+            Uses backend extraction when available. Falls back to mock drafts
+            for UI testing.
           </Text>
         </View>
 
@@ -96,8 +97,14 @@ export function AiCreateJobCard({ onCreated }: AiCreateJobCardProps) {
 
         <AiInputPickerCard onChange={setInput} selection={input} />
 
-        <TouchableOpacity activeOpacity={0.85} onPress={createDraft} style={buttonStyle}>
-          <Text style={{ color: "#ffffff", fontWeight: "900" }}>Create draft</Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={createDraft}
+          style={buttonStyle}
+        >
+          <Text style={{ color: "#ffffff", fontWeight: "900" }}>
+            Create draft
+          </Text>
         </TouchableOpacity>
       </View>
     </AppCard>
@@ -111,7 +118,7 @@ const inputStyle = {
   borderWidth: 1,
   color: "#0f172a",
   minHeight: 50,
-  paddingHorizontal: 14
+  paddingHorizontal: 14,
 };
 
 const buttonStyle = {
@@ -119,5 +126,5 @@ const buttonStyle = {
   backgroundColor: "#7c3aed",
   borderRadius: 18,
   justifyContent: "center" as const,
-  minHeight: 52
+  minHeight: 52,
 };
