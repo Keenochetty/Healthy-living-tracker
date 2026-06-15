@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View, type TextStyle, type ViewStyle } from "react-native";
 
 import { spacing } from "@/constants/spacing";
-import { colors } from "@/constants/theme";
+import { typography, useHealthTheme } from "@/constants/theme";
 
 type AppHeaderProps = {
   action?: ReactNode;
+  compact?: boolean;
   eyebrow?: string;
   subtitle?: string;
   title: string;
@@ -13,52 +14,65 @@ type AppHeaderProps = {
 
 export function AppHeader({
   action,
+  compact = false,
   eyebrow,
   subtitle,
   title,
 }: AppHeaderProps) {
+  const { colors } = useHealthTheme();
+
   return (
     <View style={styles.container}>
       <View style={styles.copy}>
-        {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {eyebrow ? (
+          <Text style={[styles.eyebrow, { color: colors.text.muted }]}>
+            {eyebrow}
+          </Text>
+        ) : null}
+        <Text
+          style={[
+            compact ? styles.compactTitle : styles.title,
+            { color: colors.text.primary },
+          ]}
+        >
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
       {action ? <View style={styles.action}>{action}</View> : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   action: {
     alignSelf: "flex-start",
-  },
+  } satisfies ViewStyle,
+  compactTitle: {
+    ...typography.sectionTitle,
+  } satisfies TextStyle,
   container: {
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.lg,
     justifyContent: "space-between",
-  },
+  } satisfies ViewStyle,
   copy: {
     flex: 1,
     gap: spacing.xs,
-  },
+  } satisfies ViewStyle,
   eyebrow: {
-    color: colors.brand.primary,
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0.2,
+    ...typography.kicker,
     textTransform: "uppercase",
-  },
+  } satisfies TextStyle,
   subtitle: {
-    color: colors.text.muted,
-    fontSize: 15,
-    lineHeight: 21,
-  },
+    ...typography.body,
+  } satisfies TextStyle,
   title: {
-    color: colors.text.primary,
-    fontSize: 32,
-    fontWeight: "800",
-    letterSpacing: 0,
-  },
-});
+    ...typography.screenTitle,
+  } satisfies TextStyle,
+};

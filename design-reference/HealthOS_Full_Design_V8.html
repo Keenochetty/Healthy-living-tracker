@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HealthOS Full Design Prototype v8</title>
+<style>
+  :root{
+    --bg:#081118;
+    --bg2:#0e1821;
+    --surface:#111e29;
+    --surface2:#152533;
+    --surface3:#1b2d3b;
+    --glass:rgba(255,255,255,.075);
+    --glass2:rgba(255,255,255,.12);
+    --border:rgba(255,255,255,.10);
+    --border2:rgba(255,255,255,.17);
+    --text:#f5fbff;
+    --muted:#90a4b4;
+    --muted2:#617282;
+    --primary:#70f1c7;
+    --primary2:#65d8ff;
+    --health:#70f1c7;
+    --fitness:#9aff6f;
+    --food:#ffb85c;
+    --women:#ff86bf;
+    --baby:#ffd76a;
+    --family:#8cb7ff;
+    --med:#b99bff;
+    --records:#8be4ff;
+    --danger:#ff6f8e;
+    --warning:#ffd166;
+    --shadow: 0 24px 70px rgba(0,0,0,.42);
+    --soft-shadow:0 12px 36px rgba(0,0,0,.24);
+    --radius-xl:30px;
+    --radius-lg:24px;
+    --radius-md:18px;
+    --radius-sm:14px;
+  }
+  [data-theme="light"]{
+    --bg:#edf7f4;
+    --bg2:#f8fbfa;
+    --surface:#ffffff;
+    --surface2:#f3f8f6;
+    --surface3:#edf3f1;
+    --glass:rgba(255,255,255,.82);
+    --glass2:rgba(255,255,255,.95);
+    --border:rgba(14,34,43,.08);
+    --border2:rgba(14,34,43,.13);
+    --text:#132127;
+    --muted:#62747d;
+    --muted2:#88959b;
+    --shadow:0 24px 70px rgba(53,89,83,.20);
+    --soft-shadow:0 12px 36px rgba(53,89,83,.13);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;background:radial-gradient(circle at 20% 0%, rgba(112,241,199,.16), transparent 26%),radial-gradient(circle at 80% 12%, rgba(101,216,255,.12), transparent 30%),linear-gradient(135deg,var(--bg),var(--bg2));color:var(--text)}
+  body{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 46px;overflow-x:hidden}
+  button,input{font:inherit;color:inherit}
+  .stage{width:min(1220px,100%);display:grid;grid-template-columns:280px 430px 1fr;gap:24px;align-items:start}
+  .brief{position:sticky;top:24px;padding:22px;border:1px solid var(--border);border-radius:var(--radius-xl);background:linear-gradient(180deg,var(--glass2),var(--glass));box-shadow:var(--soft-shadow);backdrop-filter:blur(18px)}
+  .brief h1{font-size:28px;line-height:1.02;margin:8px 0 10px;letter-spacing:-1px}
+  .brief p{font-size:13px;line-height:1.55;color:var(--muted);margin:0 0 14px}.mark{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface2);font-size:12px;color:var(--muted)}
+  .palette{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}.sw{height:34px;border-radius:14px;border:1px solid var(--border)}
+  .side-nav{display:grid;gap:8px;margin-top:14px}.side-nav button{border:1px solid transparent;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:16px;padding:11px 12px;cursor:pointer;text-align:left}.side-nav button:hover,.side-nav button.active{background:var(--surface2);border-color:var(--border);color:var(--text)}.side-nav small{color:var(--muted2)}
+  .phone-shell{width:430px;min-height:900px;border-radius:48px;padding:12px;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.04));box-shadow:var(--shadow);border:1px solid var(--border2);position:sticky;top:24px}.phone{height:876px;border-radius:38px;background:linear-gradient(180deg,var(--bg),var(--bg2));position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+  .phone::before{content:"";position:absolute;inset:-90px -80px auto -80px;height:250px;background:radial-gradient(circle at 28% 24%, rgba(112,241,199,.24), transparent 36%),radial-gradient(circle at 72% 28%, rgba(255,134,191,.14), transparent 34%);filter:blur(4px);pointer-events:none}.phone::after{content:"";position:absolute;top:10px;left:50%;transform:translateX(-50%);width:104px;height:25px;border-radius:999px;background:rgba(0,0,0,.35);z-index:10}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;padding:42px 18px 148px;overflow-y:auto;scrollbar-width:none}.screen.active{display:flex}.screen::-webkit-scrollbar{display:none}.screen.compact{padding-top:36px}.screen.scan-screen{padding-bottom:125px;background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.22)),radial-gradient(circle at 50% 35%,rgba(112,241,199,.14),transparent 35%),var(--bg)}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;position:relative;z-index:1}.hello{display:flex;gap:10px;align-items:center}.avatar{width:42px;height:42px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;color:#061016;font-weight:900;box-shadow:0 14px 26px rgba(112,241,199,.16);cursor:pointer;overflow:hidden}.avatar.family{background:linear-gradient(135deg,var(--family),var(--women))}.avatar.small{width:30px;height:30px;border-radius:12px;font-size:12px}.avatar.xs{width:24px;height:24px;border-radius:10px;font-size:10px}.kicker{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);font-weight:800}.title{font-size:24px;line-height:1.05;margin:2px 0 0;font-weight:900;letter-spacing:-.9px}.icon-btn{width:40px;height:40px;border-radius:15px;border:1px solid var(--border);background:var(--glass);display:grid;place-items:center;cursor:pointer;color:var(--text);backdrop-filter:blur(12px)}.row{display:flex;align-items:center}.between{justify-content:space-between}.gap8{gap:8px}.gap10{gap:10px}.gap12{gap:12px}.gap14{gap:14px}.mt6{margin-top:6px}.mt10{margin-top:10px}.mt14{margin-top:14px}.mt18{margin-top:18px}.mb0{margin-bottom:0!important}.muted{color:var(--muted)}.tiny{font-size:11px}.small{font-size:12px}.strong{font-weight:850}.accent{color:var(--primary)}
+  .hero-card{border:1px solid var(--border);border-radius:30px;padding:18px;background:linear-gradient(145deg,rgba(112,241,199,.15),rgba(101,216,255,.08) 45%,var(--glass));box-shadow:var(--soft-shadow);position:relative;overflow:hidden}.hero-card::after{content:"";position:absolute;right:-38px;top:-42px;width:144px;height:144px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 62%)}.hero-card h2{font-size:27px;line-height:1.03;margin:4px 0 8px;letter-spacing:-1px}.hero-card p{font-size:13px;line-height:1.45;color:var(--muted);margin:0;max-width:245px}.hero-card .actions{display:flex;gap:8px;margin-top:16px}.btn{border:0;border-radius:16px;padding:11px 14px;background:var(--primary);color:#071016;font-weight:900;font-size:13px;cursor:pointer}.btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .section{margin-top:18px}.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.section-head h3{font-size:16px;margin:0;letter-spacing:-.2px}.section-head button{background:transparent;border:0;color:var(--muted);font-size:12px;cursor:pointer}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stack{display:grid;gap:10px}.card{border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,var(--glass2),var(--glass));backdrop-filter:blur(18px);box-shadow:0 10px 28px rgba(0,0,0,.12);padding:14px;position:relative;overflow:hidden}.card.compact{padding:12px;border-radius:19px}.card.flat{box-shadow:none;background:var(--surface2)}.metric{min-height:108px}.metric .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);font-weight:850}.metric .value{font-size:25px;font-weight:950;letter-spacing:-.9px;margin-top:6px}.metric .unit{font-size:12px;color:var(--muted);font-weight:750}.metric .delta{font-size:11px;color:var(--primary);font-weight:850;margin-top:5px}.chip-row{display:flex;gap:8px;overflow:auto;scrollbar-width:none}.chip-row::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;border:1px solid var(--border);background:var(--surface2);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}.chip.active{background:var(--primary);color:#061016;border-color:transparent}.tag{border:1px solid var(--border);background:var(--surface2);border-radius:999px;padding:5px 8px;font-size:10px;color:var(--muted);font-weight:800}.tag.hot{background:rgba(255,209,102,.14);color:var(--warning);border-color:rgba(255,209,102,.24)}
+  .ring{--p:72;--c:var(--primary);width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.11) 0);display:grid;place-items:center;position:relative;flex:0 0 auto}.ring::after{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--surface)}.ring span{position:relative;z-index:1;font-size:22px;font-weight:950;letter-spacing:-.8px}.ring.sm{width:60px;height:60px}.ring.sm::after{inset:7px}.ring.sm span{font-size:14px}.rings{display:flex;gap:8px}.mini-ring{--p:50;--c:var(--primary);width:40px;height:40px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.12) 0);position:relative}.mini-ring::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--surface)}.bar{height:8px;background:rgba(255,255,255,.10);border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;width:var(--w,50%);background:linear-gradient(90deg,var(--c,var(--primary)),var(--primary2));border-radius:999px}.bars{display:flex;gap:6px;align-items:end;height:52px}.bars i{flex:1;border-radius:999px 999px 6px 6px;background:linear-gradient(180deg,var(--c,var(--primary)),rgba(255,255,255,.1));height:var(--h)}
+  .spark{height:54px;width:100%;display:block}.spark path.line{fill:none;stroke:var(--c,var(--primary));stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.spark path.fill{fill:url(#gradHealth);opacity:.26}.donut{--p:65;--c:var(--food);width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--c) 0 35%, var(--primary) 35% 62%, var(--med) 62% 80%, rgba(255,255,255,.12) 80% 100%);position:relative;flex:0 0 auto}.donut::after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--surface)}.donut span{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;font-weight:950;z-index:1}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}.dow,.day{height:34px;border-radius:12px;display:grid;place-items:center;font-size:11px;font-weight:800}.dow{color:var(--muted2);height:22px}.day{background:var(--surface2);border:1px solid var(--border);position:relative}.day.muted{opacity:.38}.day.today{background:var(--primary);color:#061016;border-color:transparent}.day.has::after{content:"";position:absolute;bottom:5px;width:4px;height:4px;border-radius:50%;background:var(--women)}.day.dual::before{content:"";position:absolute;top:5px;width:4px;height:4px;border-radius:50%;background:var(--family)}
+  .timeline{position:relative;display:grid;gap:9px}.event{display:grid;grid-template-columns:48px 1fr;gap:10px;align-items:start}.event .time{font-size:11px;color:var(--muted);font-weight:850;padding-top:8px}.event .body{border:1px solid var(--border);background:var(--surface2);border-radius:17px;padding:10px}.event .body b{font-size:13px}.event .body p{font-size:11px;color:var(--muted);margin:3px 0 0}.realm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.realm{border:1px solid var(--border);border-radius:19px;background:linear-gradient(180deg,var(--glass2),var(--glass));padding:11px;min-height:88px;cursor:pointer}.realm .ico{width:32px;height:32px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c);font-size:16px}.realm b{display:block;font-size:12px;margin-top:8px;line-height:1.05}.realm small{display:block;font-size:10px;color:var(--muted);margin-top:3px}.people{display:flex}.people .avatar{margin-left:-8px;border:2px solid var(--surface)}.people .avatar:first-child{margin-left:0}.med-line{display:flex;align-items:center;gap:10px}.pill-icon{width:38px;height:38px;border-radius:14px;background:color-mix(in srgb,var(--c,var(--med)) 18%,transparent);display:grid;place-items:center;color:var(--c,var(--med))}.scanner{min-height:500px;border:1px solid var(--border);border-radius:32px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)),radial-gradient(circle at 50% 40%,rgba(112,241,199,.18),transparent 34%),linear-gradient(145deg,#091117,#172632);position:relative;overflow:hidden;padding:16px;display:flex;flex-direction:column;justify-content:space-between}.scan-frame{height:260px;border:1px solid rgba(112,241,199,.38);border-radius:28px;position:relative;margin-top:40px}.scan-frame::before,.scan-frame::after{content:"";position:absolute;width:44px;height:44px;border-color:var(--primary);border-style:solid}.scan-frame::before{left:16px;top:16px;border-width:3px 0 0 3px;border-radius:18px 0 0 0}.scan-frame::after{right:16px;bottom:16px;border-width:0 3px 3px 0;border-radius:0 0 18px 0}.scan-line{position:absolute;left:24px;right:24px;top:48%;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);box-shadow:0 0 24px var(--primary)}.scan-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.camera-btn{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid var(--border2);display:grid;place-items:center;margin:8px auto}.camera-btn span{width:52px;height:52px;border-radius:50%;background:var(--primary);display:block}.muscle{height:190px;border-radius:26px;background:radial-gradient(ellipse at 50% 18%,rgba(154,255,111,.28),transparent 18%),radial-gradient(ellipse at 50% 46%,rgba(154,255,111,.16),transparent 28%),linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--border);position:relative;overflow:hidden}.muscle::before{content:"";position:absolute;left:50%;top:22px;transform:translateX(-50%);width:82px;height:142px;border-radius:42px 42px 34px 34px;background:linear-gradient(180deg,rgba(154,255,111,.42),rgba(154,255,111,.06));box-shadow:-54px 36px 0 -20px rgba(154,255,111,.16),54px 36px 0 -20px rgba(154,255,111,.16),-28px 132px 0 -14px rgba(154,255,111,.13),28px 132px 0 -14px rgba(154,255,111,.13)}.phase-track{display:flex;gap:5px}.phase-track span{height:9px;flex:1;border-radius:999px;background:rgba(255,255,255,.12)}.phase-track span.on{background:linear-gradient(90deg,var(--women),#ffc2de)}.growth-chart{height:120px;display:flex;align-items:end;gap:8px}.growth-chart span{flex:1;height:var(--h);background:linear-gradient(180deg,var(--baby),rgba(255,215,106,.14));border-radius:999px 999px 8px 8px}.doc-row{display:flex;gap:10px;align-items:center}.doc-icon{width:40px;height:48px;border-radius:13px;background:linear-gradient(180deg,rgba(139,228,255,.22),rgba(139,228,255,.06));border:1px solid rgba(139,228,255,.20);display:grid;place-items:center;color:var(--records)}
+  .ai-bar{position:absolute;left:18px;right:18px;bottom:86px;z-index:8;border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,var(--glass2),var(--glass));backdrop-filter:blur(22px);box-shadow:0 12px 35px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}.ai-dot{width:28px;height:28px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;color:#061016;font-size:14px;font-weight:950}.ai-bar span{font-size:12px;color:var(--muted);font-weight:780}.ai-panel{position:absolute;left:0;right:0;bottom:-100%;z-index:30;background:linear-gradient(180deg,var(--surface),var(--bg2));border-radius:32px 32px 0 0;border:1px solid var(--border2);box-shadow:0 -25px 80px rgba(0,0,0,.45);padding:14px 18px 28px;transition:.35s ease}.ai-panel.open{bottom:0}.grab{width:42px;height:4px;border-radius:999px;background:var(--border2);margin:0 auto 14px}.search-box{height:46px;border:1px solid var(--border);border-radius:18px;background:var(--surface2);display:flex;align-items:center;gap:9px;padding:0 12px}.search-box input{background:transparent;border:0;outline:0;flex:1;font-size:13px}.suggestions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.suggestions button{border:1px solid var(--border);background:var(--glass);border-radius:16px;padding:11px;text-align:left;font-size:12px;cursor:pointer}.bottom-nav{position:absolute;left:18px;right:18px;bottom:22px;z-index:9;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:8px;border:1px solid var(--border);border-radius:28px;background:rgba(10,19,27,.80);backdrop-filter:blur(22px);box-shadow:0 16px 40px rgba(0,0,0,.32)}[data-theme="light"] .bottom-nav{background:rgba(255,255,255,.82)}.bottom-nav button{height:48px;border:0;background:transparent;border-radius:20px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-weight:900;font-size:11px}.bottom-nav button .txt{display:none}.bottom-nav button.active{background:var(--surface2);color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}.bottom-nav button.active .txt{display:inline}.bottom-nav .scan{font-size:16px}.bottom-nav .scan.active{background:var(--surface2);color:var(--text)}
+  .showcase{display:grid;gap:14px}.mini-phone-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mini-screen{border:1px solid var(--border);border-radius:26px;background:linear-gradient(180deg,var(--glass2),var(--glass));padding:12px;min-height:170px;box-shadow:var(--soft-shadow)}.mini-screen h4{margin:0 0 8px;font-size:14px}.mini-screen p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}.mini-preview{height:80px;border-radius:18px;background:linear-gradient(135deg,rgba(112,241,199,.18),rgba(255,134,191,.10));border:1px solid var(--border);margin-top:10px;padding:9px}.notice{padding:13px;border-radius:20px;border:1px dashed var(--border2);color:var(--muted);font-size:12px;line-height:1.45}.onboard-slide{height:260px;border-radius:32px;background:radial-gradient(circle at 50% 30%,rgba(112,241,199,.30),transparent 34%),linear-gradient(145deg,rgba(112,241,199,.16),rgba(255,134,191,.10));border:1px solid var(--border);display:grid;place-items:center;position:relative;overflow:hidden}.orbit{width:170px;height:170px;border-radius:50%;border:1px solid var(--border2);display:grid;place-items:center;position:relative}.orbit::before{content:"♥";width:74px;height:74px;border-radius:28px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;color:#061016;font-size:31px;font-weight:900}.orbit i{position:absolute;width:44px;height:44px;border-radius:17px;display:grid;place-items:center;background:var(--surface2);border:1px solid var(--border)}.orbit i:nth-child(1){top:-12px;left:20px}.orbit i:nth-child(2){right:-12px;top:60px}.orbit i:nth-child(3){bottom:0;left:0}.form{display:grid;gap:10px}.field{height:48px;border-radius:17px;background:var(--surface2);border:1px solid var(--border);padding:0 12px;display:flex;align-items:center;gap:9px;color:var(--muted)}.toggle{display:flex;background:var(--surface2);border-radius:18px;padding:4px;border:1px solid var(--border)}.toggle button{flex:1;border:0;background:transparent;border-radius:14px;padding:9px;color:var(--muted);font-size:12px;font-weight:900}.toggle button.active{background:var(--primary);color:#061016}.hidden{display:none!important}
+  @media(max-width:1060px){.stage{grid-template-columns:1fr;justify-items:center}.brief{position:relative;top:0;width:min(430px,100%)}.phone-shell{position:relative;top:0}.showcase{width:min(430px,100%)}}
+  @media(max-width:470px){body{padding:0;background:var(--bg)}.stage{display:block}.brief,.showcase{display:none}.phone-shell{width:100%;border-radius:0;min-height:100vh;padding:0;border:0;box-shadow:none}.phone{height:100vh;border-radius:0;border:0}.screen{padding-left:16px;padding-right:16px}.bottom-nav,.ai-bar{left:14px;right:14px}.bottom-nav button.active .txt{display:none}}
+</style>
+</head>
+<body data-theme="dark">
+  <main class="stage">
+    <aside class="brief">
+      <span class="mark">✦ HealthOS visual prototype v8</span>
+      <h1>Compact premium family health powerhouse</h1>
+      <p>Full design direction combined into one click-through: health overview hub, full calendar, AI app+internet search, centre Scan, family circle on the right, and compact realm pages.</p>
+      <div class="palette"><div class="sw" style="background:var(--primary)"></div><div class="sw" style="background:var(--food)"></div><div class="sw" style="background:var(--women)"></div><div class="sw" style="background:var(--baby)"></div><div class="sw" style="background:var(--family)"></div></div>
+      <div class="side-nav" id="sideNav"></div>
+      <p class="notice mt14">Open on desktop for the full preview board. Open on mobile for a real phone-size prototype. Use the AI bar above the nav and the profile avatar for the control panel.</p>
+    </aside>
+
+    <section class="phone-shell">
+      <div class="phone" id="appPhone">
+        <section class="screen active" data-screen="home">
+          <div class="topbar">
+            <div class="hello"><div class="avatar" data-go="profile">K</div><div><div class="kicker">Today · Family dashboard</div><div class="title">Morning, Keeno</div></div></div>
+            <button class="icon-btn" data-theme-toggle>◐</button>
+          </div>
+          <div class="hero-card">
+            <div class="row between"><span class="tag hot">3 priorities</span><span class="tag">AI updated</span></div>
+            <h2>Your day is balanced but busy.</h2>
+            <p>Workout at 17:30, baby vaccine reminder pending, and meds check before lunch.</p>
+            <div class="actions"><button class="btn" data-go="scan">Scan now</button><button class="btn secondary" data-ai-open>Ask AI</button></div>
+          </div>
+          <div class="section">
+            <div class="section-head"><h3>Live overview</h3><button data-go="health">Open health</button></div>
+            <div class="grid2">
+              <div class="card compact metric"><div class="row between"><div><div class="label">Health score</div><div class="value">86<span class="unit">%</span></div><div class="delta">+4 from last week</div></div><div class="ring sm" style="--p:86;--c:var(--primary)"><span>86</span></div></div></div>
+              <div class="card compact metric"><div class="label">Family sync</div><div class="value">7<span class="unit"> items</span></div><div class="bar mt10"><span style="--w:72%;--c:var(--family)"></span></div><div class="delta" style="color:var(--family)">2 shared updates</div></div>
+            </div>
+          </div>
+          <div class="section">
+            <div class="grid3">
+              <div class="card compact"><div class="kicker">Steps</div><b>6,420</b><div class="bar mt10"><span style="--w:64%;--c:var(--fitness)"></span></div></div>
+              <div class="card compact"><div class="kicker">Calories</div><b>1,480</b><div class="bar mt10"><span style="--w:52%;--c:var(--food)"></span></div></div>
+              <div class="card compact"><div class="kicker">Meds</div><b>2/3</b><div class="bar mt10"><span style="--w:66%;--c:var(--med)"></span></div></div>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-head"><h3>Realm shortcuts</h3><button data-go="health">See all</button></div>
+            <div class="chip-row"><button class="chip active" data-go="fitness">Fitness</button><button class="chip" data-go="food">Food</button><button class="chip" data-go="women">Women</button><button class="chip" data-go="baby">Baby</button><button class="chip" data-go="records">Records</button><button class="chip" data-go="meds">Meds</button></div>
+          </div>
+          <div class="section">
+            <div class="section-head"><h3>Next on timeline</h3><button data-go="calendar">Full calendar</button></div>
+            <div class="timeline">
+              <div class="event"><div class="time">10:30</div><div class="body"><b>Baby feed window</b><p>Log bottle or nursing in one tap.</p></div></div>
+              <div class="event"><div class="time">12:00</div><div class="body"><b>Medication with food</b><p>AI flags: avoid grapefruit with this medication.</p></div></div>
+              <div class="event"><div class="time">17:30</div><div class="body"><b>5 km run progression</b><p>Week 3 · easy intervals · 28 min.</p></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="calendar">
+          <div class="topbar"><div><div class="kicker">Planner · full calendar</div><div class="title">June 2026</div></div><button class="icon-btn" data-go="profile">👤</button></div>
+          <div class="chip-row"><button class="chip active">All</button><button class="chip">Health</button><button class="chip">Family</button><button class="chip">Work</button><button class="chip">Private</button></div>
+          <div class="card mt14">
+            <div class="row between mb0"><b>Month view</b><span class="tag">Private overlays hidden</span></div>
+            <div class="calendar-grid mt10">
+              <div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div class="dow">S</div>
+              <div class="day muted">25</div><div class="day muted">26</div><div class="day muted">27</div><div class="day muted">28</div><div class="day muted">29</div><div class="day muted">30</div><div class="day has">1</div>
+              <div class="day">2</div><div class="day dual">3</div><div class="day">4</div><div class="day has">5</div><div class="day">6</div><div class="day">7</div><div class="day dual">8</div>
+              <div class="day">9</div><div class="day has">10</div><div class="day">11</div><div class="day today dual has">12</div><div class="day">13</div><div class="day">14</div><div class="day has">15</div>
+              <div class="day">16</div><div class="day">17</div><div class="day dual">18</div><div class="day">19</div><div class="day has">20</div><div class="day">21</div><div class="day">22</div>
+              <div class="day">23</div><div class="day dual">24</div><div class="day">25</div><div class="day has">26</div><div class="day">27</div><div class="day">28</div><div class="day">29</div>
+              <div class="day">30</div><div class="day muted">1</div><div class="day muted">2</div><div class="day muted">3</div><div class="day muted">4</div><div class="day muted">5</div><div class="day muted">6</div>
+            </div>
+          </div>
+          <div class="section"><div class="section-head"><h3>12 June agenda</h3><button>+ Add</button></div><div class="timeline"><div class="event"><div class="time">08:15</div><div class="body"><b>School drop-off</b><p>Family · shared with wife.</p></div></div><div class="event"><div class="time">13:00</div><div class="body"><b>Pharmacy check</b><p>Medical aid coverage lookup placeholder.</p></div></div><div class="event"><div class="time">19:00</div><div class="body"><b>Meal prep reminder</b><p>High-protein dinner + leftovers.</p></div></div></div></div>
+        </section>
+
+        <section class="screen scan-screen" data-screen="scan">
+          <div class="topbar"><div><div class="kicker">AI scanner</div><div class="title">Point, scan, organise</div></div><button class="icon-btn" data-go="home">✕</button></div>
+          <div class="scanner">
+            <div class="row between"><span class="tag">Camera preview</span><span class="tag hot">No backend</span></div>
+            <div class="scan-frame"><div class="scan-line"></div></div>
+            <div><div class="scan-pills"><button class="chip active">Food</button><button class="chip">Medication</button><button class="chip">Record</button><button class="chip">Workout</button><button class="chip">Symptom</button><button class="chip">Baby</button></div><div class="camera-btn"><span></span></div><p class="small muted" style="text-align:center;margin:0">AI will classify the scan and offer import options.</p></div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="health">
+          <div class="topbar"><div><div class="kicker">Health hub</div><div class="title">Whole-life overview</div></div><button class="icon-btn" data-go="profile">👤</button></div>
+          <div class="card">
+            <div class="row between"><div><div class="kicker">Unified score</div><h2 style="margin:2px 0 4px;font-size:28px;letter-spacing:-1px">86% stable</h2><p class="small muted" style="margin:0">Vitals, food, movement, meds, sleep and family load combined.</p></div><div class="ring" style="--p:86;--c:var(--health)"><span>86</span></div></div>
+          </div>
+          <div class="section"><div class="section-head"><h3>All realms</h3><button>Customise</button></div><div class="realm-grid">
+            <div class="realm" style="--c:var(--health)"><div class="ico">♥</div><b>Vitals</b><small>4 updated</small></div><div class="realm" style="--c:var(--fitness)" data-go="fitness"><div class="ico">⌁</div><b>Fitness</b><small>Run today</small></div><div class="realm" style="--c:var(--food)" data-go="food"><div class="ico">◐</div><b>Food</b><small>Macros</small></div><div class="realm" style="--c:var(--women)" data-go="women"><div class="ico">♀</div><b>Women</b><small>Private</small></div><div class="realm" style="--c:var(--baby)" data-go="baby"><div class="ico">☀</div><b>Baby</b><small>Feed due</small></div><div class="realm" style="--c:var(--med)" data-go="meds"><div class="ico">✚</div><b>Meds</b><small>2/3 done</small></div><div class="realm" style="--c:var(--records)" data-go="records"><div class="ico">□</div><b>Records</b><small>12 files</small></div><div class="realm" style="--c:var(--family)" data-go="family"><div class="ico">◎</div><b>Family</b><small>7 shared</small></div><div class="realm" style="--c:#b5ffdf"><div class="ico">☁</div><b>Mind</b><small>Calm</small></div>
+          </div></div>
+          <div class="section"><div class="grid2"><div class="card compact"><div class="kicker">Heart rate</div><b>72 bpm</b><svg class="spark" viewBox="0 0 180 58"><defs><linearGradient id="gradHealth" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#70f1c7"/><stop offset="1" stop-color="#70f1c7" stop-opacity="0"/></linearGradient></defs><path class="fill" d="M0,50 C20,42 28,18 45,28 C61,39 65,12 85,20 C105,28 113,45 132,30 C150,15 160,28 180,18 L180,58 L0,58 Z"></path><path class="line" d="M0,50 C20,42 28,18 45,28 C61,39 65,12 85,20 C105,28 113,45 132,30 C150,15 160,28 180,18"></path></svg></div><div class="card compact"><div class="kicker">Sleep</div><b>6h 45m</b><div class="bars mt10" style="--c:var(--primary2)"><i style="--h:35%"></i><i style="--h:70%"></i><i style="--h:48%"></i><i style="--h:82%"></i><i style="--h:58%"></i></div></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="fitness">
+          <div class="topbar"><div><div class="kicker">Training realm</div><div class="title">Fitness</div></div><button class="icon-btn" data-go="health">↩</button></div>
+          <div class="hero-card" style="background:linear-gradient(145deg,rgba(154,255,111,.16),rgba(112,241,199,.06),var(--glass))"><span class="tag">Program active</span><h2>5 km builder · Week 3</h2><p>Compact daily training, PB tracking, recovery and muscle focus.</p><div class="actions"><button class="btn" style="background:var(--fitness)">Start workout</button><button class="btn secondary">Modify</button></div></div>
+          <div class="section"><div class="grid3"><div class="card compact"><div class="kicker">Run</div><b>2.8 km</b></div><div class="card compact"><div class="kicker">Load</div><b>Medium</b></div><div class="card compact"><div class="kicker">PB</div><b>+1</b></div></div></div>
+          <div class="section"><div class="section-head"><h3>Muscle heat map</h3><button>Details</button></div><div class="muscle"></div></div>
+          <div class="section"><div class="card"><div class="row between"><div><b>Bench goal</b><p class="small muted mb0">20kg → 50kg safely</p></div><div class="ring sm" style="--p:42;--c:var(--fitness)"><span>42</span></div></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="food">
+          <div class="topbar"><div><div class="kicker">Nutrition realm</div><div class="title">Food & fuel</div></div><button class="icon-btn" data-go="scan">⌕</button></div>
+          <div class="card"><div class="row between"><div><div class="kicker">Today macros</div><h2 style="margin:2px 0 4px;font-size:26px">1,480 kcal</h2><p class="small muted mb0">Protein is slightly low. Dinner suggestion ready.</p></div><div class="donut"><span>72%</span></div></div></div>
+          <div class="section"><div class="grid3"><div class="card compact"><div class="kicker">Protein</div><b>82g</b><div class="bar mt10"><span style="--w:62%;--c:var(--food)"></span></div></div><div class="card compact"><div class="kicker">Carbs</div><b>166g</b><div class="bar mt10"><span style="--w:74%;--c:var(--primary)"></span></div></div><div class="card compact"><div class="kicker">Fat</div><b>48g</b><div class="bar mt10"><span style="--w:46%;--c:var(--med)"></span></div></div></div></div>
+          <div class="section"><div class="section-head"><h3>Smart suggestions</h3><button>Plan</button></div><div class="stack"><div class="card compact med-line"><div class="pill-icon" style="--c:var(--food)">🍲</div><div><b>High-protein dinner</b><p class="small muted mb0">Chicken bowl + family portion planning.</p></div></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--danger)">!</div><div><b>Medication-food warning</b><p class="small muted mb0">Avoid grapefruit with selected medication.</p></div></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="women">
+          <div class="topbar"><div><div class="kicker">Private realm</div><div class="title">Women’s health</div></div><button class="icon-btn" data-go="health">🔒</button></div>
+          <div class="card"><div class="row between"><div><div class="kicker">Cycle day</div><h2 style="margin:2px 0 6px;font-size:28px">Day 18</h2><p class="small muted mb0">Fertile window estimate · private by default.</p></div><div class="ring" style="--p:61;--c:var(--women)"><span>18</span></div></div><div class="phase-track mt14"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div></div>
+          <div class="section"><div class="grid2"><div class="card compact"><div class="kicker">Symptoms</div><b>2 logged</b><p class="small muted mb0">Mood, cramps</p></div><div class="card compact"><div class="kicker">Contraception</div><b>On track</b><p class="small muted mb0">Next reminder 20:00</p></div></div></div>
+          <div class="section"><div class="card compact"><b>Sharing rule</b><p class="small muted mb0">Partner sees only what is explicitly shared. Calendar shows private halo only to owner.</p></div></div>
+        </section>
+
+        <section class="screen" data-screen="baby">
+          <div class="topbar"><div><div class="kicker">Baby & child realm</div><div class="title">Little one</div></div><button class="icon-btn" data-go="family">◎</button></div>
+          <div class="hero-card" style="background:linear-gradient(145deg,rgba(255,215,106,.20),rgba(140,183,255,.08),var(--glass))"><span class="tag">Next feed window</span><h2>Feed due in 25 min</h2><p>One-tap logs for feed, sleep, nappy, milestones and vaccines.</p><div class="actions"><button class="btn" style="background:var(--baby)">Log feed</button><button class="btn secondary">Vaccine</button></div></div>
+          <div class="section"><div class="grid3"><div class="card compact"><div class="kicker">Weight</div><b>4.27kg</b></div><div class="card compact"><div class="kicker">Sleep</div><b>2h 10m</b></div><div class="card compact"><div class="kicker">Feeds</div><b>5</b></div></div></div>
+          <div class="section"><div class="section-head"><h3>Growth trend</h3><button>Open</button></div><div class="card"><div class="growth-chart"><span style="--h:46%"></span><span style="--h:50%"></span><span style="--h:58%"></span><span style="--h:63%"></span><span style="--h:70%"></span><span style="--h:76%"></span></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="family">
+          <div class="topbar"><div><div class="kicker">Family circle</div><div class="title">Shared care</div></div><button class="icon-btn" data-go="profile">⚙</button></div>
+          <div class="card"><div class="row between"><div><div class="kicker">Circle health</div><h2 style="margin:2px 0 6px;font-size:26px">4 members</h2><p class="small muted mb0">Private by default. Share only what matters.</p></div><div class="people"><div class="avatar small">K</div><div class="avatar small family">W</div><div class="avatar small" style="background:var(--baby)">B</div><div class="avatar small" style="background:var(--family)">+</div></div></div></div>
+          <div class="section"><div class="section-head"><h3>Shared today</h3><button>Invite</button></div><div class="stack"><div class="card compact med-line"><div class="pill-icon" style="--c:var(--family)">◎</div><div><b>Wife added pharmacy note</b><p class="small muted mb0">Needs pickup before 17:00.</p></div></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--baby)">☀</div><div><b>Baby care log synced</b><p class="small muted mb0">Feed and sleep history updated.</p></div></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--food)">$</div><div><b>Caregiver rate card</b><p class="small muted mb0">R/hour · quick call · permission-limited profile.</p></div></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="records">
+          <div class="topbar"><div><div class="kicker">Medical records</div><div class="title">Documents</div></div><button class="icon-btn" data-go="scan">＋</button></div>
+          <div class="card"><div class="search-box"><span>⌕</span><input placeholder="Search records, results, vaccines..." /></div></div>
+          <div class="section"><div class="grid2"><div class="card compact"><div class="kicker">Files</div><b>42</b><p class="small muted mb0">12 scanned by AI</p></div><div class="card compact"><div class="kicker">Due</div><b>3</b><p class="small muted mb0">Renewals</p></div></div></div>
+          <div class="section"><div class="stack"><div class="card compact doc-row"><div class="doc-icon">PDF</div><div><b>Blood results</b><p class="small muted mb0">AI summary ready · 2 flags</p></div></div><div class="card compact doc-row"><div class="doc-icon">VAC</div><div><b>Baby vaccines</b><p class="small muted mb0">Next dose reminder in calendar</p></div></div><div class="card compact doc-row"><div class="doc-icon">RX</div><div><b>Prescription</b><p class="small muted mb0">Linked to medication schedule</p></div></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="meds">
+          <div class="topbar"><div><div class="kicker">Medication realm</div><div class="title">Meds & supplements</div></div><button class="icon-btn" data-go="scan">⌕</button></div>
+          <div class="card"><div class="row between"><div><div class="kicker">Adherence</div><h2 style="margin:2px 0 5px;font-size:28px">92%</h2><p class="small muted mb0">This week · one warning active.</p></div><div class="ring" style="--p:92;--c:var(--med)"><span>92</span></div></div></div>
+          <div class="section"><div class="stack"><div class="card compact med-line"><div class="pill-icon">💊</div><div><b>Morning medication</b><p class="small muted mb0">Taken · with breakfast</p></div><span class="tag">Done</span></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--warning)">!</div><div><b>Interaction check</b><p class="small muted mb0">AI: food interaction needs review.</p></div><span class="tag hot">Check</span></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--primary)">＋</div><div><b>Supplement stack</b><p class="small muted mb0">Vitamin D · magnesium · omega</p></div></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="profile">
+          <div class="topbar"><div><div class="kicker">Control panel</div><div class="title">Profile & settings</div></div><button class="icon-btn" data-go="home">✕</button></div>
+          <div class="card"><div class="row gap12"><div class="avatar">K</div><div><b>Keeno Chetty</b><p class="small muted mb0">Owner · family admin</p></div></div></div>
+          <div class="section"><div class="grid2"><div class="card compact"><div class="kicker">Subscription</div><b>App Store</b></div><div class="card compact"><div class="kicker">Privacy</div><b>Protected</b></div></div></div>
+          <div class="section"><div class="stack"><div class="card compact med-line"><div class="pill-icon" style="--c:var(--primary)">👤</div><div><b>Personal information</b><p class="small muted mb0">Name, email, phone, photo</p></div></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--med)">🔑</div><div><b>Password & security</b><p class="small muted mb0">2-step verification, devices</p></div></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--family)">◎</div><div><b>Permissions</b><p class="small muted mb0">Camera, health, notifications, family sharing</p></div></div><div class="card compact med-line"><div class="pill-icon" style="--c:var(--danger)">!</div><div><b>Delete account</b><p class="small muted mb0">Export first, then remove data</p></div></div></div></div>
+        </section>
+
+        <section class="screen" data-screen="onboarding">
+          <div class="topbar"><span class="mark">Welcome</span><button class="icon-btn" data-theme-toggle>◐</button></div>
+          <div class="onboard-slide"><div class="orbit"><i>🏃</i><i>🍼</i><i>💊</i></div></div>
+          <div class="section"><h1 style="font-size:32px;line-height:1.02;letter-spacing:-1.2px;margin:0 0 10px">Your health, family and planning in one calm app.</h1><p class="muted">Choose only the realms you need. The app stays compact and grows with your life.</p></div>
+          <div class="chip-row"><button class="chip active">Fitness</button><button class="chip active">Nutrition</button><button class="chip">Pregnancy</button><button class="chip">Baby care</button><button class="chip">Medication</button></div>
+          <button class="btn mt18" data-go="home">Enter prototype</button>
+        </section>
+
+        <section class="screen" data-screen="auth">
+          <div class="topbar"><div><div class="kicker">Account</div><div class="title">Login or register</div></div><button class="icon-btn" data-theme-toggle>◐</button></div>
+          <div class="toggle"><button class="active">Login</button><button>Register</button></div>
+          <div class="form mt14"><div class="field">✉ Email address</div><div class="field">● Password</div><button class="btn" data-go="home">Continue</button><button class="btn secondary">Continue with Apple / Google</button></div>
+          <div class="section"><div class="card compact"><b>Onboarding after login</b><p class="small muted mb0">Gender and goal selection controls which realms appear. Users can skip and set up later.</p></div></div>
+        </section>
+
+        <div class="ai-bar" data-ai-open><div class="ai-dot">AI</div><span>Search your app or research online...</span></div>
+        <nav class="bottom-nav" id="bottomNav">
+          <button data-go="home" class="active">⌂ <span class="txt">Home</span></button>
+          <button data-go="calendar">□ <span class="txt">Calendar</span></button>
+          <button data-go="scan" class="scan">⌕ <span class="txt">Scan</span></button>
+          <button data-go="health">♥ <span class="txt">Health</span></button>
+          <button data-go="family">◎ <span class="txt">Family</span></button>
+        </nav>
+        <div class="ai-panel" id="aiPanel"><div class="grab"></div><div class="row between"><div><div class="kicker">HealthOS AI</div><div class="title" style="font-size:21px">Ask anything</div></div><button class="icon-btn" data-ai-close>✕</button></div><div class="search-box mt14"><span>⌕</span><input placeholder="Search meals, records, meds, workouts or the internet..." autofocus /></div><div class="suggestions"><button data-go="records">Find my blood results</button><button data-go="food">Plan high-protein dinner</button><button data-go="meds">Check med interaction</button><button data-go="fitness">Build 5 km plan</button><button data-go="scan">Scan a label</button><button data-go="calendar">Add to calendar</button></div></div>
+      </div>
+    </section>
+
+    <aside class="showcase">
+      <div class="notice"><b>Full design board</b><br/>This board combines training-app charts, nutrition macro planning, health dashboards, family care, baby logs, records, medication safety and AI search into one compact mobile design.</div>
+      <div class="mini-phone-row">
+        <div class="mini-screen"><h4>Health hub</h4><p>All realms live inside Health as compact options with one unified overview.</p><div class="mini-preview"><div class="realm-grid"><div class="realm" style="--c:var(--primary)"></div><div class="realm" style="--c:var(--fitness)"></div><div class="realm" style="--c:var(--food)"></div></div></div></div>
+        <div class="mini-screen"><h4>Clean nav</h4><p>Home · Calendar · Scan · Health · Family. Scan is centered but not loud.</p><div class="mini-preview"><div class="bottom-nav" style="position:static;box-shadow:none;left:auto;right:auto;bottom:auto"><button>⌂</button><button>□</button><button>⌕</button><button>♥</button><button>◎</button></div></div></div>
+      </div>
+      <div class="mini-phone-row">
+        <div class="mini-screen"><h4>Full calendar</h4><p>Month view, agenda, filters and private overlays for health/family events.</p><div class="mini-preview"><div class="calendar-grid" style="gap:3px"><div class="day today"></div><div class="day"></div><div class="day has"></div><div class="day dual"></div><div class="day"></div><div class="day has"></div><div class="day"></div></div></div></div>
+        <div class="mini-screen"><h4>AI above nav</h4><p>Slide-up assistant can search the app, scan, research online and create actions.</p><div class="mini-preview"><div class="ai-bar" style="position:static;box-shadow:none;left:auto;right:auto;bottom:auto"><div class="ai-dot">AI</div><span>Search...</span></div></div></div>
+      </div>
+    </aside>
+  </main>
+<script>
+(function(){
+  const labels=[['onboarding','Onboarding'],['auth','Login / Register'],['home','Home / Today'],['calendar','Full Calendar'],['scan','AI Scan Camera'],['health','Health Hub'],['fitness','Fitness Realm'],['food','Food / Nutrition'],['women','Women’s Health'],['baby','Baby / Child'],['family','Family Circle'],['records','Records'],['meds','Medication'],['profile','Profile Settings']];
+  const side=document.getElementById('sideNav');
+  labels.forEach(([id,name],i)=>{const b=document.createElement('button');b.dataset.go=id;b.innerHTML='<span>'+name+'</span><small>'+String(i+1).padStart(2,'0')+'</small>';side.appendChild(b);});
+  const screens=[...document.querySelectorAll('.screen')];
+  const bottomBtns=[...document.querySelectorAll('#bottomNav button')];
+  const sideBtns=[...document.querySelectorAll('#sideNav button')];
+  const ai=document.getElementById('aiPanel');
+  function show(id){screens.forEach(s=>s.classList.toggle('active',s.dataset.screen===id));bottomBtns.forEach(b=>b.classList.toggle('active',b.dataset.go===id));sideBtns.forEach(b=>b.classList.toggle('active',b.dataset.go===id));ai.classList.remove('open');document.querySelector('.phone').scrollTop=0;}
+  document.addEventListener('click',e=>{const go=e.target.closest('[data-go]');if(go){show(go.dataset.go)} if(e.target.closest('[data-ai-open]')){ai.classList.add('open')} if(e.target.closest('[data-ai-close]')){ai.classList.remove('open')} if(e.target.closest('[data-theme-toggle]')){document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark'}});
+  show('home');
+})();
+</script>
+</body>
+</html>
