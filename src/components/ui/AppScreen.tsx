@@ -1,31 +1,43 @@
 import { ReactNode } from "react";
-import { ScrollView, View, type ViewStyle } from "react-native";
+import {
+  ScrollView,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  type ViewStyle,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useAppChrome } from "@/context/AppChromeContext";
 import { spacing } from "@/theme/tokens";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppScreenProps = {
   backgroundColor?: string;
   children: ReactNode;
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   padded?: boolean;
   safeBottom?: boolean;
   safeTop?: boolean;
   scroll?: boolean;
+  scrollEventThrottle?: number;
   style?: ViewStyle;
 };
 
 export function AppScreen({
   backgroundColor,
   children,
+  onScroll,
   padded = true,
   safeBottom = true,
   safeTop = true,
   scroll = true,
+  scrollEventThrottle,
   style,
 }: AppScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
+  const { handleScrollForChrome } = useAppChrome();
   const contentStyle: ViewStyle = {
     gap: spacing.xl,
     paddingBottom: (safeBottom ? insets.bottom : 0) + 180,
@@ -72,6 +84,11 @@ export function AppScreen({
         <ScrollView
           contentContainerStyle={contentStyle}
           keyboardShouldPersistTaps="handled"
+          onScroll={(event) => {
+            handleScrollForChrome(event);
+            onScroll?.(event);
+          }}
+          scrollEventThrottle={scrollEventThrottle ?? 16}
           showsVerticalScrollIndicator={false}
         >
           {children}

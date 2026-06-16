@@ -1,104 +1,94 @@
-import { Href, router } from "expo-router";
-import { Mic, ScanLine } from "lucide-react-native";
-import { Pressable, StyleSheet, View } from "react-native";
+import { SearchField } from "heroui-native";
+import { Sparkles } from "lucide-react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppIcon } from "@/components/ui";
-import { AppIconButton, AppText } from "@/components/ui-native";
+import { useAppChrome } from "@/context/AppChromeContext";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
-export function AiSearchBar({ onPress }: { onPress?: () => void }) {
-  const insets = useSafeAreaInsets();
-  const { theme } = useAppTheme();
+type AiSearchBarProps = {
+  onPress: () => void;
+};
 
-  function openAssistant() {
-    if (onPress) {
-      onPress();
-      return;
-    }
-    router.push("/ai" as Href);
-  }
+export function AiSearchBar({ onPress }: AiSearchBarProps) {
+  const insets = useSafeAreaInsets();
+  const { aiSearchVisible } = useAppChrome();
+  const { theme } = useAppTheme();
+  const progress = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.timing(progress, {
+      duration: 180,
+      toValue: aiSearchVisible ? 1 : 0,
+      useNativeDriver: true,
+    }).start();
+  }, [aiSearchVisible, progress]);
+
+  const translateY = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [18, 0],
+  });
+  const scale = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.98, 1],
+  });
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={[styles.overlay, { bottom: insets.bottom + 92 }]}
+    <Animated.View
+      pointerEvents={aiSearchVisible ? "box-none" : "none"}
+      style={[
+        styles.overlay,
+        {
+          bottom: insets.bottom + 96,
+          opacity: progress,
+          transform: [{ translateY }, { scale }],
+        },
+      ]}
     >
       <Pressable
-        accessibilityHint="Opens the full HealthSync AI page"
-        accessibilityLabel="Ask HealthSync"
+        accessibilityHint="Opens the HealthSync AI assistant panel"
+        accessibilityLabel="Open HealthSync AI"
         accessibilityRole="button"
-        onPress={openAssistant}
+        onPress={onPress}
         style={({ pressed }) => [
-          styles.bar,
+          styles.pressable,
           {
-            backgroundColor: theme.surface,
-            borderColor: theme.border,
-            opacity: pressed ? 0.88 : 1,
-            shadowColor: theme.background,
+            opacity: pressed ? 0.9 : 1,
+            shadowColor: theme.text,
           },
         ]}
       >
-        <View
-          style={[
-            styles.logo,
-            {
-              backgroundColor: theme.text,
-              borderColor: theme.border,
-            },
-          ]}
-        >
-          <AppIcon backgroundColor={theme.text} decorative name="ai" size={20} />
-        </View>
-        <AppText className="flex-1" numberOfLines={1} variant="bodyMuted">
-          Ask HealthSync
-        </AppText>
-        <View pointerEvents="none" style={styles.actions}>
-          <AppIconButton
-            accessibilityLabel="Voice input placeholder"
-            icon={<Mic color={theme.mutedText} size={17} />}
-            size="sm"
-            variant="ghost"
-          />
-          <AppIconButton
-            accessibilityLabel="Scan or import placeholder"
-            icon={<ScanLine color={theme.mutedText} size={17} />}
-            size="sm"
-            variant="ghost"
-          />
+        <View pointerEvents="none">
+          <SearchField value="" onChange={() => undefined}>
+            <SearchField.Group
+              className="h-[42px] min-h-[42px] rounded-full border px-3"
+              style={{
+                backgroundColor: theme.surface,
+                borderColor: theme.border,
+              }}
+            >
+              <SearchField.SearchIcon>
+                <Sparkles color={theme.primary} size={17} strokeWidth={2} />
+              </SearchField.SearchIcon>
+              <SearchField.Input
+                accessibilityElementsHidden
+                editable={false}
+                placeholder="Ask HealthSync"
+                placeholderTextColor={theme.mutedText}
+                showSoftInputOnFocus={false}
+                className="h-[42px] min-h-[42px] bg-transparent text-sm"
+                style={{ color: theme.text }}
+              />
+            </SearchField.Group>
+          </SearchField>
         </View>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  actions: {
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  bar: {
-    alignItems: "center",
-    borderRadius: 999,
-    borderWidth: 1,
-    elevation: 10,
-    flexDirection: "row",
-    gap: 10,
-    minHeight: 58,
-    paddingHorizontal: 10,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    width: "100%",
-  },
-  logo: {
-    alignItems: "center",
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 38,
-    justifyContent: "center",
-    width: 38,
-  },
   overlay: {
     alignSelf: "center",
     left: 16,
@@ -106,5 +96,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     zIndex: 45,
+  },
+  pressable: {
+    borderRadius: 999,
+    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    width: "100%",
   },
 });

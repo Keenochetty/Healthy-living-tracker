@@ -1,8 +1,7 @@
 # AI Backend Setup
 
-This project must not call OpenAI from the Expo app or from Supabase Edge
-Functions. HealthSync guides users to use their own ChatGPT account, then paste
-only selected results back into the app.
+This project must call OpenAI only from a secure backend. The Expo app calls the
+Supabase Edge Function `ai-chat`; it never stores or sends an OpenAI API key.
 
 ## Required
 
@@ -13,18 +12,29 @@ only selected results back into the app.
   - `EXPO_PUBLIC_SUPABASE_URL`
   - `EXPO_PUBLIC_SUPABASE_ANON_KEY` or the publishable key used by the app
 
-## ChatGPT Bridge
+## Secrets
 
-- Do not add an OpenAI API key to Expo, Supabase, or project docs.
-- Do not ask users for ChatGPT credentials.
-- Open ChatGPT externally at `https://chatgpt.com/`.
-- Users paste selected ChatGPT results into HealthSync.
-- HealthSync stores only results the user chooses to use inside the app.
-- Future persistence should use owner-scoped tables such as
-  `healthsync_ai_sessions` and `healthsync_ai_imports`.
+Set OpenAI secrets on Supabase, not in Expo:
 
-`ai-extract` currently returns safe mock drafts for UI testing. `ai-chat`
-returns a disabled response explaining the ChatGPT bridge flow.
+```bash
+supabase secrets set OPENAI_API_KEY=your_server_side_key
+supabase secrets set OPENAI_MODEL=gpt-5.5
+```
+
+Do not commit real API keys to this repository. If `OPENAI_API_KEY` is missing,
+`ai-chat` returns a safe mock response explaining that backend AI is not
+configured.
+
+## Integrated Chat
+
+- App-routing questions are handled locally where possible.
+- Search, planning, and smart import detection use `ai-chat`.
+- Chat history is stored in owner-scoped tables such as `app_ai_chats` and
+  `app_ai_messages`.
+- Importable AI results remain drafts until the user explicitly confirms.
+- Structured import payloads can route to fitness, nutrition, medication,
+  supplements, calendar, records, baby/child, cycle, pregnancy, family, and
+  shopping-list areas.
 
 ## Run Locally
 
@@ -41,7 +51,7 @@ supabase functions deploy ai-chat
 ```
 
 Do not deploy `ai-chat` with `--no-verify-jwt`. JWT verification must remain
-enabled even though the function no longer calls an AI provider.
+enabled.
 
 ## Safety
 

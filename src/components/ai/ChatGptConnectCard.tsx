@@ -1,4 +1,4 @@
-import { ExternalLink, ClipboardPaste } from "lucide-react-native";
+import { ClipboardPaste, Sparkles } from "lucide-react-native";
 
 import { AppButton, AppCard, AppText } from "@/components/ui-native";
 import { useAppTheme } from "@/theme/ThemeProvider";
@@ -16,17 +16,17 @@ export function ChatGptConnectCard({
 
   return (
     <AppCard className="gap-4" variant="elevated">
-      <AppText variant="subtitle">Use your own ChatGPT</AppText>
+      <AppText variant="subtitle">Use HealthSync AI</AppText>
       <AppText variant="bodyMuted">
-        Open ChatGPT, ask your question, then bring the useful result back into
-        HealthSync.
+        Ask a question, create a draft plan, or import selected results into
+        HealthSync after review.
       </AppText>
       <AppButton
         fullWidth
-        leftIcon={<ExternalLink color={theme.background} size={18} />}
+        leftIcon={<Sparkles color={theme.background} size={18} />}
         onPress={onOpenChatGpt}
       >
-        Open ChatGPT
+        Open AI chat
       </AppButton>
       <AppButton
         fullWidth
@@ -34,10 +34,11 @@ export function ChatGptConnectCard({
         onPress={onPasteResult}
         variant="secondary"
       >
-        Paste result
+        Paste external result
       </AppButton>
       <AppText variant="caption">
-        Only results you paste or save here are stored in HealthSync.
+        API calls run through the secure backend. Imports stay draft-only until
+        you confirm.
       </AppText>
     </AppCard>
   );

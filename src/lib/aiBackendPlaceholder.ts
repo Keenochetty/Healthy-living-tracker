@@ -1,7 +1,7 @@
 import type { AiJob } from "@/types/ai";
 
 const PLACEHOLDER_MESSAGE =
-  "HealthSync does not call an AI provider directly. Open ChatGPT externally and paste selected results back into the app.";
+  "HealthSync calls AI only through secure Supabase Edge Functions. The Expo app never stores an OpenAI API key.";
 
 export async function uploadAiInputLater(_localUri: string) {
   throw new Error(PLACEHOLDER_MESSAGE);
@@ -12,6 +12,5 @@ export async function callAiExtractionBackendLater(_job: AiJob) {
 }
 
 // Future real flow:
-// Expo app -> user opens ChatGPT externally -> user pastes selected result back
-// into HealthSync -> local parsing/import preview.
+// Expo app -> Supabase Edge Function -> OpenAI API
 // with image input + Structured Outputs -> draft JSON -> review screen.
