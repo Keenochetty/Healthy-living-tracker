@@ -43,6 +43,8 @@ import {
 } from "lucide-react-native";
 import type { ComponentType } from "react";
 
+import { ChatGptIcon } from "@/components/icons/ChatGptIcon";
+
 export type AppIconName =
   | "today"
   | "home"
@@ -129,8 +131,8 @@ export const appIcons: Record<AppIconName, IconComponent> = {
   food: Salad,
   nutrition: Salad,
   mens_health: ShieldCheck,
-  ai: Sparkles,
-  ai_assistant: Sparkles,
+  ai: ChatGptIcon,
+  ai_assistant: ChatGptIcon,
   medication: Pill,
   biometrics: Activity,
   mood: Brain,

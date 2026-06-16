@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   rowMeta: { fontSize: 12, fontWeight: "700", marginTop: 2 },
   scrim: {
     backgroundColor: "rgba(15, 23, 42, 0.48)",
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   section: { gap: 9 },
   sectionTitle: { fontSize: 16, fontWeight: "900" },

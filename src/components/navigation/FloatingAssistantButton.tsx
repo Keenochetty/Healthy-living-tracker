@@ -61,9 +61,7 @@ export function FloatingAssistantButton({
       })}
     >
       <AppIcon
-        color={
-          isDarkBackground(theme.background) ? theme.background : "#ffffff"
-        }
+        backgroundColor={theme.primary}
         name="ai_assistant"
         size={24}
       />
@@ -73,11 +71,5 @@ export function FloatingAssistantButton({
         </View>
       ) : null}
     </Pressable>
-  );
-}
-
-function isDarkBackground(color: string) {
-  return (
-    color.startsWith("#0") || color.startsWith("#1") || color.includes("rgba(")
   );
 }

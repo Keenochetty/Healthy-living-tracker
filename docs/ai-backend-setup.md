@@ -1,6 +1,8 @@
 # AI Backend Setup
 
-This project must call OpenAI only from a secure backend. The Expo app calls the Supabase Edge Function `ai-extract`; it never needs an OpenAI API key.
+This project must not call OpenAI from the Expo app or from Supabase Edge
+Functions. HealthSync guides users to use their own ChatGPT account, then paste
+only selected results back into the app.
 
 ## Required
 
@@ -11,28 +13,35 @@ This project must call OpenAI only from a secure backend. The Expo app calls the
   - `EXPO_PUBLIC_SUPABASE_URL`
   - `EXPO_PUBLIC_SUPABASE_ANON_KEY` or the publishable key used by the app
 
-## Secrets
+## ChatGPT Bridge
 
-Set OpenAI secrets on Supabase, not in Expo:
+- Do not add an OpenAI API key to Expo, Supabase, or project docs.
+- Do not ask users for ChatGPT credentials.
+- Open ChatGPT externally at `https://chatgpt.com/`.
+- Users paste selected ChatGPT results into HealthSync.
+- HealthSync stores only results the user chooses to use inside the app.
+- Future persistence should use owner-scoped tables such as
+  `healthsync_ai_sessions` and `healthsync_ai_imports`.
 
-```bash
-supabase secrets set OPENAI_API_KEY=your_key
-supabase secrets set OPENAI_MODEL=gpt-5.4-mini
-```
-
-If `OPENAI_API_KEY` is missing, `ai-extract` returns safe mock drafts for UI testing.
+`ai-extract` currently returns safe mock drafts for UI testing. `ai-chat`
+returns a disabled response explaining the ChatGPT bridge flow.
 
 ## Run Locally
 
 ```bash
 supabase functions serve ai-extract --env-file ./supabase/.env.local
+supabase functions serve ai-chat --env-file ./supabase/.env.local
 ```
 
 ## Deploy
 
 ```bash
 supabase functions deploy ai-extract
+supabase functions deploy ai-chat
 ```
+
+Do not deploy `ai-chat` with `--no-verify-jwt`. JWT verification must remain
+enabled even though the function no longer calls an AI provider.
 
 ## Safety
 

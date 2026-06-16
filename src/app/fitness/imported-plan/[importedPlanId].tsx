@@ -1,5 +1,5 @@
 import { Href, router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { AppMainLayout } from "@/components/layout/AppMainLayout";
@@ -54,7 +54,7 @@ export default function ImportedPlanDetailScreen() {
   const [intensity, setIntensity] = useState("Beginner");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  async function load() {
+  const load = useCallback(async () => {
     const result = await getImportedPlanById(String(importedPlanId));
     setPlan(result.plan as DraftPlan);
     setDays(result.days as DraftDay[]);
@@ -67,10 +67,11 @@ export default function ImportedPlanDetailScreen() {
         result.plan.intensity ?? result.plan.difficulty ?? "Beginner",
       );
     }
-  }
+  }, [importedPlanId]);
+
   useEffect(() => {
     load().catch(() => setMessage("Could not load this imported draft."));
-  }, [importedPlanId]);
+  }, [load]);
   async function save() {
     setSaving(true);
     const result = await updateImportedPlan(String(importedPlanId), {

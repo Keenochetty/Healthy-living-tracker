@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   saveText: { color: "#ffffff", fontWeight: "900" },
   saving: { opacity: 0.65 },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.58)" },
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(15,23,42,0.58)" },
   sheet: {
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,

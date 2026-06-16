@@ -13,8 +13,6 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
 NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
 NEXT_PUBLIC_SITE_URL=http://localhost:8084
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
 SMTP_HOST=
 SMTP_PORT=
 SMTP_USER=
@@ -45,4 +43,4 @@ npm run build
 - Reusable cards, loading states, empty states, and error states
 - Expanded SQL schema, indexes, RLS policies, and private storage bucket migration
 - Supabase Realtime publication migration for shared health, care, and calendar tables
-- Family profiles, tracking logs, reminders, documents, AI chat, SMTP placeholders, and subscription status storage
+- Family profiles, tracking logs, reminders, documents, ChatGPT bridge drafts, SMTP placeholders, and subscription status storage

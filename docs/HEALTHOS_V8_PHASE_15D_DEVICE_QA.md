@@ -2,7 +2,7 @@
 
 ## Scope
 
-Use this document to manually smoke-test the active Expo Router app under `src/app` after the HealthOS V8 conversion, repository cleanup, and Expo SDK 54 compatibility work.
+Use this document to manually smoke-test the active Expo Router app under `src/app` after the HealthOS V8 conversion and repository cleanup.
 
 Do not redesign screens or make speculative visual fixes during this phase. Record real-device evidence first.
 
@@ -175,7 +175,7 @@ npx expo export
 npx expo start --clear
 ```
 
-Use Expo Go for routes and features supported by Expo Go. Use a development build when native permissions, native modules, remote notifications, or device-only behavior require it. Android remote push notifications are not supported in Expo Go for SDK 54 and must be tested in a development build.
+Use Expo Go for routes and features supported by Expo Go. Use a development build when native permissions, native modules, remote notifications, or device-only behavior require it. Android remote push notifications are not supported in Expo Go and must be tested in a development build.
 
 ## Targeted Fix Rule
 

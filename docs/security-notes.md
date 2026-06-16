@@ -8,7 +8,9 @@ This Expo app only uses public Supabase keys:
 
 The Supabase service role key must never be added to Expo, checked into source, or exposed through a public environment variable.
 
-The OpenAI key belongs only in Supabase Edge Functions or another trusted server runtime. It must not be shipped in the mobile app.
+Do not store AI provider API keys in the mobile app or Supabase for the
+HealthSync ChatGPT bridge. Users use their own ChatGPT account outside the app
+and paste only selected results back into HealthSync.
 
 RLS is required for all user data. The Step 17 profile foundation allows authenticated users to access only rows where their `auth.uid()` owns the profile id.
 

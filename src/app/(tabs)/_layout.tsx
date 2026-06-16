@@ -1,13 +1,9 @@
-import { Tabs } from "expo-router";
-import { useState } from "react";
+import { Href, router, Tabs } from "expo-router";
 
-import { AiAssistantSheet } from "@/components/ai/AiAssistantSheet";
 import { AiSearchBar } from "@/components/ai/AiSearchBar";
 import { FloatingBottomNav } from "@/components/navigation";
 
 export default function TabsLayout() {
-  const [assistantVisible, setAssistantVisible] = useState(false);
-
   return (
     <>
       <Tabs
@@ -49,11 +45,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="food" options={{ href: null }} />
         <Tabs.Screen name="profile" options={{ href: null }} />
       </Tabs>
-      <AiSearchBar onPress={() => setAssistantVisible(true)} />
-      <AiAssistantSheet
-        onClose={() => setAssistantVisible(false)}
-        visible={assistantVisible}
-      />
+      <AiSearchBar onPress={() => router.push("/ai" as Href)} />
     </>
   );
 }

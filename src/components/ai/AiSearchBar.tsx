@@ -1,73 +1,110 @@
-import { Pressable, Text, View } from "react-native";
+import { Href, router } from "expo-router";
+import { Mic, ScanLine } from "lucide-react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppIcon } from "@/components/ui";
-import { spacing } from "@/theme/tokens";
+import { AppIconButton, AppText } from "@/components/ui-native";
 import { useAppTheme } from "@/theme/ThemeProvider";
 
-export function AiSearchBar({ onPress }: { onPress: () => void }) {
+export function AiSearchBar({ onPress }: { onPress?: () => void }) {
   const insets = useSafeAreaInsets();
   const { theme } = useAppTheme();
+
+  function openAssistant() {
+    if (onPress) {
+      onPress();
+      return;
+    }
+    router.push("/ai" as Href);
+  }
 
   return (
     <View
       pointerEvents="box-none"
-      style={{
-        bottom: insets.bottom + 92,
-        left: 16,
-        position: "absolute",
-        right: 16,
-        zIndex: 30,
-      }}
+      style={[styles.overlay, { bottom: insets.bottom + 92 }]}
     >
       <Pressable
-        accessibilityHint="Opens assistant actions and search"
-        accessibilityLabel="Open HealthOS AI search"
+        accessibilityHint="Opens the full HealthSync AI page"
+        accessibilityLabel="Ask HealthSync"
         accessibilityRole="button"
-        onPress={onPress}
-        style={({ pressed }) => ({
-          alignItems: "center",
-          backgroundColor: theme.nav ?? theme.surface,
-          borderColor: theme.border,
-          borderRadius: 22,
-          borderWidth: 1,
-          elevation: 8,
-          flexDirection: "row",
-          gap: spacing.md,
-          height: 50,
-          opacity: pressed ? 0.86 : 1,
-          paddingHorizontal: spacing.md,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 12 },
-          shadowOpacity: 0.2,
-          shadowRadius: 24,
-        })}
+        onPress={openAssistant}
+        style={({ pressed }) => [
+          styles.bar,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+            opacity: pressed ? 0.88 : 1,
+            shadowColor: theme.background,
+          },
+        ]}
       >
         <View
-          style={{
-            alignItems: "center",
-            backgroundColor: theme.primary,
-            borderRadius: 12,
-            height: 28,
-            justifyContent: "center",
-            width: 28,
-          }}
+          style={[
+            styles.logo,
+            {
+              backgroundColor: theme.text,
+              borderColor: theme.border,
+            },
+          ]}
         >
-          <AppIcon color={theme.background} decorative name="ai" size={15} />
+          <AppIcon backgroundColor={theme.text} decorative name="ai" size={20} />
         </View>
-        <Text
-          numberOfLines={1}
-          style={{
-            color: theme.mutedText,
-            flex: 1,
-            fontSize: 12,
-            fontWeight: "800",
-          }}
-        >
-          Search your health or research online...
-        </Text>
-        <AppIcon color={theme.mutedText} decorative name="search" size={16} />
+        <AppText className="flex-1" numberOfLines={1} variant="bodyMuted">
+          Ask HealthSync
+        </AppText>
+        <View pointerEvents="none" style={styles.actions}>
+          <AppIconButton
+            accessibilityLabel="Voice input placeholder"
+            icon={<Mic color={theme.mutedText} size={17} />}
+            size="sm"
+            variant="ghost"
+          />
+          <AppIconButton
+            accessibilityLabel="Scan or import placeholder"
+            icon={<ScanLine color={theme.mutedText} size={17} />}
+            size="sm"
+            variant="ghost"
+          />
+        </View>
       </Pressable>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  actions: {
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  bar: {
+    alignItems: "center",
+    borderRadius: 999,
+    borderWidth: 1,
+    elevation: 10,
+    flexDirection: "row",
+    gap: 10,
+    minHeight: 58,
+    paddingHorizontal: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    width: "100%",
+  },
+  logo: {
+    alignItems: "center",
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 38,
+    justifyContent: "center",
+    width: 38,
+  },
+  overlay: {
+    alignSelf: "center",
+    left: 16,
+    maxWidth: 430,
+    position: "absolute",
+    right: 16,
+    zIndex: 45,
+  },
+});

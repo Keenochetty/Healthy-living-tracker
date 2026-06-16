@@ -1,5 +1,10 @@
+import "react-native-gesture-handler";
+import "@/global.css";
+
+import { HeroUINativeProvider } from "heroui-native/provider";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/context/AuthContext";
@@ -11,15 +16,17 @@ import { AppThemeProvider } from "@/theme/ThemeProvider";
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <ActiveProfileProvider>
-          <ProfileSettingsProvider>
-            <AppThemeProvider>
-              <GeneralHealthActivityProvider>
-                <AppLockGate>
-                  <StatusBar style="dark" />
-                  <Stack screenOptions={{ headerShown: false }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <HeroUINativeProvider>
+        <SafeAreaProvider>
+          <AuthProvider>
+            <ActiveProfileProvider>
+              <ProfileSettingsProvider>
+                <AppThemeProvider>
+                  <GeneralHealthActivityProvider>
+                    <AppLockGate>
+                      <StatusBar style="dark" />
+                      <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="(tabs)" />
                     <Stack.Screen name="ai/index" />
                     <Stack.Screen name="ai/review/[jobId]" />
@@ -37,6 +44,7 @@ export default function RootLayout() {
                     <Stack.Screen name="child/[childId]" />
                     <Stack.Screen name="circle/member/[memberId]" />
                     <Stack.Screen name="cycle/index" />
+                    <Stack.Screen name="dev/ui-foundation" />
                     <Stack.Screen name="dev/ui-kit" />
                     <Stack.Screen name="elder/index" />
                     <Stack.Screen name="elder/[elderId]" />
@@ -124,13 +132,15 @@ export default function RootLayout() {
                     <Stack.Screen name="settings/subscription" />
                     <Stack.Screen name="settings/index" />
                     <Stack.Screen name="settings/coming-later" />
-                  </Stack>
-                </AppLockGate>
-              </GeneralHealthActivityProvider>
-            </AppThemeProvider>
-          </ProfileSettingsProvider>
-        </ActiveProfileProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+                      </Stack>
+                    </AppLockGate>
+                  </GeneralHealthActivityProvider>
+                </AppThemeProvider>
+              </ProfileSettingsProvider>
+            </ActiveProfileProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </HeroUINativeProvider>
+    </GestureHandlerRootView>
   );
 }

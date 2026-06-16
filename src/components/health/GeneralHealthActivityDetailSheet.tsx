@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   safetyCopy: { flex: 1, gap: 4 },
   safetyLabel: { fontSize: 12, fontWeight: "900" },
   safetyText: { flex: 1, fontSize: 12, lineHeight: 19 },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.58)" },
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(15,23,42,0.58)" },
   sheet: {
     alignSelf: "center",
     borderTopLeftRadius: 28,

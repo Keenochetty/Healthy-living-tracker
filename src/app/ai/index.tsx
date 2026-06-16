@@ -1,704 +1,816 @@
+import * as Clipboard from "expo-clipboard";
+import { type Href, router } from "expo-router";
 import {
-  Href,
-  router,
-  useFocusEffect,
-  useLocalSearchParams,
-} from "expo-router";
-import { useCallback, useState } from "react";
+  ArrowUp,
+  Bot,
+  Menu,
+  Paperclip,
+  Settings,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AiCreateJobCard } from "@/components/ai/AiCreateJobCard";
-import { AiDisclaimerCard } from "@/components/ai/AiDisclaimerCard";
-import { AiJobCard } from "@/components/ai/AiJobCard";
-import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import { AppCard } from "@/components/ui/AppCard";
+import { AiHistoryCard } from "@/components/ai/AiHistoryCard";
+import { AiImportPreview } from "@/components/ai/AiImportPreview";
+import { PasteChatGptResultSheet } from "@/components/ai/PasteChatGptResultSheet";
+import { useActiveProfile } from "@/context/ActiveProfileContext";
 import {
-  ASSISTANT_CONSENT_CATEGORIES,
-  ASSISTANT_MODES,
-  cancelAssistantDraft,
-  confirmAssistantDraft,
-  getAssistantDrafts,
-  getAssistantMessages,
-  getAssistantSettings,
-  handleAssistantPrompt,
-  updateAssistantSettings,
-} from "@/lib/assistantStorage";
-import { getActiveProfile } from "@/lib/familyPermissionsStorage";
-import { getPendingReviewJobs, getRecentAiJobs } from "@/lib/aiStorage";
-import { getUserPreferences } from "@/lib/userPreferences";
-import type { AiJob } from "@/types/ai";
+  createAiImport,
+  createAiSession,
+  deleteAiSession,
+  listAiSessions,
+  updateAiSessionStatus,
+} from "@/features/ai/aiHistoryService";
+import {
+  getAiImportRoute,
+  getAiImportTargetLabel,
+} from "@/features/ai/aiImportRouting";
+import { CHATGPT_BRIDGE_CONFIG } from "@/features/ai/chatGptBridgeConfig";
+import { openChatGpt } from "@/features/ai/openChatGpt";
+import type { PastedResultType } from "@/features/ai/parsePastedChatGptResult";
 import type {
-  AssistantDraft,
-  AssistantMessage,
-  AssistantMode,
-  AssistantRequestResult,
-  AssistantSettings,
-} from "@/types/assistant";
-import type { HealthProfile } from "@/types/familyPermissions";
+  AiStructuredResult,
+  HealthSyncAiSession,
+} from "@/features/ai/types";
+import { useAppTheme } from "@/theme/ThemeProvider";
 
-const SUGGESTED_PROMPTS = [
-  { mode: "food_logger" as const, text: "Log a meal" },
-  { mode: "workout_logger" as const, text: "Log a workout" },
-  { mode: "calendar_helper" as const, text: "Add a reminder" },
-  { mode: "general_health" as const, text: "Summarize today" },
-  { mode: "records_helper" as const, text: "Prepare questions for my doctor" },
-  { mode: "baby_child" as const, text: "Show my baby's feeding summary" },
-  {
-    mode: "medication_supplement" as const,
-    text: "Show my next medication reminder",
-  },
-  { mode: "womens_health" as const, text: "Add a period note" },
-  {
-    mode: "food_logger" as const,
-    text: "Create a grocery idea from my protein target",
-  },
-];
+const ROUTED_IMPORT_MESSAGE =
+  "Imported draft routed. Final save will be connected in the target section.";
 
-const GENERAL_FOOTER =
-  "The assistant helps with tracking, organization, summaries, and education. It is not medical advice and does not replace a doctor, pharmacist, nurse, clinic, pediatrician, midwife, therapist, or healthcare professional.";
+const SUGGESTIONS = [
+  {
+    helper: "for this week",
+    prompt: "Create a balanced family meal plan for the week.",
+    title: "Plan meals",
+  },
+  {
+    helper: "from pasted notes",
+    prompt: "Summarize these health notes into clear next steps.",
+    title: "Summarize health info",
+  },
+  {
+    helper: "safe draft only",
+    prompt: "Turn this medication instruction into a reminder draft.",
+    title: "Prepare reminder",
+  },
+] as const;
 
 export default function AiAssistantScreen() {
-  const params = useLocalSearchParams<{ mode?: string; prompt?: string }>();
-  const [moduleEnabled, setModuleEnabled] = useState(false);
-  const [settings, setSettings] = useState<AssistantSettings | null>(null);
-  const [activeProfile, setActiveProfile] = useState<HealthProfile | null>(
+  const { activeProfile } = useActiveProfile();
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+  const [pasteVisible, setPasteVisible] = useState(false);
+  const [pastedText, setPastedText] = useState("");
+  const [promptText, setPromptText] = useState("");
+  const [resultType, setResultType] = useState<PastedResultType>("meal_plan");
+  const [previewResult, setPreviewResult] = useState<AiStructuredResult | null>(
     null,
   );
-  const [pendingJobs, setPendingJobs] = useState<AiJob[]>([]);
-  const [recentJobs, setRecentJobs] = useState<AiJob[]>([]);
-  const [messages, setMessages] = useState<AssistantMessage[]>([]);
-  const [drafts, setDrafts] = useState<AssistantDraft[]>([]);
-  const [mode, setMode] = useState<AssistantMode>(toAssistantMode(params.mode));
-  const [prompt, setPrompt] = useState(stringParam(params.prompt));
-  const [lastResult, setLastResult] = useState<AssistantRequestResult | null>(
-    null,
-  );
-  const [message, setMessage] = useState("");
+  const [savedSession, setSavedSession] =
+    useState<HealthSyncAiSession | null>(null);
+  const [sessions, setSessions] = useState<HealthSyncAiSession[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
 
-  const loadAiScreen = useCallback(async () => {
-    const [
-      preferences,
-      assistantSettings,
-      pending,
-      recent,
-      active,
-      nextMessages,
-      nextDrafts,
-    ] = await Promise.all([
-      getUserPreferences(),
-      getAssistantSettings(),
-      getPendingReviewJobs(),
-      getRecentAiJobs(),
-      getActiveProfile(),
-      getAssistantMessages(),
-      getAssistantDrafts(),
-    ]);
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const history = await listAiSessions({
+        activeProfileId: activeProfile?.id,
+        limit: 25,
+      });
+      setSessions(history);
+    } catch (error) {
+      setSessions([]);
+      setStatus(
+        error instanceof Error ? error.message : "Could not load AI history.",
+      );
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [activeProfile?.id]);
 
-    setModuleEnabled(preferences.enabledModules.includes("ai_assistant"));
-    setSettings(assistantSettings);
-    setPendingJobs(pending);
-    setRecentJobs(recent);
-    setActiveProfile(active);
-    setMessages(nextMessages);
-    setDrafts(nextDrafts);
-  }, []);
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadAiScreen();
-    }, [loadAiScreen]),
-  );
-
-  async function saveSettings(partial: Partial<AssistantSettings>) {
-    const next = await updateAssistantSettings(partial);
-    setSettings(next);
-    await loadAiScreen();
-  }
-
-  async function submitPrompt(nextPrompt = prompt, nextMode = mode) {
-    const value = nextPrompt.trim();
-
-    if (!value || !settings?.assistantEnabled) return;
-
-    const result = await handleAssistantPrompt({
-      mode: nextMode,
-      prompt: value,
-    });
-    setLastResult(result);
-    setPrompt("");
-    await loadAiScreen();
-  }
-
-  async function confirmDraft(draftId: string) {
-    await confirmAssistantDraft(draftId);
-    setMessage("Draft saved after confirmation.");
-    await loadAiScreen();
-  }
-
-  async function cancelDraft(draftId: string) {
-    await cancelAssistantDraft(draftId);
-    setMessage("Draft cancelled.");
-    await loadAiScreen();
-  }
-
-  if (!moduleEnabled) {
-    return (
-      <ScreenWrapper>
-        <Text style={styles.hero}>AI Assistant</Text>
-        <AppCard>
-          <Text style={styles.title}>
-            Turn on the assistant to help with logging, summaries, reminders,
-            and questions.
-          </Text>
-          <Text style={styles.muted}>
-            Enable AI Assistant in Profile modules only if you want draft help.
-          </Text>
-        </AppCard>
-      </ScreenWrapper>
+  function handleParsed(result: AiStructuredResult) {
+    setPreviewResult(result);
+    setSavedSession(null);
+    setPasteVisible(false);
+    setStatus(
+      "Import preview created locally. Save or import it to add it to HealthSync history.",
     );
   }
 
-  const sensitiveOff = settings
-    ? ASSISTANT_CONSENT_CATEGORIES.filter(
-        (category) =>
-          category.sensitive &&
-          !settings.sensitiveCategoryConsent[category.key],
-      )
-    : [];
+  async function openPromptInChatGpt(nextPrompt = promptText) {
+    const prompt = nextPrompt.trim();
 
-  return (
-    <ScreenWrapper>
-      <View style={{ gap: 4 }}>
-        <Text style={styles.eyebrow}>Draft-first, private by default</Text>
-        <Text style={styles.hero}>AI Assistant</Text>
-        <Text style={styles.muted}>
-          Log, summarize, organize, search, and prepare questions without
-          medical advice.
-        </Text>
-      </View>
-
-      <AiDisclaimerCard />
-
-      {settings ? (
-        <ConsentCard onSave={saveSettings} settings={settings} />
-      ) : null}
-
-      {!settings?.assistantEnabled ? (
-        <AppCard>
-          <Text style={styles.title}>
-            Choose what the assistant is allowed to help with.
-          </Text>
-          <Text style={styles.muted}>
-            Sensitive categories default off. The assistant cannot use private
-            data until you opt in.
-          </Text>
-        </AppCard>
-      ) : (
-        <>
-          <AppCard backgroundColor="#eef2ff">
-            <Text style={styles.title}>Active profile</Text>
-            <Text style={styles.muted}>
-              {activeProfile?.displayName ?? "Local profile"} • Private by
-              default
-            </Text>
-            {sensitiveOff.length ? (
-              <Text style={styles.small}>
-                Sensitive categories still off:{" "}
-                {sensitiveOff.map((item) => item.label).join(", ")}
-              </Text>
-            ) : null}
-          </AppCard>
-
-          <AssistantPromptCard
-            mode={mode}
-            onModeChange={setMode}
-            onPromptChange={setPrompt}
-            onSubmit={() => submitPrompt()}
-            prompt={prompt}
-          />
-
-          <SuggestedPromptList
-            onSelect={(item) => {
-              setMode(item.mode);
-              setPrompt(item.text);
-              submitPrompt(item.text, item.mode);
-            }}
-          />
-
-          {lastResult ? <AssistantResultCard result={lastResult} /> : null}
-
-          {message ? (
-            <AppCard backgroundColor="#ecfdf5">
-              <Text style={{ color: "#047857", fontWeight: "900" }}>
-                {message}
-              </Text>
-            </AppCard>
-          ) : null}
-
-          <DraftList
-            drafts={drafts}
-            onCancel={cancelDraft}
-            onConfirm={confirmDraft}
-          />
-          <HistoryList messages={messages} />
-        </>
-      )}
-
-      <AiCreateJobCard onCreated={loadAiScreen} />
-      <LegacyJobs pendingJobs={pendingJobs} recentJobs={recentJobs} />
-
-      <AppCard backgroundColor="#fff7ed">
-        <Text style={styles.warning}>{GENERAL_FOOTER}</Text>
-      </AppCard>
-    </ScreenWrapper>
-  );
-}
-
-function ConsentCard({
-  onSave,
-  settings,
-}: {
-  onSave: (partial: Partial<AssistantSettings>) => void;
-  settings: AssistantSettings;
-}) {
-  function toggleCategory(
-    category: (typeof ASSISTANT_CONSENT_CATEGORIES)[number],
-  ) {
-    const allowed = new Set(settings.allowedDataCategories);
-    const isEnabled = allowed.has(category.key);
-
-    if (isEnabled) {
-      allowed.delete(category.key);
-    } else {
-      allowed.add(category.key);
+    if (prompt) {
+      await Clipboard.setStringAsync(prompt);
+      setStatus("Prompt copied. Open ChatGPT and paste it there.");
     }
 
-    onSave({
-      allowedDataCategories: Array.from(allowed),
-      sensitiveCategoryConsent: category.sensitive
-        ? { ...settings.sensitiveCategoryConsent, [category.key]: !isEnabled }
-        : settings.sensitiveCategoryConsent,
-    });
+    await openChatGpt();
+  }
+
+  async function savePreviewSession(result: AiStructuredResult) {
+    if (savedSession) return savedSession;
+
+    setSaving(true);
+    try {
+      const session = await createAiSession({
+        activeProfileId: activeProfile?.id ?? null,
+        result,
+        status: "draft",
+      });
+      setSavedSession(session);
+      await loadHistory();
+      setStatus("Saved to HealthSync AI history.");
+      return session;
+    } catch (error) {
+      setStatus(
+        error instanceof Error ? error.message : "Could not save AI history.",
+      );
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function importResult(
+    result: AiStructuredResult,
+    existingSession?: HealthSyncAiSession,
+  ) {
+    const target = result.import_targets[0];
+    if (!target) {
+      setStatus("Choose at least one import target before importing.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const session =
+        existingSession ??
+        savedSession ??
+        (await createAiSession({
+          activeProfileId: activeProfile?.id ?? null,
+          result,
+          status: "draft",
+        }));
+
+      for (const importTarget of result.import_targets) {
+        const route = getAiImportRoute(importTarget);
+        await createAiImport({
+          sessionId: session.id,
+          status: "routed",
+          target: importTarget,
+          targetRoute: String(route),
+        });
+      }
+
+      await updateAiSessionStatus({
+        sessionId: session.id,
+        status: "imported",
+      });
+
+      setSavedSession({ ...session, status: "imported" });
+      setStatus(ROUTED_IMPORT_MESSAGE);
+      await loadHistory();
+      router.push(getAiImportRoute(target) as Href);
+    } catch (error) {
+      setStatus(
+        error instanceof Error ? error.message : "Could not import AI draft.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function dismissSession(session: HealthSyncAiSession) {
+    try {
+      await updateAiSessionStatus({
+        sessionId: session.id,
+        status: "dismissed",
+      });
+      if (savedSession?.id === session.id) setSavedSession(null);
+      setStatus("AI draft dismissed. No health record was changed.");
+      await loadHistory();
+    } catch (error) {
+      setStatus(
+        error instanceof Error ? error.message : "Could not dismiss AI draft.",
+      );
+    }
+  }
+
+  async function deleteSession(session: HealthSyncAiSession) {
+    try {
+      await deleteAiSession(session.id);
+      if (savedSession?.id === session.id) {
+        setSavedSession(null);
+        setPreviewResult(null);
+      }
+      setStatus("Deleted from HealthSync AI history.");
+      await loadHistory();
+    } catch (error) {
+      setStatus(
+        error instanceof Error
+          ? error.message
+          : "Could not delete AI history item.",
+      );
+    }
   }
 
   return (
-    <AppCard>
-      <View style={{ gap: 12 }}>
-        <Text style={styles.title}>Assistant consent</Text>
-        <Text style={styles.muted}>
-          The assistant can help you log, summarize, and organize health
-          information. It does not diagnose, treat, prescribe, or replace
-          healthcare professionals. You control what data it can use.
-        </Text>
-        <ToggleRow
-          label="Assistant enabled"
-          onPress={() =>
-            onSave({ assistantEnabled: !settings.assistantEnabled })
-          }
-          value={settings.assistantEnabled}
-        />
-        <ToggleRow
-          label="Allow assistant for quick logging"
-          onPress={() =>
-            onSave({ quickLoggingEnabled: !settings.quickLoggingEnabled })
-          }
-          value={settings.quickLoggingEnabled}
-        />
-        <ToggleRow
-          label="Save assistant history summaries"
-          onPress={() =>
-            onSave({
-              conversationHistoryEnabled: !settings.conversationHistoryEnabled,
-            })
-          }
-          value={settings.conversationHistoryEnabled}
-        />
-        <Text style={styles.bold}>Data categories</Text>
-        {ASSISTANT_CONSENT_CATEGORIES.map((category) => (
-          <ToggleRow
-            key={category.key}
-            label={`${category.label}${category.sensitive ? " (sensitive)" : ""}`}
-            onPress={() => toggleCategory(category)}
-            value={settings.allowedDataCategories.includes(category.key)}
-          />
-        ))}
-      </View>
-    </AppCard>
-  );
-}
-
-function AssistantPromptCard({
-  mode,
-  onModeChange,
-  onPromptChange,
-  onSubmit,
-  prompt,
-}: {
-  mode: AssistantMode;
-  onModeChange: (mode: AssistantMode) => void;
-  onPromptChange: (value: string) => void;
-  onSubmit: () => void;
-  prompt: string;
-}) {
-  return (
-    <AppCard>
-      <View style={{ gap: 12 }}>
-        <Text style={styles.title}>Ask or log</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8 }}
+    <SafeAreaView edges={["top", "bottom"]} style={styles.screen}>
+      <View style={styles.header}>
+        <IconButton
+          label="Open HealthSync pages"
+          onPress={() => router.push("/(tabs)/today" as Href)}
+          styles={styles}
         >
-          {ASSISTANT_MODES.map((item) => (
-            <Chip
-              key={item.key}
-              label={item.label}
-              onPress={() => onModeChange(item.key)}
-              selected={mode === item.key}
-            />
-          ))}
-        </ScrollView>
-        <TextInput
-          multiline
-          onChangeText={onPromptChange}
-          placeholder="Example: Log 2 eggs and toast for breakfast"
-          placeholderTextColor="#94a3b8"
-          style={styles.input}
-          value={prompt}
-        />
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={onSubmit}
-          style={styles.primaryButton}
+          <Menu color={theme.text} size={22} />
+        </IconButton>
+        <View style={styles.headerTitleWrap}>
+          <Text style={styles.headerTitle}>AI Assistant</Text>
+          <Text style={styles.bridgeBadge}>Bridge</Text>
+        </View>
+        <IconButton
+          label="Open settings"
+          onPress={() => router.push("/settings" as Href)}
+          styles={styles}
         >
-          <Text style={styles.primaryButtonText}>Create response or draft</Text>
-        </TouchableOpacity>
+          <Settings color={theme.text} size={21} />
+        </IconButton>
       </View>
-    </AppCard>
-  );
-}
 
-function SuggestedPromptList({
-  onSelect,
-}: {
-  onSelect: (item: (typeof SUGGESTED_PROMPTS)[number]) => void;
-}) {
-  return (
-    <AppCard>
-      <Text style={styles.title}>Suggested prompts</Text>
-      <View
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 8,
-          marginTop: 12,
-        }}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        style={styles.scroll}
       >
-        {SUGGESTED_PROMPTS.map((item) => (
-          <Chip
-            key={`${item.mode}-${item.text}`}
-            label={item.text}
-            onPress={() => onSelect(item)}
-            selected={false}
-          />
-        ))}
-      </View>
-    </AppCard>
-  );
-}
-
-function AssistantResultCard({ result }: { result: AssistantRequestResult }) {
-  return (
-    <AppCard
-      backgroundColor={result.actionType === "blocked" ? "#fff7ed" : "#f8fafc"}
-    >
-      <View style={{ gap: 10 }}>
-        <Text style={styles.title}>
-          {result.actionType === "blocked"
-            ? "Assistant blocked this request"
-            : "Assistant response"}
-        </Text>
-        <Text style={styles.muted}>{result.message}</Text>
-        <Text style={styles.small}>
-          Risk: {formatValue(result.riskCategory)}
-        </Text>
-        {result.sourceCards.length ? (
-          <View style={{ gap: 8 }}>
-            <Text style={styles.bold}>Sources</Text>
-            {result.sourceCards.map((source) => (
-              <View key={source.id} style={styles.sourceCard}>
-                <Text style={styles.bold}>{source.title}</Text>
-                <Text style={styles.small}>
-                  {source.sourceOrganization} • Last checked{" "}
-                  {source.lastCheckedDate ?? "Not set"}
-                </Text>
-                <Text style={styles.small}>{source.sourceUrl}</Text>
-              </View>
-            ))}
+        <View style={styles.hero}>
+          <View style={styles.heroIcon}>
+            <Sparkles color={theme.primary} size={42} />
           </View>
-        ) : result.actionType !== "blocked" ? (
-          <Text style={styles.small}>
-            No trusted source saved for this topic yet.
+          <Text style={styles.heroTitle}>How can I help you today?</Text>
+          <Text style={styles.heroSubtitle}>
+            Ask in your own ChatGPT account, then paste selected results back
+            into HealthSync.
           </Text>
-        ) : null}
-        <Text style={styles.warning}>{result.safetyFooter}</Text>
-      </View>
-    </AppCard>
-  );
-}
+        </View>
 
-function DraftList({
-  drafts,
-  onCancel,
-  onConfirm,
-}: {
-  drafts: AssistantDraft[];
-  onCancel: (id: string) => void;
-  onConfirm: (id: string) => void;
-}) {
-  const activeDrafts = drafts.filter(
-    (draft) => draft.status === "draft" || draft.status === "edited",
-  );
-
-  return (
-    <View style={{ gap: 12 }}>
-      <Text style={styles.sectionTitle}>Drafts pending review</Text>
-      {activeDrafts.length ? (
-        activeDrafts.map((draft) => (
-          <AppCard key={draft.id}>
-            <View style={{ gap: 10 }}>
-              <Text style={styles.title}>Review before saving</Text>
-              <Text style={styles.muted}>
-                {formatValue(draft.targetRealm)} •{" "}
-                {formatValue(draft.actionType)}
-              </Text>
-              {Object.entries(draft.draftPayload).map(([key, value]) => (
-                <View key={key} style={styles.fieldRow}>
-                  <Text style={styles.small}>{key}</Text>
-                  <Text style={styles.muted}>{String(value)}</Text>
-                </View>
-              ))}
-              <Text style={styles.warning}>
-                Review and confirm before saving. AI suggestions may be
-                incomplete or incorrect.
-              </Text>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => onConfirm(draft.id)}
-                  style={[styles.smallButton, { backgroundColor: "#7c3aed" }]}
-                >
-                  <Text style={{ color: "#ffffff", fontWeight: "900" }}>
-                    Save
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={[styles.smallButton, { backgroundColor: "#f5f3ff" }]}
-                >
-                  <Text style={{ color: "#7c3aed", fontWeight: "900" }}>
-                    Edit
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => onCancel(draft.id)}
-                  style={[styles.smallButton, { backgroundColor: "#fff7ed" }]}
-                >
-                  <Text style={{ color: "#9a3412", fontWeight: "900" }}>
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
+        <View style={styles.messageStack}>
+          <View style={styles.assistantRow}>
+            <View style={styles.avatar}>
+              <Bot color={theme.primary} size={20} />
+            </View>
+            <View style={styles.assistantBubbleWrap}>
+              <Text style={styles.messageLabel}>HealthSync AI</Text>
+              <View style={styles.assistantBubble}>
+                <Text style={styles.bodyText}>
+                  I can help you move useful ChatGPT results into HealthSync.
+                </Text>
+                <Text style={styles.mutedText}>
+                  HealthSync does not read ChatGPT, request credentials, or save
+                  your full ChatGPT history.
+                </Text>
               </View>
             </View>
-          </AppCard>
-        ))
-      ) : (
-        <AppCard>
-          <Text style={styles.muted}>No assistant drafts yet.</Text>
-        </AppCard>
-      )}
-    </View>
-  );
-}
+          </View>
 
-function HistoryList({ messages }: { messages: AssistantMessage[] }) {
-  return (
-    <View style={{ gap: 12 }}>
-      <Text style={styles.sectionTitle}>Assistant history</Text>
-      {messages.length ? (
-        messages.slice(0, 5).map((item) => (
-          <AppCard key={item.id}>
-            <Text style={styles.bold}>
-              {formatValue(item.role)} • {formatValue(item.mode)}
-            </Text>
-            <Text style={styles.muted}>
-              {item.contentSummary ?? "Saved summary"}
-            </Text>
-          </AppCard>
-        ))
-      ) : (
-        <AppCard>
-          <Text style={styles.muted}>Your assistant history is empty.</Text>
-        </AppCard>
-      )}
-    </View>
-  );
-}
+          <View style={styles.userBubbleWrap}>
+            <Text style={[styles.messageLabel, styles.rightText]}>You</Text>
+            <View style={styles.userBubble}>
+              <Text style={styles.bodyText}>
+                Open ChatGPT, ask my question, then paste only the result I
+                choose to use.
+              </Text>
+            </View>
+          </View>
+        </View>
 
-function LegacyJobs({
-  pendingJobs,
-  recentJobs,
-}: {
-  pendingJobs: AiJob[];
-  recentJobs: AiJob[];
-}) {
-  return (
-    <View style={{ gap: 12 }}>
-      <Text style={styles.sectionTitle}>Document extraction drafts</Text>
-      {pendingJobs.length ? (
-        pendingJobs.map((job) => <AiJobCard key={job.id} job={job} />)
-      ) : (
-        <AppCard>
-          <Text style={styles.muted}>
-            No AI drafts yet. Start with a report, label, food photo or note.
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick starts</Text>
+          {SUGGESTIONS.map((suggestion) => (
+            <Pressable
+              accessibilityRole="button"
+              key={suggestion.title}
+              onPress={() => {
+                setPromptText(suggestion.prompt);
+                void openPromptInChatGpt(suggestion.prompt);
+              }}
+              style={styles.suggestionCard}
+            >
+              <Text style={styles.cardTitle}>{suggestion.title}</Text>
+              <Text style={styles.mutedText}>{suggestion.helper}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Use your own ChatGPT</Text>
+          <Text style={styles.mutedText}>
+            Open ChatGPT, ask your question, then bring the useful result back
+            into HealthSync.
           </Text>
-        </AppCard>
-      )}
-      {recentJobs.length ? (
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => router.push("/ai" as Href)}
-          style={styles.secondaryButton}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              openChatGpt().catch(() =>
+                setStatus("Could not open ChatGPT from this device."),
+              );
+            }}
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryButtonText}>Open ChatGPT</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setPasteVisible(true)}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Paste result</Text>
+          </Pressable>
+          <Text style={styles.captionText}>
+            Only results you paste or save here are stored in HealthSync.
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.inlineTitle}>
+            <ShieldCheck color={theme.primary} size={18} />
+            <Text style={styles.cardTitle}>Privacy and safety</Text>
+          </View>
+          <Text style={styles.captionText}>
+            {CHATGPT_BRIDGE_CONFIG.privacyNote}
+          </Text>
+          <Text style={styles.captionText}>
+            {CHATGPT_BRIDGE_CONFIG.safetyNote}
+          </Text>
+        </View>
+
+        {previewResult ? (
+          <AiImportPreview
+            onDismiss={() => {
+              if (savedSession) {
+                void dismissSession(savedSession);
+              } else {
+                setPreviewResult(null);
+                setStatus("Draft dismissed. Nothing was saved to app data.");
+              }
+            }}
+            onEdit={() => {
+              setPastedText(previewResult.raw_text ?? "");
+              setResultType(previewResult.type);
+              setPasteVisible(true);
+            }}
+            onImport={() => {
+              void importResult(previewResult);
+            }}
+            onSave={() => {
+              void savePreviewSession(previewResult);
+            }}
+            result={previewResult}
+            saveDisabled={Boolean(savedSession) || saving}
+            saveLabel={
+              savedSession
+                ? "Saved to HealthSync history"
+                : "Save to HealthSync history"
+            }
+          />
+        ) : null}
+
+        {status ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Status</Text>
+            <Text style={styles.captionText}>{status}</Text>
+          </View>
+        ) : null}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>HealthSync AI history</Text>
+          <Text style={styles.captionText}>
+            {CHATGPT_BRIDGE_CONFIG.privacyNote}
+          </Text>
+
+          {historyLoading ? (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Loading AI history...</Text>
+            </View>
+          ) : sessions.length ? (
+            sessions.map((session) => (
+              <AiHistoryCard
+                key={session.id}
+                onDelete={() => {
+                  void deleteSession(session);
+                }}
+                onDismiss={() => {
+                  void dismissSession(session);
+                }}
+                onImport={() => {
+                  setPreviewResult(session.structured_result);
+                  setSavedSession(session);
+                  void importResult(session.structured_result, session);
+                }}
+                onView={() => {
+                  setPreviewResult(session.structured_result);
+                  setSavedSession(session);
+                  setStatus(
+                    `Viewing saved ${getAiImportTargetLabel(
+                      session.import_targets[0] ?? "general_health",
+                    )} draft.`,
+                  );
+                }}
+                session={session}
+              />
+            ))
+          ) : (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>No HealthSync AI history yet.</Text>
+              <Text style={styles.captionText}>
+                Paste a useful ChatGPT result, then save or import it to sync it
+                with HealthSync history.
+              </Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+
+      <View style={styles.inputDock}>
+        <View style={styles.inputShell}>
+          <TextInput
+            multiline
+            onChangeText={setPromptText}
+            placeholder="Message AI Assistant..."
+            placeholderTextColor={theme.mutedText}
+            style={styles.input}
+            textAlignVertical="top"
+            value={promptText}
+          />
+          <View style={styles.inputActions}>
+            <IconButton
+              label="Paste ChatGPT result"
+              onPress={() => setPasteVisible(true)}
+              styles={styles}
+            >
+              <Paperclip color={theme.mutedText} size={19} />
+            </IconButton>
+            <Pressable
+              accessibilityLabel="Open prompt in ChatGPT"
+              accessibilityRole="button"
+              disabled={!promptText.trim()}
+              onPress={() => {
+                openPromptInChatGpt().catch(() =>
+                  setStatus("Could not open ChatGPT from this device."),
+                );
+              }}
+              style={[
+                styles.sendButton,
+                !promptText.trim() && styles.disabledButton,
+              ]}
+            >
+              <ArrowUp color={theme.background} size={18} />
+            </Pressable>
+          </View>
+        </View>
+        <Text style={styles.footerNote}>
+          AI can make mistakes. Verify important information.
+        </Text>
+      </View>
+
+      <PasteChatGptResultSheet
+        onClose={() => setPasteVisible(false)}
+        onParsed={handleParsed}
+        pastedText={pastedText}
+        resultType={resultType}
+        setPastedText={setPastedText}
+        setResultType={setResultType}
+        visible={pasteVisible}
+      />
+    </SafeAreaView>
+  );
+}
+
+export function ErrorBoundary({ error }: { error: Error }) {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
+  return (
+    <SafeAreaView edges={["top", "bottom"]} style={styles.screen}>
+      <View style={[styles.card, styles.errorCard]}>
+        <Text style={styles.heroTitle}>AI screen could not load</Text>
+        <Text style={styles.captionText}>{error.message}</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.replace("/(tabs)/today" as Href)}
+          style={styles.primaryButton}
         >
-          <Text style={{ color: "#7c3aed", fontWeight: "900" }}>
-            Recent jobs: {recentJobs.length}
-          </Text>
-        </TouchableOpacity>
-      ) : null}
-    </View>
+          <Text style={styles.primaryButtonText}>Back to HealthSync</Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
   );
 }
 
-function ToggleRow({
+function IconButton({
+  children,
   label,
   onPress,
-  value,
+  styles,
 }: {
+  children: React.ReactNode;
   label: string;
   onPress: () => void;
-  value: boolean;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
       onPress={onPress}
-      style={styles.toggle}
+      style={styles.iconButton}
     >
-      <Text style={styles.bold}>{label}</Text>
-      <Text style={styles.small}>{value ? "On" : "Off"}</Text>
-    </TouchableOpacity>
+      {children}
+    </Pressable>
   );
 }
 
-function Chip({
-  label,
-  onPress,
-  selected,
-}: {
-  label: string;
-  onPress: () => void;
-  selected: boolean;
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      style={[styles.chip, selected ? styles.chipSelected : null]}
-    >
-      <Text
-        style={{ color: selected ? "#ffffff" : "#475569", fontWeight: "900" }}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
+function createStyles(theme: ReturnType<typeof useAppTheme>["theme"]) {
+  return StyleSheet.create({
+    assistantBubble: {
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      borderRadius: 18,
+      gap: 8,
+      padding: 14,
+    },
+    assistantBubbleWrap: {
+      flex: 1,
+      gap: 5,
+      maxWidth: "86%",
+    },
+    assistantRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 12,
+    },
+    avatar: {
+      alignItems: "center",
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      borderRadius: 18,
+      borderWidth: 1,
+      height: 36,
+      justifyContent: "center",
+      width: 36,
+    },
+    bodyText: {
+      color: theme.text,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    bridgeBadge: {
+      backgroundColor: theme.primarySoft,
+      borderColor: theme.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      color: theme.primary,
+      fontSize: 12,
+      fontWeight: "700",
+      overflow: "hidden",
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+    },
+    captionText: {
+      color: theme.mutedText,
+      fontSize: 13,
+      lineHeight: 19,
+    },
+    card: {
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      borderRadius: 22,
+      borderWidth: 1,
+      gap: 12,
+      padding: 16,
+      width: "100%",
+    },
+    cardTitle: {
+      color: theme.text,
+      fontSize: 15,
+      fontWeight: "800",
+    },
+    disabledButton: {
+      opacity: 0.4,
+    },
+    errorCard: {
+      margin: 20,
+      marginTop: 48,
+    },
+    footerNote: {
+      color: theme.mutedText,
+      fontSize: 12,
+      textAlign: "center",
+    },
+    header: {
+      alignItems: "center",
+      backgroundColor: theme.background,
+      borderBottomColor: theme.border,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    headerTitle: {
+      color: theme.text,
+      fontSize: 21,
+      fontWeight: "800",
+    },
+    headerTitleWrap: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+    },
+    hero: {
+      alignItems: "center",
+      gap: 12,
+      paddingVertical: 18,
+    },
+    heroIcon: {
+      alignItems: "center",
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      borderRadius: 48,
+      borderWidth: 1,
+      height: 96,
+      justifyContent: "center",
+      width: 96,
+    },
+    heroSubtitle: {
+      color: theme.mutedText,
+      fontSize: 15,
+      lineHeight: 22,
+      maxWidth: 620,
+      textAlign: "center",
+    },
+    heroTitle: {
+      color: theme.text,
+      fontSize: 30,
+      fontWeight: "900",
+      letterSpacing: -0.7,
+      textAlign: "center",
+    },
+    iconButton: {
+      alignItems: "center",
+      borderRadius: 22,
+      height: 44,
+      justifyContent: "center",
+      width: 44,
+    },
+    inlineTitle: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+    },
+    input: {
+      color: theme.text,
+      fontSize: 15,
+      lineHeight: 22,
+      maxHeight: 110,
+      minHeight: 48,
+      paddingHorizontal: 8,
+      paddingVertical: 8,
+    },
+    inputActions: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    inputDock: {
+      backgroundColor: theme.background,
+      borderTopColor: theme.border,
+      borderTopWidth: 1,
+      gap: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    inputShell: {
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      borderRadius: 24,
+      borderWidth: 1,
+      padding: 6,
+    },
+    messageLabel: {
+      color: theme.mutedText,
+      fontSize: 12,
+      fontWeight: "700",
+    },
+    messageStack: {
+      gap: 18,
+    },
+    mutedText: {
+      color: theme.mutedText,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: theme.primary,
+      borderRadius: 16,
+      minHeight: 48,
+      justifyContent: "center",
+      paddingHorizontal: 16,
+    },
+    primaryButtonText: {
+      color: theme.background,
+      fontSize: 15,
+      fontWeight: "900",
+    },
+    rightText: {
+      textAlign: "right",
+    },
+    screen: {
+      backgroundColor: theme.background,
+      flex: 1,
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      alignSelf: "center",
+      gap: 18,
+      maxWidth: 800,
+      paddingBottom: 28,
+      paddingHorizontal: 20,
+      paddingTop: 18,
+      width: "100%",
+    },
+    secondaryButton: {
+      alignItems: "center",
+      borderColor: theme.border,
+      borderRadius: 16,
+      borderWidth: 1,
+      minHeight: 48,
+      justifyContent: "center",
+      paddingHorizontal: 16,
+    },
+    secondaryButtonText: {
+      color: theme.text,
+      fontSize: 15,
+      fontWeight: "800",
+    },
+    section: {
+      gap: 12,
+      width: "100%",
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontSize: 20,
+      fontWeight: "900",
+    },
+    sendButton: {
+      alignItems: "center",
+      backgroundColor: theme.primary,
+      borderRadius: 14,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    suggestionCard: {
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      borderRadius: 18,
+      borderWidth: 1,
+      gap: 4,
+      padding: 14,
+    },
+    userBubble: {
+      backgroundColor: theme.surface,
+      borderColor: theme.border,
+      borderRadius: 18,
+      borderTopRightRadius: 5,
+      borderWidth: 1,
+      padding: 14,
+    },
+    userBubbleWrap: {
+      alignSelf: "flex-end",
+      gap: 5,
+      maxWidth: "86%",
+    },
+  });
 }
-
-function toAssistantMode(value?: string | string[]): AssistantMode {
-  const mode = Array.isArray(value) ? value[0] : value;
-  return ASSISTANT_MODES.some((item) => item.key === mode)
-    ? (mode as AssistantMode)
-    : "general_health";
-}
-
-function stringParam(value?: string | string[]) {
-  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
-}
-
-function formatValue(value: string) {
-  return value
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-const styles = {
-  bold: { color: "#0f172a", fontWeight: "900" as const },
-  chip: {
-    backgroundColor: "#ffffff",
-    borderColor: "#e2e8f0",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-  },
-  chipSelected: { backgroundColor: "#7c3aed", borderColor: "#7c3aed" },
-  eyebrow: { color: "#64748b", fontSize: 14, fontWeight: "800" as const },
-  fieldRow: { backgroundColor: "#f8fafc", borderRadius: 14, padding: 10 },
-  hero: { color: "#0f172a", fontSize: 30, fontWeight: "900" as const },
-  input: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#e2e8f0",
-    borderRadius: 18,
-    borderWidth: 1,
-    color: "#0f172a",
-    minHeight: 96,
-    paddingHorizontal: 14,
-    paddingTop: 13,
-  },
-  muted: { color: "#64748b", lineHeight: 21 },
-  primaryButton: {
-    alignItems: "center" as const,
-    backgroundColor: "#7c3aed",
-    borderRadius: 18,
-    justifyContent: "center" as const,
-    minHeight: 52,
-  },
-  primaryButtonText: { color: "#ffffff", fontWeight: "900" as const },
-  secondaryButton: {
-    alignItems: "center" as const,
-    backgroundColor: "#f5f3ff",
-    borderRadius: 18,
-    justifyContent: "center" as const,
-    minHeight: 48,
-  },
-  sectionTitle: { color: "#0f172a", fontSize: 22, fontWeight: "900" as const },
-  small: { color: "#64748b", fontSize: 12, lineHeight: 18 },
-  smallButton: {
-    alignItems: "center" as const,
-    borderRadius: 14,
-    flex: 1,
-    justifyContent: "center" as const,
-    minHeight: 44,
-  },
-  sourceCard: { backgroundColor: "#ffffff", borderRadius: 14, padding: 10 },
-  title: { color: "#0f172a", fontSize: 20, fontWeight: "900" as const },
-  toggle: { backgroundColor: "#f8fafc", borderRadius: 16, padding: 12 },
-  warning: { color: "#9a3412", lineHeight: 20 },
-};

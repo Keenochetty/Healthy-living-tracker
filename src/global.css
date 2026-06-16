@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+@import 'uniwind';
+@import 'heroui-native/styles';
+
+@source '../node_modules/heroui-native/lib';
+@source './app/**/*.{ts,tsx}';
+@source './components/**/*.{ts,tsx}';
+@source './features/**/*.{ts,tsx}';
+
+@theme {
+  --color-healthsync: #6ee7c8;
+  --color-healthsync-soft: #dffaf3;
+}

@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   },
   saveText: { color: "#ffffff", fontWeight: "900" },
   scroll: { flexShrink: 1 },
-  scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15,23,42,0.58)" },
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(15,23,42,0.58)" },
   selectedText: { fontSize: 12, fontWeight: "900" },
   sheet: {
     alignSelf: "center",

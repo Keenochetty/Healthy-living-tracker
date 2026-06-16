@@ -5,6 +5,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -28,7 +29,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     ".expo/types/**/*.ts",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "src/uniwind-types.d.ts"
   ],
   "exclude": ["node_modules", "family-health-app", "_archive"],
   "extends": "expo/tsconfig.base"

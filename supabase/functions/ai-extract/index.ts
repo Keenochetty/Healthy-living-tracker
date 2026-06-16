@@ -1,6 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
 import { createMockDraft } from "./mock.ts";
-import { callOpenAiExtraction } from "./openai.ts";
 
 const VALID_JOB_TYPES = new Set([
   "doctor_report_scan",
@@ -61,29 +60,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Input is empty.", ok: false }, 400);
     }
 
-    const hasOpenAiKey = Boolean(Deno.env.get("OPENAI_API_KEY"));
-
-    if (!hasOpenAiKey) {
-      return jsonResponse({
-        draft: createMockDraft(jobType, body.textInput),
-        jobId: body.jobId,
-        mode: "mock",
-        ok: true,
-      });
-    }
-
-    const draft = await callOpenAiExtraction({
-      fileUrl: body.filePath,
-      inputType,
-      jobType,
-      textInput: body.textInput,
-    });
-
     return jsonResponse({
       authorizationPresent: Boolean(authorization),
-      draft,
+      draft: createMockDraft(jobType, body.textInput),
       jobId: body.jobId,
-      mode: "real",
+      mode: "mock",
       ok: true,
     });
   } catch (error) {

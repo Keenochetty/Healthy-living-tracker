@@ -6,6 +6,7 @@ import { useAppTheme } from "@/theme/ThemeProvider";
 
 type AppIconProps = {
   accessibilityLabel?: string;
+  backgroundColor?: string;
   color?: string;
   container?: boolean;
   containerVariant?: "soft" | "primary" | "white" | "transparent";
@@ -25,6 +26,7 @@ type AppIconProps = {
 
 export function AppIcon({
   accessibilityLabel,
+  backgroundColor,
   color,
   container = false,
   containerVariant = "soft",
@@ -36,7 +38,10 @@ export function AppIcon({
 }: AppIconProps) {
   const { theme } = useAppTheme();
   const Icon = appIcons[name];
-  const iconColor = color ?? getIconColor(variant, theme);
+  const isAiLogo = name === "ai" || name === "ai_assistant";
+  const iconColor = isAiLogo
+    ? getMonochromeLogoColor(backgroundColor ?? theme.background)
+    : color ?? getIconColor(variant, theme);
   const accessibilityProps =
     accessibilityLabel && !decorative
       ? { accessibilityLabel, accessibilityRole: "image" as const }
@@ -63,12 +68,35 @@ export function AppIcon({
       }}
     >
       <Icon
-        color={containerVariant === "primary" ? "#ffffff" : iconColor}
+        color={
+          isAiLogo
+            ? getMonochromeLogoColor(
+                backgroundColor ?? getContainerColor(containerVariant, theme),
+              )
+            : containerVariant === "primary"
+              ? "#ffffff"
+              : iconColor
+        }
         size={size}
         strokeWidth={strokeWidth}
       />
     </View>
   );
+}
+
+function getMonochromeLogoColor(backgroundColor: string) {
+  const hex = backgroundColor.match(/^#([\da-f]{6})$/i)?.[1];
+
+  if (!hex) {
+    return backgroundColor.includes("255") ? "#000000" : "#ffffff";
+  }
+
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return luminance > 145 ? "#000000" : "#ffffff";
 }
 
 function getIconColor(
