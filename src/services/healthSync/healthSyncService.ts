@@ -37,7 +37,6 @@ import {
   syncHealthConnectData,
 } from "./healthConnectAdapter";
 import { getManualSyncSource, syncManualHealthData } from "./manualSyncAdapter";
-import { syncMockHealthData } from "./mockHealthSyncAdapter";
 
 const LOCAL_USER_ID = "local-user";
 const LOCAL_PROFILE_ID = "local-profile";
@@ -127,19 +126,11 @@ export async function getAvailableHealthSources(): Promise<
   return [
     getAppleHealthSource(),
     getHealthConnectSource(),
-    {
-      description:
-        "Development-only local samples for testing the sync pipeline.",
-      isAvailable: true,
-      source: "mock" as const,
-      title: "Mock Sync",
-    },
     getManualSyncSource(),
   ].map((source) => ({
     ...source,
     isAvailable:
       source.source === platformSource ||
-      source.source === "mock" ||
       source.source === "manual"
         ? source.isAvailable
         : false,
@@ -165,7 +156,7 @@ export async function createHealthSyncConnection(
     createdAt: now,
     enabledDataTypes,
     id: id("health-sync-connection"),
-    isConnected: source === "mock" || source === "manual",
+    isConnected: source === "manual",
     permissionStatus: enabledDataTypes.length ? "granted" : "not_requested",
     profileId: LOCAL_PROFILE_ID,
     source,
@@ -707,7 +698,7 @@ async function syncBySource(
     case "health_connect":
       return syncHealthConnectData(dataTypes, dateRange);
     case "mock":
-      return syncMockHealthData(dataTypes, dateRange);
+      return [];
     case "manual":
       return syncManualHealthData(dataTypes, dateRange);
     default:
@@ -761,7 +752,7 @@ function getSourceLabel(source: HealthSyncSource) {
     case "health_connect":
       return "Health Connect";
     case "mock":
-      return "Mock Sync";
+      return "Not connected";
     case "manual":
       return "Manual";
     default:

@@ -45,6 +45,8 @@ export default function RootLayout() {
                     <Stack.Screen name="circle/member/[memberId]" />
                     <Stack.Screen name="cycle/index" />
                     <Stack.Screen name="dev/ui-foundation" />
+                    <Stack.Screen name="dev/readiness" />
+                    <Stack.Screen name="dev/route-matrix" />
                     <Stack.Screen name="dev/ui-kit" />
                     <Stack.Screen name="elder/index" />
                     <Stack.Screen name="elder/[elderId]" />
@@ -121,6 +123,7 @@ export default function RootLayout() {
                     <Stack.Screen name="onboarding/modules" />
                     <Stack.Screen name="onboarding/theme" />
                     <Stack.Screen name="onboarding/units" />
+                    <Stack.Screen name="reminders/index" />
                     <Stack.Screen name="reminders/[reminderId]" />
                     <Stack.Screen name="scan-invite" />
                     <Stack.Screen name="settings/notifications" />

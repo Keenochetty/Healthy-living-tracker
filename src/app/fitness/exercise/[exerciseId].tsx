@@ -189,7 +189,7 @@ export default function ExerciseDetailScreen() {
         <View style={styles.actionRow}>
           <AppButton onPress={saveExerciseLog} title="Start exercise" />
           <AppButton
-            onPress={() => router.push("/fitness" as Href)}
+            onPress={() => router.push("/(tabs)/fitness" as Href)}
             title="Add to workout"
             variant="secondary"
           />
@@ -348,7 +348,7 @@ export default function ExerciseDetailScreen() {
           <Text style={[styles.bodyText, { color: theme.mutedText }]}>
             Use the existing Food realm to plan or log meals.
           </Text>
-          <Pressable onPress={() => router.push("/food" as Href)}>
+          <Pressable onPress={() => router.push("/(tabs)/food" as Href)}>
             <Text style={[styles.foodLink, { color: theme.primary }]}>
               Open Food realm
             </Text>

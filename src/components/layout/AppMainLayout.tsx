@@ -85,7 +85,7 @@ export function AppMainLayout({
             greeting={title ?? subtitle}
             onOpenPeopleAccount={() => setPeopleAccountVisible(true)}
             onOpenProfile={() => openProfile()}
-            onQuickActionPress={() => router.push("/calendar" as Href)}
+            onQuickActionPress={() => router.push("/(tabs)/calendar" as Href)}
             relationship={
               activeProfile ? formatRelationship(activeProfile) : "Me"
             }

@@ -192,7 +192,7 @@ export default function RecipeScreen() {
       recipeId: savedRecipe.id,
       servings: Math.max(0, Number(diaryServings) || 1),
     });
-    router.replace({ pathname: "/food", params: { tab: "diary" } } as Href);
+    router.replace({ pathname: "/(tabs)/food", params: { tab: "diary" } } as Href);
   }
 
   return (

@@ -68,7 +68,7 @@ export async function uploadPrivateHealthFile(input: PrivateHealthFileInput) {
     });
 
   if (error) {
-    throw new Error(`Could not upload private file: ${error.message}`);
+    throw new Error("Could not upload private file.");
   }
 
   await createPrivacyAuditLog({
@@ -77,7 +77,7 @@ export async function uploadPrivateHealthFile(input: PrivateHealthFileInput) {
     metadata: {
       bucket: input.bucket,
       operation: "upload_private_health_file",
-      path: metadata.path,
+      pathScope: describePrivateFilePath(metadata.path),
       realm: input.realm,
       recordId: input.recordId,
     },
@@ -127,7 +127,7 @@ export async function generateShortLivedSignedUrl({
     .createSignedUrl(path, SIGNED_URL_EXPIRY_SECONDS);
 
   if (error) {
-    throw new Error(`Could not create signed URL: ${error.message}`);
+    throw new Error("Could not create a private file link.");
   }
 
   await createPrivacyAuditLog({
@@ -137,7 +137,7 @@ export async function generateShortLivedSignedUrl({
       bucket,
       expiresInSeconds: SIGNED_URL_EXPIRY_SECONDS,
       operation: "private_file_signed_url",
-      path,
+      pathScope: describePrivateFilePath(path),
       recordId,
     },
     targetProfileId: profileId,
@@ -169,7 +169,7 @@ export async function deletePrivateHealthFile({
 
   const { data, error } = await supabase.storage.from(bucket).remove([path]);
   if (error) {
-    throw new Error(`Could not delete private file: ${error.message}`);
+    throw new Error("Could not delete private file.");
   }
 
   return data;
@@ -201,7 +201,7 @@ export async function listPrivateFilesForRecord({
 
   const { data, error } = await supabase.storage.from(bucket).list(prefix);
   if (error) {
-    throw new Error(`Could not list private files: ${error.message}`);
+    throw new Error("Could not list private files.");
   }
 
   return data;
@@ -279,6 +279,15 @@ export function sanitizeFileName(fileName: string) {
 
 function sanitizePathPart(value: string) {
   return value.replace(/[^a-zA-Z0-9-_]+/g, "-").slice(0, 100);
+}
+
+function describePrivateFilePath(path: string) {
+  const parts = path.split("/").filter(Boolean);
+  return {
+    depth: parts.length,
+    ownerScoped: parts.length >= 2,
+    realm: parts[2] ?? "unknown",
+  };
 }
 
 function getFileExtension(fileName: string) {

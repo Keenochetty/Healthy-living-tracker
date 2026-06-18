@@ -47,7 +47,7 @@ export function TodayRealmShortcuts({
       icon: "fitness",
       label: "Fitness",
       meta: "Today",
-      route: "/fitness" as Href,
+      route: "/(tabs)/fitness" as Href,
       visible: showFitness,
     },
     {
@@ -55,7 +55,7 @@ export function TodayRealmShortcuts({
       icon: "food",
       label: "Food",
       meta: "Fuel",
-      route: "/food" as Href,
+      route: "/(tabs)/food" as Href,
       visible: showNutrition,
     },
     {
@@ -79,7 +79,7 @@ export function TodayRealmShortcuts({
       icon: showChildCare ? "child_baby" : "caregiver",
       label: showChildCare ? "Child" : "Family",
       meta: "Shared care",
-      route: (showChildCare ? "/baby-child" : "/circle") as Href,
+      route: (showChildCare ? "/baby-child" : "/(tabs)/circle") as Href,
       visible: showChildCare || showFamily,
     },
   ];

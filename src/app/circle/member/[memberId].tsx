@@ -75,7 +75,7 @@ export default function CircleMemberDetailScreen() {
     }
 
     await removeCircleMember(member.id);
-    router.replace("/circle" as Href);
+    router.replace("/(tabs)/circle" as Href);
   }
 
   if (isLoading) {
@@ -99,7 +99,7 @@ export default function CircleMemberDetailScreen() {
         </AppCard>
         <SecondaryButton
           label="Back to Circle"
-          onPress={() => router.replace("/circle" as Href)}
+          onPress={() => router.replace("/(tabs)/circle" as Href)}
         />
       </ScreenWrapper>
     );
@@ -167,7 +167,7 @@ export default function CircleMemberDetailScreen() {
         <AppCard backgroundColor="#f5f3ff">
           <Text style={{ color: "#5b21b6", fontWeight: "800", lineHeight: 21 }}>
             This is the circle owner. Owner/admin access cannot be removed from
-            this mock circle.
+            this family circle.
           </Text>
         </AppCard>
       ) : (
@@ -221,7 +221,7 @@ export default function CircleMemberDetailScreen() {
 
       <SecondaryButton
         label="Back to Circle"
-        onPress={() => router.replace("/circle" as Href)}
+        onPress={() => router.replace("/(tabs)/circle" as Href)}
       />
     </ScreenWrapper>
   );

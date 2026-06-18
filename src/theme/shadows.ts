@@ -1,17 +1,17 @@
 export const appShadows = {
   card: {
-    elevation: 3,
-    shadowColor: "#2f261f",
+    elevation: 1,
+    shadowColor: "#0f172a",
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
+    shadowOpacity: 0.04,
+    shadowRadius: 14,
   },
   floating: {
-    elevation: 10,
-    shadowColor: "#2f261f",
+    elevation: 6,
+    shadowColor: "#0f172a",
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.16,
-    shadowRadius: 24,
+    shadowOpacity: 0.1,
+    shadowRadius: 22,
   },
   pressed: {
     transform: [{ scale: 0.98 }],

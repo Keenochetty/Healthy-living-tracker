@@ -36,7 +36,7 @@ export default function DeviceSyncScreen() {
   const [samples, setSamples] = useState<SyncedHealthSample[]>([]);
   const [errors, setErrors] = useState<HealthSyncError[]>([]);
   const [selectedSource, setSelectedSource] =
-    useState<HealthSyncSource>("mock");
+    useState<HealthSyncSource>("manual");
   const [selectedTypes, setSelectedTypes] = useState<HealthSyncDataType[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -367,8 +367,8 @@ export default function DeviceSyncScreen() {
               route="/biometrics?type=weight"
             />
             <FallbackButton label="Add sleep" route="/biometrics?type=sleep" />
-            <FallbackButton label="Add workout" route="/fitness" />
-            <FallbackButton label="Add water" route="/food?tab=water" />
+            <FallbackButton label="Add workout" route="/(tabs)/fitness" />
+            <FallbackButton label="Add water" route="/(tabs)/food?tab=water" />
             <FallbackButton
               label="Add heart rate"
               route="/biometrics?type=heart_rate"
@@ -516,7 +516,7 @@ function getSourceIcon(source: HealthSyncSource) {
     case "health_connect":
       return "wearable";
     case "mock":
-      return "sync";
+      return "privacy";
     default:
       return "privacy";
   }
@@ -529,7 +529,7 @@ function getSourceColor(source: HealthSyncSource) {
     case "health_connect":
       return "#22c55e";
     case "mock":
-      return "#3b82f6";
+      return "#64748b";
     default:
       return "#64748b";
   }
@@ -542,7 +542,7 @@ function formatSource(source: HealthSyncSource) {
     case "health_connect":
       return "Health Connect";
     case "mock":
-      return "Mock Sync";
+      return "Not connected";
     case "manual":
       return "Manual only";
     default:

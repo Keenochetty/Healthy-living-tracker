@@ -84,7 +84,7 @@ export default function JoinCircleScreen() {
         </AppCard>
         <SecondaryButton
           label="Not now"
-          onPress={() => router.replace("/circle" as Href)}
+          onPress={() => router.replace("/(tabs)/circle" as Href)}
         />
       </ScreenWrapper>
     );
@@ -156,7 +156,7 @@ export default function JoinCircleScreen() {
 
       <SecondaryButton
         label="Not now"
-        onPress={() => router.replace("/circle" as Href)}
+        onPress={() => router.replace("/(tabs)/circle" as Href)}
       />
     </ScreenWrapper>
   );

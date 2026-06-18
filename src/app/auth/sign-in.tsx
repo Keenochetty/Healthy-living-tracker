@@ -1,33 +1,43 @@
 import { Href, router } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable, StyleSheet, Text, useColorScheme } from "react-native";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { AuthForm } from "@/components/auth/AuthForm";
-import { AppButton } from "@/components/ui";
-import { useAppTheme } from "@/theme/ThemeProvider";
+import {
+  getHealthOSPalette,
+  healthOSSpacing,
+  healthOSTypography,
+  type HealthOSColorMode,
+} from "@/theme/healthos";
 
 export default function SignInScreen() {
-  const { theme } = useAppTheme();
+  const mode: HealthOSColorMode = useColorScheme() === "dark" ? "dark" : "light";
+  const palette = getHealthOSPalette(mode);
   return (
     <AuthShell
-      subtitle="Sync your profile, settings, modules, widgets, theme, country and units."
-      title="Welcome back"
+      subtitle="Your private family health companion"
+      title="HealthOS"
     >
       <AuthForm mode="login" onSuccess={() => router.replace("/" as Href)} />
       <Pressable
-        onPress={() => router.push("/auth/forgot-password" as Href)}
-        style={{ alignItems: "center", padding: 8 }}
+        onPress={() => router.push("/auth/sign-up" as Href)}
+        style={styles.switchLink}
       >
-        <Text style={{ color: theme.primary, fontWeight: "800" }}>
-          Forgot password?
+        <Text style={[healthOSTypography.bodySmall, { color: palette.softText }]}>
+          New to HealthOS?{" "}
+          <Text style={{ color: palette.skyBlue, fontWeight: "700" }}>
+            Create account
+          </Text>
         </Text>
       </Pressable>
-      <AppButton
-        fullWidth
-        onPress={() => router.push("/auth/sign-up" as Href)}
-        title="Create an account"
-        variant="outline"
-      />
     </AuthShell>
   );
 }
+
+const styles = StyleSheet.create({
+  switchLink: {
+    alignItems: "center",
+    marginTop: healthOSSpacing.md,
+    padding: healthOSSpacing.sm,
+  },
+});

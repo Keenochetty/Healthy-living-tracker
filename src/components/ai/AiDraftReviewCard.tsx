@@ -119,9 +119,14 @@ export function AiDraftReviewCard({
         >
           <Text style={{ color: "#ffffff", fontWeight: "900" }}>Approve</Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.85} style={secondaryButtonStyle}>
+        <TouchableOpacity
+          accessibilityState={{ disabled: true }}
+          activeOpacity={0.85}
+          disabled
+          style={secondaryButtonStyle}
+        >
           <Text style={{ color: "#7c3aed", fontWeight: "900" }}>
-            Edit later placeholder
+            Editing is not connected yet
           </Text>
         </TouchableOpacity>
         <TouchableOpacity

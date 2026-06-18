@@ -5,7 +5,6 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { AI_JOB_TYPE_OPTIONS } from "@/constants/aiOptions";
 import { callAiExtractFunction } from "@/lib/aiBackend";
 import { attachDraftToJob, createAiJob, updateAiJob } from "@/lib/aiStorage";
-import { processMockAiJob } from "@/lib/mockAiProcessor";
 import type { AiJobType } from "@/types/ai";
 import { AppCard } from "@/components/ui/AppCard";
 import { AiInputPickerCard, type AiInputSelection } from "./AiInputPickerCard";
@@ -48,10 +47,12 @@ export function AiCreateJobCard({ onCreated }: AiCreateJobCardProps) {
       await attachDraftToJob(job.id, response.draft);
       await updateAiJob(job.id, { extractionMode: response.mode });
     } catch {
-      const draft = processMockAiJob(job);
-      await attachDraftToJob(job.id, draft);
-      await updateAiJob(job.id, { extractionMode: "mock" });
-      setMessage("Backend unavailable. Showing mock draft for UI testing.");
+      await updateAiJob(job.id, { status: "failed" });
+      setMessage(
+        "AI extraction is not connected right now. No draft was created.",
+      );
+      onCreated?.();
+      return;
     }
 
     onCreated?.();
@@ -66,8 +67,8 @@ export function AiCreateJobCard({ onCreated }: AiCreateJobCardProps) {
             Create AI draft
           </Text>
           <Text style={{ color: "#64748b", lineHeight: 20, marginTop: 4 }}>
-            Uses backend extraction when available. Falls back to mock drafts
-            for UI testing.
+            Uses backend extraction when available. Review is required before
+            saving.
           </Text>
         </View>
 

@@ -84,7 +84,7 @@ export default function BarcodeScannerScreen() {
               label="Back to Add"
               onPress={() =>
                 router.replace({
-                  pathname: "/food",
+                  pathname: "/(tabs)/food",
                   params: { tab: "add" },
                 } as Href)
               }

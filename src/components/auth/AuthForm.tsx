@@ -1,9 +1,21 @@
+import { Href, router } from "expo-router";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 
-import { AppButton, AppCard, AppFormInput } from "@/components/ui";
+import {
+  HealthOSAuthButton,
+  HealthOSAuthCard,
+  HealthOSAuthError,
+  HealthOSAuthInput,
+  HealthOSSocialButton,
+} from "@/components/healthos/auth";
 import { useAuth } from "@/context/AuthContext";
-import { useAppTheme } from "@/theme/ThemeProvider";
+import {
+  getHealthOSPalette,
+  healthOSSpacing,
+  healthOSTypography,
+  type HealthOSColorMode,
+} from "@/theme/healthos";
 
 type AuthFormProps = {
   mode: "login" | "signup";
@@ -12,7 +24,8 @@ type AuthFormProps = {
 
 export function AuthForm({ mode, onSuccess }: AuthFormProps) {
   const { signIn, signUp } = useAuth();
-  const { theme } = useAppTheme();
+  const colorMode: HealthOSColorMode = useColorScheme() === "dark" ? "dark" : "light";
+  const palette = getHealthOSPalette(colorMode);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -22,6 +35,11 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
 
   async function submit() {
     setError("");
+
+    if (!email.trim() || !password) {
+      setError("Enter your email and password, then try again.");
+      return;
+    }
 
     if (mode === "signup" && password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -37,61 +55,62 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
           : await signIn(email, password);
 
       if (result.error) {
-        setError(result.error);
+        setError(
+          mode === "signup"
+            ? "Could not create your account. Please check your details."
+            : "Check your email and password, then try again.",
+        );
         return;
       }
 
-      if (mode === "signup") {
-        setError("Check your email if confirmation is enabled.");
-      }
-
       onSuccess?.();
-    } catch (nextError) {
-      setError(
-        nextError instanceof Error
-          ? nextError.message
-          : "Could not sign in. Please check your details.",
-      );
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <AppCard radius="xl" style={{ borderColor: theme.border, borderWidth: 1 }}>
-      <View style={{ gap: 12 }}>
-        <Text style={{ color: theme.text, fontSize: 22, fontWeight: "900" }}>
-          {mode === "signup" ? "Create your private care space." : "Sign in"}
-        </Text>
+  function socialPending(provider: "Apple" | "Google") {
+    setError(`${provider} sign-in is not connected yet. Use email and password for now.`);
+  }
 
+  return (
+    <HealthOSAuthCard
+      subtitle={
+        mode === "signup"
+          ? "Create a private care space for your health and family setup."
+          : "Sign in to sync your profile, settings, and private health setup."
+      }
+      title={mode === "signup" ? "Create account" : "Welcome back"}
+    >
+      <View style={styles.stack}>
         {mode === "signup" ? (
-          <AppFormInput
+          <HealthOSAuthInput
             autoCapitalize="words"
-            label="Display name"
+            label="Name"
             onChangeText={setDisplayName}
-            placeholder="Display name"
+            placeholder="Your name"
             value={displayName}
           />
         ) : null}
-
-        <AppFormInput
+        <HealthOSAuthInput
           autoCapitalize="none"
           keyboardType="email-address"
           label="Email"
           onChangeText={setEmail}
-          placeholder="Email"
+          placeholder="you@example.com"
           value={email}
         />
-        <AppFormInput
+        <HealthOSAuthInput
           label="Password"
           onChangeText={setPassword}
           placeholder="Password"
           secureTextEntry
           value={password}
         />
-
         {mode === "signup" ? (
-          <AppFormInput
+          <HealthOSAuthInput
             label="Confirm password"
             onChangeText={setConfirmPassword}
             placeholder="Confirm password"
@@ -99,19 +118,66 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
             value={confirmPassword}
           />
         ) : null}
-
-        {error ? (
-          <Text style={{ color: theme.danger, lineHeight: 20 }}>{error}</Text>
+        {mode === "login" ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push("/auth/forgot-password" as Href)}
+            style={styles.forgot}
+          >
+            <Text style={[healthOSTypography.buttonLabel, { color: palette.skyBlue }]}>
+              Forgot password?
+            </Text>
+          </Pressable>
         ) : null}
-
-        <AppButton
-          fullWidth
+        <HealthOSAuthError message={error} />
+        <HealthOSAuthButton
           loading={loading}
           onPress={submit}
-          size="lg"
           title={mode === "signup" ? "Create account" : "Sign in"}
         />
+        <Divider />
+        <HealthOSSocialButton
+          onPress={() => socialPending("Google")}
+          provider="google"
+        />
+        <HealthOSSocialButton
+          disabled
+          onPress={() => socialPending("Apple")}
+          provider="apple"
+        />
       </View>
-    </AppCard>
+    </HealthOSAuthCard>
   );
 }
+
+function Divider() {
+  const colorMode: HealthOSColorMode = useColorScheme() === "dark" ? "dark" : "light";
+  const palette = getHealthOSPalette(colorMode);
+  return (
+    <View style={styles.dividerRow}>
+      <View style={[styles.dividerLine, { backgroundColor: palette.borderSubtle }]} />
+      <Text style={[healthOSTypography.caption, { color: palette.softText }]}>or</Text>
+      <View style={[styles.dividerLine, { backgroundColor: palette.borderSubtle }]} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: healthOSSpacing.sm,
+    paddingVertical: healthOSSpacing.xs,
+  },
+  forgot: {
+    alignSelf: "flex-end",
+    paddingVertical: healthOSSpacing.xs,
+  },
+  stack: {
+    gap: healthOSSpacing.md,
+  },
+});

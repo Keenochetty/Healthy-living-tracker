@@ -9,8 +9,8 @@ import type {
   FamilyCircle,
 } from "@/types/circle";
 
-const MOCK_CIRCLE_STORAGE_KEY = "family_health_mock_circle";
-const MOCK_CIRCLE_ID = "my-care-circle";
+const CIRCLE_STORAGE_KEY = "family_health_circle";
+const CIRCLE_ID = "my-care-circle";
 
 export function getAvatarInitials(name: string) {
   const initials = name
@@ -27,40 +27,15 @@ function permissionsForRole(role: CircleRole) {
   return [...getCircleRoleDefinition(role).defaultPermissions];
 }
 
-function createDefaultPendingRequest({
-  displayName,
-  message,
-  role,
-  requestedAt,
-}: {
-  displayName: string;
-  message: string;
-  role: CircleRole;
-  requestedAt: string;
-}): CircleJoinRequest {
-  return {
-    avatarInitials: getAvatarInitials(displayName),
-    circleId: MOCK_CIRCLE_ID,
-    displayName,
-    id: `request-${role}-${requestedAt}`,
-    message,
-    permissions: permissionsForRole(role),
-    requestedAt,
-    role,
-    status: "pending",
-  };
-}
-
 export function createDefaultMockCircle(): FamilyCircle {
   const now = new Date().toISOString();
-  const yesterday = new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString();
 
   return {
-    id: MOCK_CIRCLE_ID,
+    id: CIRCLE_ID,
     members: [
       {
         avatarInitials: "YO",
-        circleId: MOCK_CIRCLE_ID,
+        circleId: CIRCLE_ID,
         displayName: "You",
         id: "circle-owner",
         isOwner: true,
@@ -73,25 +48,12 @@ export function createDefaultMockCircle(): FamilyCircle {
     ],
     name: "My Care Circle",
     ownerName: "You",
-    pendingRequests: [
-      createDefaultPendingRequest({
-        displayName: "Maya Care",
-        message: "Available for check-ins and care notes.",
-        requestedAt: yesterday,
-        role: "caregiver",
-      }),
-      createDefaultPendingRequest({
-        displayName: "Sam Partner",
-        message: "Would like to help with shared planning.",
-        requestedAt: now,
-        role: "partner",
-      }),
-    ],
+    pendingRequests: [],
   };
 }
 
 async function writeCircle(circle: FamilyCircle) {
-  await AsyncStorage.setItem(MOCK_CIRCLE_STORAGE_KEY, JSON.stringify(circle));
+  await AsyncStorage.setItem(CIRCLE_STORAGE_KEY, JSON.stringify(circle));
 
   return circle;
 }
@@ -119,7 +81,7 @@ function normaliseCircle(circle: FamilyCircle): FamilyCircle {
 
 export async function getMockCircle() {
   try {
-    const storedCircle = await AsyncStorage.getItem(MOCK_CIRCLE_STORAGE_KEY);
+    const storedCircle = await AsyncStorage.getItem(CIRCLE_STORAGE_KEY);
 
     if (!storedCircle) {
       return writeCircle(createDefaultMockCircle());

@@ -1,5 +1,5 @@
-import { HealthRealmOverview } from "@/components/health/HealthRealmOverview";
+import { HealthOSHealthHubScreen } from "@/components/healthos/health";
 
 export default function HealthScreen() {
-  return <HealthRealmOverview />;
+  return <HealthOSHealthHubScreen />;
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Tabs } from "expo-router";
+import { Tabs, useSegments } from "expo-router";
 
 import { AiAssistantSheet } from "@/components/ai/AiAssistantSheet";
 import { AiSearchBar } from "@/components/ai/AiSearchBar";
@@ -8,6 +8,9 @@ import { AppChromeProvider } from "@/context/AppChromeContext";
 
 export default function TabsLayout() {
   const [aiOpen, setAiOpen] = useState(false);
+  const segments = useSegments();
+  const activeTab = segments[1];
+  const hideGlobalAiSearch = activeTab === "scan";
 
   return (
     <AppChromeProvider>
@@ -50,8 +53,8 @@ export default function TabsLayout() {
         <Tabs.Screen name="food" options={{ href: null }} />
         <Tabs.Screen name="profile" options={{ href: null }} />
       </Tabs>
-      <AiSearchBar onPress={() => setAiOpen(true)} />
-      <AiAssistantSheet onClose={() => setAiOpen(false)} visible={aiOpen} />
+      {!hideGlobalAiSearch ? <AiSearchBar onPress={() => setAiOpen(true)} /> : null}
+      <AiAssistantSheet onClose={() => setAiOpen(false)} visible={aiOpen && !hideGlobalAiSearch} />
     </AppChromeProvider>
   );
 }

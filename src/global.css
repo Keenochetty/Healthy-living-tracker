@@ -8,6 +8,14 @@
 @source './features/**/*.{ts,tsx}';
 
 @theme {
-  --color-healthsync: #6ee7c8;
-  --color-healthsync-soft: #dffaf3;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-primary: #475569;
+  --radius-card: 20px;
+  --radius-panel: 24px;
+  --spacing-screen: 16px;
 }

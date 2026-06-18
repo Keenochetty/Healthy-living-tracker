@@ -1221,12 +1221,12 @@ function openRelatedRealm(reminder: HealthReminder) {
       router.push("/supplements" as Href);
       break;
     case "workout":
-      router.push("/fitness" as Href);
+      router.push("/(tabs)/fitness" as Href);
       break;
     case "water":
     case "meal":
       router.push({
-        pathname: "/food",
+        pathname: "/(tabs)/food",
         params: reminder.type === "water" ? { tab: "water" } : undefined,
       } as Href);
       break;

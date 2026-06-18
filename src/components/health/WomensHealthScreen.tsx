@@ -1035,7 +1035,7 @@ function UpcomingReminders() {
   return (
     <AppSection
       actionLabel="Open calendar"
-      onActionPress={() => router.push("/calendar")}
+      onActionPress={() => router.push("/(tabs)/calendar")}
       subtitle="Private notes, estimates, contraception, and appointments."
       title="Notes and reminders"
     >

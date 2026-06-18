@@ -150,7 +150,7 @@ export default function ActivatePlanScreen() {
           {duplicateId ? (
             <View style={styles.actions}>
               <AppButton
-                onPress={() => router.push("/calendar" as Href)}
+                onPress={() => router.push("/(tabs)/calendar" as Href)}
                 size="sm"
                 title="View active plan"
               />
@@ -371,7 +371,7 @@ export default function ActivatePlanScreen() {
                 </Text>
                 <View style={styles.actions}>
                   <AppButton
-                    onPress={() => router.push("/calendar" as Href)}
+                    onPress={() => router.push("/(tabs)/calendar" as Href)}
                     size="sm"
                     title="View calendar"
                     variant="secondary"

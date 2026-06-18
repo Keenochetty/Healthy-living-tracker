@@ -135,7 +135,7 @@ export default function BarcodeProductScreen() {
 
     setSuccessMessage(`Added to ${mealLabel}`);
     setTimeout(() => {
-      router.replace({ pathname: "/food", params: { tab: "diary" } } as Href);
+      router.replace({ pathname: "/(tabs)/food", params: { tab: "diary" } } as Href);
     }, 650);
   }
 
@@ -181,7 +181,7 @@ export default function BarcodeProductScreen() {
               label="Search by Product Name"
               onPress={() =>
                 router.replace({
-                  pathname: "/food",
+                  pathname: "/(tabs)/food",
                   params: { tab: "add" },
                 } as Href)
               }

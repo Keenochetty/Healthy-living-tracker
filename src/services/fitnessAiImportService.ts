@@ -101,7 +101,6 @@ export async function searchExternalPlans(
       results = [];
     }
   }
-  if (!results.length) results = mockResults(query, context);
   await recordAiSearchLog({
     backendConfigured: Boolean(endpoint),
     context,
@@ -398,98 +397,6 @@ export async function recordAiSearchLog(payload: {
   }
 }
 
-function mockResults(
-  query: string,
-  context: AiPlanContext,
-): AiPlanSearchResult[] {
-  const lower = query.toLowerCase();
-  const nutrition = /vegan|keto|meal|nutrition|vegetarian/.test(lower);
-  const sensitive =
-    /pregnan|postpartum|child|teen|injur|pain|weight loss|keto/.test(lower);
-  const title = query.trim() || "Balanced fitness starter";
-  const base: NormalizedImportedPlan = {
-    aiConfidence: 0.72,
-    audience:
-      context.audience ??
-      (lower.includes("teen")
-        ? "Teens"
-        : lower.includes("child")
-          ? "Children"
-          : "Adults"),
-    description:
-      "A summarized, editable plan generated from structured guidance. Review every day before use.",
-    difficulty: lower.includes("advanced") ? "advanced" : "beginner",
-    durationDays: lower.includes("28") ? 28 : 7,
-    equipment: context.equipment ? [context.equipment] : ["Bodyweight"],
-    estimatedMinutesPerSession: 30,
-    goal: context.goal ?? title,
-    originalSearchQuery: query,
-    planType: nutrition
-      ? "nutrition"
-      : lower.includes("weight loss")
-        ? "hybrid"
-        : "workout",
-    reviewRequired: sensitive,
-    safetyFlags: sensitive
-      ? ["Review required for audience, diet, or safety context"]
-      : [],
-    sourceDomain: "fallback.local",
-    sourceLicenseNote:
-      "Fallback structured example; no external protected text copied.",
-    sourceTitle: "Safe fallback plan template",
-    title,
-    days: Array.from(
-      { length: Math.min(lower.includes("28") ? 7 : 4, 7) },
-      (_, index) => ({
-        dayNumber: index + 1,
-        estimatedMinutes: 30,
-        exercises: nutrition
-          ? undefined
-          : [
-              {
-                muscleGroups: ["full_body"],
-                name:
-                  index % 2
-                    ? "Gentle mobility flow"
-                    : "Controlled full-body circuit",
-                notes: "Adjust to your body.",
-                time: "20-30 min",
-              },
-            ],
-        focus: nutrition
-          ? "Balanced training meals"
-          : index % 2
-            ? "Recovery and mobility"
-            : "Full-body movement",
-        meals: nutrition
-          ? [
-              {
-                mealType: "Main meal",
-                name: lower.includes("vegan")
-                  ? "Plant-based recovery bowl"
-                  : "Balanced training meal",
-                notes: "Check ingredients and allergies.",
-              },
-            ]
-          : undefined,
-        safetyNote: sensitive
-          ? "General guidance. Seek professional advice when needed."
-          : undefined,
-        title: `Day ${index + 1}`,
-      }),
-    ),
-  };
-  const checked = runSafetyChecks(base, context);
-  return [
-    {
-      ...base,
-      id: "fallback-1",
-      reviewRequired: base.reviewRequired || checked.reviewRequired,
-      reviewStatus: "Fallback review",
-      safetyFlags: [...base.safetyFlags, ...checked.flags],
-    },
-  ];
-}
 function tomorrowKey() {
   const date = new Date();
   date.setDate(date.getDate() + 1);

@@ -197,10 +197,10 @@ function NutritionQuickActions({
         <AppChip label="Scan barcode" onPress={() => router.push("/food/barcode-scanner" as Href)} />
         <AppChip label="Smart-log image" onPress={() => router.push("/food/smart-log" as Href)} />
         <AppChip label="Add water" onPress={onAddWater} />
-        <AppChip label="Saved meals" onPress={() => router.push({ pathname: "/food", params: { tab: "saved_meals" } } as Href)} />
+        <AppChip label="Saved meals" onPress={() => router.push({ pathname: "/(tabs)/food", params: { tab: "saved_meals" } } as Href)} />
         <AppChip label="Recipes" onPress={onOpenPlanner} />
-        <AppChip label="Daily note" onPress={() => router.push({ pathname: "/food", params: { tab: "settings" } } as Href)} />
-        <AppChip label="View reports" onPress={() => router.push({ pathname: "/food", params: { tab: "reports" } } as Href)} />
+        <AppChip label="Daily note" onPress={() => router.push({ pathname: "/(tabs)/food", params: { tab: "settings" } } as Href)} />
+        <AppChip label="View reports" onPress={() => router.push({ pathname: "/(tabs)/food", params: { tab: "reports" } } as Href)} />
       </View>
     </AppSection>
   );
@@ -245,12 +245,12 @@ function LibraryPreview({
   return (
     <AppSection subtitle="Reusable meals and recipes already saved." title="Meal library">
       <View style={styles.libraryGrid}>
-        <AppCard onPress={() => router.push({ pathname: "/food", params: { tab: "saved_meals" } } as Href)} padding="sm" style={styles.libraryCard}>
+        <AppCard onPress={() => router.push({ pathname: "/(tabs)/food", params: { tab: "saved_meals" } } as Href)} padding="sm" style={styles.libraryCard}>
           <HealthMiniLineChart color={healthRealmAccents.food} data={[0, 1, savedMeals.length, 1, savedMeals.length + 1]} />
           <Text style={[styles.libraryValue, { color: theme.text }]}>{savedMeals.length}</Text>
           <Text style={[styles.libraryLabel, { color: theme.mutedText }]}>Saved meals</Text>
         </AppCard>
-        <AppCard onPress={() => router.push({ pathname: "/food", params: { tab: "recipes" } } as Href)} padding="sm" style={styles.libraryCard}>
+        <AppCard onPress={() => router.push({ pathname: "/(tabs)/food", params: { tab: "recipes" } } as Href)} padding="sm" style={styles.libraryCard}>
           <HealthDonutChart colors={[healthRealmAccents.food, healthRealmAccents.health]} trackColor={theme.primarySoft} values={[recipes.length, Math.max(1, savedMeals.length)]} />
           <Text style={[styles.libraryValue, { color: theme.text }]}>{recipes.length}</Text>
           <Text style={[styles.libraryLabel, { color: theme.mutedText }]}>Recipes</Text>

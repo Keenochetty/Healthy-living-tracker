@@ -1,10 +1,5 @@
-import { ScreenWrapper } from "@/components/layout/ScreenWrapper";
-import { MedicationSupplementRealm } from "@/components/medication/MedicationSupplementRealm";
+import { HealthOSMedicationRealmScreen } from "@/components/healthos/medication";
 
 export default function SupplementsScreen() {
-  return (
-    <ScreenWrapper backgroundColor="#f0fdfa">
-      <MedicationSupplementRealm itemType="supplement" />
-    </ScreenWrapper>
-  );
+  return <HealthOSMedicationRealmScreen initialFocus="supplement" />;
 }

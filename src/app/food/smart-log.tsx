@@ -185,7 +185,7 @@ export default function SmartLogScreen() {
     setSaving(true);
     await confirmSmartLogSession(session.id);
     setSaving(false);
-    router.replace({ pathname: "/food", params: { tab: "diary" } } as Href);
+    router.replace({ pathname: "/(tabs)/food", params: { tab: "diary" } } as Href);
   }
 
   async function cancelSession() {
@@ -193,7 +193,7 @@ export default function SmartLogScreen() {
       await cancelSmartLogSession(session.id);
     }
 
-    router.replace({ pathname: "/food", params: { tab: "add" } } as Href);
+    router.replace({ pathname: "/(tabs)/food", params: { tab: "add" } } as Href);
   }
 
   if (session) {

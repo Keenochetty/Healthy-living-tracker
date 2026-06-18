@@ -245,7 +245,7 @@ export default function ImportedPlanDetailScreen() {
           </>
         ) : (
           <AppButton
-            onPress={() => router.push("/calendar" as Href)}
+            onPress={() => router.push("/(tabs)/calendar" as Href)}
             title="View calendar"
           />
         )}

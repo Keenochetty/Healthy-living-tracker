@@ -632,15 +632,15 @@ function labelTarget(target: AppAIImportTarget) {
 function routeForTarget(target: AppAIImportTarget) {
   const routes: Record<AppAIImportTarget, Href> = {
     baby_child: "/baby-child",
-    calendar: "/calendar",
+    calendar: "/(tabs)/calendar",
     cycle: "/cycle",
-    family: "/circle",
-    fitness: "/fitness",
+    family: "/(tabs)/circle",
+    fitness: "/(tabs)/fitness",
     medication: "/medication",
-    nutrition: "/food",
+    nutrition: "/(tabs)/food",
     pregnancy: "/pregnancy",
     records: "/records",
-    shopping_list: "/food",
+    shopping_list: "/(tabs)/food",
     supplements: "/supplements",
   };
 

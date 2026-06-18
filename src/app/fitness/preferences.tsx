@@ -144,7 +144,7 @@ export default function FitnessPreferencesScreen() {
           title={saving ? "Saving..." : "Save"}
         />
       </View>
-      <Pressable onPress={() => router.push("/fitness" as Href)}>
+      <Pressable onPress={() => router.push("/(tabs)/fitness" as Href)}>
         <Text style={[styles.link, { color: theme.mutedText }]}>
           Return to Fitness
         </Text>

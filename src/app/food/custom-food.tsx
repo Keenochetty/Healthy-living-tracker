@@ -162,7 +162,7 @@ export default function CustomFoodScreen() {
       await createCustomFood(payload);
     }
 
-    router.replace({ pathname: "/food", params: { tab: "library" } } as Href);
+    router.replace({ pathname: "/(tabs)/food", params: { tab: "library" } } as Href);
   }
 
   return (

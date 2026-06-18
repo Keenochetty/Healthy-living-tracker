@@ -297,7 +297,7 @@ function PlanProgress({
           variant="secondary"
         />
         <AppButton
-          onPress={() => router.push("/calendar" as Href)}
+          onPress={() => router.push("/(tabs)/calendar" as Href)}
           size="sm"
           title="View calendar"
           variant="ghost"
@@ -397,7 +397,7 @@ function EmptyHistory() {
           variant="secondary"
         />
         <AppButton
-          onPress={() => router.push("/fitness" as Href)}
+          onPress={() => router.push("/(tabs)/fitness" as Href)}
           size="sm"
           title="Start quick workout"
           variant="ghost"

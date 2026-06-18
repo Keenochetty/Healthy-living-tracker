@@ -158,7 +158,7 @@ export default function SavedMealScreen() {
     if (!meal) return;
 
     await addSavedMealToDiary(meal.id, defaultMealGroup);
-    router.replace({ pathname: "/food", params: { tab: "diary" } } as Href);
+    router.replace({ pathname: "/(tabs)/food", params: { tab: "diary" } } as Href);
   }
 
   return (

@@ -7,6 +7,8 @@ type AiChatRequest = {
   };
   inputType?: "barcode" | "document" | "manual" | "photo" | "text" | "voice";
   message?: string;
+  requestedTarget?: AiImportTarget;
+  user_confirmed_context?: boolean;
 };
 
 type AiImportTarget =
@@ -35,6 +37,20 @@ const VALID_INPUT_TYPES = new Set([
   "photo",
   "text",
   "voice",
+]);
+
+const VALID_IMPORT_TARGETS = new Set<AiImportTarget>([
+  "baby_child",
+  "calendar",
+  "cycle",
+  "family",
+  "fitness",
+  "medication",
+  "nutrition",
+  "pregnancy",
+  "records",
+  "shopping_list",
+  "supplements",
 ]);
 
 function jsonResponse(body: unknown, status = 200) {
@@ -620,6 +636,12 @@ Deno.serve(async (req) => {
     if (!VALID_INPUT_TYPES.has(inputType)) {
       return jsonResponse({ error: "Invalid inputType." }, 400);
     }
+    if (body.requestedTarget && !VALID_IMPORT_TARGETS.has(body.requestedTarget)) {
+      return jsonResponse({ error: "Invalid requestedTarget." }, 400);
+    }
+    if (body.context?.messages?.length && body.user_confirmed_context !== true) {
+      return jsonResponse({ error: "Private context requires confirmation." }, 400);
+    }
 
     const apiKey = Deno.env.get("OPENAI_API_KEY");
     if (!apiKey) return jsonResponse(mockResponse(message, inputType));
@@ -664,9 +686,8 @@ Deno.serve(async (req) => {
 
     const responseBody = (await response.json()) as Record<string, unknown>;
     if (!response.ok) {
-      const error = responseBody.error as { message?: string } | undefined;
       return jsonResponse(
-        { error: error?.message ?? "OpenAI request failed." },
+        { error: "Could not process this with AI right now. No data was saved." },
         response.status,
       );
     }
@@ -686,8 +707,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     return jsonResponse(
       {
-        error:
-          error instanceof Error ? error.message : "Unknown AI chat error.",
+        error: "Could not process this with AI right now. No data was saved.",
       },
       500,
     );

@@ -85,7 +85,7 @@ export default function ReminderDetailScreen() {
 
     await cancelReminderNotification(reminder.notificationId);
     await deleteReminder(reminder.id);
-    router.replace("/calendar" as Href);
+    router.replace("/(tabs)/calendar" as Href);
   }
 
   if (isLoading) {
@@ -110,7 +110,7 @@ export default function ReminderDetailScreen() {
         <SecondaryButton
           dark={isDarkTheme}
           label="Back to Calendar"
-          onPress={() => router.replace("/calendar" as Href)}
+          onPress={() => router.replace("/(tabs)/calendar" as Href)}
         />
       </ScreenWrapper>
     );
@@ -233,7 +233,7 @@ export default function ReminderDetailScreen() {
       <SecondaryButton
         dark={isDarkTheme}
         label="Back to Calendar"
-        onPress={() => router.replace("/calendar" as Href)}
+        onPress={() => router.replace("/(tabs)/calendar" as Href)}
       />
     </ScreenWrapper>
   );

@@ -135,13 +135,13 @@ function HealthScoreHero({ data }: { data: RealmData }) {
 function RealmGrid({ data }: { data: RealmData }) {
   const realms: RealmItem[] = [
     { accent: "health", icon: "vitals", route: "/health/general", status: "Vitals and general health", title: "Vitals" },
-    { accent: "fitness", icon: "fitness", route: "/fitness", status: data.fitness?.activeMinutesToday ? `${data.fitness.activeMinutesToday} active min` : "Ready to move", title: "Fitness" },
-    { accent: "food", icon: "nutrition", route: "/food", status: data.nutrition?.foodLogCount ? `${data.nutrition.foodLogCount} logs today` : "Nutrition and water", title: "Food" },
+    { accent: "fitness", icon: "fitness", route: "/(tabs)/fitness", status: data.fitness?.activeMinutesToday ? `${data.fitness.activeMinutesToday} active min` : "Ready to move", title: "Fitness" },
+    { accent: "food", icon: "nutrition", route: "/(tabs)/food", status: data.nutrition?.foodLogCount ? `${data.nutrition.foodLogCount} logs today` : "Nutrition and water", title: "Food" },
     { accent: "meds", icon: "medication", route: "/medication", status: data.medication?.dueCount ? `${data.medication.dueCount} due today` : "Medication and supplements", title: "Medication" },
     { accent: "records", icon: "records", route: "/records", status: data.records?.recordsNeedingAttention ? `${data.records.recordsNeedingAttention} need review` : "Records and care", title: "Records" },
     { accent: "women", icon: "pregnancy_cycle", route: "/cycle", status: "Cycle and pregnancy", title: "Women's health" },
     { accent: "baby", icon: "child_baby", route: "/baby-child", status: "Baby and child care", title: "Child care" },
-    { accent: "family", icon: "caregiver", route: "/circle", status: "Shared care", title: "Family" },
+    { accent: "family", icon: "caregiver", route: "/(tabs)/circle", status: "Shared care", title: "Family" },
     { accent: "health", icon: "mood", route: "/health/general/notes", status: "Notes and mood", title: "Mind" },
   ];
 
@@ -210,14 +210,14 @@ function MetricOverview({ data }: { data: RealmData }) {
           chart={<HealthProgressRing color={healthRealmAccents.fitness} progress={data.fitness?.weeklyGoalProgress ?? 0} size={54} trackColor={theme.primarySoft} />}
           detail={`${data.fitness?.stepsToday ?? 0} steps`}
           label="Movement"
-          route="/fitness"
+          route="/(tabs)/fitness"
           value={`${data.fitness?.activeMinutesToday ?? 0} min`}
         />
         <MetricCard
           chart={<HealthDonutChart colors={[healthRealmAccents.food, healthRealmAccents.health, healthRealmAccents.women]} trackColor={theme.primarySoft} values={macros} />}
           detail={`${Math.round(data.nutrition?.waterMl ?? 0)} ml water`}
           label="Nutrition"
-          route="/food"
+          route="/(tabs)/food"
           value={data.nutrition?.foodLogCount ? `${data.nutrition.foodLogCount} logs` : "Not logged"}
         />
         <MetricCard

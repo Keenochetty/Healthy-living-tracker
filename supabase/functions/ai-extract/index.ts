@@ -1,5 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { createMockDraft } from "./mock.ts";
+import { requireAuthenticatedUser } from "../_shared/security.ts";
 
 const VALID_JOB_TYPES = new Set([
   "doctor_report_scan",
@@ -24,6 +24,7 @@ type AiExtractRequest = {
   localUri?: string;
   mimeType?: string;
   textInput?: string;
+  user_confirmed_context?: boolean;
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -43,7 +44,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authorization = req.headers.get("Authorization");
+    const { error: authError } = requireAuthenticatedUser(req);
+    if (authError) return jsonResponse({ error: authError, ok: false }, 401);
+
     const body = (await req.json()) as AiExtractRequest;
     const jobType = body.jobType;
     const inputType = body.inputType;
@@ -59,21 +62,21 @@ Deno.serve(async (req) => {
     if (!body.textInput?.trim() && !body.filePath && !body.localUri) {
       return jsonResponse({ error: "Input is empty.", ok: false }, 400);
     }
+    if ((body.textInput || body.filePath || body.localUri) && body.user_confirmed_context !== true) {
+      return jsonResponse({ error: "Private context requires confirmation.", ok: false }, 400);
+    }
 
     return jsonResponse({
-      authorizationPresent: Boolean(authorization),
-      draft: createMockDraft(jobType, body.textInput),
+      draft: null,
+      message: "AI extraction is deferred to the review-first import envelope flow. No data was saved.",
       jobId: body.jobId,
-      mode: "mock",
+      mode: "deferred",
       ok: true,
     });
   } catch (error) {
     return jsonResponse(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unknown AI extraction error.",
+        error: "Could not process this with AI right now. No data was saved.",
         ok: false,
       },
       500,

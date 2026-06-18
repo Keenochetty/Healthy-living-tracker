@@ -109,7 +109,7 @@ export default function LibraryItemScreen() {
       });
     }
 
-    router.replace({ pathname: "/food", params: { tab: "diary" } } as Href);
+    router.replace({ pathname: "/(tabs)/food", params: { tab: "diary" } } as Href);
   }
 
   async function deleteLibraryItem() {
@@ -127,7 +127,7 @@ export default function LibraryItemScreen() {
       await deleteRecipe(params.id);
     }
 
-    router.replace({ pathname: "/food", params: { tab: "library" } } as Href);
+    router.replace({ pathname: "/(tabs)/food", params: { tab: "library" } } as Href);
   }
 
   const title =

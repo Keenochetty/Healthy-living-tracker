@@ -22,7 +22,7 @@ export default function HealthRealmRoute() {
   }
 
   if (realm.slug === "fitness") {
-    return <Redirect href="/fitness" />;
+    return <Redirect href="/(tabs)/fitness" />;
   }
 
   return <HealthRealmPlaceholderScreen realm={realm} />;
